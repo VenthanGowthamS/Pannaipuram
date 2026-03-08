@@ -1,7 +1,7 @@
 # பன்னைபுரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 2.0 (Final Vision Draft)
+> **Version:** 2.1 (Wikipedia-verified)
 > **Date:** March 2026
 > **Author:** Venthan (Senior Software Engineer)
 > **Status:** Phase 1 Complete — Ready for Backend Design
@@ -27,18 +27,48 @@ This app is not for the internet. It is for Pannaipuram.
 
 ---
 
-## 2. Product Identity
+## 2. About Pannaipuram (From Wikipedia)
+
+| Detail | Value |
+|---|---|
+| District | தேனி (Theni) |
+| Taluk | உத்தமபாளையம் (Uthamapalayam) |
+| Type | Town Panchayat — பேரூராட்சி |
+| Population | ~9,323 (2011 Census) |
+| Households | 1,719 |
+| Wards | 15 வார்டுகள் (15 Wards) |
+| Streets | 57 தெருக்கள் (57 Streets) |
+| Area | 15.36 sq km |
+| Pincode | 625524 |
+| Distance to Uthamapalayam | 11 km |
+| Distance to Theni (HQ) | 32 km |
+| Assembly Constituency | கம்பம் (Kamban) |
+| Lok Sabha | தேனி (Theni) |
+| Known For | Cardamom estate region — ஏலக்காய் தோட்டம் |
+| Transport | Public bus, private bus, railway station |
+
+**What this tells us for the app:**
+- **57 streets pre-loaded** in the water alert module — users select their exact street, no typing needed
+- **15 wards** can be used as area groupings for power cut and water alerts
+- **Railway station exists** — worth considering a train timing module later (v2)
+- **Cardamom estates** — many users are estate workers/farmers, confirming agricultural context
+- Kamban Assembly constituency — validates our கம்பம் bus corridor as primary route
+
+---
+
+## 3. Product Identity
 
 **App Name:** பன்னைபுரம் (Pannaipuram)
 **Tagline:** உங்கள் ஊரின் தகவல் மையம்
 **Platform:** Android (APK — no Play Store required)
 **Distribution:** QR Code → WhatsApp share
 **Language:** Tamil primary, small English label below every element
-**Target Users:** All residents of Pannaipuram — farmers, families, elderly, students
+**Target Users:** All 1,719 households across 57 streets of Pannaipuram
+**Estimated Download Target:** 500 users (29% household penetration in Year 1)
 
 ---
 
-## 3. The Five Modules
+## 4. The Five Modules
 
 ---
 
@@ -182,7 +212,7 @@ This information does not exist anywhere online. It cannot be scraped or fetched
 
 ---
 
-## 4. Home Screen Design Concept
+## 5. Home Screen Design Concept
 
 ```
 ┌─────────────────────────────────────┐
@@ -212,7 +242,7 @@ Large icons, Tamil first, English small below. No clutter. One tap to any module
 
 ---
 
-## 5. The Community Alert Flow (Water)
+## 6. The Community Alert Flow (Water)
 
 ```
 Resident A opens app
@@ -220,7 +250,7 @@ Resident A opens app
 Taps 💧 "தண்ணீர் வந்தது!" button
         ↓
 App asks: "உங்கள் தெரு?" (Your street?)
-[North Street] [South Street] [Main Road] [Other]
+[All 57 streets pre-loaded as a scrollable Tamil list]
         ↓
 Resident A selects street → Confirms
         ↓
@@ -233,7 +263,7 @@ Water is not wasted
 
 ---
 
-## 6. Data Strategy — What Comes From Where
+## 7. Data Strategy — What Comes From Where
 
 | Module | Data Source | Online / Offline | Who Updates |
 |---|---|---|---|
@@ -247,7 +277,7 @@ Water is not wasted
 
 ---
 
-## 7. Non-Functional Requirements
+## 8. Non-Functional Requirements
 
 | Requirement | Target |
 |---|---|
@@ -264,7 +294,7 @@ Water is not wasted
 
 ---
 
-## 8. Distribution Plan
+## 9. Distribution Plan
 
 - APK hosted on Firebase App Distribution or a simple static link
 - **QR code** generated and:
@@ -275,7 +305,7 @@ Water is not wasted
 
 ---
 
-## 9. Technical Stack
+## 10. Technical Stack
 
 | Layer | Choice | Reason |
 |---|---|---|
@@ -291,7 +321,7 @@ Water is not wasted
 
 ---
 
-## 10. Data Collection Checklist (For Venthan — Ground Work)
+## 11. Data Collection Checklist (For Venthan — Ground Work)
 
 Before development begins, the following must be collected in person:
 
@@ -333,7 +363,7 @@ Before development begins, the following must be collected in person:
 
 ---
 
-## 11. Phased Delivery Plan
+## 12. Phased Delivery Plan
 
 ### Phase 1 — Requirements ✅ DONE
 This document. Vision locked.
@@ -376,7 +406,7 @@ This document. Vision locked.
 
 ---
 
-## 12. Why This Will Work
+## 13. Why This Will Work
 
 > **It solves problems people have today — not someday.**
 
