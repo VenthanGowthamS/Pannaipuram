@@ -89,18 +89,41 @@ No app in India has a community water alert built for a specific village. This i
 
 ### Module 3 — பேருந்து (Bus Timings)
 
-**The Pain:** People miss buses to Thevaram, Uthamapalayam, and other key routes because there is no timetable available in Tamil, in one place, that works without internet.
+**The Pain:** People miss buses on both main corridors out of Pannaipuram because there is no timetable available in Tamil, in one place, that works without internet.
+
+**Two Corridors — Two Directions:**
+
+```
+        ← போடி பக்கம் (Towards Bodi)
+Thevaram → Bodi (Bodinayakkanur)
+
+        → கும்பம் பக்கம் (Towards Cumbum)
+Uthamapalayam → Cumbum
+```
 
 **What the App Does:**
-- Complete offline timetable for key routes from Pannaipuram:
-  - Pannaipuram ↔ Thevaram
-  - Pannaipuram ↔ Uthamapalayam
-  - Pannaipuram ↔ Bus Stand (connecting routes)
-  - Any other key routes collected from ground sources
-- "Next bus" widget on home screen — shows how many minutes until next departure
-- Set a reminder: "Alert me 15 minutes before the 7:45am bus"
-- Notes: Last bus timing, frequency, days of operation
+- Complete offline timetable split clearly by direction:
+
+  **போடி பக்கம் — Towards Bodi Side 🔵**
+  - Pannaipuram → Thevaram → Bodi (Bodinayakkanur)
+  - All departure times from Pannaipuram
+  - Last bus time highlighted in red
+
+  **கும்பம் பக்கம் — Towards Cumbum Side 🟢**
+  - Pannaipuram → Uthamapalayam → Cumbum
+  - All departure times from Pannaipuram
+  - Last bus time highlighted in red
+
+  **திரும்பி வர (Return — Inbound)**
+  - Bodi → Thevaram → Pannaipuram
+  - Cumbum → Uthamapalayam → Pannaipuram
+
+- Home screen shows: **next bus in each direction** at a glance
+- "Next bus" widget — "போடி பக்கம் — 14 நிமிடம்" / "கும்பம் பக்கம் — 32 நிமிடம்"
+- Set a reminder: "Alert me 15 minutes before the 7:45am Bodi bus"
+- Last bus warning: push alert at 8pm — "கடைசி பேருந்து 1 மணி நேரத்தில்!"
 - "Bus delayed / not running today" — admin or community can flag
+- Notes: frequency, days of operation, express vs ordinary
 
 **Data Source:**
 - Manually collected from TNSTC schedule, local conductors, residents
@@ -281,12 +304,23 @@ Before development begins, the following must be collected in person:
 - [ ] Hospital address
 - [ ] Pharmacy timings
 
-### Bus Routes
-- [ ] Pannaipuram → Thevaram: all departure times
-- [ ] Pannaipuram → Uthamapalayam: all departure times
-- [ ] Any connecting routes via main bus stand
-- [ ] Last bus timings for each route
-- [ ] Confirm with local conductor / TNSTC office
+### Bus Routes — Collect Both Directions for Both Corridors
+
+**போடி பக்கம் (Bodi Side)**
+- [ ] Pannaipuram → Thevaram → Bodi: all departure times
+- [ ] Bodi → Thevaram → Pannaipuram: all return times
+- [ ] Last bus time each way
+- [ ] Express buses if any (SETC / TNSTC)
+
+**கும்பம் பக்கம் (Cumbum Side)**
+- [ ] Pannaipuram → Uthamapalayam → Cumbum: all departure times
+- [ ] Cumbum → Uthamapalayam → Pannaipuram: all return times
+- [ ] Last bus time each way
+
+**General**
+- [ ] Any direct buses skipping intermediate stops
+- [ ] Sunday / holiday schedule differences
+- [ ] Confirm all times with local conductor or TNSTC Uthamapalayam depot
 
 ### Panchayat & Utilities
 - [ ] Panchayat office contact number and hours
