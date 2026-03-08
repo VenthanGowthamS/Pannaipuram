@@ -167,7 +167,10 @@ Uthamapalayam → Kamban
 
 **What the App Does:**
 - Doctor listing with photo (optional), specialisation, and availability schedule
-  - Example: "Dr. [Name] — General Medicine — Mon, Wed, Fri — 9am to 12pm"
+
+| Doctor | Specialisation | Days | Timing |
+|---|---|---|---|
+| டாக்டர் சேகர் (Dr. Sekar) | TBC | புதன்கிழமை (Wednesday) | காலை முதல் மாலை வரை (Morning to Evening) |
 - Department / OPD timings clearly listed
 - Emergency / casualty contact number — one tap to call
 - Ambulance number — one tap to call
@@ -325,8 +328,10 @@ Water is not wasted
 Before development begins, the following must be collected in person:
 
 ### PTV Padmavathy Hospital
-- [ ] List of doctors with specialisation
-- [ ] Each doctor's OPD days and timings
+- [x] Dr. Sekar — Wednesday, morning to evening ✅
+- [ ] Dr. Sekar specialisation (TBC — collect from hospital)
+- [ ] Any other doctors — list with specialisation and days
+- [ ] Each doctor's exact OPD timings
 - [ ] Department list and their hours
 - [ ] Casualty / Emergency number
 - [ ] Ambulance number
