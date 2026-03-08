@@ -1,4 +1,4 @@
-# பன்னைபுரம் App
+# பண்ணைப்புரம் App
 ### உங்கள் ஊரின் தகவல் மையம் — Your Village's Information Centre
 
 A hyperlocal Android app built for the people of Pannaipuram, Tamil Nadu.

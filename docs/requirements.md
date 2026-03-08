@@ -1,4 +1,4 @@
-# பன்னைபுரம் App — Requirements Document
+# பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
 > **Version:** 2.1 (Wikipedia-verified)
@@ -45,12 +45,11 @@ This app is not for the internet. It is for Pannaipuram.
 | Assembly Constituency | கம்பம் (Kamban) |
 | Lok Sabha | தேனி (Theni) |
 | Known For | Cardamom estate region — ஏலக்காய் தோட்டம் |
-| Transport | Public bus, private bus, railway station |
+| Transport | Public bus, private bus |
 
 **What this tells us for the app:**
 - **57 streets pre-loaded** in the water alert module — users select their exact street, no typing needed
 - **15 wards** can be used as area groupings for power cut and water alerts
-- **Railway station exists** — worth considering a train timing module later (v2)
 - **Cardamom estates** — many users are estate workers/farmers, confirming agricultural context
 - Kamban Assembly constituency — validates our கம்பம் bus corridor as primary route
 
@@ -58,7 +57,7 @@ This app is not for the internet. It is for Pannaipuram.
 
 ## 3. Product Identity
 
-**App Name:** பன்னைபுரம் (Pannaipuram)
+**App Name:** பண்ணைப்புரம் (Pannaipuram)
 **Tagline:** உங்கள் ஊரின் தகவல் மையம்
 **Platform:** Android (APK — no Play Store required)
 **Distribution:** QR Code → WhatsApp share
@@ -216,7 +215,7 @@ This information does not exist anywhere online. It cannot be scraped or fetched
 
 ```
 ┌─────────────────────────────────────┐
-│  பன்னைபுரம்                    🔔   │
+│  பண்ணைப்புரம்                    🔔   │
 │  உங்கள் ஊரின் தகவல் மையம்         │
 ├─────────────────────────────────────┤
 │  ⚡ மின் தடை இல்லை இன்று           │
