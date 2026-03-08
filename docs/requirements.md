@@ -95,15 +95,20 @@ This app is not for the internet. It is for Pannaipuram.
 
 **The Pain:** Panchayat water comes at irregular times. People miss it, waste it waiting, or don't know it came. One person on the street knowing means nothing if others are asleep or working.
 
+**Verified Water Schedule ✅**
+- Frequency: **ஒவ்வொரு 3 நாளுக்கு ஒரு முறை** (Once every 3 days)
+- Time: **காலை 6 மணி** (6:00 AM)
+
 **What the App Does:**
-- Shows the official expected daily water timing (set by admin / panchayat)
+- Shows the water schedule clearly: "அடுத்த தண்ணீர் — [date] காலை 6 மணி"
+- Day-before reminder notification at night: "நாளை காலை 6 மணிக்கு தண்ணீர் வரும்!"
+- Morning alert at 5:45 AM on water day: "15 நிமிடத்தில் தண்ணீர் வரும் — தயாராக இருங்கள்!"
 - **Community Alert Button — the killer feature:**
   - Any resident taps "தண்ணீர் வந்தது!" (Water came!)
   - Everyone in Pannaipuram gets an instant push notification
   - Shows: which street/area reported it, what time
   - People can confirm: "Yes, came in my street too" ✅
-- "Water not yet today" flag — if nobody has confirmed by 10am, app shows a reminder
-- Weekly water schedule if panchayat provides one
+- "தண்ணீர் வரவில்லை" (Water not arrived) flag — if nobody confirms by 7am on water day, app alerts to check or call panchayat
 - Panchayat water board contact for complaints
 
 **Why This Feature Is Unique:**
@@ -359,7 +364,7 @@ Before development begins, the following must be collected in person:
 ### Panchayat & Utilities
 - [ ] Panchayat office contact number and hours
 - [ ] Water board / supply contact
-- [ ] Normal water supply timing (morning / evening)
+- [x] Water supply schedule: every 3 days at 6:00 AM ✅
 - [x] TNEB local complaint number: 94987 94987 ✅
 - [ ] Nearest police station name and number
 - [ ] Fire station number
