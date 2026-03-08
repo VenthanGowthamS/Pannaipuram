@@ -97,8 +97,8 @@ No app in India has a community water alert built for a specific village. This i
         ← போடி பக்கம் (Towards Bodi)
 Thevaram → Bodi (Bodinayakkanur)
 
-        → கும்பம் பக்கம் (Towards Cumbum)
-Uthamapalayam → Cumbum
+        → கம்பம் பக்கம் (Towards Kamban)
+Uthamapalayam → Kamban
 ```
 
 **What the App Does:**
@@ -109,17 +109,17 @@ Uthamapalayam → Cumbum
   - All departure times from Pannaipuram
   - Last bus time highlighted in red
 
-  **கும்பம் பக்கம் — Towards Cumbum Side 🟢**
-  - Pannaipuram → Uthamapalayam → Cumbum
+  **கம்பம் பக்கம் — Towards Kamban Side 🟢**
+  - Pannaipuram → Uthamapalayam → Kamban
   - All departure times from Pannaipuram
   - Last bus time highlighted in red
 
   **திரும்பி வர (Return — Inbound)**
   - Bodi → Thevaram → Pannaipuram
-  - Cumbum → Uthamapalayam → Pannaipuram
+  - Kamban → Uthamapalayam → Pannaipuram
 
 - Home screen shows: **next bus in each direction** at a glance
-- "Next bus" widget — "போடி பக்கம் — 14 நிமிடம்" / "கும்பம் பக்கம் — 32 நிமிடம்"
+- "Next bus" widget — "போடி பக்கம் — 14 நிமிடம்" / "கம்பம் பக்கம் — 32 நிமிடம்"
 - Set a reminder: "Alert me 15 minutes before the 7:45am Bodi bus"
 - Last bus warning: push alert at 8pm — "கடைசி பேருந்து 1 மணி நேரத்தில்!"
 - "Bus delayed / not running today" — admin or community can flag
@@ -312,9 +312,9 @@ Before development begins, the following must be collected in person:
 - [ ] Last bus time each way
 - [ ] Express buses if any (SETC / TNSTC)
 
-**கும்பம் பக்கம் (Cumbum Side)**
-- [ ] Pannaipuram → Uthamapalayam → Cumbum: all departure times
-- [ ] Cumbum → Uthamapalayam → Pannaipuram: all return times
+**கம்பம் பக்கம் (Kamban Side)**
+- [ ] Pannaipuram → Uthamapalayam → Kamban: all departure times
+- [ ] Kamban → Uthamapalayam → Pannaipuram: all return times
 - [ ] Last bus time each way
 
 **General**
