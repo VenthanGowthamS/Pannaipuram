@@ -79,8 +79,8 @@ This app is not for the internet. It is for Pannaipuram.
 - Shows TNEB scheduled maintenance cuts for the Pannaipuram area (fetched from TNEB portal)
 - Clearly labels: "திட்டமிட்டது" (Planned) vs "கோளாறு" (Fault/Unplanned)
 - Shows estimated restoration time when available
-- One-tap call button to local TNEB subdivision office
-- One-tap call to TNEB fault reporting line (1912)
+- One-tap call to local TNEB complaint number: **94987 94987**
+- One-tap call to TNEB national fault reporting line (1912)
 - Push notification: "Tomorrow 9am–1pm power cut for maintenance in your area"
 - Admin can manually post alerts when TNEB info is unavailable
 
@@ -192,8 +192,8 @@ This information does not exist anywhere online. It cannot be scraped or fetched
 
 **What the App Does:**
 - Single screen, large tap-to-call buttons in Tamil:
-  - TNEB Fault Line: 1912
-  - TNEB Local Subdivision Office
+  - TNEB Local Complaint: 94987 94987 ✅ verified
+  - TNEB National Fault Line: 1912
   - PTV Padmavathy Hospital — Casualty
   - PTV Padmavathy Hospital — Ambulance
   - Pannaipuram Panchayat Office
@@ -355,7 +355,7 @@ Before development begins, the following must be collected in person:
 - [ ] Panchayat office contact number and hours
 - [ ] Water board / supply contact
 - [ ] Normal water supply timing (morning / evening)
-- [ ] TNEB local subdivision office number
+- [x] TNEB local complaint number: 94987 94987 ✅
 - [ ] Nearest police station name and number
 - [ ] Fire station number
 - [ ] Nearest government hospital / PHC number
