@@ -95,12 +95,18 @@ This app is not for the internet. It is for Pannaipuram.
 
 **The Pain:** Panchayat water comes at irregular times. People miss it, waste it waiting, or don't know it came. One person on the street knowing means nothing if others are asleep or working.
 
-**Verified Water Schedule ✅**
-- Frequency: **ஒவ்வொரு 3 நாளுக்கு ஒரு முறை** (Once every 3 days)
-- Time: **காலை 6 மணி** (6:00 AM)
+**Important:** Each street has its own water supply schedule. Timings differ street by street. The app shows the schedule per street — not one timing for all of பண்ணைப்புரம்.
+
+**Verified Water Schedules (street-by-street — to be collected)**
+
+| தெரு (Street) | அலவு (Frequency) | நேரம் (Time) | Status |
+|---|---|---|---|
+| வள்ளுவர் தெரு (Valluvar Street) | ஒவ்வொரு 3 நாளுக்கு ஒரு முறை | காலை 6 மணி | ✅ Verified |
+| மற்ற தெருக்கள் (Other streets) | TBC | TBC | ⏳ To collect |
 
 **What the App Does:**
-- Shows the water schedule clearly: "அடுத்த தண்ணீர் — [date] காலை 6 மணி"
+- User selects their street once during onboarding — app remembers it
+- Shows their street's schedule: "அடுத்த தண்ணீர் — [date] காலை 6 மணி"
 - Day-before reminder notification at night: "நாளை காலை 6 மணிக்கு தண்ணீர் வரும்!"
 - Morning alert at 5:45 AM on water day: "15 நிமிடத்தில் தண்ணீர் வரும் — தயாராக இருங்கள்!"
 - **Community Alert Button — the killer feature:**
@@ -364,7 +370,9 @@ Before development begins, the following must be collected in person:
 ### Panchayat & Utilities
 - [ ] Panchayat office contact number and hours
 - [ ] Water board / supply contact
-- [x] Water supply schedule: every 3 days at 6:00 AM ✅
+- [x] வள்ளுவர் தெரு — every 3 days, 6:00 AM ✅
+- [ ] Water schedule for all remaining 56 streets (collect from panchayat / residents)
+- [ ] Full street name list for பண்ணைப்புரம் — 57 streets (get from panchayat office or theni.nic.in/wardwise-street-list)
 - [x] TNEB local complaint number: 94987 94987 ✅
 - [ ] Nearest police station name and number
 - [ ] Fire station number
