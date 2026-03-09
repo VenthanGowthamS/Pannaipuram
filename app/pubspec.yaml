@@ -1,0 +1,54 @@
+name: pannaipuram
+description: பண்ணைப்புரம் — உங்கள் ஊரின் தகவல் மையம்
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # HTTP
+  http: ^1.1.0
+
+  # Local storage
+  shared_preferences: ^2.2.2
+  drift: ^2.14.1
+  sqlite3_flutter_libs: ^0.5.18
+  path_provider: ^2.1.1
+  path: ^1.8.3
+
+  # Firebase
+  firebase_core: ^2.24.2
+  firebase_messaging: ^14.7.10
+  flutter_local_notifications: ^16.3.0
+
+  # URL launcher (for one-tap calls)
+  url_launcher: ^6.2.2
+
+  # Intl (date/time formatting in Tamil)
+  intl: ^0.18.1
+
+  # Connectivity
+  connectivity_plus: ^5.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  drift_dev: ^2.14.1
+  build_runner: ^2.4.7
+
+flutter:
+  uses-material-design: true
+
+  fonts:
+    - family: NotoSansTamil
+      fonts:
+        - asset: assets/fonts/NotoSansTamil-Regular.ttf
+        - asset: assets/fonts/NotoSansTamil-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/NotoSansTamil-Medium.ttf
+          weight: 500
