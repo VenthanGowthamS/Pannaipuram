@@ -1,0 +1,77 @@
+name: Build APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - 'claude/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Create Flutter project scaffold
+        run: |
+          flutter create \
+            --project-name pannaipuram \
+            --org com.pannaipuram \
+            --description "பண்ணைப்புரம் - உங்கள் ஊரின் தகவல் மையம்" \
+            /tmp/pannaipuram_build
+
+      - name: Copy app source into scaffold
+        run: |
+          rm -rf /tmp/pannaipuram_build/lib
+          cp -r app/lib /tmp/pannaipuram_build/lib
+          cp app/pubspec.yaml /tmp/pannaipuram_build/pubspec.yaml
+
+      - name: Configure Android manifest
+        run: |
+          MANIFEST=/tmp/pannaipuram_build/android/app/src/main/AndroidManifest.xml
+
+          # Update app label to Tamil
+          sed -i 's/android:label="pannaipuram"/android:label="பண்ணைப்புரம்"/' "$MANIFEST"
+
+          # Add CALL_PHONE permission after INTERNET permission
+          sed -i '/<uses-permission android:name="android.permission.INTERNET"\/>/a\    <uses-permission android:name="android.permission.CALL_PHONE"/>' "$MANIFEST"
+
+          # Add queries block for url_launcher (tel: scheme)
+          sed -i 's|</manifest>|    <queries>\n        <intent>\n            <action android:name="android.intent.action.DIAL"/>\n            <data android:scheme="tel"/>\n        </intent>\n    </queries>\n</manifest>|' "$MANIFEST"
+
+      - name: Set minSdkVersion to 23
+        run: |
+          BUILD_GRADLE=/tmp/pannaipuram_build/android/app/build.gradle
+          sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 23/' "$BUILD_GRADLE" || \
+          sed -i 's/minSdkVersion [0-9]*/minSdkVersion 23/' "$BUILD_GRADLE"
+
+      - name: Get dependencies
+        working-directory: /tmp/pannaipuram_build
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: /tmp/pannaipuram_build
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: pannaipuram-v${{ github.run_number }}
+          path: /tmp/pannaipuram_build/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
