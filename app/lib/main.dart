@@ -2,19 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'services/prefs_service.dart';
 import 'theme/app_theme.dart';
-import 'screens/onboarding_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Force portrait orientation
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
   await PrefsService.init();
+  await PrefsService.ensureDefaultStreet();
 
   runApp(const PannaipuramApp());
 }
@@ -28,9 +27,7 @@ class PannaipuramApp extends StatelessWidget {
       title: 'பண்ணைப்புரம்',
       theme: AppTheme.theme,
       debugShowCheckedModeBanner: false,
-      home: PrefsService.isOnboarded
-          ? const HomeScreen()
-          : const OnboardingScreen(),
+      home: const SplashScreen(),
     );
   }
 }

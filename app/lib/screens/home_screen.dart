@@ -30,220 +30,266 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadStatus() async {
     try {
       final cuts = await ApiService.getTodayPowerCuts();
-      final streetId = PrefsService.streetId;
+      final streetId = PrefsService.streetId ?? 1;
       WaterSchedule? waterSchedule;
-      if (streetId != null) {
+      try {
         waterSchedule = await ApiService.getWaterSchedule(streetId);
-      }
+      } catch (_) {}
 
       setState(() {
-        _powerStatus = cuts.isEmpty
-            ? '🟢 மின் தடை இல்லை இன்று'
-            : '⚡ இன்று மின் தடை உள்ளது';
+        _powerStatus = cuts.isEmpty ? 'மின் தடை இல்லை இன்று' : 'இன்று மின் தடை உள்ளது';
         _waterStatus = _buildWaterStatus(waterSchedule);
         _loadingStatus = false;
       });
     } catch (_) {
       setState(() {
-        _powerStatus = '— மின் தகவல் இல்லை';
-        _waterStatus = '— தண்ணீர் தகவல் இல்லை';
+        _powerStatus = 'மின் தகவல் இல்லை';
+        _waterStatus = 'தண்ணீர் தகவல் இல்லை';
         _loadingStatus = false;
       });
     }
   }
 
   String _buildWaterStatus(WaterSchedule? schedule) {
-    if (schedule == null) return '💧 தெரு தேர்வு செய்யவில்லை';
+    if (schedule == null) return 'தகவல் இல்லை';
     final nextDate = schedule.nextSupplyDate;
-    if (nextDate == null) return '💧 அடுத்த தண்ணீர் நேரம் தெரியவில்லை';
-
-    // Check if today
+    if (nextDate == null) return 'நேரம் தெரியவில்லை';
     final today = DateTime.now();
     final parts = nextDate.split('-');
     if (parts.length >= 3) {
       final d = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
       if (d.year == today.year && d.month == today.month && d.day == today.day) {
-        return '💧 தண்ணீர் — இன்று காலை ${_formatTime(schedule.supplyTime)}';
+        return 'இன்று காலை ${_formatTime(schedule.supplyTime)}';
       }
-      if (d.year == today.year && d.month == today.month && d.day == today.day + 1) {
-        return '💧 தண்ணீர் — நாளை காலை ${_formatTime(schedule.supplyTime)}';
+      if (d.difference(today).inDays == 1) {
+        return 'நாளை காலை ${_formatTime(schedule.supplyTime)}';
       }
     }
-    return '💧 தண்ணீர் — $nextDate';
+    return '$nextDate';
   }
 
   String _formatTime(String t) {
     final p = t.split(':');
     final h = int.parse(p[0]);
     final m = int.parse(p[1]);
-    return '${h > 12 ? h - 12 : h}:${m.toString().padLeft(2, '0')}';
+    return '${h > 12 ? h - 12 : h}:${m.toString().padLeft(2, '0')} மணி';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // App header
-            Container(
-              color: AppColors.primary,
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-              child: Row(
+      backgroundColor: const Color(0xFFF0F4F0),
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _loadStatus,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(14, 14, 14, 24),
                 children: [
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'பண்ணைப்புரம்',
-                          style: TextStyle(
-                            fontFamily: 'NotoSansTamil',
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          'உங்கள் ஊரின் தகவல் மையம்',
-                          style: TextStyle(
-                            fontFamily: 'NotoSansTamil',
-                            fontSize: 14,
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ],
+                  _buildLiveStatusRow(),
+                  const SizedBox(height: 18),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4, bottom: 10),
+                    child: Text(
+                      'என்ன தெரிய வேண்டும்?',
+                      style: TextStyle(
+                        fontFamily: 'NotoSansTamil',
+                        fontSize: 16,
+                        color: Color(0xFF4A6741),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_outlined, color: Colors.white, size: 28),
-                    onPressed: () {},
+                  Row(
+                    children: [
+                      Expanded(child: _ModuleTile(
+                        icon: Icons.bolt,
+                        emoji: '⚡',
+                        gradientColors: const [Color(0xFFF9A825), Color(0xFFFFB300)],
+                        label: 'மின்சாரம்',
+                        sublabel: 'Electricity',
+                        onTap: () => _navigate(const PowerScreen()),
+                      )),
+                      const SizedBox(width: 12),
+                      Expanded(child: _ModuleTile(
+                        icon: Icons.water_drop,
+                        emoji: '💧',
+                        gradientColors: const [Color(0xFF0288D1), Color(0xFF0277BD)],
+                        label: 'தண்ணீர்',
+                        sublabel: 'Water',
+                        onTap: () => _navigate(const WaterScreen()),
+                      )),
+                    ],
                   ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _ModuleTile(
+                        icon: Icons.directions_bus_rounded,
+                        emoji: '🚌',
+                        gradientColors: const [Color(0xFFE65100), Color(0xFFF4511E)],
+                        label: 'பேருந்து',
+                        sublabel: 'Bus Times',
+                        onTap: () => _navigate(const BusScreen()),
+                      )),
+                      const SizedBox(width: 12),
+                      Expanded(child: _ModuleTile(
+                        icon: Icons.local_hospital_rounded,
+                        emoji: '🏥',
+                        gradientColors: const [Color(0xFFC62828), Color(0xFFB71C1C)],
+                        label: 'மருத்துவமனை',
+                        sublabel: 'Hospital',
+                        onTap: () => _navigate(const HospitalScreen()),
+                      )),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  _EmergencyBar(onTap: () => _navigate(const EmergencyScreen())),
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: _loadStatus,
-                child: ListView(
-                  padding: const EdgeInsets.all(12),
-                  children: [
-                    // Live status cards
-                    _buildStatusCard(
-                      text: _loadingStatus ? '⚡ ஏற்றுகிறது...' : (_powerStatus ?? '—'),
-                      subtext: _loadingStatus ? 'Loading...' : 'No power cut today',
-                      color: AppColors.powerYellow,
-                      onTap: () => _navigate(const PowerScreen()),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildStatusCard(
-                      text: _loadingStatus ? '💧 ஏற்றுகிறது...' : (_waterStatus ?? '—'),
-                      subtext: _loadingStatus ? 'Loading...' : 'Water tomorrow at 6am',
-                      color: AppColors.waterBlue,
-                      onTap: () => _navigate(const WaterScreen()),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // 2×2 module grid
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _ModuleTile(
-                            icon: Icons.bolt,
-                            iconBg: AppColors.powerYellow,
-                            label: 'மின்சாரம்',
-                            sublabel: 'Electricity',
-                            onTap: () => _navigate(const PowerScreen()),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: _ModuleTile(
-                            icon: Icons.water_drop,
-                            iconBg: AppColors.waterBlue,
-                            label: 'தண்ணீர்',
-                            sublabel: 'Water',
-                            onTap: () => _navigate(const WaterScreen()),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _ModuleTile(
-                            icon: Icons.directions_bus,
-                            iconBg: AppColors.busOrange,
-                            label: 'பேருந்து',
-                            sublabel: 'Bus Times',
-                            onTap: () => _navigate(const BusScreen()),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: _ModuleTile(
-                            icon: Icons.local_hospital,
-                            iconBg: AppColors.hospitalRed,
-                            label: 'மருத்துவமனை',
-                            sublabel: 'Hospital',
-                            onTap: () => _navigate(const HospitalScreen()),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // Emergency — full width
-                    _EmergencyBar(onTap: () => _navigate(const EmergencyScreen())),
-                  ],
-                ),
-              ),
-            ),
-          ],
+  Widget _buildHeader() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF43A047)],
         ),
       ),
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 12,
+        left: 18,
+        right: 18,
+        bottom: 18,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: const Icon(Icons.location_city, color: Colors.white, size: 28),
+          ),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'பண்ணைப்புரம்',
+                  style: TextStyle(
+                    fontFamily: 'NotoSansTamil',
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  'உங்கள் ஊரின் தகவல் மையம்',
+                  style: TextStyle(
+                    fontFamily: 'NotoSansTamil',
+                    fontSize: 13,
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined, color: Colors.white, size: 28),
+            onPressed: () {},
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLiveStatusRow() {
+    return Column(
+      children: [
+        _StatusBadge(
+          icon: Icons.bolt,
+          color: const Color(0xFFF9A825),
+          title: _loadingStatus ? 'ஏற்றுகிறது...' : (_powerStatus ?? '—'),
+          subtitle: 'Power status',
+          onTap: () => _navigate(const PowerScreen()),
+        ),
+        const SizedBox(height: 8),
+        _StatusBadge(
+          icon: Icons.water_drop,
+          color: const Color(0xFF0288D1),
+          title: _loadingStatus ? 'ஏற்றுகிறது...' : (_waterStatus ?? '—'),
+          subtitle: 'Water — ${PrefsService.streetNameTamil}',
+          onTap: () => _navigate(const WaterScreen()),
+        ),
+      ],
     );
   }
 
   void _navigate(Widget screen) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
   }
+}
 
-  Widget _buildStatusCard({
-    required String text,
-    required String subtext,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
+class _StatusBadge extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _StatusBadge({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+          boxShadow: [
+            BoxShadow(color: color.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 3)),
+          ],
         ),
         child: Row(
           children: [
+            Container(
+              width: 42, height: 42,
+              decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(21)),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    text,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                  ),
+                  Text(title, style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 17, fontWeight: FontWeight.w600, color: Color(0xFF212121))),
+                  Text(subtitle, style: const TextStyle(fontFamily: 'Roboto', fontSize: 12, color: Color(0xFF757575))),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: color, size: 20),
+            Icon(Icons.chevron_right_rounded, color: color, size: 24),
           ],
         ),
       ),
@@ -253,17 +299,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class _ModuleTile extends StatelessWidget {
   final IconData icon;
-  final Color iconBg;
+  final String emoji;
+  final List<Color> gradientColors;
   final String label;
   final String sublabel;
   final VoidCallback onTap;
 
   const _ModuleTile({
-    required this.icon,
-    required this.iconBg,
-    required this.label,
-    required this.sublabel,
-    required this.onTap,
+    required this.icon, required this.emoji, required this.gradientColors,
+    required this.label, required this.sublabel, required this.onTap,
   });
 
   @override
@@ -271,47 +315,32 @@ class _ModuleTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 24),
+        height: 140,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: gradientColors),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [BoxShadow(color: gradientColors[0].withOpacity(0.35), blurRadius: 10, offset: const Offset(0, 4))],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: iconBg.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Icon(icon, color: iconBg, size: 32),
+            Positioned(
+              right: -8, bottom: -8,
+              child: Text(emoji, style: const TextStyle(fontSize: 64)),
             ),
-            const SizedBox(height: 12),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              sublabel,
-              style: const TextStyle(
-                fontFamily: 'Roboto',
-                fontSize: 12,
-                color: AppColors.textSecondary,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 44, height: 44,
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.25), borderRadius: BorderRadius.circular(22)),
+                    child: Icon(icon, color: Colors.white, size: 26),
+                  ),
+                  const Spacer(),
+                  Text(label, style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text(sublabel, style: const TextStyle(fontFamily: 'Roboto', fontSize: 12, color: Colors.white70)),
+                ],
               ),
             ),
           ],
@@ -323,7 +352,6 @@ class _ModuleTile extends StatelessWidget {
 
 class _EmergencyBar extends StatelessWidget {
   final VoidCallback onTap;
-
   const _EmergencyBar({required this.onTap});
 
   @override
@@ -333,44 +361,24 @@ class _EmergencyBar extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
         decoration: BoxDecoration(
-          color: AppColors.hospitalRed,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.hospitalRed.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          gradient: const LinearGradient(colors: [Color(0xFFB71C1C), Color(0xFFC62828)]),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [BoxShadow(color: const Color(0xFFB71C1C).withOpacity(0.35), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.phone_in_talk, color: Colors.white, size: 28),
+            Icon(Icons.phone_in_talk_rounded, color: Colors.white, size: 32),
             SizedBox(width: 14),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '📞 அவசர தொலைபேசி',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                Text(
-                  'Emergency Contacts',
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 13,
-                    color: Colors.white70,
-                  ),
-                ),
+                Text('அவசர தொலைபேசி', style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text('Emergency Contacts', style: TextStyle(fontFamily: 'Roboto', fontSize: 13, color: Colors.white70)),
               ],
             ),
             Spacer(),
-            Icon(Icons.chevron_right, color: Colors.white70, size: 24),
+            Icon(Icons.chevron_right_rounded, color: Colors.white70, size: 28),
           ],
         ),
       ),

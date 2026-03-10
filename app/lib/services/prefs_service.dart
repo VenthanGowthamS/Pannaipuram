@@ -26,6 +26,13 @@ class PrefsService {
     await _prefs.setString(_keyStreetName, nameTamil);
   }
 
+  // Default to Valluvar Street (id:1) if no street chosen yet
+  static Future<void> ensureDefaultStreet() async {
+    if (_prefs.getInt(_keyStreetId) == null) {
+      await saveStreet(1, 'வள்ளுவர் தெரு');
+    }
+  }
+
   static String get deviceId {
     var id = _prefs.getString(_keyDeviceId);
     if (id == null) {
