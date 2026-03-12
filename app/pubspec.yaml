@@ -11,35 +11,31 @@ dependencies:
     sdk: flutter
 
   # HTTP
-  http: ^1.1.0
+  http: ^1.2.0
 
   # Local storage
-  shared_preferences: ^2.2.2
-  drift: ^2.14.1
-  sqlite3_flutter_libs: ^0.5.18
-  path_provider: ^2.1.1
-  path: ^1.8.3
+  shared_preferences: ^2.3.0
+  path_provider: ^2.1.4
+  path: ^1.9.0
 
   # Firebase
-  firebase_core: ^2.24.2
-  firebase_messaging: ^14.7.10
-  flutter_local_notifications: ^16.3.0
+  firebase_core: ^3.8.0
+  firebase_messaging: ^15.1.5
+  # flutter_local_notifications: ^18.0.0  # TODO: add back when implementing foreground notifications
 
   # URL launcher (for one-tap calls)
-  url_launcher: ^6.2.2
+  url_launcher: ^6.3.0
 
   # Intl (date/time formatting in Tamil)
-  intl: ^0.18.1
+  intl: ^0.19.0
 
   # Connectivity
-  connectivity_plus: ^5.0.2
+  connectivity_plus: ^6.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
-  drift_dev: ^2.14.1
-  build_runner: ^2.4.7
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true

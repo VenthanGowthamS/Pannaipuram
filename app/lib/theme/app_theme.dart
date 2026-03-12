@@ -20,7 +20,7 @@ class AppTheme {
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
         primary: AppColors.primary,
-        background: AppColors.background,
+        surface: AppColors.background,
       ),
       scaffoldBackgroundColor: AppColors.background,
       fontFamily: 'NotoSansTamil',
@@ -35,7 +35,7 @@ class AppTheme {
           color: Colors.white,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.card,
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
