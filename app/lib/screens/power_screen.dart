@@ -29,12 +29,14 @@ class _PowerScreenState extends State<PowerScreen> {
   Future<void> _load() async {
     try {
       final cuts = await ApiService.getPowerCuts();
+      if (!mounted) return;
       setState(() {
         _cuts = cuts;
         _loading = false;
         _offline = false;
       });
     } catch (_) {
+      if (!mounted) return;
       setState(() {
         _cuts = [];
         _loading = false;
@@ -96,13 +98,7 @@ class _PowerScreenState extends State<PowerScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.powerYellow,
         foregroundColor: Colors.black87,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text('மின்சாரம்', style: TextStyle(color: Colors.black87)),
-            Text('Electricity', style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: Colors.black54)),
-          ],
-        ),
+        title: const Text('மின்சாரம் | Electricity', style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 16, color: Colors.black87)),
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16),
@@ -122,10 +118,59 @@ class _PowerScreenState extends State<PowerScreen> {
   Widget _buildBody() {
     final active = _activeCut;
 
+    // Hero tile status
+    final String heroEmoji = active != null ? '⚡' : _hasCutToday ? '⚠️' : '🟢';
+    final String heroStatus = active != null
+        ? 'மின் தடை நடக்கிறது!'
+        : _hasCutToday
+            ? 'இன்று மின் தடை உள்ளது'
+            : 'இன்று கரண்ட் இருக்கு!';
+    final List<Color> heroColors = active != null
+        ? [const Color(0xFFB71C1C), const Color(0xFFE53935)]
+        : _hasCutToday
+            ? [const Color(0xFFE65100), const Color(0xFFFFA726)]
+            : [const Color(0xFF2E7D32), const Color(0xFF66BB6A)];
+
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 8),
       children: [
         if (_offline) const OfflineBanner(),
+
+        // ── HERO TILE ─────────────────────────────────────────────
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: heroColors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [BoxShadow(color: heroColors[0].withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 6))],
+          ),
+          child: Column(
+            children: [
+              Text(heroEmoji, style: const TextStyle(fontSize: 44)),
+              const SizedBox(height: 10),
+              const Text(
+                'உங்க வீட்ல கரண்ட் இருக்கா?',
+                style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.22), borderRadius: BorderRadius.circular(20)),
+                child: Text(
+                  heroStatus,
+                  style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 18, color: Colors.white, fontWeight: FontWeight.w600),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // ── END HERO TILE ─────────────────────────────────────────
 
         // Status card
         Card(

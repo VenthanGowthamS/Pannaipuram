@@ -1,154 +1,93 @@
 import 'package:flutter/material.dart';
-import '../models/models.dart';
-import '../services/api_service.dart';
-import '../services/prefs_service.dart';
-import '../theme/app_theme.dart';
 import 'power_screen.dart';
 import 'water_screen.dart';
 import 'bus_screen.dart';
+import 'auto_screen.dart';
 import 'hospital_screen.dart';
-import 'emergency_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  String? _powerStatus;
-  String? _waterStatus;
-  bool _loadingStatus = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadStatus();
-  }
-
-  Future<void> _loadStatus() async {
-    try {
-      final cuts = await ApiService.getTodayPowerCuts();
-      final streetId = PrefsService.streetId ?? 1;
-      WaterSchedule? waterSchedule;
-      try {
-        waterSchedule = await ApiService.getWaterSchedule(streetId);
-      } catch (_) {}
-
-      setState(() {
-        _powerStatus = cuts.isEmpty ? 'மின் தடை இல்லை இன்று' : 'இன்று மின் தடை உள்ளது';
-        _waterStatus = _buildWaterStatus(waterSchedule);
-        _loadingStatus = false;
-      });
-    } catch (_) {
-      setState(() {
-        _powerStatus = 'மின் தகவல் இல்லை';
-        _waterStatus = 'தண்ணீர் தகவல் இல்லை';
-        _loadingStatus = false;
-      });
-    }
-  }
-
-  String _buildWaterStatus(WaterSchedule? schedule) {
-    if (schedule == null) return 'தகவல் இல்லை';
-    final nextDate = schedule.nextSupplyDate;
-    if (nextDate == null) return 'நேரம் தெரியவில்லை';
-    final today = DateTime.now();
-    final parts = nextDate.split('-');
-    if (parts.length >= 3) {
-      final d = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
-      if (d.year == today.year && d.month == today.month && d.day == today.day) {
-        return 'இன்று காலை ${_formatTime(schedule.supplyTime)}';
-      }
-      if (d.difference(today).inDays == 1) {
-        return 'நாளை காலை ${_formatTime(schedule.supplyTime)}';
-      }
-    }
-    return '$nextDate';
-  }
-
-  String _formatTime(String t) {
-    final p = t.split(':');
-    final h = int.parse(p[0]);
-    final m = int.parse(p[1]);
-    return '${h > 12 ? h - 12 : h}:${m.toString().padLeft(2, '0')} மணி';
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F4F0),
+      backgroundColor: const Color(0xFFF2F6F2),
       body: Column(
         children: [
-          _buildHeader(),
+          _buildHeader(context),
           Expanded(
-            child: RefreshIndicator(
-              onRefresh: _loadStatus,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(14, 14, 14, 24),
-                children: [
-                  _buildLiveStatusRow(),
-                  const SizedBox(height: 18),
-                  const Padding(
-                    padding: EdgeInsets.only(left: 4, bottom: 10),
-                    child: Text(
-                      'என்ன தெரிய வேண்டும்?',
-                      style: TextStyle(
-                        fontFamily: 'NotoSansTamil',
-                        fontSize: 16,
-                        color: Color(0xFF4A6741),
-                        fontWeight: FontWeight.w600,
-                      ),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(14, 16, 14, 28),
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(left: 2, bottom: 12),
+                  child: Text(
+                    'சொல்லுங்க, என்ன வேணும்?',
+                    style: TextStyle(
+                      fontFamily: 'NotoSansTamil',
+                      fontSize: 15,
+                      color: Color(0xFF4A6741),
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  Row(
-                    children: [
-                      Expanded(child: _ModuleTile(
-                        icon: Icons.bolt,
-                        emoji: '⚡',
-                        gradientColors: const [Color(0xFFF9A825), Color(0xFFFFB300)],
-                        label: 'மின்சாரம்',
-                        sublabel: 'Electricity',
-                        onTap: () => _navigate(const PowerScreen()),
-                      )),
-                      const SizedBox(width: 12),
-                      Expanded(child: _ModuleTile(
-                        icon: Icons.water_drop,
-                        emoji: '💧',
-                        gradientColors: const [Color(0xFF0288D1), Color(0xFF0277BD)],
-                        label: 'தண்ணீர்',
-                        sublabel: 'Water',
-                        onTap: () => _navigate(const WaterScreen()),
-                      )),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(child: _ModuleTile(
-                        icon: Icons.directions_bus_rounded,
-                        emoji: '🚌',
-                        gradientColors: const [Color(0xFFE65100), Color(0xFFF4511E)],
-                        label: 'பேருந்து',
-                        sublabel: 'Bus Times',
-                        onTap: () => _navigate(const BusScreen()),
-                      )),
-                      const SizedBox(width: 12),
-                      Expanded(child: _ModuleTile(
-                        icon: Icons.local_hospital_rounded,
-                        emoji: '🏥',
-                        gradientColors: const [Color(0xFFC62828), Color(0xFFB71C1C)],
-                        label: 'மருத்துவமனை',
-                        sublabel: 'Hospital',
-                        onTap: () => _navigate(const HospitalScreen()),
-                      )),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  _EmergencyBar(onTap: () => _navigate(const EmergencyScreen())),
-                ],
-              ),
+                ),
+
+                // 1. Bus
+                _ModuleTile(
+                  icon: Icons.directions_bus_rounded,
+                  emoji: '🚌',
+                  gradientColors: const [Color(0xFFE65100), Color(0xFFF4511E)],
+                  label: 'அண்ணே, பஸ் எத்தன மணிக்கு?',
+                  sublabel: 'Bus Times & Routes',
+                  onTap: () => _navigate(context, const BusScreen()),
+                ),
+                const SizedBox(height: 12),
+
+                // 2. Auto / Transport
+                _ModuleTile(
+                  icon: Icons.electric_rickshaw,
+                  secondIcon: Icons.directions_car_rounded,
+                  emoji: '🚗',
+                  gradientColors: const [Color(0xFF4A148C), Color(0xFF7B1FA2)],
+                  label: 'சார், ஆட்டோ வேணுமா?',
+                  sublabel: 'Auto & Car Transport',
+                  onTap: () => _navigate(context, const AutoScreen()),
+                ),
+                const SizedBox(height: 12),
+
+                // 3. Hospital
+                _ModuleTile(
+                  icon: Icons.local_hospital_rounded,
+                  emoji: '🏥',
+                  gradientColors: const [Color(0xFFC62828), Color(0xFFD32F2F)],
+                  label: 'சிஸ்டர், டாக்டர் வந்துட்டாரா?',
+                  sublabel: 'Hospital & Clinic',
+                  onTap: () => _navigate(context, const HospitalScreen()),
+                ),
+                const SizedBox(height: 12),
+
+                // 4. Electricity
+                _ModuleTile(
+                  icon: Icons.bolt,
+                  emoji: '⚡',
+                  gradientColors: const [Color(0xFFF9A825), Color(0xFFFFCA28)],
+                  label: 'அண்ணே, கரண்ட் எப்ப வரும்?',
+                  sublabel: 'Electricity Status',
+                  onTap: () => _navigate(context, const PowerScreen()),
+                ),
+                const SizedBox(height: 12),
+
+                // 5. Water
+                _ModuleTile(
+                  icon: Icons.water_drop,
+                  emoji: '💧',
+                  gradientColors: const [Color(0xFF0288D1), Color(0xFF039BE5)],
+                  label: 'அக்கா, தண்ணி வந்துருச்சா?',
+                  sublabel: 'Water Supply',
+                  onTap: () => _navigate(context, const WaterScreen()),
+                ),
+                const SizedBox(height: 20),
+              ],
             ),
           ),
         ],
@@ -156,33 +95,34 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF43A047)],
+          colors: [Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF388E3C)],
         ),
       ),
       padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 12,
+        top: MediaQuery.of(context).padding.top + 10,
         left: 18,
         right: 18,
-        bottom: 18,
+        bottom: 14,
       ),
       child: Row(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(24),
+              color: Colors.white.withOpacity(0.18),
+              borderRadius: BorderRadius.circular(23),
             ),
-            child: const Icon(Icons.location_city, color: Colors.white, size: 28),
+            child:
+                const Icon(Icons.cottage_rounded, color: Colors.white, size: 26),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   'பண்ணைப்புரம்',
                   style: TextStyle(
                     fontFamily: 'NotoSansTamil',
-                    fontSize: 24,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -200,61 +140,41 @@ class _HomeScreenState extends State<HomeScreen> {
                   'உங்கள் ஊரின் தகவல் மையம்',
                   style: TextStyle(
                     fontFamily: 'NotoSansTamil',
-                    fontSize: 13,
+                    fontSize: 12,
                     color: Colors.white70,
                   ),
                 ),
               ],
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.white, size: 28),
-            onPressed: () {},
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildLiveStatusRow() {
-    return Column(
-      children: [
-        _StatusBadge(
-          icon: Icons.bolt,
-          color: const Color(0xFFF9A825),
-          title: _loadingStatus ? 'ஏற்றுகிறது...' : (_powerStatus ?? '—'),
-          subtitle: 'Power status',
-          onTap: () => _navigate(const PowerScreen()),
-        ),
-        const SizedBox(height: 8),
-        _StatusBadge(
-          icon: Icons.water_drop,
-          color: const Color(0xFF0288D1),
-          title: _loadingStatus ? 'ஏற்றுகிறது...' : (_waterStatus ?? '—'),
-          subtitle: 'Water — ${PrefsService.streetNameTamil}',
-          onTap: () => _navigate(const WaterScreen()),
-        ),
-      ],
-    );
-  }
-
-  void _navigate(Widget screen) {
+  void _navigate(BuildContext context, Widget screen) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
   }
 }
 
-class _StatusBadge extends StatelessWidget {
+// ── Full-width rectangle tile ────────────────────────────────────────────
+
+class _ModuleTile extends StatelessWidget {
   final IconData icon;
-  final Color color;
-  final String title;
-  final String subtitle;
+  final IconData? secondIcon;
+  final String emoji;
+  final List<Color> gradientColors;
+  final String label;
+  final String sublabel;
   final VoidCallback onTap;
 
-  const _StatusBadge({
+  const _ModuleTile({
     required this.icon,
-    required this.color,
-    required this.title,
-    required this.subtitle,
+    this.secondIcon,
+    required this.emoji,
+    required this.gradientColors,
+    required this.label,
+    required this.sublabel,
     required this.onTap,
   });
 
@@ -263,122 +183,102 @@ class _StatusBadge extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        constraints: const BoxConstraints(minHeight: 88),
+        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 18),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withOpacity(0.3), width: 1.5),
-          boxShadow: [
-            BoxShadow(color: color.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 3)),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 42, height: 42,
-              decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(21)),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 17, fontWeight: FontWeight.w600, color: Color(0xFF212121))),
-                  Text(subtitle, style: const TextStyle(fontFamily: 'Roboto', fontSize: 12, color: Color(0xFF757575))),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded, color: color, size: 24),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ModuleTile extends StatelessWidget {
-  final IconData icon;
-  final String emoji;
-  final List<Color> gradientColors;
-  final String label;
-  final String sublabel;
-  final VoidCallback onTap;
-
-  const _ModuleTile({
-    required this.icon, required this.emoji, required this.gradientColors,
-    required this.label, required this.sublabel, required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 140,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: gradientColors),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: gradientColors,
+          ),
           borderRadius: BorderRadius.circular(18),
-          boxShadow: [BoxShadow(color: gradientColors[0].withOpacity(0.35), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(
+              color: gradientColors[0].withOpacity(0.35),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ],
         ),
         child: Stack(
           children: [
+            // Background emoji (decorative, clipped)
             Positioned(
-              right: -8, bottom: -8,
-              child: Text(emoji, style: const TextStyle(fontSize: 64)),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 44, height: 44,
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.25), borderRadius: BorderRadius.circular(22)),
-                    child: Icon(icon, color: Colors.white, size: 26),
-                  ),
-                  const Spacer(),
-                  Text(label, style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-                  Text(sublabel, style: const TextStyle(fontFamily: 'Roboto', fontSize: 12, color: Colors.white70)),
-                ],
+              right: 0,
+              top: -6,
+              bottom: -6,
+              child: Center(
+                child: Text(emoji,
+                    style: TextStyle(
+                        fontSize: 52,
+                        color: Colors.white.withOpacity(0.13))),
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmergencyBar extends StatelessWidget {
-  final VoidCallback onTap;
-  const _EmergencyBar({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [Color(0xFFB71C1C), Color(0xFFC62828)]),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [BoxShadow(color: const Color(0xFFB71C1C).withOpacity(0.35), blurRadius: 10, offset: const Offset(0, 4))],
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.phone_in_talk_rounded, color: Colors.white, size: 32),
-            SizedBox(width: 14),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            // Content row
+            Row(
               children: [
-                Text('அவசர தொலைபேசி', style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-                Text('Emergency Contacts', style: TextStyle(fontFamily: 'Roboto', fontSize: 13, color: Colors.white70)),
+                // Icon circle
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: secondIcon != null
+                      ? Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Positioned(
+                              top: 8,
+                              child: Icon(secondIcon,
+                                  color: Colors.white, size: 20),
+                            ),
+                            Positioned(
+                              bottom: 6,
+                              child: Icon(icon,
+                                  color: Colors.white70, size: 18),
+                            ),
+                          ],
+                        )
+                      : Icon(icon, color: Colors.white, size: 26),
+                ),
+                const SizedBox(width: 16),
+                // Text — allow wrapping, no crop
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          fontFamily: 'NotoSansTamil',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          height: 1.3,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        sublabel,
+                        style: const TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 12,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.chevron_right_rounded,
+                    color: Colors.white60, size: 26),
               ],
             ),
-            Spacer(),
-            Icon(Icons.chevron_right_rounded, color: Colors.white70, size: 28),
           ],
         ),
       ),

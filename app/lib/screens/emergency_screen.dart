@@ -89,7 +89,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('அவசர தொலைபேசி'),
+            Text('யாரையாவது கூப்பிடணுமா?', style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 17)),
             Text(
               'Emergency Contacts',
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),

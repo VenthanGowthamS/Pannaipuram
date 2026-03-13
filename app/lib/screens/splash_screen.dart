@@ -48,91 +48,82 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1B5E20), // deep forest green
-              Color(0xFF2E7D32),
-              Color(0xFF388E3C),
-            ],
-          ),
-        ),
-        child: FadeTransition(
-          opacity: _fade,
-          child: ScaleTransition(
-            scale: _scale,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Village icon / emblem
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(60),
-                    border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
-                  ),
-                  child: const Icon(
-                    Icons.location_city,
-                    size: 64,
-                    color: Colors.white,
-                  ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // ── Background: Canva landscape image (fallback to gradient) ──
+          Image.asset(
+            'assets/images/splash_bg.png',
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF388E3C)],
                 ),
-                const SizedBox(height: 32),
-
-                // App name in Tamil — large and clear
-                const Text(
-                  'பண்ணைப்புரம்',
-                  style: TextStyle(
-                    fontFamily: 'NotoSansTamil',
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 1.2,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
-
-                // Tagline
-                const Text(
-                  'உங்கள் ஊரின் தகவல் மையம்',
-                  style: TextStyle(
-                    fontFamily: 'NotoSansTamil',
-                    fontSize: 18,
-                    color: Colors.white70,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Your Village\'s Information Centre',
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 13,
-                    color: Colors.white54,
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-
-                const SizedBox(height: 60),
-
-                // Loading dots
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(3, (i) => _Dot(delay: i * 300)),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+          // ── Dark overlay for text readability ──────────────────
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.15),
+                  Colors.black.withOpacity(0.45),
+                  Colors.black.withOpacity(0.55),
+                ],
+              ),
+            ),
+          ),
+          // ── Animated content ───────────────────────────────────
+          FadeTransition(
+            opacity: _fade,
+            child: ScaleTransition(
+              scale: _scale,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // App name in Tamil
+                  const Text(
+                    'பண்ணைப்புரம்',
+                    style: TextStyle(
+                      fontFamily: 'NotoSansTamil',
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 1.2,
+                      shadows: [Shadow(color: Colors.black54, blurRadius: 8, offset: Offset(0, 2))],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 10),
+                  // Tagline
+                  const Text(
+                    'உங்கள் ஊரின் தகவல் மையம்',
+                    style: TextStyle(
+                      fontFamily: 'NotoSansTamil',
+                      fontSize: 18,
+                      color: Colors.white,
+                      shadows: [Shadow(color: Colors.black45, blurRadius: 6)],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 50),
+                  // Loading dots
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(3, (i) => _Dot(delay: i * 300)),
+                  ),
+                  const SizedBox(height: 60),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

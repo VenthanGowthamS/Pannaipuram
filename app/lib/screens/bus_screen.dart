@@ -1,98 +1,383 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
-import '../services/api_service.dart';
-import '../theme/app_theme.dart';
-import '../widgets/offline_banner.dart';
+import 'bus_route_screen.dart';
+import 'auto_screen.dart';
 
-class BusScreen extends StatefulWidget {
-  const BusScreen({super.key});
+// ── Private data class for a bus route ────────────────────────────────
 
-  @override
-  State<BusScreen> createState() => _BusScreenState();
+class _BusRoute {
+  final String nameTamil;
+  final String nameEnglish;
+  final String emoji;
+  final Color color;
+  final String routeDesc;
+  final bool isFrequent;
+  final List<BusTiming> timings;
+
+  const _BusRoute({
+    required this.nameTamil,
+    required this.nameEnglish,
+    required this.emoji,
+    required this.color,
+    required this.routeDesc,
+    this.isFrequent = false,
+    this.timings = const [],
+  });
 }
 
-class _BusScreenState extends State<BusScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  List<BusCorridor> _corridors = [];
-  final Map<int, List<BusTiming>> _timings = {};
-  bool _loading = true;
-  bool _offline = false;
+// ── Bus screen — tile landing page ────────────────────────────────────
 
-  // Fallback offline bus data (Bodi side sample — admin fills real data)
-  static final List<BusCorridor> _fallbackCorridors = [
-    const BusCorridor(
-      id: 1,
-      nameTamil: 'போடி பக்கம்',
-      nameEnglish: 'Towards Bodi',
-      colorHex: '#2196F3',
+class BusScreen extends StatelessWidget {
+  const BusScreen({super.key});
+
+  // ── Local routes ──────────────────────────────────────────────────
+  // Source: Thevaram Bus Stand (TNSTC, tickettogetlost.com, Feb 2026)
+  // Pannaipuram is 4.4 km from Thevaram (~10 min by bus)
+  // All times shown are Pannaipuram stop times (Thevaram times + 10 min)
+
+  static final List<_BusRoute> _local = [
+    _BusRoute(
+      nameTamil: 'தேனி',
+      nameEnglish: 'Theni',
+      emoji: '🏙️',
+      color: const Color(0xFF1565C0),
+      routeDesc: 'பண்ணைப்புரம் → சங்கரபுரம் → தேவாரம் → தேனி',
+      isFrequent: true,
     ),
-    const BusCorridor(
-      id: 2,
-      nameTamil: 'கம்பம் பக்கம்',
-      nameEnglish: 'Towards Kamban',
-      colorHex: '#4CAF50',
+    _BusRoute(
+      nameTamil: 'போடி',
+      nameEnglish: 'Bodi',
+      emoji: '🌄',
+      color: const Color(0xFF0288D1),
+      routeDesc: 'பண்ணைப்புரம் → சங்கரபுரம் → தேவாரம் → போடி',
+      isFrequent: true,
+    ),
+    _BusRoute(
+      nameTamil: 'கம்பம்',
+      nameEnglish: 'Cumbum',
+      emoji: '🍇',
+      color: const Color(0xFF388E3C),
+      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கம்பம்',
+      isFrequent: true,
+    ),
+    _BusRoute(
+      nameTamil: 'சின்னமனூர்',
+      nameEnglish: 'Chinnamanur',
+      emoji: '🛕',
+      color: const Color(0xFFFF6F00),
+      routeDesc:
+          'பண்ணைப்புரம் → பல்லவராயன்பட்டி → மார்க்கையம்கோட்டை → சின்னமனூர்',
+      timings: [
+        // Thevaram times: 10:15, 12:20, 16:10, 18:00
+        // Pannaipuram (+10 min): 10:25, 12:30, 16:20, 18:10
+        BusTiming(
+            id: 16,
+            departsAt: '10:25:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 17,
+            departsAt: '12:30:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 18,
+            departsAt: '16:20:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 19,
+            departsAt: '18:10:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: true),
+      ],
     ),
   ];
 
-  static final Map<int, List<BusTiming>> _fallbackTimings = {
-    1: [
-      BusTiming(id: 1, departsAt: '05:30:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
-      BusTiming(id: 2, departsAt: '07:45:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
-      BusTiming(id: 3, departsAt: '09:00:00', daysOfWeek: 'daily', busType: 'express', isLastBus: false),
-      BusTiming(id: 4, departsAt: '11:30:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
-      BusTiming(id: 5, departsAt: '14:00:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
-      BusTiming(id: 6, departsAt: '17:30:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
-      BusTiming(id: 7, departsAt: '20:00:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: true),
-    ],
-    2: [
-      BusTiming(id: 8, departsAt: '06:00:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
-      BusTiming(id: 9, departsAt: '09:30:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
-      BusTiming(id: 10, departsAt: '13:00:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
-      BusTiming(id: 11, departsAt: '16:00:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
-      BusTiming(id: 12, departsAt: '19:30:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: true),
-    ],
-  };
+  // ── Long-distance routes ───────────────────────────────────────────
+  // Source: Thevaram Bus Stand searches (Feb 2026) + 10 min for Pannaipuram
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _load();
+  static final List<_BusRoute> _longDistance = [
+    _BusRoute(
+      nameTamil: 'மதுரை',
+      nameEnglish: 'Madurai',
+      emoji: '🏛️',
+      color: const Color(0xFF6A1B9A),
+      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → மதுரை',
+      timings: [
+        BusTiming(
+            id: 101,
+            departsAt: '04:25:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 102,
+            departsAt: '06:00:00',
+            daysOfWeek: 'daily',
+            busType: 'express',
+            isLastBus: false),
+        BusTiming(
+            id: 103,
+            departsAt: '06:40:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 104,
+            departsAt: '09:40:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 105,
+            departsAt: '14:55:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 106,
+            departsAt: '15:40:00',
+            daysOfWeek: 'daily',
+            busType: 'express',
+            isLastBus: false),
+        BusTiming(
+            id: 107,
+            departsAt: '16:30:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: true),
+      ],
+    ),
+    _BusRoute(
+      nameTamil: 'கோயம்புத்தூர்',
+      nameEnglish: 'Coimbatore',
+      emoji: '🏭',
+      color: const Color(0xFF00695C),
+      routeDesc:
+          'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கோயம்புத்தூர்',
+      timings: [
+        BusTiming(
+            id: 111,
+            departsAt: '05:10:00',
+            daysOfWeek: 'daily',
+            busType: 'express',
+            isLastBus: false),
+        BusTiming(
+            id: 112,
+            departsAt: '09:30:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 113,
+            departsAt: '11:30:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 114,
+            departsAt: '20:50:00',
+            daysOfWeek: 'daily',
+            busType: 'express',
+            isLastBus: true),
+      ],
+    ),
+    _BusRoute(
+      nameTamil: 'திருச்சி',
+      nameEnglish: 'Trichy',
+      emoji: '🗼',
+      color: const Color(0xFFC62828),
+      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல் → திருச்சி',
+      timings: [
+        BusTiming(
+            id: 121,
+            departsAt: '05:50:00',
+            daysOfWeek: 'daily',
+            busType: 'express',
+            isLastBus: false),
+        BusTiming(
+            id: 122,
+            departsAt: '15:10:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 123,
+            departsAt: '19:30:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: true),
+      ],
+    ),
+    _BusRoute(
+      nameTamil: 'பழனி',
+      nameEnglish: 'Palani',
+      emoji: '🙏',
+      color: const Color(0xFFE65100),
+      routeDesc:
+          'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → பழனி',
+      timings: [
+        BusTiming(
+            id: 131,
+            departsAt: '05:20:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 132,
+            departsAt: '06:10:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 133,
+            departsAt: '06:25:00',
+            daysOfWeek: 'daily',
+            busType: 'express',
+            isLastBus: false),
+        BusTiming(
+            id: 134,
+            departsAt: '09:25:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 135,
+            departsAt: '11:25:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 136,
+            departsAt: '16:20:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: true),
+      ],
+    ),
+    _BusRoute(
+      nameTamil: 'குமுளி',
+      nameEnglish: 'Kumily',
+      emoji: '🌿',
+      color: const Color(0xFF2E7D32),
+      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → போடி → குமுளி',
+      timings: [
+        BusTiming(
+            id: 141,
+            departsAt: '03:40:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 142,
+            departsAt: '05:00:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 143,
+            departsAt: '05:40:00',
+            daysOfWeek: 'daily',
+            busType: 'express',
+            isLastBus: false),
+        BusTiming(
+            id: 144,
+            departsAt: '08:40:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 145,
+            departsAt: '12:00:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 146,
+            departsAt: '14:00:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 147,
+            departsAt: '14:30:00',
+            daysOfWeek: 'daily',
+            busType: 'express',
+            isLastBus: true),
+      ],
+    ),
+    _BusRoute(
+      nameTamil: 'திண்டுக்கல்',
+      nameEnglish: 'Dindigul',
+      emoji: '🏰',
+      color: const Color(0xFF4E342E),
+      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல்',
+      timings: [
+        BusTiming(
+            id: 151,
+            departsAt: '06:30:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 152,
+            departsAt: '09:10:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 153,
+            departsAt: '15:00:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 154,
+            departsAt: '15:40:00',
+            daysOfWeek: 'daily',
+            busType: 'express',
+            isLastBus: false),
+        BusTiming(
+            id: 155,
+            departsAt: '16:40:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: false),
+        BusTiming(
+            id: 156,
+            departsAt: '17:30:00',
+            daysOfWeek: 'daily',
+            busType: 'ordinary',
+            isLastBus: true),
+      ],
+    ),
+  ];
+
+  void _goTo(BuildContext context, _BusRoute r) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BusRouteScreen(
+          nameTamil: r.nameTamil,
+          nameEnglish: r.nameEnglish,
+          emoji: r.emoji,
+          color: r.color,
+          routeDesc: r.routeDesc,
+          isFrequent: r.isFrequent,
+          timings: r.timings,
+        ),
+      ),
+    );
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _load() async {
-    try {
-      final corridors = await ApiService.getBusCorridors();
-      final Map<int, List<BusTiming>> timings = {};
-      for (final c in corridors) {
-        timings[c.id] = await ApiService.getBusTimings(c.id);
-      }
-      setState(() {
-        _corridors = corridors;
-        _timings.addAll(timings);
-        _loading = false;
-        _offline = false;
-      });
-    } catch (_) {
-      setState(() {
-        _corridors = _fallbackCorridors;
-        _timings.addAll(_fallbackTimings);
-        _loading = false;
-        _offline = true;
-      });
-    }
-  }
-
-  BusTiming? _nextBus(int corridorId) {
-    final list = _timings[corridorId] ?? [];
-    for (final t in list) {
+  // ── Next bus helper ────────────────────────────────────────────────
+  static BusTiming? _nextBusFor(List<BusTiming> timings) {
+    for (final t in timings) {
       if (t.minutesFromNow() >= 0) return t;
     }
     return null;
@@ -100,248 +385,541 @@ class _BusScreenState extends State<BusScreen>
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('பேருந்து')),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('பேருந்து'),
-            Text('Bus Timings', style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal)),
-          ],
-        ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Icon(Icons.directions_bus, size: 28),
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: _corridors.map((c) {
-            final icon = c.nameEnglish.contains('Bodi') ? '🔵' : '🟢';
-            return Tab(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('$icon ${c.nameTamil}', style: const TextStyle(fontSize: 14)),
-                  Text(c.nameEnglish, style: const TextStyle(fontFamily: 'Roboto', fontSize: 10)),
-                ],
+      backgroundColor: const Color(0xFFF2F3F7),
+      body: CustomScrollView(
+        slivers: [
+          // ── Sticky gradient app bar ──────────────────────────────
+          SliverAppBar(
+            expandedHeight: 155,
+            pinned: true,
+            backgroundColor: const Color(0xFF1A237E),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF1A237E), Color(0xFF283593)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 48, 20, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'எங்கிட்டு போகணும்?',
+                          style: TextStyle(
+                            fontFamily: 'NotoSansTamil',
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Where do you want to go?',
+                          style: TextStyle(
+                            fontFamily: 'Roboto',
+                            fontSize: 13,
+                            color: Colors.white60,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.location_on_rounded,
+                                  color: Colors.orange, size: 14),
+                              SizedBox(width: 4),
+                              Text(
+                                'பண்ணைப்புரம் நிறுத்தம்',
+                                style: TextStyle(
+                                  fontFamily: 'NotoSansTamil',
+                                  fontSize: 13,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            );
-          }).toList(),
-        ),
-      ),
-      body: Column(
-        children: [
-          if (_offline) const OfflineBanner(),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: _corridors.map((c) => _buildCorridorTab(c)).toList(),
+            ),
+          ),
+
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+
+                // ── Local section ──────────────────────────────────
+                _SectionChip(
+                    icon: Icons.home_rounded,
+                    label: 'உள்ளூர் பயணம்',
+                    sublabel: 'Local Routes'),
+                const SizedBox(height: 8),
+                ..._local.map((r) => _RouteCard(
+                      route: r,
+                      nextBus: r.isFrequent
+                          ? null
+                          : _nextBusFor(r.timings),
+                      onTap: () => _goTo(context, r),
+                    )),
+
+                const SizedBox(height: 20),
+
+                // ── Long distance section ──────────────────────────
+                _SectionChip(
+                    icon: Icons.map_rounded,
+                    label: 'தூர பயணம்',
+                    sublabel: 'Long Distance'),
+                const SizedBox(height: 8),
+                ..._longDistance.map((r) => _RouteCard(
+                      route: r,
+                      nextBus: _nextBusFor(r.timings),
+                      onTap: () => _goTo(context, r),
+                    )),
+
+                const SizedBox(height: 20),
+
+                // ── Auto section ───────────────────────────────────
+                _SectionChip(
+                    icon: Icons.local_taxi_rounded,
+                    label: 'வாடகை வண்டி',
+                    sublabel: 'Auto & Car'),
+                const SizedBox(height: 8),
+                _AutoCard(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const AutoScreen()),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Center(
+                    child: Text(
+                      'Source: Thevaram Bus Stand (TNSTC, Feb 2026)\nPannaipuram stop = Thevaram +10 min',
+                      style: TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 11,
+                          color: Color(0xFFBDBDBD)),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 28),
+              ],
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildCorridorTab(BusCorridor corridor) {
-    final timings = _timings[corridor.id] ?? [];
-    final next = _nextBus(corridor.id);
-    final color = corridor.color;
+// ── Section chip ──────────────────────────────────────────────────────
 
-    return RefreshIndicator(
-      onRefresh: _load,
-      child: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+class _SectionChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String sublabel;
+
+  const _SectionChip(
+      {required this.icon, required this.label, required this.sublabel});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
         children: [
-          // Route header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Text(
-              corridor.nameTamil,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A237E).withOpacity(0.08),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 15, color: const Color(0xFF1A237E)),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontFamily: 'NotoSansTamil',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1A237E),
+                  ),
+                ),
+              ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'பண்ணைப்புரம் → ${corridor.nameTamil.contains('போடி') ? 'தேவாரம் → போடி' : 'உத்தமபாளையம் → கம்பம்'}',
-              style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+          const SizedBox(width: 8),
+          Text(
+            sublabel,
+            style: const TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 12,
+              color: Color(0xFF9E9E9E),
             ),
           ),
-          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+}
 
-          // Next bus card
-          if (next != null)
-            Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              color: color.withOpacity(0.08),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Icon(Icons.access_time, color: color, size: 32),
-                    const SizedBox(width: 16),
-                    Expanded(
+// ── Route card ────────────────────────────────────────────────────────
+
+class _RouteCard extends StatelessWidget {
+  final _BusRoute route;
+  final BusTiming? nextBus;
+  final VoidCallback onTap;
+
+  const _RouteCard(
+      {required this.route, required this.nextBus, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final bool noMoreBuses =
+        !route.isFrequent && route.timings.isNotEmpty && nextBus == null;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        elevation: 0,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFEEEEEE), width: 1),
+            ),
+            child: IntrinsicHeight(
+              child: Row(
+                children: [
+                  // ── Coloured left rail ────────────────────────
+                  Container(
+                    width: 5,
+                    decoration: BoxDecoration(
+                      color: noMoreBuses
+                          ? Colors.grey[300]
+                          : route.color,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        bottomLeft: Radius.circular(16),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // ── Emoji circle ──────────────────────────────
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: (noMoreBuses
+                              ? Colors.grey
+                              : route.color)
+                          .withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(route.emoji,
+                          style: const TextStyle(fontSize: 22)),
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  // ── Destination + route path ──────────────────
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('⏱ அடுத்த பேருந்து', style: TextStyle(fontSize: 16)),
-                          const Text('Next bus', style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: AppColors.textSecondary)),
-                          const SizedBox(height: 4),
                           Text(
-                            next.displayTime,
-                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color),
+                            route.nameTamil,
+                            style: TextStyle(
+                              fontFamily: 'NotoSansTamil',
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: noMoreBuses
+                                  ? Colors.grey[400]
+                                  : const Color(0xFF1A1A1A),
+                            ),
+                          ),
+                          Text(
+                            route.nameEnglish,
+                            style: const TextStyle(
+                              fontFamily: 'Roboto',
+                              fontSize: 11,
+                              color: Color(0xFF9E9E9E),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(Icons.directions_bus_rounded,
+                                  size: 11, color: Colors.grey[400]),
+                              const SizedBox(width: 3),
+                              Text(
+                                route.isFrequent
+                                    ? 'Frequent service'
+                                    : '${route.timings.length} buses/day',
+                                style: TextStyle(
+                                  fontFamily: 'Roboto',
+                                  fontSize: 11,
+                                  color: Colors.grey[400],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: color,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '${next.minutesFromNow()} நிமிடம்',
-                        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'இந்த நேரத்தில் பேருந்து இல்லை\nNo more buses today',
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                ),
-              ),
-            ),
-
-          const SizedBox(height: 12),
-
-          // All times header
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Text(
-              'அனைத்து நேரங்கள் — All Times',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-          ),
-
-          // Timetable list
-          Card(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Column(
-              children: timings.asMap().entries.map((entry) {
-                final t = entry.value;
-                final isLast = entry.key == timings.length - 1;
-                return Column(
-                  children: [
-                    ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      leading: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: t.isLastBus
-                              ? AppColors.lastBusRed.withOpacity(0.1)
-                              : color.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.directions_bus,
-                          color: t.isLastBus ? AppColors.lastBusRed : color,
-                          size: 24,
-                        ),
-                      ),
-                      title: Text(
-                        t.displayTime,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: t.isLastBus ? AppColors.lastBusRed : AppColors.textPrimary,
-                        ),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (t.busType == 'express')
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.orange,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text('🚀 Express', style: TextStyle(color: Colors.white, fontSize: 11)),
-                            ),
-                          if (t.isLastBus)
-                            Container(
-                              margin: const EdgeInsets.only(left: 4),
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColors.lastBusRed,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text('🔴 கடைசி', style: TextStyle(color: Colors.white, fontSize: 11)),
-                            ),
-                        ],
-                      ),
-                    ),
-                    if (!isLast)
-                      const Divider(height: 1, indent: 16, endIndent: 16),
-                  ],
-                );
-              }).toList(),
-            ),
-          ),
-
-          // Last bus alert button
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: OutlinedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('கடைசி பேருந்து அறிவிப்பு இயக்கப்பட்டது!\nLast bus alert enabled!'),
                   ),
-                );
-              },
-              icon: const Icon(Icons.notifications_outlined),
-              label: const Column(
-                children: [
-                  Text('🔔 கடைசி பேருந்து அறிவிப்பு'),
-                  Text('Alert for last bus', style: TextStyle(fontFamily: 'Roboto', fontSize: 11)),
+
+                  // ── Next bus / status ─────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 14),
+                    child: route.isFrequent
+                        ? _FrequentBadge(color: route.color)
+                        : noMoreBuses
+                            ? _DoneBadge()
+                            : _NextBusBadge(
+                                nextBus: nextBus!, color: route.color),
+                  ),
                 ],
               ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: color,
-                side: BorderSide(color: color),
-                minimumSize: const Size(double.infinity, 52),
-              ),
             ),
           ),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Frequent badge ────────────────────────────────────────────────────
+
+class _FrequentBadge extends StatelessWidget {
+  final Color color;
+  const _FrequentBadge({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Icon(Icons.loop_rounded, color: color, size: 22),
+        const SizedBox(height: 4),
+        Text(
+          '20–30',
+          style: TextStyle(
+              fontFamily: 'Roboto',
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: color),
+        ),
+        Text(
+          'நிமிடம்',
+          style: TextStyle(
+              fontFamily: 'NotoSansTamil',
+              fontSize: 10,
+              color: color.withOpacity(0.7)),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Next bus badge ────────────────────────────────────────────────────
+
+class _NextBusBadge extends StatelessWidget {
+  final BusTiming nextBus;
+  final Color color;
+  const _NextBusBadge({required this.nextBus, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final mins = nextBus.minutesFromNow();
+    final Color pillColor = mins <= 10
+        ? const Color(0xFFD32F2F)
+        : mins <= 40
+            ? const Color(0xFF2E7D32)
+            : const Color(0xFF757575);
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          nextBus.displayTime,
+          style: TextStyle(
+            fontFamily: 'NotoSansTamil',
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          padding:
+              const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: pillColor,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            '$mins நிமிடம்',
+            style: const TextStyle(
+              fontFamily: 'NotoSansTamil',
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Done badge ────────────────────────────────────────────────────────
+
+class _DoneBadge extends StatelessWidget {
+  const _DoneBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Icon(Icons.bedtime_rounded, color: Colors.grey[300], size: 22),
+        const SizedBox(height: 4),
+        Text(
+          'இன்று',
+          style: TextStyle(
+              fontFamily: 'NotoSansTamil',
+              fontSize: 12,
+              color: Colors.grey[400]),
+        ),
+        Text(
+          'முடிந்தது',
+          style: TextStyle(
+              fontFamily: 'NotoSansTamil',
+              fontSize: 12,
+              color: Colors.grey[400]),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Auto card ─────────────────────────────────────────────────────────
+
+class _AutoCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AutoCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding:
+                const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF4A148C), Color(0xFF7B1FA2)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Text('🚗', style: TextStyle(fontSize: 26)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ஆட்டோ / வண்டி வேணுமா?',
+                        style: TextStyle(
+                          fontFamily: 'NotoSansTamil',
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Local auto & shared van contacts',
+                        style: TextStyle(
+                          fontFamily: 'Roboto',
+                          fontSize: 12,
+                          color: Colors.white60,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios_rounded,
+                    color: Colors.white54, size: 18),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

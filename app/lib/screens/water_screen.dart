@@ -175,13 +175,7 @@ class _WaterScreenState extends State<WaterScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.waterBlue,
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('தண்ணீர்', style: TextStyle(fontFamily: 'NotoSansTamil')),
-            Text('Water Supply', style: TextStyle(fontFamily: 'Roboto', fontSize: 12, fontWeight: FontWeight.normal)),
-          ],
-        ),
+        title: const Text('தண்ணீர் | Water Supply', style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 16)),
         actions: const [
           Padding(padding: EdgeInsets.only(right: 16), child: Icon(Icons.water_drop, size: 28)),
         ],
@@ -193,10 +187,60 @@ class _WaterScreenState extends State<WaterScreen> {
   }
 
   Widget _buildBody() {
+    // Determine water status for hero tile
+    final bool hasAlertToday = _todayAlerts.isNotEmpty;
+    final String statusEmoji = hasAlertToday ? '✅' : '⏳';
+    final String statusText = hasAlertToday
+        ? 'தண்ணி வந்துருச்சு! (${_todayAlerts.length} அறிவிப்பு)'
+        : (_schedule?.nextSupplyDate != null
+            ? 'அடுத்து: ${_schedule!.nextSupplyDate}'
+            : 'இன்னும் வரலை...');
+
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 8),
       children: [
         if (_offline) const OfflineBanner(),
+
+        // ── HERO TILE ─────────────────────────────────────────────
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [BoxShadow(color: AppColors.waterBlue.withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 6))],
+          ),
+          child: Column(
+            children: [
+              const Text('💧', style: TextStyle(fontSize: 44)),
+              const SizedBox(height: 10),
+              const Text(
+                'அக்கா, தண்ணி வந்துருச்சா?',
+                style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.22), borderRadius: BorderRadius.circular(20)),
+                child: Text(
+                  '$statusEmoji $statusText',
+                  style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 16, color: Colors.white, fontWeight: FontWeight.w500),
+                  textAlign: TextAlign.center,
+                  softWrap: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // ── END HERO TILE ─────────────────────────────────────────
 
         // Street selector — always visible, tap to change
         GestureDetector(
