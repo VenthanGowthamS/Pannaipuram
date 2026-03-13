@@ -13,7 +13,7 @@ class ApiService {
     T Function(dynamic) parser,
   ) async {
     final uri = Uri.parse('$_base$path');
-    final res = await http.get(uri).timeout(const Duration(seconds: 10));
+    final res = await http.get(uri).timeout(const Duration(seconds: 30));
     if (res.statusCode == 200) {
       return parser(json.decode(res.body));
     }
