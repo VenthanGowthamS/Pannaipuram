@@ -3,9 +3,10 @@ import 'package:http/http.dart' as http;
 import '../models/models.dart';
 
 class ApiService {
-  static const _base = 'http://192.168.1.3:3000'; // Your Mac's IP
-  // static const _base = 'http://10.0.2.2:3000'; // Android emulator only
-  // static const _base = 'https://pannaipuram-api.onrender.com'; // Production (deploy later)
+  // ⚠️ After deploying to Render, replace the URL with your actual Render URL
+  // static const _base = 'http://192.168.1.3:3000';           // Local Mac (dev)
+  // static const _base = 'http://10.0.2.2:3000';              // Android emulator
+  static const _base = 'https://pannaipuram-api.onrender.com'; // Production ← update this
 
   static Future<T> _get<T>(
     String path,
