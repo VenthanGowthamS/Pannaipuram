@@ -289,6 +289,41 @@ class DoctorSchedule {
       );
 }
 
+// ─── Auto / Van Drivers ───────────────────────────────────────────────────────
+
+class AutoDriver {
+  final int id;
+  final String nameTamil;
+  final String? nameEnglish;
+  final String phone;
+  final String vehicleType; // 'auto', 'van', 'car'
+  final String? coverageTamil;
+  final String? coverageEnglish;
+  final String? scheduleTamil;
+
+  const AutoDriver({
+    required this.id,
+    required this.nameTamil,
+    this.nameEnglish,
+    required this.phone,
+    required this.vehicleType,
+    this.coverageTamil,
+    this.coverageEnglish,
+    this.scheduleTamil,
+  });
+
+  factory AutoDriver.fromJson(Map<String, dynamic> j) => AutoDriver(
+        id: j['id'],
+        nameTamil: j['name_tamil'],
+        nameEnglish: j['name_english'],
+        phone: j['phone'],
+        vehicleType: j['vehicle_type'] ?? 'auto',
+        coverageTamil: j['coverage_tamil'],
+        coverageEnglish: j['coverage_english'],
+        scheduleTamil: j['schedule_tamil'],
+      );
+}
+
 // ─── Emergency ────────────────────────────────────────────────────────────────
 
 class EmergencyContact {

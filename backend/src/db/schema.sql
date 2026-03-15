@@ -149,6 +149,25 @@ CREATE TABLE IF NOT EXISTS emergency_contacts (
 );
 
 -- ─────────────────────────────────────
+-- Auto / Van Drivers
+-- ─────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS auto_drivers (
+  id               SERIAL PRIMARY KEY,
+  name_tamil       VARCHAR(150) NOT NULL,
+  name_english     VARCHAR(150),
+  phone            VARCHAR(20) NOT NULL,
+  vehicle_type     VARCHAR(20) NOT NULL DEFAULT 'auto'
+                   CHECK (vehicle_type IN ('auto','van','car')),
+  coverage_tamil   VARCHAR(255),
+  coverage_english VARCHAR(255),
+  schedule_tamil   VARCHAR(255),
+  is_active        BOOLEAN DEFAULT TRUE,
+  display_order    INTEGER DEFAULT 0,
+  created_at       TIMESTAMP DEFAULT NOW()
+);
+
+-- ─────────────────────────────────────
 -- Devices (Push Notifications)
 -- ─────────────────────────────────────
 

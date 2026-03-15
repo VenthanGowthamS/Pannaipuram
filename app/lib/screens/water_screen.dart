@@ -54,8 +54,10 @@ class _WaterScreenState extends State<WaterScreen> {
   Future<void> _loadStreets() async {
     try {
       final streets = await ApiService.getStreets();
+      if (!mounted) return;
       setState(() => _streets = streets);
     } catch (_) {
+      if (!mounted) return;
       setState(() => _streets = _fallbackStreets.map((e) => Street.fromJson(e)).toList());
     }
   }
@@ -65,6 +67,7 @@ class _WaterScreenState extends State<WaterScreen> {
     try {
       final schedule = await ApiService.getWaterSchedule(_selectedStreetId);
       final alerts   = await ApiService.getTodayWaterAlerts();
+      if (!mounted) return;
       setState(() {
         _schedule    = schedule;
         _todayAlerts = alerts;
@@ -72,6 +75,7 @@ class _WaterScreenState extends State<WaterScreen> {
         _offline     = false;
       });
     } catch (_) {
+      if (!mounted) return;
       setState(() {
         _loading = false;
         _offline = true;

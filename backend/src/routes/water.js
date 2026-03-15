@@ -3,6 +3,20 @@ const router  = express.Router();
 const { query } = require('../db/pool');
 const { sendToStreet } = require('../services/pushNotifications');
 
+// GET /api/water/streets — all streets (for street picker)
+router.get('/streets', async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT s.id, s.name_tamil, s.name_english
+      FROM streets s
+      ORDER BY s.name_tamil
+    `);
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // GET /api/water/schedule/:streetId
 router.get('/schedule/:streetId', async (req, res) => {
   try {

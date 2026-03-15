@@ -42,16 +42,17 @@ router.post('/doctors', async (req, res) => {
 
 // PUT /admin/hospital/doctors/:id
 router.put('/doctors/:id', async (req, res) => {
-  const { name_tamil, name_english, specialisation, is_active } = req.body;
+  const { hospital_id, name_tamil, name_english, specialisation, is_active } = req.body;
   try {
     const result = await query(`
       UPDATE doctors
-      SET name_tamil     = COALESCE($1, name_tamil),
-          name_english   = COALESCE($2, name_english),
-          specialisation = COALESCE($3, specialisation),
-          is_active      = COALESCE($4, is_active)
-      WHERE id = $5 RETURNING *
-    `, [name_tamil, name_english, specialisation, is_active, req.params.id]);
+      SET hospital_id   = COALESCE($1, hospital_id),
+          name_tamil     = COALESCE($2, name_tamil),
+          name_english   = COALESCE($3, name_english),
+          specialisation = COALESCE($4, specialisation),
+          is_active      = COALESCE($5, is_active)
+      WHERE id = $6 RETURNING *
+    `, [hospital_id, name_tamil, name_english, specialisation, is_active, req.params.id]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });

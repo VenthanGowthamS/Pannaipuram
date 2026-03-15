@@ -158,6 +158,7 @@
     <div class="tab" onclick="switchTab('bus')">🚌 Bus Timings</div>
     <div class="tab" onclick="switchTab('hospital')">🏥 Doctors</div>
     <div class="tab" onclick="switchTab('emergency')">📞 Emergency</div>
+    <div class="tab" onclick="switchTab('auto')">🚗 Auto/Van</div>
     <div class="tab" onclick="switchTab('water')">💧 Water</div>
     <div class="tab" onclick="switchTab('streets')">🏘 Streets</div>
   </div>
@@ -213,13 +214,6 @@
             <label>Corridor</label>
             <select id="bt-corridor">
               <option value="">Loading corridors...</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Direction</label>
-            <select id="bt-direction">
-              <option value="outbound">Outbound (from Pannaipuram)</option>
-              <option value="inbound">Inbound (to Pannaipuram)</option>
             </select>
           </div>
         </div>
@@ -363,6 +357,51 @@
       <div class="card">
         <h2>All Emergency Contacts</h2>
         <div id="contactList" class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- ─── AUTO / VAN ─── -->
+    <div class="section" id="sec-auto">
+      <div class="card">
+        <h2>Add Auto / Van Driver</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name (Tamil)</label>
+            <input id="ad-tamil" placeholder="முருகேசன்" />
+          </div>
+          <div class="form-group">
+            <label>Name (English)</label>
+            <input id="ad-english" placeholder="Murugesan" />
+          </div>
+          <div class="form-group" style="max-width:180px">
+            <label>Phone Number</label>
+            <input id="ad-phone" placeholder="9876543210" type="tel" />
+          </div>
+          <div class="form-group" style="max-width:140px">
+            <label>Vehicle Type</label>
+            <select id="ad-type">
+              <option value="auto">🛺 Auto</option>
+              <option value="van">🚐 Van</option>
+              <option value="car">🚗 Car</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Coverage Area (Tamil)</label>
+            <input id="ad-coverage" placeholder="உத்தமபாளையம் வரை" />
+          </div>
+          <div class="form-group">
+            <label>Schedule (Tamil, optional)</label>
+            <input id="ad-schedule" placeholder="காலை 7 மணி புறப்படும்" />
+          </div>
+        </div>
+        <button class="btn-add" onclick="addAutoDriver()">+ Add Driver</button>
+      </div>
+
+      <div class="card">
+        <h2>All Auto / Van Drivers</h2>
+        <div id="autoList" class="loading">Loading...</div>
       </div>
     </div>
 
@@ -512,6 +551,7 @@ function loadAll() {
   loadBusTimings();
   loadDoctors();
   loadContacts();
+  loadAutoDrivers();
   loadWater();
   loadStreets();
 }
@@ -625,7 +665,7 @@ async function loadCorridorTimings(corridorId, elId) {
 
 async function addBusTiming() {
   const corridorId  = document.getElementById('bt-corridor').value;
-  const direction   = document.getElementById('bt-direction').value;
+  const direction   = 'outbound';  // Always outbound from Pannaipuram
   const departs_at  = document.getElementById('bt-time').value;
   if (!departs_at) { toast('Time is required', '#c62828'); return; }
 
@@ -682,7 +722,7 @@ async function loadDoctors() {
             : '—'}</td>
           <td><span class="badge ${d.is_active ? 'badge-active' : 'badge-off'}">${d.is_active ? 'Active' : 'Inactive'}</span></td>
           <td style="display:flex;gap:6px;">
-            <button class="btn-sm btn-edit" onclick="editDoctor(${d.id}, '${(d.name_tamil||'').replace(/'/g,"\\'")}', '${(d.name_english||'').replace(/'/g,"\\'")}', '${(d.specialisation||'').replace(/'/g,"\\'")}')">✏️ Edit</button>
+            <button class="btn-sm btn-edit" onclick="editDoctor(${d.id}, '${(d.name_tamil||'').replace(/'/g,"\\'")}', '${(d.name_english||'').replace(/'/g,"\\'")}', '${(d.specialisation||'').replace(/'/g,"\\'")}', ${d.hospital_id || 1})">✏️ Edit</button>
             <button class="btn-sm btn-danger" onclick="deleteDoctor(${d.id})">🗑 Delete</button>
           </td>
         </tr>`).join('')}
@@ -714,7 +754,9 @@ async function addSchedule() {
   else toast(data.error || 'Error', '#c62828');
 }
 
-async function editDoctor(id, nameTamil, nameEnglish, specialisation) {
+async function editDoctor(id, nameTamil, nameEnglish, specialisation, hospitalId) {
+  const newHospital = prompt('Hospital (1 = PTV Padmavathy, 2 = SP Clinic):', hospitalId);
+  if (newHospital === null) return;
   const newTamil = prompt('Name (Tamil):', nameTamil);
   if (newTamil === null) return;
   const newEnglish = prompt('Name (English):', nameEnglish);
@@ -723,6 +765,7 @@ async function editDoctor(id, nameTamil, nameEnglish, specialisation) {
   if (newSpec === null) return;
 
   const data = await apiPut(`/admin/hospital/doctors/${id}`, {
+    hospital_id: parseInt(newHospital) || 1,
     name_tamil: newTamil, name_english: newEnglish, specialisation: newSpec
   });
   if (data.success) { toast('Doctor updated ✅', '#1B5E20'); loadDoctors(); }
@@ -797,6 +840,82 @@ async function deleteContact(id) {
   if (!confirm('Are you sure?')) return;
   const data = await apiDelete(`/admin/contacts/${id}`);
   if (data.success) { toast('Contact deleted ✅', '#1B5E20'); loadContacts(); }
+  else toast(data.error || 'Error', '#c62828');
+}
+
+// ══════════════════════════════════════════════
+// AUTO / VAN DRIVERS
+// ══════════════════════════════════════════════
+async function loadAutoDrivers() {
+  const el = document.getElementById('autoList');
+  try {
+    const drivers = await apiGet('/admin/auto/drivers');
+    if (!drivers || !drivers.length) { el.innerHTML = '<div class="empty">No auto/van drivers yet — add one above</div>'; return; }
+    const typeLabel = { auto: '🛺 Auto', van: '🚐 Van', car: '🚗 Car' };
+    el.innerHTML = `<table>
+      <tr><th>Type</th><th>Name (Tamil)</th><th>Name (English)</th><th>Phone</th><th>Coverage</th><th>Schedule</th><th>Status</th><th>Action</th></tr>
+      ${drivers.map(d => `
+        <tr>
+          <td>${typeLabel[d.vehicle_type] || d.vehicle_type}</td>
+          <td>${d.name_tamil}</td>
+          <td>${d.name_english || '—'}</td>
+          <td><strong>${d.phone}</strong></td>
+          <td>${d.coverage_tamil || '—'}</td>
+          <td>${d.schedule_tamil || '—'}</td>
+          <td><span class="badge ${d.is_active ? 'badge-active' : 'badge-off'}">${d.is_active ? 'Active' : 'Inactive'}</span></td>
+          <td style="display:flex;gap:6px;">
+            <button class="btn-sm btn-edit" onclick="editAutoDriver(${d.id}, '${(d.name_tamil||'').replace(/'/g,"\\'")}', '${(d.name_english||'').replace(/'/g,"\\'")}', '${d.phone}', '${(d.coverage_tamil||'').replace(/'/g,"\\'")}', '${(d.schedule_tamil||'').replace(/'/g,"\\'")}')">✏️ Edit</button>
+            <button class="btn-sm btn-danger" onclick="deleteAutoDriver(${d.id})">🗑 Delete</button>
+          </td>
+        </tr>`).join('')}
+    </table>`;
+  } catch(e) { el.innerHTML = '<div class="empty">Error loading</div>'; }
+}
+
+async function addAutoDriver() {
+  const name_tamil = document.getElementById('ad-tamil').value;
+  const phone = document.getElementById('ad-phone').value;
+  if (!name_tamil || !phone) { toast('Name and phone are required', '#c62828'); return; }
+
+  const data = await apiPost('/admin/auto/drivers', {
+    name_tamil,
+    name_english:    document.getElementById('ad-english').value || null,
+    phone,
+    vehicle_type:    document.getElementById('ad-type').value,
+    coverage_tamil:  document.getElementById('ad-coverage').value || null,
+    schedule_tamil:  document.getElementById('ad-schedule').value || null
+  });
+  if (data.success) {
+    toast('Driver added ✅', '#1B5E20');
+    loadAutoDrivers();
+    ['ad-tamil','ad-english','ad-phone','ad-coverage','ad-schedule'].forEach(id => document.getElementById(id).value='');
+  } else toast(data.error || 'Error', '#c62828');
+}
+
+async function editAutoDriver(id, nameTamil, nameEnglish, phone, coverage, schedule) {
+  const newTamil = prompt('Name (Tamil):', nameTamil);
+  if (newTamil === null) return;
+  const newEnglish = prompt('Name (English):', nameEnglish);
+  if (newEnglish === null) return;
+  const newPhone = prompt('Phone Number:', phone);
+  if (newPhone === null) return;
+  const newCoverage = prompt('Coverage Area (Tamil):', coverage);
+  if (newCoverage === null) return;
+  const newSchedule = prompt('Schedule (Tamil):', schedule);
+  if (newSchedule === null) return;
+
+  const data = await apiPut(`/admin/auto/drivers/${id}`, {
+    name_tamil: newTamil, name_english: newEnglish,
+    phone: newPhone, coverage_tamil: newCoverage, schedule_tamil: newSchedule
+  });
+  if (data.success) { toast('Driver updated ✅', '#1B5E20'); loadAutoDrivers(); }
+  else toast(data.error || 'Error', '#c62828');
+}
+
+async function deleteAutoDriver(id) {
+  if (!confirm('Are you sure you want to delete this driver?')) return;
+  const data = await apiDelete(`/admin/auto/drivers/${id}`);
+  if (data.success) { toast('Driver deleted ✅', '#1B5E20'); loadAutoDrivers(); }
   else toast(data.error || 'Error', '#c62828');
 }
 

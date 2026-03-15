@@ -40,7 +40,7 @@ class ApiService {
   // ─── Streets ─────────────────────────────────────────────────────────────
 
   static Future<List<Street>> getStreets() => _get(
-        '/api/water/schedule',
+        '/api/water/streets',
         (d) => (d as List).map((e) => Street.fromJson(e)).toList(),
       );
 
@@ -136,6 +136,13 @@ class ApiService {
         });
         return map;
       });
+
+  // ─── Auto / Van Drivers ──────────────────────────────────────────────────
+
+  static Future<List<AutoDriver>> getAutoDrivers() => _get(
+        '/api/auto/drivers',
+        (d) => (d as List).map((e) => AutoDriver.fromJson(e)).toList(),
+      );
 
   // ─── Device registration ─────────────────────────────────────────────────
 
