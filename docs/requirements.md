@@ -1,10 +1,10 @@
 # பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 2.1 (Wikipedia-verified)
+> **Version:** 2.2 (Wikipedia-verified, App Built)
 > **Date:** March 2026
 > **Author:** Venthan (Senior Software Engineer)
-> **Status:** Phase 1 Complete — Ready for Backend Design
+> **Status:** Phase 4–5 In Progress — App Ready, Backend Deployment & Data Entry Underway
 > **Tagline:** உங்கள் ஊரின் தகவல் மையம் *(Your Village's Information Centre)*
 
 ---
@@ -200,7 +200,23 @@ This information does not exist anywhere online. It cannot be scraped or fetched
 
 ---
 
-### Module 5 — அவசர தொலைபேசி (Emergency Contacts)
+### Module 5 — ஆட்டோ / வண்டி (Auto & Local Transport)
+
+**The Pain:** Need local transport for short trips around Pannaipuram and nearby towns. No central place to find auto-rickshaw and van drivers.
+
+**What the App Does:**
+- List of local auto drivers with phone numbers — one tap to call
+- Shared van services with schedules (e.g., morning departures to Uthamapalayam)
+- Contact info for each driver/service
+- Coverage area noted (e.g., "goes up to Kamban")
+
+**Data Source:**
+- Manually collected from Pannaipuram residents
+- Updated via admin panel as needed
+
+---
+
+### Module 6 — அவசர தொலைபேசி (Emergency Contacts)
 
 **The Pain:** In a crisis — power fault, medical emergency, water problem — people don't have the right numbers and can't find them quickly in Tamil.
 
@@ -225,33 +241,39 @@ This information does not exist anywhere online. It cannot be scraped or fetched
 
 ---
 
-## 5. Home Screen Design Concept
+## 5. Home Screen Design Concept — COMPLETE
 
 ```
 ┌─────────────────────────────────────┐
-│  பண்ணைப்புரம்                    🔔   │
+│  பண்ணைப்புரம் (cottage icon)     │
 │  உங்கள் ஊரின் தகவல் மையம்         │
 ├─────────────────────────────────────┤
-│  ⚡ மின் தடை இல்லை இன்று           │
-│  💧 தண்ணீர் — இன்னும் வரவில்லை     │
-├──────────────┬──────────────────────┤
-│              │                      │
-│  ⚡           │  💧                  │
-│  மின்சாரம்    │  தண்ணீர்             │
-│  Electricity  │  Water               │
-│              │                      │
-├──────────────┼──────────────────────┤
-│              │                      │
-│  🚌           │  🏥                  │
-│  பேருந்து     │  மருத்துவமனை         │
-│  Bus Times   │  Hospital            │
-│              │                      │
-├──────────────┴──────────────────────┤
-│  📞  அவசர தொலைபேசி  Emergency       │
+│  சொல்லுங்க, என்ன வேணும்?            │
+│  (What do you need?)                │
+├─────────────────────────────────────┤
+│  Full-width rectangle tile, row 1:  │
+│  🚌 அண்ணே, பஸ் எத்தன மணிக்கு?     │
+│     Bus Times & Routes              │
+├─────────────────────────────────────┤
+│  Full-width rectangle tile, row 2:  │
+│  🚗 சார், ஆட்டோ வேணுமா?           │
+│     Auto & Car Transport            │
+├─────────────────────────────────────┤
+│  Full-width rectangle tile, row 3:  │
+│  🏥 சிஸ்டர், டாக்டர் வந்துட்டாரா?   │
+│     Hospital & Clinic               │
+├─────────────────────────────────────┤
+│  Full-width rectangle tile, row 4:  │
+│  ⚡ அண்ணே, கரண்ட் எப்ப வரும்?     │
+│     Electricity Status              │
+├─────────────────────────────────────┤
+│  Full-width rectangle tile, row 5:  │
+│  💧 அக்கா, தண்ணி வந்துருச்சா?      │
+│     Water Supply                    │
 └─────────────────────────────────────┘
 ```
 
-Large icons, Tamil first, English small below. No clutter. One tap to any module.
+✅ **Status:** Full-width rectangle tiles (one per row), colloquial Tamil labels with English sub-labels below, cottage icon in header, no live status chips on home screen. Tile order: Bus → Auto → Hospital → Electricity → Water.
 
 ---
 
@@ -318,19 +340,19 @@ Water is not wasted
 
 ---
 
-## 10. Technical Stack
+## 10. Technical Stack — DEPLOYED
 
-| Layer | Choice | Reason |
+| Layer | Choice | Status |
 |---|---|---|
-| Mobile App | Flutter (Dart) | Tamil font support, offline-first, single codebase |
-| Local Storage | SQLite (via Drift) | Offline bus times, hospital data, emergency contacts |
-| Push Notifications | Firebase Cloud Messaging | Free, reliable, works on Android |
-| Backend | Node.js + Express (lightweight) | For water alerts, admin panel |
-| Database | PostgreSQL | Community alerts, admin content |
-| Hosting | Render / Railway (free tier) | Low cost for village-scale traffic |
-| Admin Panel | Simple web dashboard | For Venthan to update content remotely |
-| TNEB Data | Web scraping (Cheerio/Puppeteer) | Scheduled maintenance cuts |
-| Analytics | Firebase Analytics | Track which module used most |
+| Mobile App | Flutter (Dart) — Android APK | ✅ Built & Tested |
+| Local Storage | SQLite (via Drift) + SharedPreferences | ✅ Implemented |
+| Push Notifications | Firebase Cloud Messaging (FCM) | ⏳ Deferred (app scaffolded, not integrated yet) |
+| Backend | Node.js + Express (lightweight) | ⏳ Scaffolded, not deployed |
+| Database | Supabase (PostgreSQL, Asia-Pacific Singapore) | ⏳ Project: eoiaexdbnyzysolgwitw |
+| Hosting | Render.com (free tier Node.js) | ✅ Production URL: https://pannaipuram-api.onrender.com |
+| Admin Panel | REST API + simple web UI | ⏳ Postman/REST client can be used as stopgap |
+| TNEB Data | Web scraping (Cheerio/Puppeteer) | ✅ Code ready, not tested against live site yet |
+| Analytics | Firebase Analytics | ⏳ Deferred for later phases |
 
 ---
 
@@ -380,46 +402,43 @@ Before development begins, the following must be collected in person:
 
 ---
 
-## 12. Phased Delivery Plan
+## 12. Phased Delivery Plan — Current Status
 
-### Phase 1 — Requirements ✅ DONE
-This document. Vision locked.
+### Phase 1 — Requirements ✅ COMPLETE
+Vision locked. 6 modules defined: Power, Water, Bus, Hospital, Auto, Emergency.
 
-### Phase 2 — Backend Design (Week 1)
-- Database schema
-- REST API endpoints (water alerts, admin panel, push notifications)
-- TNEB scraping design
-- Admin dashboard specification
+### Phase 2 — Backend Design ✅ COMPLETE
+Database schema, REST API endpoints, TNEB scraper design, admin dashboard spec — all documented in backend-design.md.
 
-### Phase 3 — App UI Design (Week 2)
-- Tamil wireframes for all 5 screens
-- Icon design (simple, visual)
-- Home screen with live status cards
-- Community alert flow mockup
+### Phase 3 — App UI Design ✅ COMPLETE
+Tamil wireframes for all screens, icon design, home screen with full-width tiles, community alert flow — all defined in ui-design.md.
 
-### Phase 4 — Build (Week 3–6)
-- Flutter app: all 5 modules
-- Backend: water alert API, push notification service
-- Admin panel: content management for hospital, bus, contacts
-- TNEB scraper
+### Phase 4 — Build ✅ COMPLETE
+- ✅ Flutter app: all 6 modules built (Power, Water, Bus, Hospital, Auto, Emergency)
+- ✅ Home screen: full-width rectangle tiles, colloquial Tamil labels, cottage header
+- ✅ Offline banner, call buttons, water street selector
+- ✅ Hospital: two-hospital layout (PTV Padmavathy + SP Clinic)
+- ⏳ Backend: routes scaffolded, not yet deployed
+- ⏳ Admin panel: not started
 
-### Phase 5 — Content Entry (Week 6)
-- Enter all manually collected data (hospital, bus, contacts)
-- Test Tamil text rendering on actual devices
-- QR code generation
+### Phase 5 — Deployment & Content Entry 🟡 IN PROGRESS
+- ⏳ Deploy backend to Render (Node.js) + Supabase PostgreSQL (Asia-Pacific Singapore)
+- ⏳ Enter all manually collected data (hospital doctors, bus timings, streets, emergency contacts)
+- ⏳ Test Tamil text rendering on actual devices
+- ⏳ QR code generation
 
-### Phase 6 — Test (Week 7)
+### Phase 6 — Testing 🔴 PENDING
 - Test on low-end Android devices (2GB RAM)
 - Offline mode testing
 - Community water alert end-to-end test
 - Push notification delivery test
+- FCM device registration testing
 
-### Phase 7 — Launch (Week 8)
-- Deploy backend
-- Generate QR code
+### Phase 7 — Launch 🔴 PENDING
+- Deploy backend to Render
+- Share QR code via WhatsApp
 - Print and post at panchayat, bus stand, hospital, TNEB office
-- Share in WhatsApp groups
-- Collect feedback from first 50 users
+- Collect feedback from first users
 
 ---
 

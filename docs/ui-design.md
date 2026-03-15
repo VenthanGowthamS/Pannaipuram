@@ -1,9 +1,9 @@
 # பண்ணைப்புரம் App — UI Design
 ### Phase 3 of 7
 
-> **Version:** 1.0
+> **Version:** 1.1 — IMPLEMENTED
 > **Date:** March 2026
-> **Status:** Phase 3 — UI Design
+> **Status:** Phase 3 — UI Design COMPLETE & BUILT
 
 ---
 
@@ -81,44 +81,39 @@
 
 ---
 
-### Screen 2 — Home Screen
+### Screen 2 — Home Screen ✅ IMPLEMENTED
 
 ```
 ┌─────────────────────────────────┐
-│  பண்ணைப்புரம்              🔔  │
+│  🏠 பண்ணைப்புரம்              │
 │  உங்கள் ஊரின் தகவல் மையம்     │
 ├─────────────────────────────────┤
+│  சொல்லுங்க, என்ன வேணும்?        │
+├─────────────────────────────────┤
 │ ┌─────────────────────────────┐ │
-│ │ ⚡ மின் தடை இல்லை இன்று    │ │
-│ │  No power cut today         │ │
+│ │ 🚌 அண்ணே பஸ்...           │ │
+│ │    Bus Times & Routes       │ │
 │ └─────────────────────────────┘ │
 │ ┌─────────────────────────────┐ │
-│ │ 💧 தண்ணீர் — நாளை காலை 6   │ │
-│ │  Water tomorrow at 6am      │ │
+│ │ 🚗 சார், ஆட்டோ வேணுமா?   │ │
+│ │    Auto & Car Transport     │ │
 │ └─────────────────────────────┘ │
-├──────────────┬──────────────────┤
-│  ┌──────────┐│┌───────────────┐ │
-│  │    ⚡    │││      💧       │ │
-│  │மின்சாரம் │││   தண்ணீர்    │ │
-│  │Electricity│││    Water     │ │
-│  └──────────┘│└───────────────┘ │
-├──────────────┼──────────────────┤
-│  ┌──────────┐│┌───────────────┐ │
-│  │    🚌    │││      🏥       │ │
-│  │ பேருந்து │││ மருத்துவமனை  │ │
-│  │ Bus Times│││   Hospital   │ │
-│  └──────────┘│└───────────────┘ │
-├──────────────┴──────────────────┤
-│  ┌─────────────────────────────┐│
-│  │  📞  அவசர தொலைபேசி         ││
-│  │      Emergency Contacts     ││
-│  └─────────────────────────────┘│
+│ ┌─────────────────────────────┐ │
+│ │ 🏥 சிஸ்டர், டாக்டர்...     │ │
+│ │    Hospital & Clinic        │ │
+│ └─────────────────────────────┘ │
+│ ┌─────────────────────────────┐ │
+│ │ ⚡ அண்ணே, கரண்ட்...       │ │
+│ │    Electricity Status       │ │
+│ └─────────────────────────────┘ │
+│ ┌─────────────────────────────┐ │
+│ │ 💧 அக்கா, தண்ணி...        │ │
+│ │    Water Supply             │ │
+│ └─────────────────────────────┘ │
 └─────────────────────────────────┘
 ```
 
-- Two live status cards at top refresh on open
-- Four module tiles — equal size, large icons
-- Emergency as full-width bottom bar (always visible, always one tap)
+**✅ Status:** Full-width rectangle tiles (one per row), colloquial Tamil labels with English sub-labels, cottage icon in header, NO live status chips on home screen. Tile order: Bus → Auto → Hospital → Electricity → Water
 
 ---
 
@@ -243,78 +238,77 @@
 
 ---
 
-### Screen 6 — Hospital / மருத்துவமனை
+### Screen 6 — Hospital / மருத்துவமனை ✅ IMPLEMENTED (Two Hospitals)
 
 ```
 ┌─────────────────────────────────┐
-│ ←  மருத்துவமனை   Hospital    🏥 │
+│ ←  உடம்பு நல்லருக்கா?         🏥 │
+│    Hospital & Clinic            │
 ├─────────────────────────────────┤
+│  எந்த மருத்துவமனைக்கு போகணும்? │
 │                                 │
-│  PTV பத்மாவதி மருத்துவமனை      │
-│  PTV Padmavathy Hospital        │
-│  📞 [casualty]  🚑 [ambulance]  │
+│  ┌─────────────────────────────┐ │
+│  │  PTV பத்மாவதி மருத்துவமனை │ │
+│  │  PTV Padmavathy Hospital    │ │
+│  │  தேவாரம் அருகில்            │ │
+│  └─────────────────────────────┘ │
 │                                 │
-│  ┌─────────────────────────┐   │
-│  │  👨‍⚕️ இன்று கிடைக்கும் டாக்டர்│
-│  │  Doctors available today │   │
-│  │  ─────────────────────  │   │
-│  │  [today = Wednesday ✅]  │   │
-│  │                          │   │
-│  │  டாக்டர் சேகர்           │   │
-│  │  Dr. Sekar               │   │
-│  │  [specialisation TBC]    │   │
-│  │  காலை முதல் மாலை வரை    │   │
-│  │  Morning to Evening      │   │
-│  └─────────────────────────┘   │
+│  ┌─────────────────────────────┐ │
+│  │  S P Clinic                 │ │
+│  │  Dr. Shanmugapriya          │ │
+│  │  பெண்கள் நலம் • பொது        │ │
+│  └─────────────────────────────┘ │
 │                                 │
-│  அனைத்து டாக்டர்கள் — All Doctors│
-│  ┌─────────────────────────┐   │
-│  │  டாக்டர் சேகர்   புதன்  │   │
-│  │  [more doctors TBC]     │   │
-│  └─────────────────────────┘   │
-│                                 │
-│  [ 📅 வாரம் முழுவதும் பார்க்க  ]  │
-│  [  View full week schedule     ]  │
+│  ┌─────────────────────────────┐ │
+│  │  அவசர உதவி                 │ │
+│  │  108 — Ambulance            │ │
+│  │  104 — Health Helpline      │ │
+│  └─────────────────────────────┘ │
 └─────────────────────────────────┘
+
+Doctor Detail (tap hospital card):
+- PTV: Dr. Sekar (General, Wednesday)
+- SP Clinic: Dr. Shanmugapriya (Women's • General • Diabetes, 7 days 4pm–8pm)
 ```
+
+**✅ Status:** Two-hospital layout (PTV Padmavathy + SP Clinic), doctor details with scheduling, one-tap call buttons
 
 ---
 
-### Screen 7 — Emergency Contacts / அவசர தொலைபேசி
+### Screen 7 — Auto & Transport / ஆட்டோ ✅ IMPLEMENTED
 
 ```
 ┌─────────────────────────────────┐
-│ ←  அவசர தொலைபேசி  Emergency  📞│
+│ ←  ஆட்டோ / வண்டி             🚗 │
 ├─────────────────────────────────┤
+│  🚗                             │
+│  சார், ஆட்டோ வேணுமா?            │
+│  வண்டி வேணும்னா கீழ இருக்காங்க   │
 │                                 │
-│ [ மின்சாரம் ][ மருத்துவம் ]     │
-│ [ போலீஸ்   ][ பஞ்சாயத்து ]     │
+│  ┌─────────────────────────────┐ │
+│  │  ஆட்டோ — முருகேசன்          │ │
+│  │  உத்தமபாளையம் வரை          │ │
+│  │              [ அழைக்க ]     │ │
+│  └─────────────────────────────┘ │
 │                                 │
-│  ── மின்சாரம் Electricity ──   │
+│  ┌─────────────────────────────┐ │
+│  │  ஆட்டோ — கதிரவன்           │ │
+│  │  போடி / கம்பம் வரை         │ │
+│  │              [ அழைக்க ]     │ │
+│  └─────────────────────────────┘ │
 │                                 │
-│  ┌─────────────────────────┐   │
-│  │  📱 94987 94987          │   │
-│  │  TNEB உள்ளூர் புகார் ✅  │   │
-│  │  TNEB Local Complaint    │   │
-│  │         [ 📞 அழைக்க ]   │   │
-│  └─────────────────────────┘   │
+│  ┌─────────────────────────────┐ │
+│  │  வேன் சேவை                  │ │
+│  │  காலை 7 மணி — உத்தமபாளையம் │ │
+│  │              [ அழைக்க ]     │ │
+│  └─────────────────────────────┘ │
 │                                 │
-│  ┌─────────────────────────┐   │
-│  │  📱 1912                 │   │
-│  │  TNEB தேசிய எண்          │   │
-│  │  TNEB National           │   │
-│  │         [ 📞 அழைக்க ]   │   │
-│  └─────────────────────────┘   │
-│                                 │
-│  ── மருத்துவம் Medical ──       │
-│  ┌─────────────────────────┐   │
-│  │  📱 [casualty number]    │   │
-│  │  PTV பத்மாவதி — அவசரம்   │   │
-│  │         [ 📞 அழைக்க ]   │   │
-│  └─────────────────────────┘   │
-│  [more contacts as collected]   │
+│  📞 உங்க ஊர்ல ஆட்டோ ஓட்டுனர் │
+│  இருந்தா வேந்தனிடம் சொல்லுங்க  │
 └─────────────────────────────────┘
 ```
+
+**✅ Status:** Auto/van driver contacts with coverage areas, one-tap call buttons, note to contact Venthan for new drivers
 
 ---
 
@@ -393,14 +387,16 @@ Power and water show last cached data with timestamp.
 
 ---
 
-## 9. Next Step — Phase 4: Build
+## 9. Next Step — Phase 5: Deployment & Testing
 
-UI design complete. Ready to scaffold the Flutter app and Node.js backend.
+✅ UI design complete and fully implemented in Flutter app.
 
-Build order:
-1. Backend: database setup + API scaffold
-2. Flutter: project setup + navigation skeleton
-3. Module by module: Emergency first (simplest) → Bus → Hospital → Water → Power
+Current work:
+1. Deploy backend to Render (Node.js) + Supabase PostgreSQL
+2. Seed real data (hospital, bus times, streets, emergency contacts)
+3. Test FCM push notifications
+4. Full end-to-end testing on actual Android devices
+5. Launch QR code + WhatsApp sharing
 
 ---
 

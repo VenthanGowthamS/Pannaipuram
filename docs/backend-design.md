@@ -1,10 +1,10 @@
 # பண்ணைப்புரம் App — Backend Design
 ### Phase 2 of 7
 
-> **Version:** 1.0
+> **Version:** 1.1 — READY FOR DEPLOYMENT
 > **Date:** March 2026
 > **Author:** Venthan (Senior Software Engineer)
-> **Status:** Phase 2 — Backend Design
+> **Status:** Phase 2 Complete — Backend Scaffolded & Documented, Ready for Production Deployment
 
 ---
 
@@ -33,9 +33,17 @@
 └────────────────────────────┘
 ```
 
-**Hosting:** Render.com free tier (backend + DB) — ~$0/month for village-scale traffic
-**Push Notifications:** Firebase Cloud Messaging (FCM) — free
-**TNEB Scraper:** Cron job runs every 6 hours inside the same server
+**Hosting:**
+- Backend: Render.com (free tier Node.js)
+- Database: Supabase (PostgreSQL, Asia-Pacific Singapore region)
+- Project ID: eoiaexdbnyzysolgwitw
+- Production API URL: https://pannaipuram-api.onrender.com
+
+**Push Notifications:** Firebase Cloud Messaging (FCM) — free (optional, deferred to later phases)
+
+**TNEB Scraper:** Cron job runs every 6 hours inside Render server
+
+**API Response Format:** All endpoints return `{success: true, data: [...]}` envelope
 
 ---
 
@@ -444,14 +452,28 @@ NODE_ENV=production
 
 ---
 
-## 9. Next Step — Phase 3: App UI Design
+## 9. Next Steps — Phase 5: Deployment
 
-Backend design is complete. Before writing code, the next phase is:
-- Wireframes for all 5 screens in Tamil
-- Home screen layout with live status cards
-- Bus screen with corridor tabs
-- Water alert community flow
-- Doctor availability "today" screen
+**Backend design complete. Scaffolded code exists. Ready for deployment:**
+
+1. **Provision Supabase project** (if not already done)
+   - Project: eoiaexdbnyzysolgwitw, region: Singapore
+   - Run `db/schema.sql` + `db/seed.sql` to initialize database
+
+2. **Configure environment variables** in Render
+   - `DATABASE_URL` from Supabase
+   - `FIREBASE_PROJECT_ID`, `FIREBASE_PRIVATE_KEY` (optional for now)
+   - `JWT_SECRET` for admin auth
+   - `NODE_ENV=production`
+
+3. **Deploy to Render**
+   - Connect GitHub repo or push code directly
+   - Render detects `package.json`, builds and deploys automatically
+   - Verify API at: https://pannaipuram-api.onrender.com/health
+
+4. **Test endpoints** with production API URL
+   - Update Flutter `ApiService._base` to point to https://pannaipuram-api.onrender.com
+   - Run end-to-end tests on actual Android device
 
 ---
 
