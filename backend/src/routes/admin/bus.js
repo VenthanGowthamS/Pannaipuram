@@ -15,10 +15,19 @@ router.get('/corridors', async (req, res) => {
   }
 });
 
-// POST /admin/bus/routes
+// POST /admin/bus/routes — find or create
 router.post('/routes', async (req, res) => {
   const { corridor_id, direction, origin_tamil, dest_tamil, stops_tamil, notes_tamil } = req.body;
   try {
+    // First check if route already exists for this corridor+direction
+    const existing = await query(
+      'SELECT * FROM bus_routes WHERE corridor_id = $1 AND direction = $2 LIMIT 1',
+      [corridor_id, direction]
+    );
+    if (existing.rows.length > 0) {
+      return res.json({ success: true, data: existing.rows[0] });
+    }
+    // Create new route
     const result = await query(`
       INSERT INTO bus_routes (corridor_id, direction, origin_tamil, dest_tamil, stops_tamil, notes_tamil)
       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *

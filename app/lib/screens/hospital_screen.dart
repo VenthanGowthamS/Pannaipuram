@@ -100,6 +100,7 @@ class HospitalScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => const _HospitalDetailScreen(
+                            hospitalId: 1,
                             hospitalName: 'PTV பத்மாவதி மருத்துவமனை',
                             accentColor: Color(0xFFB71C1C),
                             icon: Icons.local_hospital_rounded,
@@ -124,6 +125,7 @@ class HospitalScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => const _HospitalDetailScreen(
+                            hospitalId: 2,
                             hospitalName: 'S P Clinic',
                             accentColor: Color(0xFFE65100),
                             icon: Icons.medical_services_rounded,
@@ -343,11 +345,13 @@ class _QuickCallButton extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════════════════════
 
 class _HospitalDetailScreen extends StatefulWidget {
+  final int hospitalId;
   final String hospitalName;
   final Color accentColor;
   final IconData icon;
 
   const _HospitalDetailScreen({
+    required this.hospitalId,
     required this.hospitalName,
     required this.accentColor,
     required this.icon,
@@ -378,7 +382,11 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
 
   Future<void> _fetchDoctors() async {
     try {
-      final doctors = await ApiService.getAllDoctors();
+      final allDoctors = await ApiService.getAllDoctors();
+      // Filter doctors for this specific hospital
+      final doctors = allDoctors
+          .where((d) => d.hospitalId == null || d.hospitalId == widget.hospitalId)
+          .toList();
       if (!mounted) return;
       setState(() {
         _apiDoctors = doctors;
@@ -683,9 +691,11 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
 
   // ── Hardcoded fallback doctors (used when offline) ────────────────
   List<Widget> _buildFallbackDoctors(int todayDow) {
-    final fallbackDoctors = [
+    // Only show fallback doctor that belongs to this hospital
+    final allFallback = [
       Doctor(
         id: -1,
+        hospitalId: 1, // PTV Padmavathy
         nameTamil: 'டாக்டர் சேகர்',
         nameEnglish: 'Dr. Sekar',
         specialisation: 'பொது மருத்துவம்',
@@ -695,6 +705,7 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
       ),
       Doctor(
         id: -2,
+        hospitalId: 2, // SP Clinic
         nameTamil: 'டாக்டர் ஷண்முகப்ரியா',
         nameEnglish: 'Dr. Shanmugapriya',
         specialisation: 'பெண்கள் நலம் • பொது • சர்க்கரை நோய்',
@@ -704,6 +715,9 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
         ],
       ),
     ];
+    final fallbackDoctors = allFallback
+        .where((d) => d.hospitalId == widget.hospitalId)
+        .toList();
 
     return fallbackDoctors
         .map((d) => _buildApiDoctorCard(d, todayDow))

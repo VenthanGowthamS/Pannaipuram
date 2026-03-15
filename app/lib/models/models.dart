@@ -234,6 +234,7 @@ class Hospital {
 
 class Doctor {
   final int id;
+  final int? hospitalId;
   final String nameTamil;
   final String nameEnglish;
   final String? specialisation;
@@ -241,6 +242,7 @@ class Doctor {
 
   const Doctor({
     required this.id,
+    this.hospitalId,
     required this.nameTamil,
     required this.nameEnglish,
     this.specialisation,
@@ -249,6 +251,7 @@ class Doctor {
 
   factory Doctor.fromJson(Map<String, dynamic> j) => Doctor(
         id: j['id'],
+        hospitalId: j['hospital_id'],
         nameTamil: j['name_tamil'],
         nameEnglish: j['name_english'] ?? '',
         specialisation: j['specialisation'],

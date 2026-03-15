@@ -17,15 +17,18 @@ router.get('/info', async (req, res) => {
 router.get('/doctors', async (req, res) => {
   try {
     const result = await query(`
-      SELECT d.id, d.name_tamil, d.name_english, d.specialisation, d.photo_url,
-             json_agg(
-               json_build_object(
-                 'day', ds.day_of_week,
-                 'start', ds.start_time,
-                 'end',   ds.end_time,
-                 'notes', ds.notes_tamil
-               ) ORDER BY ds.day_of_week
-             ) AS schedule
+      SELECT d.id, d.hospital_id, d.name_tamil, d.name_english, d.specialisation, d.photo_url, d.is_active,
+             COALESCE(
+               json_agg(
+                 json_build_object(
+                   'day_of_week', ds.day_of_week,
+                   'start_time', ds.start_time,
+                   'end_time',   ds.end_time,
+                   'notes_tamil', ds.notes_tamil
+                 ) ORDER BY ds.day_of_week
+               ) FILTER (WHERE ds.id IS NOT NULL),
+               '[]'::json
+             ) AS schedules
       FROM doctors d
       LEFT JOIN doctor_schedules ds ON d.id = ds.doctor_id
       WHERE d.is_active = TRUE

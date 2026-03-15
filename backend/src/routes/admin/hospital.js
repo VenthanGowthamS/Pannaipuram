@@ -27,13 +27,13 @@ router.put('/info', async (req, res) => {
 
 // POST /admin/hospital/doctors
 router.post('/doctors', async (req, res) => {
-  const { name_tamil, name_english, specialisation, photo_url } = req.body;
+  const { hospital_id, name_tamil, name_english, specialisation, photo_url } = req.body;
   if (!name_tamil) return res.status(400).json({ error: 'name_tamil required' });
   try {
     const result = await query(`
       INSERT INTO doctors (hospital_id, name_tamil, name_english, specialisation, photo_url)
-      VALUES (1, $1, $2, $3, $4) RETURNING *
-    `, [name_tamil, name_english, specialisation, photo_url]);
+      VALUES ($1, $2, $3, $4, $5) RETURNING *
+    `, [hospital_id || 1, name_tamil, name_english, specialisation, photo_url]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });

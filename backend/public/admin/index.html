@@ -264,6 +264,13 @@
       <div class="card">
         <h2>Add Doctor</h2>
         <div class="form-row">
+          <div class="form-group" style="max-width:250px">
+            <label>Hospital</label>
+            <select id="dr-hospital">
+              <option value="1">PTV பத்மாவதி (PTV Padmavathy)</option>
+              <option value="2">S P Clinic</option>
+            </select>
+          </div>
           <div class="form-group">
             <label>Name (Tamil)</label>
             <input id="dr-tamil" placeholder="டாக்டர் சேகர்" />
@@ -663,9 +670,10 @@ async function loadDoctors() {
     if (!doctors.length) { el.innerHTML = '<div class="empty">No doctors yet</div>'; return; }
     const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     el.innerHTML = `<table>
-      <tr><th>Name (Tamil)</th><th>Name (English)</th><th>Specialisation</th><th>Schedule</th><th>Status</th><th>Action</th></tr>
+      <tr><th>Hospital</th><th>Name (Tamil)</th><th>Name (English)</th><th>Specialisation</th><th>Schedule</th><th>Status</th><th>Action</th></tr>
       ${doctors.map(d => `
         <tr>
+          <td>${d.hospital_id === 2 ? 'SP Clinic' : 'PTV'}</td>
           <td>${d.name_tamil}</td>
           <td>${d.name_english || '—'}</td>
           <td>${d.specialisation || '—'}</td>
@@ -684,6 +692,7 @@ async function loadDoctors() {
 
 async function addDoctor() {
   const data = await apiPost('/admin/hospital/doctors', {
+    hospital_id:   parseInt(document.getElementById('dr-hospital').value),
     name_tamil:    document.getElementById('dr-tamil').value,
     name_english:  document.getElementById('dr-english').value,
     specialisation: document.getElementById('dr-spec').value

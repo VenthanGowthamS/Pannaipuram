@@ -333,6 +333,28 @@ class BusRouteScreen extends StatelessWidget {
             const SizedBox(height: 6),
 
             // ── Timetable with gap warnings ────────────────────────────
+            if (timings.isEmpty)
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      Icon(Icons.schedule_rounded, color: Colors.grey[300], size: 48),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'நேரம் விரைவில் சேர்க்கப்படும்',
+                        style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 15, color: Color(0xFF757575)),
+                      ),
+                      const Text(
+                        'Timings will be added soon',
+                        style: TextStyle(fontFamily: 'Roboto', fontSize: 12, color: Color(0xFF9E9E9E)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            if (timings.isNotEmpty)
             ...List.generate(timings.length * 2 - 1, (index) {
               if (index.isEven) {
                 return _TimingCard(
