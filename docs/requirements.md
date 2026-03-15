@@ -329,7 +329,79 @@ Water is not wasted
 
 ---
 
-## 9. Distribution Plan
+## 9. Architecture — How Everything Connects
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                  500 Village Users                               │
+│          Android phones in Pannaipuram                          │
+└───────────────────────┬─────────────────────────────────────────┘
+                        │ HTTPS (API calls)
+                        ▼
+┌─────────────────────────────────────────────────────────────────┐
+│          Render.com — Node.js + Express Server                   │
+│          https://pannaipuram-api.onrender.com                    │
+│                                                                  │
+│   /api/power/*     → Power cut status                           │
+│   /api/water/*     → Water schedule + community alerts          │
+│   /api/bus/*       → Bus timings (both corridors)               │
+│   /api/hospital/*  → Doctors + schedules                        │
+│   /api/emergency/* → Emergency contacts                         │
+│   /admin/panel     → Admin web page (Venthan only)              │
+│                                                                  │
+│   Background jobs:                                               │
+│   • TNEB scraper (every 6 hrs) — auto-adds power cuts           │
+│   • Water scheduler — sends notifications on water days         │
+└───────────────────────┬─────────────────────────────────────────┘
+                        │ SQL queries (PostgreSQL)
+                        ▼
+┌─────────────────────────────────────────────────────────────────┐
+│          Supabase — PostgreSQL Database                          │
+│          Region: Asia-Pacific, Singapore                         │
+│          Project: eoiaexdbnyzysolgwitw                           │
+│                                                                  │
+│   Tables:                                                        │
+│   streets, wards          → 57 streets of Pannaipuram           │
+│   power_cuts              → Planned + fault cuts                 │
+│   power_restorations      → User reports "power back"           │
+│   water_schedules         → Per-street water timing             │
+│   water_alerts            → Community "water came" reports       │
+│   bus_corridors           → Bodi side + Kamban side             │
+│   bus_routes, bus_timings → All departure times                  │
+│   hospitals, doctors      → PTV + SP Clinic, schedules          │
+│   doctor_schedules        → Which doctor, which day             │
+│   emergency_contacts      → TNEB, police, fire, panchayat       │
+│   devices                 → FCM tokens for push notifications    │
+│   admin_users             → Venthan's login (hashed password)   │
+└─────────────────────────────────────────────────────────────────┘
+                        ▲
+                        │ Login + manage content
+┌───────────────────────┴─────────────────────────────────────────┐
+│          Admin Panel                                             │
+│          https://pannaipuram-api.onrender.com/admin/panel        │
+│          (Venthan only — JWT login)                              │
+│                                                                  │
+│   • Add / resolve power cuts                                     │
+│   • Add bus timings for both corridors                          │
+│   • Add doctors + weekly schedules                              │
+│   • Add emergency contacts                                       │
+│   • Add streets (all 57)                                        │
+└─────────────────────────────────────────────────────────────────┘
+
+WHY SEPARATE SERVER AND DATABASE?
+• Render (server) can restart/redeploy — any data stored there is lost
+• Supabase (DB) is built for permanent data storage with backups
+• Server = the worker that reads/writes. DB = the permanent filing cabinet.
+
+WHY NOT STATIC DATA IN THE APP?
+• If bus timings were hardcoded in the APK, changing one timing = rebuild + redistribute APK to 500 users
+• With the API + admin panel, Venthan changes data in 30 seconds from any browser
+• App fetches fresh data every time it opens
+```
+
+---
+
+## 10. Distribution Plan
 
 - APK hosted on Firebase App Distribution or a simple static link
 - **QR code** generated and:

@@ -1,8 +1,8 @@
 require('dotenv').config();
-require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
 const helmet  = require('helmet');
+const path    = require('path');
 
 // Routes — Mobile API
 const waterRoutes     = require('./routes/water');
@@ -19,17 +19,21 @@ const adminWaterRoutes    = require('./routes/admin/water');
 const adminBusRoutes      = require('./routes/admin/bus');
 const adminHospitalRoutes = require('./routes/admin/hospital');
 const adminContactRoutes  = require('./routes/admin/contacts');
+const adminStreetRoutes   = require('./routes/admin/streets');
 
 // Services
-const { startTnebScraper }     = require('./services/tnebScraper');
-const { startWaterScheduler }  = require('./services/waterScheduler');
+const { startTnebScraper }    = require('./services/tnebScraper');
+const { startWaterScheduler } = require('./services/waterScheduler');
 
 const app = express();
 
 // ── Middleware ──────────────────────────────────────────
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false })); // CSP off so admin HTML loads
 app.use(cors());
 app.use(express.json());
+
+// ── Serve Admin Panel (static HTML) ────────────────────
+app.use('/admin/panel', express.static(path.join(__dirname, '../public/admin')));
 
 // ── Mobile API Routes ───────────────────────────────────
 app.use('/api/water',     waterRoutes);
@@ -46,6 +50,7 @@ app.use('/admin/water',    adminWaterRoutes);
 app.use('/admin/bus',      adminBusRoutes);
 app.use('/admin/hospital', adminHospitalRoutes);
 app.use('/admin/contacts', adminContactRoutes);
+app.use('/admin/streets',  adminStreetRoutes);
 
 // ── Health Check ────────────────────────────────────────
 app.get('/health', (req, res) => {

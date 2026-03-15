@@ -39,4 +39,27 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// POST /admin/auth/setup — first-time only, creates admin user
+// Only works when no admin users exist yet
+router.post('/setup', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password required' });
+  }
+  try {
+    const existing = await query('SELECT id FROM admin_users LIMIT 1');
+    if (existing.rows.length > 0) {
+      return res.status(403).json({ error: 'Admin already exists' });
+    }
+    const hash = await bcrypt.hash(password, 10);
+    await query(
+      'INSERT INTO admin_users (email, password_hash) VALUES ($1, $2)',
+      [email, hash]
+    );
+    res.json({ success: true, message: 'Admin created. You can now login.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error', detail: err.message });
+  }
+});
+
 module.exports = router;

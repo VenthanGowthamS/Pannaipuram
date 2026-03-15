@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>பண்ணைப்புரம் — Admin Panel</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #212121; }
+
+  /* ── Login ── */
+  #loginPage {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; background: linear-gradient(135deg, #1B5E20, #388E3C);
+  }
+  .login-box {
+    background: white; border-radius: 16px; padding: 40px;
+    width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+  .login-box h1 { font-size: 22px; color: #1B5E20; margin-bottom: 4px; }
+  .login-box p  { font-size: 13px; color: #757575; margin-bottom: 28px; }
+  .login-box input {
+    width: 100%; padding: 12px 14px; border: 1.5px solid #ddd;
+    border-radius: 8px; font-size: 15px; margin-bottom: 14px; outline: none;
+  }
+  .login-box input:focus { border-color: #1B5E20; }
+  .btn-primary {
+    width: 100%; padding: 13px; background: #1B5E20; color: white;
+    border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: 600;
+  }
+  .btn-primary:hover { background: #2E7D32; }
+  #loginError { color: #c62828; font-size: 13px; margin-top: 10px; text-align: center; }
+
+  /* ── App Shell ── */
+  #appPage { display: none; }
+  .topbar {
+    background: #1B5E20; color: white; padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .topbar h1 { font-size: 18px; }
+  .topbar span { font-size: 12px; opacity: 0.8; }
+  .logout-btn {
+    background: rgba(255,255,255,0.15); border: none; color: white;
+    padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 13px;
+  }
+  .logout-btn:hover { background: rgba(255,255,255,0.25); }
+
+  .tabs {
+    display: flex; background: white; border-bottom: 2px solid #e0e0e0;
+    padding: 0 24px; overflow-x: auto; gap: 4px;
+  }
+  .tab {
+    padding: 14px 20px; cursor: pointer; font-size: 14px; font-weight: 500;
+    border-bottom: 3px solid transparent; white-space: nowrap; color: #757575;
+    transition: all 0.2s;
+  }
+  .tab.active { color: #1B5E20; border-bottom-color: #1B5E20; }
+  .tab:hover { color: #1B5E20; background: #f5f5f5; }
+
+  .content { padding: 24px; max-width: 960px; margin: 0 auto; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── Cards ── */
+  .card {
+    background: white; border-radius: 12px; padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px;
+  }
+  .card h2 { font-size: 16px; color: #212121; margin-bottom: 16px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
+
+  /* ── Form ── */
+  .form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .form-group { display: flex; flex-direction: column; flex: 1; min-width: 180px; }
+  .form-group label { font-size: 12px; color: #757575; margin-bottom: 5px; font-weight: 500; }
+  .form-group input, .form-group select, .form-group textarea {
+    padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 8px;
+    font-size: 14px; outline: none; font-family: inherit;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: #1B5E20; }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+
+  .btn-add {
+    background: #1B5E20; color: white; border: none; padding: 10px 20px;
+    border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;
+  }
+  .btn-add:hover { background: #2E7D32; }
+  .btn-sm {
+    padding: 5px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px;
+  }
+  .btn-danger { background: #ffebee; color: #c62828; }
+  .btn-danger:hover { background: #ffcdd2; }
+  .btn-success { background: #e8f5e9; color: #1B5E20; }
+  .btn-success:hover { background: #c8e6c9; }
+
+  /* ── Table ── */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 10px 12px; background: #f5f5f5; color: #757575; font-size: 12px; font-weight: 600; }
+  td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 12px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-planned { background: #fff3e0; color: #e65100; }
+  .badge-unplanned { background: #ffebee; color: #c62828; }
+  .badge-active { background: #e8f5e9; color: #1B5E20; }
+  .badge-off { background: #f5f5f5; color: #9e9e9e; }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; background: #212121; color: white;
+    padding: 12px 20px; border-radius: 8px; font-size: 14px; z-index: 999;
+    display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .empty { text-align: center; padding: 40px; color: #bdbdbd; font-size: 14px; }
+  .loading { text-align: center; padding: 20px; color: #9e9e9e; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN PAGE ═══ -->
+<div id="loginPage">
+  <div class="login-box">
+    <h1>பண்ணைப்புரம் 🏡</h1>
+    <p>Admin Panel — Venthan Only</p>
+    <input type="email"    id="loginEmail"    placeholder="Email"    value="venthan89@gmail.com" />
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <button class="btn-primary" onclick="login()">Login →</button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- ═══ APP SHELL ═══ -->
+<div id="appPage">
+  <div class="topbar">
+    <div>
+      <h1>பண்ணைப்புரம் Admin</h1>
+      <span id="adminEmail"></span>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('power')">⚡ Power Cuts</div>
+    <div class="tab" onclick="switchTab('bus')">🚌 Bus Timings</div>
+    <div class="tab" onclick="switchTab('hospital')">🏥 Doctors</div>
+    <div class="tab" onclick="switchTab('emergency')">📞 Emergency</div>
+    <div class="tab" onclick="switchTab('streets')">🏘 Streets</div>
+  </div>
+
+  <div class="content">
+
+    <!-- ─── POWER CUTS ─── -->
+    <div class="section active" id="sec-power">
+      <div class="card">
+        <h2>Add Power Cut</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Area (Tamil or English)</label>
+            <input id="pc-area" placeholder="பண்ணைப்புரம் மற்றும் சுற்றியுள்ள பகுதிகள்" />
+          </div>
+          <div class="form-group" style="max-width:150px">
+            <label>Type</label>
+            <select id="pc-type">
+              <option value="planned">திட்டமிட்டது (Planned)</option>
+              <option value="unplanned">கோளாறு (Fault)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Time</label>
+            <input type="datetime-local" id="pc-start" />
+          </div>
+          <div class="form-group">
+            <label>End Time (optional)</label>
+            <input type="datetime-local" id="pc-end" />
+          </div>
+          <div class="form-group">
+            <label>Reason (Tamil)</label>
+            <input id="pc-reason" placeholder="பராமரிப்பு பணிகள்" />
+          </div>
+        </div>
+        <button class="btn-add" onclick="addPowerCut()">+ Add Power Cut</button>
+      </div>
+
+      <div class="card">
+        <h2>Active / Upcoming Cuts</h2>
+        <div id="powerList" class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- ─── BUS TIMINGS ─── -->
+    <div class="section" id="sec-bus">
+      <div class="card">
+        <h2>Add Bus Timing</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Corridor</label>
+            <select id="bt-corridor">
+              <option value="1">🔵 போடி பக்கம் (Towards Bodi)</option>
+              <option value="2">🟢 கம்பம் பக்கம் (Towards Kamban)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Direction</label>
+            <select id="bt-direction">
+              <option value="outbound">Outbound (from Pannaipuram)</option>
+              <option value="inbound">Inbound (to Pannaipuram)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="max-width:140px">
+            <label>Departure Time</label>
+            <input type="time" id="bt-time" />
+          </div>
+          <div class="form-group" style="max-width:150px">
+            <label>Bus Type</label>
+            <select id="bt-type">
+              <option value="ordinary">Ordinary</option>
+              <option value="express">Express 🚀</option>
+              <option value="SETC">SETC</option>
+            </select>
+          </div>
+          <div class="form-group" style="max-width:150px">
+            <label>Days</label>
+            <select id="bt-days">
+              <option value="daily">Daily</option>
+              <option value="weekdays">Weekdays only</option>
+              <option value="sundays">Sundays only</option>
+            </select>
+          </div>
+          <div class="form-group" style="max-width:130px; justify-content:flex-end;">
+            <label>&nbsp;</label>
+            <label style="display:flex;align-items:center;gap:6px;padding:10px 0;cursor:pointer;">
+              <input type="checkbox" id="bt-last" style="width:auto;padding:0;" />
+              <span style="font-size:13px">Last bus 🔴</span>
+            </label>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addBusTiming()">+ Add Timing</button>
+      </div>
+
+      <div class="card">
+        <h2>🔵 போடி பக்கம் — Bodi Side</h2>
+        <div id="busList1" class="loading">Loading...</div>
+      </div>
+      <div class="card">
+        <h2>🟢 கம்பம் பக்கம் — Kamban Side</h2>
+        <div id="busList2" class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- ─── DOCTORS ─── -->
+    <div class="section" id="sec-hospital">
+      <div class="card">
+        <h2>Add Doctor</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name (Tamil)</label>
+            <input id="dr-tamil" placeholder="டாக்டர் சேகர்" />
+          </div>
+          <div class="form-group">
+            <label>Name (English)</label>
+            <input id="dr-english" placeholder="Dr. Sekar" />
+          </div>
+          <div class="form-group">
+            <label>Specialisation</label>
+            <input id="dr-spec" placeholder="General Medicine" />
+          </div>
+        </div>
+        <button class="btn-add" onclick="addDoctor()">+ Add Doctor</button>
+      </div>
+
+      <div class="card">
+        <h2>Add Doctor Schedule</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Doctor</label>
+            <select id="sched-doctor"></select>
+          </div>
+          <div class="form-group" style="max-width:160px">
+            <label>Day of Week</label>
+            <select id="sched-day">
+              <option value="0">Sunday</option>
+              <option value="1">Monday</option>
+              <option value="2">Tuesday</option>
+              <option value="3">Wednesday</option>
+              <option value="4">Thursday</option>
+              <option value="5">Friday</option>
+              <option value="6">Saturday</option>
+            </select>
+          </div>
+          <div class="form-group" style="max-width:130px">
+            <label>Start Time</label>
+            <input type="time" id="sched-start" />
+          </div>
+          <div class="form-group" style="max-width:130px">
+            <label>End Time</label>
+            <input type="time" id="sched-end" />
+          </div>
+          <div class="form-group">
+            <label>Notes (Tamil)</label>
+            <input id="sched-notes" placeholder="காலை முதல் மாலை வரை" />
+          </div>
+        </div>
+        <button class="btn-add" onclick="addSchedule()">+ Add Schedule</button>
+      </div>
+
+      <div class="card">
+        <h2>Doctors</h2>
+        <div id="doctorList" class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- ─── EMERGENCY ─── -->
+    <div class="section" id="sec-emergency">
+      <div class="card">
+        <h2>Add Emergency Contact</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name (Tamil)</label>
+            <input id="ec-tamil" placeholder="காவல் நிலையம்" />
+          </div>
+          <div class="form-group">
+            <label>Name (English)</label>
+            <input id="ec-english" placeholder="Police Station" />
+          </div>
+          <div class="form-group" style="max-width:180px">
+            <label>Phone Number</label>
+            <input id="ec-phone" placeholder="04546 123456" type="tel" />
+          </div>
+          <div class="form-group" style="max-width:160px">
+            <label>Category</label>
+            <select id="ec-category">
+              <option value="power">மின்சாரம் (Power)</option>
+              <option value="medical">மருத்துவம் (Medical)</option>
+              <option value="police">போலீஸ் (Police)</option>
+              <option value="panchayat">பஞ்சாயத்து (Panchayat)</option>
+              <option value="fire">தீயணைப்பு (Fire)</option>
+              <option value="other">மற்றவை (Other)</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addContact()">+ Add Contact</button>
+      </div>
+
+      <div class="card">
+        <h2>All Emergency Contacts</h2>
+        <div id="contactList" class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- ─── STREETS ─── -->
+    <div class="section" id="sec-streets">
+      <div class="card">
+        <h2>Add Street</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Street Name (Tamil)</label>
+            <input id="st-tamil" placeholder="வள்ளுவர் தெரு" />
+          </div>
+          <div class="form-group">
+            <label>Street Name (English)</label>
+            <input id="st-english" placeholder="Valluvar Street" />
+          </div>
+        </div>
+        <button class="btn-add" onclick="addStreet()">+ Add Street</button>
+      </div>
+      <div class="card">
+        <h2>All Streets (57 total)</h2>
+        <div id="streetList" class="loading">Loading...</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /appPage -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = window.location.origin;
+let token = localStorage.getItem('panToken') || '';
+
+// ══════════════════════════════════════════════
+// Auth
+// ══════════════════════════════════════════════
+async function login() {
+  const email    = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  const errEl    = document.getElementById('loginError');
+  errEl.textContent = '';
+
+  try {
+    const res  = await fetch(`${API}/admin/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Login failed'; return; }
+    token = data.token;
+    localStorage.setItem('panToken', token);
+    showApp(email);
+  } catch(e) {
+    errEl.textContent = 'Cannot reach server. Try again.';
+  }
+}
+
+function logout() {
+  token = '';
+  localStorage.removeItem('panToken');
+  document.getElementById('appPage').style.display   = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+}
+
+function showApp(email) {
+  document.getElementById('loginPage').style.display  = 'none';
+  document.getElementById('appPage').style.display    = 'block';
+  document.getElementById('adminEmail').textContent   = email;
+  loadAll();
+}
+
+function authHeaders() {
+  return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+}
+
+// Auto-login if token exists
+if (token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    if (payload.exp * 1000 > Date.now()) showApp(payload.email);
+    else token = '';
+  } catch(e) { token = ''; }
+}
+
+// ══════════════════════════════════════════════
+// Tabs
+// ══════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(`sec-${tab}`).classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+// Toast
+// ══════════════════════════════════════════════
+function toast(msg, color='#212121') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.style.background = color; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+
+async function apiPost(path, body) {
+  const res = await fetch(`${API}${path}`, {
+    method: 'POST', headers: authHeaders(), body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+async function apiPut(path, body) {
+  const res = await fetch(`${API}${path}`, {
+    method: 'PUT', headers: authHeaders(), body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+async function apiGet(path) {
+  const res = await fetch(`${API}${path}`, { headers: authHeaders() });
+  const data = await res.json();
+  return data.data || data;
+}
+
+// ══════════════════════════════════════════════
+// Load All
+// ══════════════════════════════════════════════
+function loadAll() {
+  loadPowerCuts();
+  loadBusTimings();
+  loadDoctors();
+  loadContacts();
+  loadStreets();
+}
+
+// ══════════════════════════════════════════════
+// POWER CUTS
+// ══════════════════════════════════════════════
+async function loadPowerCuts() {
+  const el = document.getElementById('powerList');
+  try {
+    const cuts = await apiGet('/api/power/cuts');
+    if (!cuts.length) { el.innerHTML = '<div class="empty">No active or upcoming power cuts</div>'; return; }
+    el.innerHTML = `<table>
+      <tr><th>Type</th><th>Area</th><th>Start</th><th>End</th><th>Reason</th><th>Action</th></tr>
+      ${cuts.map(c => `
+        <tr>
+          <td><span class="badge badge-${c.cut_type}">${c.cut_type === 'planned' ? 'திட்டமிட்டது' : 'கோளாறு'}</span></td>
+          <td>${c.area_description || '—'}</td>
+          <td>${formatDt(c.start_time)}</td>
+          <td>${c.end_time ? formatDt(c.end_time) : '—'}</td>
+          <td>${c.reason_tamil || '—'}</td>
+          <td>
+            <button class="btn-sm btn-success" onclick="resolveCut(${c.id})">✅ Resolved</button>
+          </td>
+        </tr>`).join('')}
+    </table>`;
+  } catch(e) { el.innerHTML = '<div class="empty">Error loading</div>'; }
+}
+
+async function addPowerCut() {
+  const body = {
+    area_description: document.getElementById('pc-area').value,
+    cut_type:    document.getElementById('pc-type').value,
+    start_time:  document.getElementById('pc-start').value,
+    end_time:    document.getElementById('pc-end').value || null,
+    reason_tamil: document.getElementById('pc-reason').value
+  };
+  if (!body.start_time) { toast('Start time is required', '#c62828'); return; }
+  const data = await apiPost('/admin/power/cuts', body);
+  if (data.success) { toast('Power cut added ✅', '#1B5E20'); loadPowerCuts(); }
+  else toast(data.error || 'Error', '#c62828');
+}
+
+async function resolveCut(id) {
+  const data = await apiPut(`/admin/power/cuts/${id}`, { is_resolved: true });
+  if (data.success) { toast('Marked as resolved ✅', '#1B5E20'); loadPowerCuts(); }
+}
+
+// ══════════════════════════════════════════════
+// BUS TIMINGS
+// ══════════════════════════════════════════════
+async function loadBusTimings() {
+  loadCorridorTimings(1, 'busList1');
+  loadCorridorTimings(2, 'busList2');
+}
+
+async function loadCorridorTimings(corridorId, elId) {
+  const el = document.getElementById(elId);
+  try {
+    const timings = await apiGet(`/api/bus/timings/${corridorId}`);
+    if (!timings.length) { el.innerHTML = '<div class="empty">No timings yet — add above</div>'; return; }
+    el.innerHTML = `<table>
+      <tr><th>Time</th><th>Direction</th><th>Type</th><th>Days</th><th>Last Bus</th><th>Action</th></tr>
+      ${timings.map(t => `
+        <tr>
+          <td><strong>${t.departs_at ? t.departs_at.substring(0,5) : '—'}</strong></td>
+          <td>${t.direction || 'outbound'}</td>
+          <td>${t.bus_type}</td>
+          <td>${t.days_of_week}</td>
+          <td>${t.is_last_bus ? '🔴 Yes' : '—'}</td>
+          <td><button class="btn-sm btn-danger" onclick="deactivateBus(${t.id})">Remove</button></td>
+        </tr>`).join('')}
+    </table>`;
+  } catch(e) { el.innerHTML = '<div class="empty">Error loading</div>'; }
+}
+
+async function addBusTiming() {
+  const corridorId  = document.getElementById('bt-corridor').value;
+  const direction   = document.getElementById('bt-direction').value;
+  const departs_at  = document.getElementById('bt-time').value;
+  if (!departs_at) { toast('Time is required', '#c62828'); return; }
+
+  // First ensure route exists for this corridor+direction
+  const routeData = await apiPost('/admin/bus/routes', {
+    corridor_id: parseInt(corridorId), direction,
+    origin_tamil: direction === 'outbound' ? 'பண்ணைப்புரம்' : (corridorId === '1' ? 'போடி' : 'கம்பம்'),
+    dest_tamil:   direction === 'outbound' ? (corridorId === '1' ? 'போடி' : 'கம்பம்') : 'பண்ணைப்புரம்'
+  });
+  const routeId = routeData.data?.id;
+  if (!routeId) { toast('Route error', '#c62828'); return; }
+
+  const data = await apiPost('/admin/bus/timings', {
+    route_id: routeId, departs_at,
+    bus_type:     document.getElementById('bt-type').value,
+    days_of_week: document.getElementById('bt-days').value,
+    is_last_bus:  document.getElementById('bt-last').checked
+  });
+  if (data.success) { toast('Bus timing added ✅', '#1B5E20'); loadBusTimings(); document.getElementById('bt-time').value = ''; }
+  else toast(data.error || 'Error', '#c62828');
+}
+
+async function deactivateBus(id) {
+  await apiPut(`/admin/bus/timings/${id}`, { is_active: false });
+  toast('Removed ✅', '#1B5E20'); loadBusTimings();
+}
+
+// ══════════════════════════════════════════════
+// DOCTORS
+// ══════════════════════════════════════════════
+async function loadDoctors() {
+  const el = document.getElementById('doctorList');
+  const sel = document.getElementById('sched-doctor');
+  try {
+    const doctors = await apiGet('/api/hospital/doctors');
+    sel.innerHTML = doctors.map(d => `<option value="${d.id}">${d.name_english || d.name_tamil}</option>`).join('');
+    if (!doctors.length) { el.innerHTML = '<div class="empty">No doctors yet</div>'; return; }
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    el.innerHTML = `<table>
+      <tr><th>Name (Tamil)</th><th>Name (English)</th><th>Specialisation</th><th>Schedule</th><th>Status</th></tr>
+      ${doctors.map(d => `
+        <tr>
+          <td>${d.name_tamil}</td>
+          <td>${d.name_english || '—'}</td>
+          <td>${d.specialisation || '—'}</td>
+          <td>${d.schedules && d.schedules.length
+            ? d.schedules.map(s => `${days[s.day_of_week]}${s.notes_tamil ? ' — '+s.notes_tamil : ''}`).join(', ')
+            : '—'}</td>
+          <td><span class="badge ${d.is_active ? 'badge-active' : 'badge-off'}">${d.is_active ? 'Active' : 'Inactive'}</span></td>
+        </tr>`).join('')}
+    </table>`;
+  } catch(e) { el.innerHTML = '<div class="empty">Error loading</div>'; }
+}
+
+async function addDoctor() {
+  const data = await apiPost('/admin/hospital/doctors', {
+    name_tamil:    document.getElementById('dr-tamil').value,
+    name_english:  document.getElementById('dr-english').value,
+    specialisation: document.getElementById('dr-spec').value
+  });
+  if (data.success) { toast('Doctor added ✅', '#1B5E20'); loadDoctors(); ['dr-tamil','dr-english','dr-spec'].forEach(id => document.getElementById(id).value=''); }
+  else toast(data.error || 'Error', '#c62828');
+}
+
+async function addSchedule() {
+  const doctorId = document.getElementById('sched-doctor').value;
+  if (!doctorId) { toast('Select a doctor', '#c62828'); return; }
+  const data = await apiPost(`/admin/hospital/doctors/${doctorId}/schedule`, {
+    day_of_week:  parseInt(document.getElementById('sched-day').value),
+    start_time:   document.getElementById('sched-start').value || null,
+    end_time:     document.getElementById('sched-end').value || null,
+    notes_tamil:  document.getElementById('sched-notes').value
+  });
+  if (data.success) { toast('Schedule added ✅', '#1B5E20'); loadDoctors(); }
+  else toast(data.error || 'Error', '#c62828');
+}
+
+// ══════════════════════════════════════════════
+// EMERGENCY CONTACTS
+// ══════════════════════════════════════════════
+async function loadContacts() {
+  const el = document.getElementById('contactList');
+  try {
+    const contacts = await apiGet('/api/emergency/contacts');
+    const all = Object.values(contacts).flat();
+    if (!all.length) { el.innerHTML = '<div class="empty">No contacts yet</div>'; return; }
+    const catLabel = { power:'⚡ மின்சாரம்', medical:'🏥 மருத்துவம்', police:'👮 போலீஸ்', panchayat:'🏛 பஞ்சாயத்து', fire:'🔥 தீயணைப்பு', other:'📞 மற்றவை' };
+    el.innerHTML = `<table>
+      <tr><th>Category</th><th>Name (Tamil)</th><th>Name (English)</th><th>Phone</th><th>Verified</th></tr>
+      ${all.map(c => `
+        <tr>
+          <td>${catLabel[c.category] || c.category}</td>
+          <td>${c.name_tamil}</td>
+          <td>${c.name_english || '—'}</td>
+          <td><strong>${c.phone}</strong></td>
+          <td>${c.is_verified ? '✅' : '⏳'}</td>
+        </tr>`).join('')}
+    </table>`;
+  } catch(e) { el.innerHTML = '<div class="empty">Error loading</div>'; }
+}
+
+async function addContact() {
+  const data = await apiPost('/admin/contacts', {
+    category:     document.getElementById('ec-category').value,
+    name_tamil:   document.getElementById('ec-tamil').value,
+    name_english: document.getElementById('ec-english').value,
+    phone:        document.getElementById('ec-phone').value,
+    display_order: 0
+  });
+  if (data.success) { toast('Contact added ✅', '#1B5E20'); loadContacts(); ['ec-tamil','ec-english','ec-phone'].forEach(id => document.getElementById(id).value=''); }
+  else toast(data.error || 'Error', '#c62828');
+}
+
+// ══════════════════════════════════════════════
+// STREETS
+// ══════════════════════════════════════════════
+async function loadStreets() {
+  const el = document.getElementById('streetList');
+  try {
+    const streets = await apiGet('/api/water/schedule');
+    if (!streets || !streets.length) { el.innerHTML = '<div class="empty">No streets yet</div>'; return; }
+    el.innerHTML = `<table>
+      <tr><th>#</th><th>Name (Tamil)</th><th>Name (English)</th></tr>
+      ${streets.map((s,i) => `<tr><td>${i+1}</td><td>${s.name_tamil || s.nameTamil || '—'}</td><td>${s.name_english || s.nameEnglish || '—'}</td></tr>`).join('')}
+    </table>`;
+  } catch(e) { el.innerHTML = '<div class="empty">Error loading</div>'; }
+}
+
+async function addStreet() {
+  const data = await apiPost('/admin/streets', {
+    name_tamil:   document.getElementById('st-tamil').value,
+    name_english: document.getElementById('st-english').value
+  });
+  if (data.success) { toast('Street added ✅', '#1B5E20'); loadStreets(); ['st-tamil','st-english'].forEach(id => document.getElementById(id).value=''); }
+  else toast(data.error || 'Error', '#c62828');
+}
+
+// ══════════════════════════════════════════════
+// Helpers
+// ══════════════════════════════════════════════
+function formatDt(dt) {
+  if (!dt) return '—';
+  return new Date(dt).toLocaleString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+}
+</script>
+</body>
+</html>
