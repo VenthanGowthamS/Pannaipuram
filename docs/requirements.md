@@ -1,10 +1,10 @@
 # பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 2.3 (Wikipedia-verified, App Built, Backend Live, Admin Panel Live)
+> **Version:** 2.4 (Auto module API-backed, Water street sync fixed, Tests added)
 > **Date:** March 2026
 > **Author:** Venthan (Senior Software Engineer)
-> **Status:** Phase 5 In Progress — Backend + Admin Panel Live on Render, Data Entry Underway
+> **Status:** Phase 5 In Progress — All Modules API-Live, Data Entry Underway
 > **Tagline:** உங்கள் ஊரின் தகவல் மையம் *(Your Village's Information Centre)*
 
 ---
@@ -209,10 +209,13 @@ This information does not exist anywhere online. It cannot be scraped or fetched
 - Shared van services with schedules (e.g., morning departures to Uthamapalayam)
 - Contact info for each driver/service
 - Coverage area noted (e.g., "goes up to Kamban")
+- If phone not yet added: shows "விரைவில்" (Coming soon) button with friendly snackbar
+- Graceful offline fallback with placeholder contact names if API unreachable
 
 **Data Source:**
 - Manually collected from Pannaipuram residents
-- Updated via admin panel as needed
+- Updated via admin panel (🚗 Auto/Van tab) — no APK rebuild needed
+- API: `GET /api/auto/drivers` — admin CRUD at `/admin/auto/drivers`
 
 ---
 
@@ -344,9 +347,11 @@ Water is not wasted
 │                                                                  │
 │   /api/power/*     → Power cut status                           │
 │   /api/water/*     → Water schedule + community alerts          │
-│   /api/bus/*       → Bus timings (both corridors)               │
-│   /api/hospital/*  → Doctors + schedules                        │
+│   /api/water/streets → All streets (for street picker)          │
+│   /api/bus/*       → Bus timings (outbound from Pannaipuram)    │
+│   /api/hospital/*  → Doctors + schedules (by hospital_id)       │
 │   /api/emergency/* → Emergency contacts                         │
+│   /api/auto/*      → Auto/van driver list                       │
 │   /admin/panel     → Admin web page (Venthan only)              │
 │                                                                  │
 │   Background jobs:                                               │
@@ -366,11 +371,12 @@ Water is not wasted
 │   power_restorations      → User reports "power back"           │
 │   water_schedules         → Per-street water timing             │
 │   water_alerts            → Community "water came" reports       │
-│   bus_corridors           → Bodi side + Kamban side             │
-│   bus_routes, bus_timings → All departure times                  │
-│   hospitals, doctors      → PTV + SP Clinic, schedules          │
+│   bus_corridors           → 10 corridors from Pannaipuram       │
+│   bus_routes, bus_timings → Outbound departure times            │
+│   hospitals, doctors      → PTV (id=1) + SP Clinic (id=2)       │
 │   doctor_schedules        → Which doctor, which day             │
 │   emergency_contacts      → TNEB, police, fire, panchayat       │
+│   auto_drivers            → Auto/van drivers + phone numbers    │
 │   devices                 → FCM tokens for push notifications    │
 │   admin_users             → Venthan's login (hashed password)   │
 └─────────────────────────────────────────────────────────────────┘
@@ -382,9 +388,10 @@ Water is not wasted
 │          (Venthan only — JWT login)                              │
 │                                                                  │
 │   • Add / resolve power cuts                                     │
-│   • Add bus timings for both corridors                          │
-│   • Add doctors + weekly schedules                              │
+│   • Add bus timings (outbound only from Pannaipuram)            │
+│   • Add doctors + weekly schedules (mapped to hospital)         │
 │   • Add emergency contacts                                       │
+│   • Add/edit auto/van drivers + phone numbers                   │
 │   • Add streets (all 57)                                        │
 └─────────────────────────────────────────────────────────────────┘
 
@@ -487,23 +494,29 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 
 ### Phase 4 — Build ✅ COMPLETE
 - ✅ Flutter app: all 6 modules built (Power, Water, Bus, Hospital, Auto, Emergency)
+- ✅ All screens converted from hardcoded to live API with offline fallback
 - ✅ Home screen: full-width rectangle tiles, colloquial Tamil labels, cottage header
 - ✅ Offline banner, call buttons, water street selector
-- ✅ Hospital: two-hospital layout (PTV Padmavathy + SP Clinic)
-- ✅ Backend: all routes built and deployed to production
-- ✅ Admin panel: fully built and live
+- ✅ Hospital: two-hospital layout (PTV Padmavathy id=1 + SP Clinic id=2)
+- ✅ Bus screen: API-first with corridor metadata + offline fallback
+- ✅ Bus route screen: fixed crash when no timings (empty list guard)
+- ✅ Auto screen: API-first, graceful "விரைவில்" when phone not yet added
+- ✅ Water screen: fetches ALL streets (not just ones with schedules) via /api/water/streets
+- ✅ Backend: all routes including /api/auto/* built and deployed
+- ✅ Admin panel: full CRUD on all modules including Auto/Van tab
 
 ### Phase 5 — Deployment & Content Entry 🟡 IN PROGRESS
 
 **Completed:**
 - ✅ Backend deployed to Render.com — https://pannaipuram-api.onrender.com
 - ✅ Database on Supabase (Asia-Pacific Singapore, project eoiaexdbnyzysolgwitw)
-- ✅ All DB tables created (power_cuts, water_schedules, bus_corridors, bus_routes, bus_timings, doctors, doctor_schedules, emergency_contacts, streets, admin_users)
+- ✅ All DB tables: power_cuts, water_schedules, bus_corridors, bus_routes, bus_timings, doctors, doctor_schedules, hospitals, emergency_contacts, streets, auto_drivers, admin_users
 - ✅ Admin panel live — https://pannaipuram-api.onrender.com/admin/panel
 - ✅ Admin panel login with JWT (venthan89@gmail.com)
-- ✅ Admin panel tabs: Power Cuts | Bus Timings | Doctors | Emergency Contacts | Water Schedules | Streets
-- ✅ Admin panel supports Add / Edit / Delete on all data types
+- ✅ Admin panel tabs: Power Cuts | Bus Timings | Doctors | Emergency Contacts | Auto/Van | Water | Streets
+- ✅ Admin panel full CRUD (List + Add + Edit + Delete) on every tab
 - ✅ Flutter app pointing to production API URL
+- ✅ API regression test suite — run with `npm test` from backend/
 
 **Admin Panel — Quick Reference:**
 
@@ -518,21 +531,29 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 
 | Tab | What You Can Do |
 |---|---|
-| ⚡ Power Cuts | Add planned/unplanned cuts, edit dates & description, delete |
-| 🚌 Bus Timings | Select corridor, add departure times, delete old timings |
-| 🏥 Doctors | Add doctors, set schedules, mark unavailable, delete |
+| ⚡ Power Cuts | Add planned/unplanned cuts, mark resolved, delete |
+| 🚌 Bus Timings | Select corridor, add outbound departure times, delete |
+| 🏥 Doctors | Add doctors to hospital (PTV=1 / SP Clinic=2), schedule, edit, delete |
 | 📞 Emergency | Add contacts by category, edit/verify phone numbers, delete |
+| 🚗 Auto/Van | Add drivers with phone + coverage area, edit, delete |
 | 💧 Water | Set per-street supply frequency, time, notes — inline edit |
-| 🏘 Streets | Add new streets (Tamil + English name) |
+| 🏘 Streets | Add new streets (Tamil + English name), view all |
+
+**⚠️ One-time setup needed — Run in Supabase SQL Editor:**
+```sql
+-- File: backend/src/db/migrate_auto_drivers.sql
+-- Creates auto_drivers table + seeds 3 placeholder drivers
+```
 
 **Remaining for Phase 5:**
-- ⏳ Run `seed_bus_corridors.sql` in Supabase SQL Editor (adds all 10 bus corridors)
-- ⏳ Enter all 57 streets via Streets tab
-- ⏳ Enter bus timings for all 10 corridors (collect from TNSTC/conductors)
-- ⏳ Enter hospital doctors and schedules
+- ⏳ Run `migrate_auto_drivers.sql` in Supabase SQL Editor (creates auto_drivers table)
+- ⏳ Add real phone numbers via Admin → 🚗 Auto/Van tab
+- ⏳ Enter all 57 streets via Streets tab (currently ~10 fallback streets seeded)
+- ⏳ Enter bus timings for all corridors via Bus Timings tab
+- ⏳ Enter hospital doctors with correct hospital mapping (1=PTV, 2=SP Clinic)
 - ⏳ Enter all emergency contacts (police, fire, PHC, panchayat, TNEB)
-- ⏳ Set water schedules per street
-- ⏳ Test Tamil text rendering on actual Android device
+- ⏳ Set water schedules per street via Water tab
+- ⏳ Test on physical Android device (Tamil rendering)
 - ⏳ QR code generation for WhatsApp sharing
 
 ### Phase 6 — Testing 🔴 PENDING

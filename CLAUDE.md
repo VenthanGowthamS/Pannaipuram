@@ -166,12 +166,18 @@ Before making ANY changes to the codebase:
 | Water (தண்ணீர்) | ✅ Complete | water_screen.dart | /api/water/* |
 | Bus (பேருந்து) | ✅ Complete | bus_screen.dart + bus_route_screen.dart | /api/bus/* |
 | Hospital (மருத்துவமனை) | ✅ Complete (2 hospitals) | hospital_screen.dart | /api/hospital/* |
-| Auto (ஆட்டோ / வண்டி) | ✅ Complete | auto_screen.dart | — (hardcoded contacts) |
+| Auto (ஆட்டோ / வண்டி) | ✅ Complete | auto_screen.dart | /api/auto/* |
 | Emergency (அவசர தொலைபேசி) | ✅ Complete | emergency_screen.dart | /api/emergency/* |
 
 ---
 
 ## Common Tasks
+
+### Add or update an auto/van driver
+1. Admin panel → 🚗 Auto/Van tab → fill in name (Tamil), phone, vehicle type, coverage
+2. Flutter: `auto_screen.dart` fetches from `/api/auto/drivers`
+3. Phone number empty = shows "விரைவில்" button (no crash)
+4. Run regression tests: `cd backend && npm test`
 
 ### Add a new emergency contact
 1. Backend: Add to `routes/emergency.js` or database
