@@ -673,7 +673,8 @@ async function loadDoctors() {
             ? d.schedules.map(s => `${days[s.day_of_week]}${s.notes_tamil ? ' — '+s.notes_tamil : ''}`).join(', ')
             : '—'}</td>
           <td><span class="badge ${d.is_active ? 'badge-active' : 'badge-off'}">${d.is_active ? 'Active' : 'Inactive'}</span></td>
-          <td>
+          <td style="display:flex;gap:6px;">
+            <button class="btn-sm btn-edit" onclick="editDoctor(${d.id}, '${(d.name_tamil||'').replace(/'/g,"\\'")}', '${(d.name_english||'').replace(/'/g,"\\'")}', '${(d.specialisation||'').replace(/'/g,"\\'")}')">✏️ Edit</button>
             <button class="btn-sm btn-danger" onclick="deleteDoctor(${d.id})">🗑 Delete</button>
           </td>
         </tr>`).join('')}
@@ -704,6 +705,21 @@ async function addSchedule() {
   else toast(data.error || 'Error', '#c62828');
 }
 
+async function editDoctor(id, nameTamil, nameEnglish, specialisation) {
+  const newTamil = prompt('Name (Tamil):', nameTamil);
+  if (newTamil === null) return;
+  const newEnglish = prompt('Name (English):', nameEnglish);
+  if (newEnglish === null) return;
+  const newSpec = prompt('Specialisation:', specialisation);
+  if (newSpec === null) return;
+
+  const data = await apiPut(`/admin/hospital/doctors/${id}`, {
+    name_tamil: newTamil, name_english: newEnglish, specialisation: newSpec
+  });
+  if (data.success) { toast('Doctor updated ✅', '#1B5E20'); loadDoctors(); }
+  else toast(data.error || 'Error', '#c62828');
+}
+
 async function deleteDoctor(id) {
   if (!confirm('Are you sure?')) return;
   const data = await apiDelete(`/admin/hospital/doctors/${id}`);
@@ -730,7 +746,8 @@ async function loadContacts() {
           <td>${c.name_english || '—'}</td>
           <td><strong>${c.phone}</strong></td>
           <td>${c.is_verified ? '✅' : '⏳'}</td>
-          <td>
+          <td style="display:flex;gap:6px;">
+            <button class="btn-sm btn-edit" onclick="editContact(${c.id}, '${(c.name_tamil||'').replace(/'/g,"\\'")}', '${(c.name_english||'').replace(/'/g,"\\'")}', '${c.phone}', ${c.is_verified})">✏️ Edit</button>
             <button class="btn-sm btn-danger" onclick="deleteContact(${c.id})">🗑 Delete</button>
           </td>
         </tr>`).join('')}
@@ -747,6 +764,23 @@ async function addContact() {
     display_order: 0
   });
   if (data.success) { toast('Contact added ✅', '#1B5E20'); loadContacts(); ['ec-tamil','ec-english','ec-phone'].forEach(id => document.getElementById(id).value=''); }
+  else toast(data.error || 'Error', '#c62828');
+}
+
+async function editContact(id, nameTamil, nameEnglish, phone, isVerified) {
+  const newTamil = prompt('Name (Tamil):', nameTamil);
+  if (newTamil === null) return;
+  const newEnglish = prompt('Name (English):', nameEnglish);
+  if (newEnglish === null) return;
+  const newPhone = prompt('Phone Number:', phone);
+  if (newPhone === null) return;
+  const verified = confirm('Is this number verified?');
+
+  const data = await apiPut(`/admin/contacts/${id}`, {
+    name_tamil: newTamil, name_english: newEnglish,
+    phone: newPhone, is_verified: verified
+  });
+  if (data.success) { toast('Contact updated ✅', '#1B5E20'); loadContacts(); }
   else toast(data.error || 'Error', '#c62828');
 }
 
@@ -770,16 +804,15 @@ async function loadWater() {
     el.innerHTML = `<table>
       <tr><th>Street (Tamil)</th><th>Street (English)</th><th>Every N Days</th><th>Supply Time</th><th>Notes</th><th>Action</th></tr>
       ${streets.map((s,i) => {
-        const schedule = s.water_schedule || {};
         return `
         <tr id="water-row-${s.id}">
           <td>${s.name_tamil || '—'}</td>
           <td>${s.name_english || '—'}</td>
-          <td id="water-freq-${s.id}">${schedule.frequency_days || '—'}</td>
-          <td id="water-time-${s.id}">${schedule.supply_time || '—'}</td>
-          <td id="water-notes-${s.id}">${schedule.notes_tamil || '—'}</td>
+          <td id="water-freq-${s.id}">${s.frequency_days || '—'}</td>
+          <td id="water-time-${s.id}">${s.supply_time || '—'}</td>
+          <td id="water-notes-${s.id}">${s.notes_tamil || '—'}</td>
           <td>
-            <button class="btn-sm btn-edit" onclick="editWaterRow(${s.id}, '${s.name_tamil}', '${s.name_english}')">Edit</button>
+            <button class="btn-sm btn-edit" onclick="editWaterRow(${s.id}, '${(s.name_tamil || '').replace(/'/g, "\\'")}', '${(s.name_english || '').replace(/'/g, "\\'")}')">Edit</button>
           </td>
         </tr>`;
       }).join('')}
@@ -847,7 +880,7 @@ async function loadStreets() {
     if (!streets || !streets.length) { el.innerHTML = '<div class="empty">No streets yet</div>'; return; }
     el.innerHTML = `<table>
       <tr><th>#</th><th>Name (Tamil)</th><th>Name (English)</th><th>Ward</th></tr>
-      ${streets.map((s,i) => `<tr><td>${i+1}</td><td>${s.name_tamil || '—'}</td><td>${s.name_english || '—'}</td><td>${s.ward || '—'}</td></tr>`).join('')}
+      ${streets.map((s,i) => `<tr><td>${i+1}</td><td>${s.name_tamil || '—'}</td><td>${s.name_english || '—'}</td><td>${s.ward_number || '—'}</td></tr>`).join('')}
     </table>`;
   } catch(e) { el.innerHTML = '<div class="empty">Error loading</div>'; }
 }

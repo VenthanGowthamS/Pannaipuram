@@ -1,7 +1,77 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
+import '../services/api_service.dart';
 import 'bus_route_screen.dart';
 import 'auto_screen.dart';
+
+// ── Presentation metadata per corridor ─────────────────────────────────
+// These don't change — emojis, route descriptions, local/frequent flags
+// Keyed by English name (lowercase)
+
+class _CorridorMeta {
+  final String emoji;
+  final String routeDesc;
+  final bool isFrequent;
+  final bool isLocal;
+
+  const _CorridorMeta({
+    required this.emoji,
+    required this.routeDesc,
+    this.isFrequent = false,
+    this.isLocal = false,
+  });
+}
+
+const _corridorMeta = <String, _CorridorMeta>{
+  'theni': _CorridorMeta(
+    emoji: '🏙️',
+    routeDesc: 'பண்ணைப்புரம் → சங்கரபுரம் → தேவாரம் → தேனி',
+    isFrequent: true,
+    isLocal: true,
+  ),
+  'bodi': _CorridorMeta(
+    emoji: '🌄',
+    routeDesc: 'பண்ணைப்புரம் → சங்கரபுரம் → தேவாரம் → போடி',
+    isFrequent: true,
+    isLocal: true,
+  ),
+  'cumbum': _CorridorMeta(
+    emoji: '🍇',
+    routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கம்பம்',
+    isFrequent: true,
+    isLocal: true,
+  ),
+  'chinnamanur': _CorridorMeta(
+    emoji: '🛕',
+    routeDesc:
+        'பண்ணைப்புரம் → பல்லவராயன்பட்டி → மார்க்கையம்கோட்டை → சின்னமனூர்',
+    isLocal: true,
+  ),
+  'madurai': _CorridorMeta(
+    emoji: '🏛️',
+    routeDesc: 'பண்ணைப்புரம் → தேவாரம் → மதுரை',
+  ),
+  'coimbatore': _CorridorMeta(
+    emoji: '🏭',
+    routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கோயம்புத்தூர்',
+  ),
+  'trichy': _CorridorMeta(
+    emoji: '🗼',
+    routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல் → திருச்சி',
+  ),
+  'palani': _CorridorMeta(
+    emoji: '🙏',
+    routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → பழனி',
+  ),
+  'kumily': _CorridorMeta(
+    emoji: '🌿',
+    routeDesc: 'பண்ணைப்புரம் → தேவாரம் → போடி → குமுளி',
+  ),
+  'dindigul': _CorridorMeta(
+    emoji: '🏰',
+    routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல்',
+  ),
+};
 
 // ── Private data class for a bus route ────────────────────────────────
 
@@ -25,338 +95,76 @@ class _BusRoute {
   });
 }
 
-// ── Bus screen — tile landing page ────────────────────────────────────
+// ── Bus screen — StatefulWidget with API + offline fallback ───────────
 
-class BusScreen extends StatelessWidget {
+class BusScreen extends StatefulWidget {
   const BusScreen({super.key});
 
-  // ── Local routes ──────────────────────────────────────────────────
-  // Source: Thevaram Bus Stand (TNSTC, tickettogetlost.com, Feb 2026)
-  // Pannaipuram is 4.4 km from Thevaram (~10 min by bus)
-  // All times shown are Pannaipuram stop times (Thevaram times + 10 min)
+  @override
+  State<BusScreen> createState() => _BusScreenState();
+}
 
-  static final List<_BusRoute> _local = [
-    _BusRoute(
-      nameTamil: 'தேனி',
-      nameEnglish: 'Theni',
-      emoji: '🏙️',
-      color: const Color(0xFF1565C0),
-      routeDesc: 'பண்ணைப்புரம் → சங்கரபுரம் → தேவாரம் → தேனி',
-      isFrequent: true,
-    ),
-    _BusRoute(
-      nameTamil: 'போடி',
-      nameEnglish: 'Bodi',
-      emoji: '🌄',
-      color: const Color(0xFF0288D1),
-      routeDesc: 'பண்ணைப்புரம் → சங்கரபுரம் → தேவாரம் → போடி',
-      isFrequent: true,
-    ),
-    _BusRoute(
-      nameTamil: 'கம்பம்',
-      nameEnglish: 'Cumbum',
-      emoji: '🍇',
-      color: const Color(0xFF388E3C),
-      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கம்பம்',
-      isFrequent: true,
-    ),
-    _BusRoute(
-      nameTamil: 'சின்னமனூர்',
-      nameEnglish: 'Chinnamanur',
-      emoji: '🛕',
-      color: const Color(0xFFFF6F00),
-      routeDesc:
-          'பண்ணைப்புரம் → பல்லவராயன்பட்டி → மார்க்கையம்கோட்டை → சின்னமனூர்',
-      timings: [
-        // Thevaram times: 10:15, 12:20, 16:10, 18:00
-        // Pannaipuram (+10 min): 10:25, 12:30, 16:20, 18:10
-        BusTiming(
-            id: 16,
-            departsAt: '10:25:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 17,
-            departsAt: '12:30:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 18,
-            departsAt: '16:20:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 19,
-            departsAt: '18:10:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: true),
-      ],
-    ),
-  ];
+class _BusScreenState extends State<BusScreen> {
+  // These start with hardcoded fallback data, updated if API succeeds
+  List<_BusRoute>? _apiLocal;
+  List<_BusRoute>? _apiLongDistance;
+  String? _dataSource; // 'api' or null (fallback)
 
-  // ── Long-distance routes ───────────────────────────────────────────
-  // Source: Thevaram Bus Stand searches (Feb 2026) + 10 min for Pannaipuram
+  List<_BusRoute> get _local => _apiLocal ?? _fallbackLocal;
+  List<_BusRoute> get _longDistance => _apiLongDistance ?? _fallbackLongDistance;
 
-  static final List<_BusRoute> _longDistance = [
-    _BusRoute(
-      nameTamil: 'மதுரை',
-      nameEnglish: 'Madurai',
-      emoji: '🏛️',
-      color: const Color(0xFF6A1B9A),
-      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → மதுரை',
-      timings: [
-        BusTiming(
-            id: 101,
-            departsAt: '04:25:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 102,
-            departsAt: '06:00:00',
-            daysOfWeek: 'daily',
-            busType: 'express',
-            isLastBus: false),
-        BusTiming(
-            id: 103,
-            departsAt: '06:40:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 104,
-            departsAt: '09:40:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 105,
-            departsAt: '14:55:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 106,
-            departsAt: '15:40:00',
-            daysOfWeek: 'daily',
-            busType: 'express',
-            isLastBus: false),
-        BusTiming(
-            id: 107,
-            departsAt: '16:30:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: true),
-      ],
-    ),
-    _BusRoute(
-      nameTamil: 'கோயம்புத்தூர்',
-      nameEnglish: 'Coimbatore',
-      emoji: '🏭',
-      color: const Color(0xFF00695C),
-      routeDesc:
-          'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கோயம்புத்தூர்',
-      timings: [
-        BusTiming(
-            id: 111,
-            departsAt: '05:10:00',
-            daysOfWeek: 'daily',
-            busType: 'express',
-            isLastBus: false),
-        BusTiming(
-            id: 112,
-            departsAt: '09:30:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 113,
-            departsAt: '11:30:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 114,
-            departsAt: '20:50:00',
-            daysOfWeek: 'daily',
-            busType: 'express',
-            isLastBus: true),
-      ],
-    ),
-    _BusRoute(
-      nameTamil: 'திருச்சி',
-      nameEnglish: 'Trichy',
-      emoji: '🗼',
-      color: const Color(0xFFC62828),
-      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல் → திருச்சி',
-      timings: [
-        BusTiming(
-            id: 121,
-            departsAt: '05:50:00',
-            daysOfWeek: 'daily',
-            busType: 'express',
-            isLastBus: false),
-        BusTiming(
-            id: 122,
-            departsAt: '15:10:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 123,
-            departsAt: '19:30:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: true),
-      ],
-    ),
-    _BusRoute(
-      nameTamil: 'பழனி',
-      nameEnglish: 'Palani',
-      emoji: '🙏',
-      color: const Color(0xFFE65100),
-      routeDesc:
-          'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → பழனி',
-      timings: [
-        BusTiming(
-            id: 131,
-            departsAt: '05:20:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 132,
-            departsAt: '06:10:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 133,
-            departsAt: '06:25:00',
-            daysOfWeek: 'daily',
-            busType: 'express',
-            isLastBus: false),
-        BusTiming(
-            id: 134,
-            departsAt: '09:25:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 135,
-            departsAt: '11:25:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 136,
-            departsAt: '16:20:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: true),
-      ],
-    ),
-    _BusRoute(
-      nameTamil: 'குமுளி',
-      nameEnglish: 'Kumily',
-      emoji: '🌿',
-      color: const Color(0xFF2E7D32),
-      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → போடி → குமுளி',
-      timings: [
-        BusTiming(
-            id: 141,
-            departsAt: '03:40:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 142,
-            departsAt: '05:00:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 143,
-            departsAt: '05:40:00',
-            daysOfWeek: 'daily',
-            busType: 'express',
-            isLastBus: false),
-        BusTiming(
-            id: 144,
-            departsAt: '08:40:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 145,
-            departsAt: '12:00:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 146,
-            departsAt: '14:00:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 147,
-            departsAt: '14:30:00',
-            daysOfWeek: 'daily',
-            busType: 'express',
-            isLastBus: true),
-      ],
-    ),
-    _BusRoute(
-      nameTamil: 'திண்டுக்கல்',
-      nameEnglish: 'Dindigul',
-      emoji: '🏰',
-      color: const Color(0xFF4E342E),
-      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல்',
-      timings: [
-        BusTiming(
-            id: 151,
-            departsAt: '06:30:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 152,
-            departsAt: '09:10:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 153,
-            departsAt: '15:00:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 154,
-            departsAt: '15:40:00',
-            daysOfWeek: 'daily',
-            busType: 'express',
-            isLastBus: false),
-        BusTiming(
-            id: 155,
-            departsAt: '16:40:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: false),
-        BusTiming(
-            id: 156,
-            departsAt: '17:30:00',
-            daysOfWeek: 'daily',
-            busType: 'ordinary',
-            isLastBus: true),
-      ],
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchFromApi();
+  }
+
+  Future<void> _fetchFromApi() async {
+    try {
+      final corridors = await ApiService.getBusCorridors();
+      if (corridors.isEmpty) return;
+
+      // Fetch all timings in parallel for speed
+      final timingsFutures =
+          corridors.map((c) => ApiService.getBusTimings(c.id)).toList();
+      final allTimings = await Future.wait(timingsFutures);
+
+      final local = <_BusRoute>[];
+      final longDist = <_BusRoute>[];
+
+      for (int i = 0; i < corridors.length; i++) {
+        final c = corridors[i];
+        final timings = allTimings[i];
+        final meta = _corridorMeta[c.nameEnglish.toLowerCase()];
+        final route = _BusRoute(
+          nameTamil: c.nameTamil,
+          nameEnglish: c.nameEnglish,
+          emoji: meta?.emoji ?? '🚌',
+          color: c.color,
+          routeDesc:
+              meta?.routeDesc ?? 'பண்ணைப்புரம் → ${c.nameTamil}',
+          isFrequent: meta?.isFrequent ?? false,
+          timings: timings,
+        );
+        if (meta?.isLocal ?? false) {
+          local.add(route);
+        } else {
+          longDist.add(route);
+        }
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _apiLocal = local;
+        _apiLongDistance = longDist;
+        _dataSource = 'api';
+      });
+    } catch (_) {
+      // API failed — keep using hardcoded fallback data (already displayed)
+    }
+  }
+
+  // ── Navigation ─────────────────────────────────────────────────────
 
   void _goTo(BuildContext context, _BusRoute r) {
     Navigator.push(
@@ -376,6 +184,7 @@ class BusScreen extends StatelessWidget {
   }
 
   // ── Next bus helper ────────────────────────────────────────────────
+
   static BusTiming? _nextBusFor(List<BusTiming> timings) {
     for (final t in timings) {
       if (t.minutesFromNow() >= 0) return t;
@@ -515,12 +324,14 @@ class BusScreen extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 12),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Center(
                     child: Text(
-                      'Source: Thevaram Bus Stand (TNSTC, Feb 2026)\nPannaipuram stop = Thevaram +10 min',
-                      style: TextStyle(
+                      _dataSource == 'api'
+                          ? 'Live data from server'
+                          : 'Source: Thevaram Bus Stand (TNSTC, Feb 2026)\nPannaipuram stop = Thevaram +10 min',
+                      style: const TextStyle(
                           fontFamily: 'Roboto',
                           fontSize: 11,
                           color: Color(0xFFBDBDBD)),
@@ -536,6 +347,143 @@ class BusScreen extends StatelessWidget {
       ),
     );
   }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  //  Hardcoded fallback data — used when API is unreachable (offline mode)
+  //  Source: Thevaram Bus Stand (TNSTC, Feb 2026)
+  //  All times = Thevaram times + 10 min for Pannaipuram stop
+  // ═══════════════════════════════════════════════════════════════════════
+
+  static final _fallbackLocal = <_BusRoute>[
+    _BusRoute(
+      nameTamil: 'தேனி',
+      nameEnglish: 'Theni',
+      emoji: '🏙️',
+      color: const Color(0xFF1565C0),
+      routeDesc: 'பண்ணைப்புரம் → சங்கரபுரம் → தேவாரம் → தேனி',
+      isFrequent: true,
+    ),
+    _BusRoute(
+      nameTamil: 'போடி',
+      nameEnglish: 'Bodi',
+      emoji: '🌄',
+      color: const Color(0xFF0288D1),
+      routeDesc: 'பண்ணைப்புரம் → சங்கரபுரம் → தேவாரம் → போடி',
+      isFrequent: true,
+    ),
+    _BusRoute(
+      nameTamil: 'கம்பம்',
+      nameEnglish: 'Cumbum',
+      emoji: '🍇',
+      color: const Color(0xFF388E3C),
+      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கம்பம்',
+      isFrequent: true,
+    ),
+    _BusRoute(
+      nameTamil: 'சின்னமனூர்',
+      nameEnglish: 'Chinnamanur',
+      emoji: '🛕',
+      color: const Color(0xFFFF6F00),
+      routeDesc:
+          'பண்ணைப்புரம் → பல்லவராயன்பட்டி → மார்க்கையம்கோட்டை → சின்னமனூர்',
+      timings: [
+        BusTiming(id: 16, departsAt: '10:25:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 17, departsAt: '12:30:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 18, departsAt: '16:20:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 19, departsAt: '18:10:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: true),
+      ],
+    ),
+  ];
+
+  static final _fallbackLongDistance = <_BusRoute>[
+    _BusRoute(
+      nameTamil: 'மதுரை',
+      nameEnglish: 'Madurai',
+      emoji: '🏛️',
+      color: const Color(0xFF6A1B9A),
+      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → மதுரை',
+      timings: [
+        BusTiming(id: 101, departsAt: '04:25:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 102, departsAt: '06:00:00', daysOfWeek: 'daily', busType: 'express', isLastBus: false),
+        BusTiming(id: 103, departsAt: '06:40:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 104, departsAt: '09:40:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 105, departsAt: '14:55:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 106, departsAt: '15:40:00', daysOfWeek: 'daily', busType: 'express', isLastBus: false),
+        BusTiming(id: 107, departsAt: '16:30:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: true),
+      ],
+    ),
+    _BusRoute(
+      nameTamil: 'கோயம்புத்தூர்',
+      nameEnglish: 'Coimbatore',
+      emoji: '🏭',
+      color: const Color(0xFF00695C),
+      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கோயம்புத்தூர்',
+      timings: [
+        BusTiming(id: 111, departsAt: '05:10:00', daysOfWeek: 'daily', busType: 'express', isLastBus: false),
+        BusTiming(id: 112, departsAt: '09:30:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 113, departsAt: '11:30:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 114, departsAt: '20:50:00', daysOfWeek: 'daily', busType: 'express', isLastBus: true),
+      ],
+    ),
+    _BusRoute(
+      nameTamil: 'திருச்சி',
+      nameEnglish: 'Trichy',
+      emoji: '🗼',
+      color: const Color(0xFFC62828),
+      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல் → திருச்சி',
+      timings: [
+        BusTiming(id: 121, departsAt: '05:50:00', daysOfWeek: 'daily', busType: 'express', isLastBus: false),
+        BusTiming(id: 122, departsAt: '15:10:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 123, departsAt: '19:30:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: true),
+      ],
+    ),
+    _BusRoute(
+      nameTamil: 'பழனி',
+      nameEnglish: 'Palani',
+      emoji: '🙏',
+      color: const Color(0xFFE65100),
+      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → பழனி',
+      timings: [
+        BusTiming(id: 131, departsAt: '05:20:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 132, departsAt: '06:10:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 133, departsAt: '06:25:00', daysOfWeek: 'daily', busType: 'express', isLastBus: false),
+        BusTiming(id: 134, departsAt: '09:25:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 135, departsAt: '11:25:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 136, departsAt: '16:20:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: true),
+      ],
+    ),
+    _BusRoute(
+      nameTamil: 'குமுளி',
+      nameEnglish: 'Kumily',
+      emoji: '🌿',
+      color: const Color(0xFF2E7D32),
+      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → போடி → குமுளி',
+      timings: [
+        BusTiming(id: 141, departsAt: '03:40:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 142, departsAt: '05:00:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 143, departsAt: '05:40:00', daysOfWeek: 'daily', busType: 'express', isLastBus: false),
+        BusTiming(id: 144, departsAt: '08:40:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 145, departsAt: '12:00:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 146, departsAt: '14:00:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 147, departsAt: '14:30:00', daysOfWeek: 'daily', busType: 'express', isLastBus: true),
+      ],
+    ),
+    _BusRoute(
+      nameTamil: 'திண்டுக்கல்',
+      nameEnglish: 'Dindigul',
+      emoji: '🏰',
+      color: const Color(0xFF4E342E),
+      routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல்',
+      timings: [
+        BusTiming(id: 151, departsAt: '06:30:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 152, departsAt: '09:10:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 153, departsAt: '15:00:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 154, departsAt: '15:40:00', daysOfWeek: 'daily', busType: 'express', isLastBus: false),
+        BusTiming(id: 155, departsAt: '16:40:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: false),
+        BusTiming(id: 156, departsAt: '17:30:00', daysOfWeek: 'daily', busType: 'ordinary', isLastBus: true),
+      ],
+    ),
+  ];
 }
 
 // ── Section chip ──────────────────────────────────────────────────────
@@ -718,8 +666,10 @@ class _RouteCard extends StatelessWidget {
                         ? _FrequentBadge(color: route.color)
                         : noMoreBuses
                             ? _DoneBadge()
-                            : _NextBusBadge(
-                                nextBus: nextBus!, color: route.color),
+                            : route.timings.isEmpty
+                                ? _NoDataBadge()
+                                : _NextBusBadge(
+                                    nextBus: nextBus!, color: route.color),
                   ),
                 ],
               ),
@@ -839,6 +789,31 @@ class _DoneBadge extends StatelessWidget {
         ),
         Text(
           'முடிந்தது',
+          style: TextStyle(
+              fontFamily: 'NotoSansTamil',
+              fontSize: 12,
+              color: Colors.grey[400]),
+        ),
+      ],
+    );
+  }
+}
+
+// ── No data badge (API corridor with no timings yet) ──────────────────
+
+class _NoDataBadge extends StatelessWidget {
+  const _NoDataBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Icon(Icons.schedule_rounded, color: Colors.grey[300], size: 22),
+        const SizedBox(height: 4),
+        Text(
+          'விரைவில்',
           style: TextStyle(
               fontFamily: 'NotoSansTamil',
               fontSize: 12,

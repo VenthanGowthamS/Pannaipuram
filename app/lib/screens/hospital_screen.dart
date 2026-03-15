@@ -100,7 +100,9 @@ class HospitalScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => const _HospitalDetailScreen(
-                            hospitalType: _HospitalType.ptv,
+                            hospitalName: 'PTV பத்மாவதி மருத்துவமனை',
+                            accentColor: Color(0xFFB71C1C),
+                            icon: Icons.local_hospital_rounded,
                           ),
                         ),
                       );
@@ -122,7 +124,9 @@ class HospitalScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => const _HospitalDetailScreen(
-                            hospitalType: _HospitalType.spClinic,
+                            hospitalName: 'S P Clinic',
+                            accentColor: Color(0xFFE65100),
+                            icon: Icons.medical_services_rounded,
                           ),
                         ),
                       );
@@ -335,18 +339,28 @@ class _QuickCallButton extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  Hospital Type enum
+//  Hospital Detail Screen — fetches doctors from API with offline fallback
 // ═══════════════════════════════════════════════════════════════════════════
 
-enum _HospitalType { ptv, spClinic }
+class _HospitalDetailScreen extends StatefulWidget {
+  final String hospitalName;
+  final Color accentColor;
+  final IconData icon;
 
-// ═══════════════════════════════════════════════════════════════════════════
-//  Hospital Detail Screen — shows doctors for a specific hospital
-// ═══════════════════════════════════════════════════════════════════════════
+  const _HospitalDetailScreen({
+    required this.hospitalName,
+    required this.accentColor,
+    required this.icon,
+  });
 
-class _HospitalDetailScreen extends StatelessWidget {
-  final _HospitalType hospitalType;
-  const _HospitalDetailScreen({required this.hospitalType});
+  @override
+  State<_HospitalDetailScreen> createState() => _HospitalDetailScreenState();
+}
+
+class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
+  List<Doctor>? _apiDoctors;
+  bool _loading = true;
+  bool _offline = false;
 
   static const _daysTamil = [
     'ஞாயிறு', 'திங்கள்', 'செவ்வாய்',
@@ -357,8 +371,31 @@ class _HospitalDetailScreen extends StatelessWidget {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _fetchDoctors();
+  }
+
+  Future<void> _fetchDoctors() async {
+    try {
+      final doctors = await ApiService.getAllDoctors();
+      if (!mounted) return;
+      setState(() {
+        _apiDoctors = doctors;
+        _loading = false;
+        _offline = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _offline = true;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final isPTV = hospitalType == _HospitalType.ptv;
     final todayDow = DateTime.now().weekday % 7; // 0=Sun
 
     return Scaffold(
@@ -368,9 +405,7 @@ class _HospitalDetailScreen extends StatelessWidget {
           SliverAppBar(
             expandedHeight: 140,
             pinned: true,
-            backgroundColor: isPTV
-                ? const Color(0xFFB71C1C)
-                : const Color(0xFFE65100),
+            backgroundColor: widget.accentColor,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
               onPressed: () => Navigator.pop(context),
@@ -381,9 +416,7 @@ class _HospitalDetailScreen extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: isPTV
-                        ? [const Color(0xFFB71C1C), const Color(0xFFE53935)]
-                        : [const Color(0xFFE65100), const Color(0xFFF57C00)],
+                    colors: [widget.accentColor, widget.accentColor.withOpacity(0.7)],
                   ),
                 ),
                 child: SafeArea(
@@ -393,18 +426,10 @@ class _HospitalDetailScreen extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            isPTV
-                                ? Icons.local_hospital_rounded
-                                : Icons.medical_services_rounded,
-                            color: Colors.white,
-                            size: 30,
-                          ),
+                          Icon(widget.icon, color: Colors.white, size: 30),
                           const SizedBox(height: 6),
                           Text(
-                            isPTV
-                                ? 'PTV பத்மாவதி மருத்துவமனை'
-                                : 'S P Clinic',
+                            widget.hospitalName,
                             style: const TextStyle(
                               fontFamily: 'NotoSansTamil',
                               fontSize: 17,
@@ -428,9 +453,7 @@ class _HospitalDetailScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
             sliver: SliverList(
               delegate: SliverChildListDelegate(
-                isPTV
-                    ? _buildPTVDoctors(todayDow, context)
-                    : _buildSPClinicDoctors(todayDow, context),
+                _buildContent(todayDow),
               ),
             ),
           ),
@@ -439,71 +462,53 @@ class _HospitalDetailScreen extends StatelessWidget {
     );
   }
 
-  // ── PTV Padmavathy Hospital doctors ─────────────────────────────────
-  List<Widget> _buildPTVDoctors(int todayDow, BuildContext context) {
-    final doctors = [
-      _DoctorInfo(
-        nameTamil: 'டாக்டர் சேகர்',
-        nameEnglish: 'Dr. Sekar',
-        specialisation: 'பொது மருத்துவம்',
-        specEnglish: 'General Medicine',
-        schedules: [
-          _ScheduleInfo(dayOfWeek: 3, notesTamil: 'காலை முதல் மாலை வரை'),
-        ],
-      ),
-    ];
+  List<Widget> _buildContent(int todayDow) {
+    final widgets = <Widget>[];
 
-    return [
-      _buildSectionLabel('டாக்டர்கள்', 'Doctors'),
-      const SizedBox(height: 10),
-      if (doctors.isEmpty)
-        _buildEmptyState()
-      else
-        ...doctors.map((d) => _buildDoctorCard(d, todayDow, context)),
+    widgets.add(_buildSectionLabel('டாக்டர்கள்', 'Doctors'));
+    widgets.add(const SizedBox(height: 10));
 
-      const SizedBox(height: 16),
-      // Call button for hospital
-      _buildContactCard(
-        label: 'மருத்துவமனை அழைக்க',
-        sublabel: 'Call Hospital',
-        icon: Icons.call,
-        color: const Color(0xFFB71C1C),
-        context: context,
-      ),
-    ];
+    if (_loading) {
+      widgets.add(const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40),
+          child: CircularProgressIndicator(),
+        ),
+      ));
+      return widgets;
+    }
+
+    // Use API doctors if available, otherwise fallback
+    if (_apiDoctors != null && _apiDoctors!.isNotEmpty) {
+      for (final doc in _apiDoctors!) {
+        widgets.add(_buildApiDoctorCard(doc, todayDow));
+      }
+      if (_offline) {
+        widgets.add(_buildOfflineBanner());
+      }
+    } else if (_offline) {
+      // Offline — show hardcoded fallback doctors
+      widgets.add(_buildOfflineBanner());
+      widgets.addAll(_buildFallbackDoctors(todayDow));
+    } else {
+      // API returned empty list
+      widgets.add(_buildEmptyState());
+    }
+
+    // Call button for hospital
+    widgets.add(const SizedBox(height: 16));
+    widgets.add(_buildContactCard(
+      label: 'மருத்துவமனை அழைக்க',
+      sublabel: 'Call Hospital',
+      icon: Icons.call,
+      color: widget.accentColor,
+    ));
+
+    return widgets;
   }
 
-  // ── SP Clinic doctors ──────────────────────────────────────────────
-  List<Widget> _buildSPClinicDoctors(int todayDow, BuildContext context) {
-    final doctors = [
-      _DoctorInfo(
-        nameTamil: 'டாக்டர் ஷண்முகப்ரியா',
-        nameEnglish: 'Dr. Shanmugapriya',
-        specialisation: 'பெண்கள் நலம் • பொது • சர்க்கரை நோய்',
-        specEnglish: "Women's Health • General • Diabetes",
-        phone: '8778208143',
-        schedules: [
-          _ScheduleInfo(dayOfWeek: 0, notesTamil: 'மாலை 4 – இரவு 8'),
-          _ScheduleInfo(dayOfWeek: 1, notesTamil: 'மாலை 4 – இரவு 8'),
-          _ScheduleInfo(dayOfWeek: 2, notesTamil: 'மாலை 4 – இரவு 8'),
-          _ScheduleInfo(dayOfWeek: 3, notesTamil: 'மாலை 4 – இரவு 8'),
-          _ScheduleInfo(dayOfWeek: 4, notesTamil: 'மாலை 4 – இரவு 8'),
-          _ScheduleInfo(dayOfWeek: 5, notesTamil: 'மாலை 4 – இரவு 8'),
-          _ScheduleInfo(dayOfWeek: 6, notesTamil: 'மாலை 4 – இரவு 8'),
-        ],
-      ),
-    ];
-
-    return [
-      _buildSectionLabel('டாக்டர்கள்', 'Doctors'),
-      const SizedBox(height: 10),
-      ...doctors.map((d) => _buildDoctorCard(d, todayDow, context)),
-    ];
-  }
-
-  // ── Doctor card ────────────────────────────────────────────────────
-  Widget _buildDoctorCard(
-      _DoctorInfo doctor, int todayDow, BuildContext context) {
+  // ── Build doctor card from API Doctor model ─────────────────────────
+  Widget _buildApiDoctorCard(Doctor doctor, int todayDow) {
     final availableToday =
         doctor.schedules.any((s) => s.dayOfWeek == todayDow);
 
@@ -530,10 +535,10 @@ class _HospitalDetailScreen extends StatelessWidget {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFB71C1C).withOpacity(0.08),
+                  color: widget.accentColor.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(25),
                 ),
-                child: const Icon(Icons.person, color: Color(0xFFB71C1C), size: 28),
+                child: Icon(Icons.person, color: widget.accentColor, size: 28),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -641,7 +646,7 @@ class _HospitalDetailScreen extends StatelessWidget {
                                       ? FontWeight.w700
                                       : FontWeight.w400,
                                   color: s.dayOfWeek == todayDow
-                                      ? const Color(0xFFB71C1C)
+                                      ? widget.accentColor
                                       : const Color(0xFF424242),
                                 ),
                               ),
@@ -657,7 +662,7 @@ class _HospitalDetailScreen extends StatelessWidget {
                             const SizedBox(width: 16),
                             Expanded(
                               child: Text(
-                                s.notesTamil,
+                                s.notesTamil ?? '${s.startTime ?? ''} – ${s.endTime ?? ''}',
                                 style: const TextStyle(
                                   fontFamily: 'NotoSansTamil',
                                   fontSize: 13,
@@ -671,41 +676,63 @@ class _HospitalDetailScreen extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
 
-          // Call button
-          if (doctor.phone != null) ...[
-            const SizedBox(height: 12),
-            GestureDetector(
-              onTap: () async {
-                final uri = Uri(scheme: 'tel', path: doctor.phone);
-                if (await canLaunchUrl(uri)) await launchUrl(uri);
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2E7D32),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.call, color: Colors.white, size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      '📞 அழைக்க  •  ${doctor.phone}',
-                      style: const TextStyle(
-                        fontFamily: 'NotoSansTamil',
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+  // ── Hardcoded fallback doctors (used when offline) ────────────────
+  List<Widget> _buildFallbackDoctors(int todayDow) {
+    final fallbackDoctors = [
+      Doctor(
+        id: -1,
+        nameTamil: 'டாக்டர் சேகர்',
+        nameEnglish: 'Dr. Sekar',
+        specialisation: 'பொது மருத்துவம்',
+        schedules: [
+          DoctorSchedule(dayOfWeek: 3, notesTamil: 'காலை முதல் மாலை வரை'),
+        ],
+      ),
+      Doctor(
+        id: -2,
+        nameTamil: 'டாக்டர் ஷண்முகப்ரியா',
+        nameEnglish: 'Dr. Shanmugapriya',
+        specialisation: 'பெண்கள் நலம் • பொது • சர்க்கரை நோய்',
+        schedules: [
+          for (int i = 0; i < 7; i++)
+            DoctorSchedule(dayOfWeek: i, notesTamil: 'மாலை 4 – இரவு 8'),
+        ],
+      ),
+    ];
+
+    return fallbackDoctors
+        .map((d) => _buildApiDoctorCard(d, todayDow))
+        .toList();
+  }
+
+  Widget _buildOfflineBanner() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.orange[50],
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.wifi_off_rounded, color: Colors.orange, size: 18),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'இணையம் இல்லை — cached data காட்டுகிறது',
+              style: TextStyle(
+                fontFamily: 'NotoSansTamil',
+                fontSize: 12,
+                color: Colors.orange,
               ),
             ),
-          ],
+          ),
         ],
       ),
     );
@@ -744,7 +771,6 @@ class _HospitalDetailScreen extends StatelessWidget {
     required String sublabel,
     required IconData icon,
     required Color color,
-    required BuildContext context,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -819,32 +845,4 @@ class _HospitalDetailScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-//  Data classes
-// ═══════════════════════════════════════════════════════════════════════════
-
-class _DoctorInfo {
-  final String nameTamil;
-  final String nameEnglish;
-  final String? specialisation;
-  final String? specEnglish;
-  final String? phone;
-  final List<_ScheduleInfo> schedules;
-
-  const _DoctorInfo({
-    required this.nameTamil,
-    required this.nameEnglish,
-    this.specialisation,
-    this.specEnglish,
-    this.phone,
-    required this.schedules,
-  });
-}
-
-class _ScheduleInfo {
-  final int dayOfWeek;
-  final String notesTamil;
-  const _ScheduleInfo({required this.dayOfWeek, required this.notesTamil});
 }
