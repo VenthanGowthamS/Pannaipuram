@@ -1,10 +1,10 @@
 # பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 2.2 (Wikipedia-verified, App Built)
+> **Version:** 2.3 (Wikipedia-verified, App Built, Backend Live, Admin Panel Live)
 > **Date:** March 2026
 > **Author:** Venthan (Senior Software Engineer)
-> **Status:** Phase 4–5 In Progress — App Ready, Backend Deployment & Data Entry Underway
+> **Status:** Phase 5 In Progress — Backend + Admin Panel Live on Render, Data Entry Underway
 > **Tagline:** உங்கள் ஊரின் தகவல் மையம் *(Your Village's Information Centre)*
 
 ---
@@ -490,14 +490,50 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 - ✅ Home screen: full-width rectangle tiles, colloquial Tamil labels, cottage header
 - ✅ Offline banner, call buttons, water street selector
 - ✅ Hospital: two-hospital layout (PTV Padmavathy + SP Clinic)
-- ⏳ Backend: routes scaffolded, not yet deployed
-- ⏳ Admin panel: not started
+- ✅ Backend: all routes built and deployed to production
+- ✅ Admin panel: fully built and live
 
 ### Phase 5 — Deployment & Content Entry 🟡 IN PROGRESS
-- ⏳ Deploy backend to Render (Node.js) + Supabase PostgreSQL (Asia-Pacific Singapore)
-- ⏳ Enter all manually collected data (hospital doctors, bus timings, streets, emergency contacts)
-- ⏳ Test Tamil text rendering on actual devices
-- ⏳ QR code generation
+
+**Completed:**
+- ✅ Backend deployed to Render.com — https://pannaipuram-api.onrender.com
+- ✅ Database on Supabase (Asia-Pacific Singapore, project eoiaexdbnyzysolgwitw)
+- ✅ All DB tables created (power_cuts, water_schedules, bus_corridors, bus_routes, bus_timings, doctors, doctor_schedules, emergency_contacts, streets, admin_users)
+- ✅ Admin panel live — https://pannaipuram-api.onrender.com/admin/panel
+- ✅ Admin panel login with JWT (venthan89@gmail.com)
+- ✅ Admin panel tabs: Power Cuts | Bus Timings | Doctors | Emergency Contacts | Water Schedules | Streets
+- ✅ Admin panel supports Add / Edit / Delete on all data types
+- ✅ Flutter app pointing to production API URL
+
+**Admin Panel — Quick Reference:**
+
+| Detail | Value |
+|---|---|
+| URL | https://pannaipuram-api.onrender.com/admin/panel |
+| Login | venthan89@gmail.com + password you set |
+| First-time setup | POST /admin/auth/setup (only works once when no admin exists) |
+| JWT expires | 7 days (re-login required after) |
+
+**Admin Panel Tabs:**
+
+| Tab | What You Can Do |
+|---|---|
+| ⚡ Power Cuts | Add planned/unplanned cuts, edit dates & description, delete |
+| 🚌 Bus Timings | Select corridor, add departure times, delete old timings |
+| 🏥 Doctors | Add doctors, set schedules, mark unavailable, delete |
+| 📞 Emergency | Add contacts by category, edit/verify phone numbers, delete |
+| 💧 Water | Set per-street supply frequency, time, notes — inline edit |
+| 🏘 Streets | Add new streets (Tamil + English name) |
+
+**Remaining for Phase 5:**
+- ⏳ Run `seed_bus_corridors.sql` in Supabase SQL Editor (adds all 10 bus corridors)
+- ⏳ Enter all 57 streets via Streets tab
+- ⏳ Enter bus timings for all 10 corridors (collect from TNSTC/conductors)
+- ⏳ Enter hospital doctors and schedules
+- ⏳ Enter all emergency contacts (police, fire, PHC, panchayat, TNEB)
+- ⏳ Set water schedules per street
+- ⏳ Test Tamil text rendering on actual Android device
+- ⏳ QR code generation for WhatsApp sharing
 
 ### Phase 6 — Testing 🔴 PENDING
 - Test on low-end Android devices (2GB RAM)
@@ -507,7 +543,6 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 - FCM device registration testing
 
 ### Phase 7 — Launch 🔴 PENDING
-- Deploy backend to Render
 - Share QR code via WhatsApp
 - Print and post at panchayat, bus stand, hospital, TNEB office
 - Collect feedback from first users
