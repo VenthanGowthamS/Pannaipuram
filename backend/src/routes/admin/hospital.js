@@ -46,13 +46,24 @@ router.put('/doctors/:id', async (req, res) => {
   try {
     const result = await query(`
       UPDATE doctors
-      SET name_tamil    = COALESCE($1, name_tamil),
-          name_english  = COALESCE($2, name_english),
+      SET name_tamil     = COALESCE($1, name_tamil),
+          name_english   = COALESCE($2, name_english),
           specialisation = COALESCE($3, specialisation),
-          is_active     = COALESCE($4, is_active)
+          is_active      = COALESCE($4, is_active)
       WHERE id = $5 RETURNING *
     `, [name_tamil, name_english, specialisation, is_active, req.params.id]);
     res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// DELETE /admin/hospital/doctors/:id
+router.delete('/doctors/:id', async (req, res) => {
+  try {
+    await query('DELETE FROM doctor_schedules WHERE doctor_id = $1', [req.params.id]);
+    await query('DELETE FROM doctors WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }

@@ -93,6 +93,8 @@
   .btn-danger:hover { background: #ffcdd2; }
   .btn-success { background: #e8f5e9; color: #1B5E20; }
   .btn-success:hover { background: #c8e6c9; }
+  .btn-edit { background: #e3f2fd; color: #1565c0; }
+  .btn-edit:hover { background: #bbdefb; }
 
   /* ── Table ── */
   table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -117,6 +119,14 @@
   }
   .empty { text-align: center; padding: 40px; color: #bdbdbd; font-size: 14px; }
   .loading { text-align: center; padding: 20px; color: #9e9e9e; font-size: 14px; }
+
+  /* ── Inline Edit Row ── */
+  .water-edit-row { background: #f9f9f9; }
+  .water-edit-row input, .water-edit-row select {
+    padding: 6px 8px; border: 1px solid #ddd; border-radius: 4px;
+    font-size: 13px; outline: none;
+  }
+  .water-edit-row input:focus, .water-edit-row select:focus { border-color: #1B5E20; }
 </style>
 </head>
 <body>
@@ -148,6 +158,7 @@
     <div class="tab" onclick="switchTab('bus')">🚌 Bus Timings</div>
     <div class="tab" onclick="switchTab('hospital')">🏥 Doctors</div>
     <div class="tab" onclick="switchTab('emergency')">📞 Emergency</div>
+    <div class="tab" onclick="switchTab('water')">💧 Water</div>
     <div class="tab" onclick="switchTab('streets')">🏘 Streets</div>
   </div>
 
@@ -201,8 +212,7 @@
           <div class="form-group">
             <label>Corridor</label>
             <select id="bt-corridor">
-              <option value="1">🔵 போடி பக்கம் (Towards Bodi)</option>
-              <option value="2">🟢 கம்பம் பக்கம் (Towards Kamban)</option>
+              <option value="">Loading corridors...</option>
             </select>
           </div>
           <div class="form-group">
@@ -245,14 +255,8 @@
         <button class="btn-add" onclick="addBusTiming()">+ Add Timing</button>
       </div>
 
-      <div class="card">
-        <h2>🔵 போடி பக்கம் — Bodi Side</h2>
-        <div id="busList1" class="loading">Loading...</div>
-      </div>
-      <div class="card">
-        <h2>🟢 கம்பம் பக்கம் — Kamban Side</h2>
-        <div id="busList2" class="loading">Loading...</div>
-      </div>
+      <!-- Bus corridor cards generated dynamically by loadBusCorridors() -->
+      <div id="busCorridorCards"></div>
     </div>
 
     <!-- ─── DOCTORS ─── -->
@@ -352,6 +356,14 @@
       <div class="card">
         <h2>All Emergency Contacts</h2>
         <div id="contactList" class="loading">Loading...</div>
+      </div>
+    </div>
+
+    <!-- ─── WATER ─── -->
+    <div class="section" id="sec-water">
+      <div class="card">
+        <h2>💧 Water Schedules by Street</h2>
+        <div id="waterList" class="loading">Loading...</div>
       </div>
     </div>
 
@@ -471,6 +483,13 @@ async function apiPut(path, body) {
   return res.json();
 }
 
+async function apiDelete(path) {
+  const res = await fetch(`${API}${path}`, {
+    method: 'DELETE', headers: authHeaders()
+  });
+  return res.json();
+}
+
 async function apiGet(path) {
   const res = await fetch(`${API}${path}`, { headers: authHeaders() });
   const data = await res.json();
@@ -482,9 +501,11 @@ async function apiGet(path) {
 // ══════════════════════════════════════════════
 function loadAll() {
   loadPowerCuts();
+  loadBusCorridors();
   loadBusTimings();
   loadDoctors();
   loadContacts();
+  loadWater();
   loadStreets();
 }
 
@@ -505,8 +526,9 @@ async function loadPowerCuts() {
           <td>${formatDt(c.start_time)}</td>
           <td>${c.end_time ? formatDt(c.end_time) : '—'}</td>
           <td>${c.reason_tamil || '—'}</td>
-          <td>
+          <td style="display:flex;gap:6px;">
             <button class="btn-sm btn-success" onclick="resolveCut(${c.id})">✅ Resolved</button>
+            <button class="btn-sm btn-danger" onclick="deletePowerCut(${c.id})">🗑 Delete</button>
           </td>
         </tr>`).join('')}
     </table>`;
@@ -532,16 +554,48 @@ async function resolveCut(id) {
   if (data.success) { toast('Marked as resolved ✅', '#1B5E20'); loadPowerCuts(); }
 }
 
+async function deletePowerCut(id) {
+  if (!confirm('Are you sure?')) return;
+  const data = await apiDelete(`/admin/power/cuts/${id}`);
+  if (data.success) { toast('Power cut deleted ✅', '#1B5E20'); loadPowerCuts(); }
+  else toast(data.error || 'Error', '#c62828');
+}
+
 // ══════════════════════════════════════════════
 // BUS TIMINGS
 // ══════════════════════════════════════════════
+let corridors = [];
+
+async function loadBusCorridors() {
+  try {
+    corridors = await apiGet('/admin/bus/corridors');
+    // Populate dropdown
+    const select = document.getElementById('bt-corridor');
+    select.innerHTML = corridors.map(c =>
+      `<option value="${c.id}">${c.name_tamil} — ${c.name_english}</option>`
+    ).join('');
+    // Create a card per corridor dynamically
+    const container = document.getElementById('busCorridorCards');
+    container.innerHTML = corridors.map(c => `
+      <div class="card">
+        <h2><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${c.color_hex || '#999'};margin-right:8px;vertical-align:middle;"></span>${c.name_tamil} — ${c.name_english}</h2>
+        <div id="busList${c.id}" class="loading">Loading...</div>
+      </div>`).join('');
+    // Load timings for each
+    for (let c of corridors) loadCorridorTimings(c.id, `busList${c.id}`);
+  } catch(e) {
+    console.error('Error loading corridors:', e);
+  }
+}
+
 async function loadBusTimings() {
-  loadCorridorTimings(1, 'busList1');
-  loadCorridorTimings(2, 'busList2');
+  if (!corridors.length) { await loadBusCorridors(); return; }
+  for (let c of corridors) loadCorridorTimings(c.id, `busList${c.id}`);
 }
 
 async function loadCorridorTimings(corridorId, elId) {
   const el = document.getElementById(elId);
+  if (!el) return;
   try {
     const timings = await apiGet(`/api/bus/timings/${corridorId}`);
     if (!timings.length) { el.innerHTML = '<div class="empty">No timings yet — add above</div>'; return; }
@@ -554,7 +608,9 @@ async function loadCorridorTimings(corridorId, elId) {
           <td>${t.bus_type}</td>
           <td>${t.days_of_week}</td>
           <td>${t.is_last_bus ? '🔴 Yes' : '—'}</td>
-          <td><button class="btn-sm btn-danger" onclick="deactivateBus(${t.id})">Remove</button></td>
+          <td style="display:flex;gap:6px;">
+            <button class="btn-sm btn-danger" onclick="deleteBusTiming(${t.id})">🗑 Delete</button>
+          </td>
         </tr>`).join('')}
     </table>`;
   } catch(e) { el.innerHTML = '<div class="empty">Error loading</div>'; }
@@ -566,11 +622,14 @@ async function addBusTiming() {
   const departs_at  = document.getElementById('bt-time').value;
   if (!departs_at) { toast('Time is required', '#c62828'); return; }
 
+  const corridor = corridors.find(c => c.id == corridorId);
+  if (!corridor) { toast('Select a corridor', '#c62828'); return; }
+
   // First ensure route exists for this corridor+direction
   const routeData = await apiPost('/admin/bus/routes', {
     corridor_id: parseInt(corridorId), direction,
-    origin_tamil: direction === 'outbound' ? 'பண்ணைப்புரம்' : (corridorId === '1' ? 'போடி' : 'கம்பம்'),
-    dest_tamil:   direction === 'outbound' ? (corridorId === '1' ? 'போடி' : 'கம்பம்') : 'பண்ணைப்புரம்'
+    origin_tamil: direction === 'outbound' ? 'பண்ணைப்புரம்' : (corridor.name_tamil || 'பண்ணைப்புரம்'),
+    dest_tamil:   direction === 'outbound' ? (corridor.name_tamil || 'பண்ணைப்புரம்') : 'பண்ணைப்புரம்'
   });
   const routeId = routeData.data?.id;
   if (!routeId) { toast('Route error', '#c62828'); return; }
@@ -585,9 +644,11 @@ async function addBusTiming() {
   else toast(data.error || 'Error', '#c62828');
 }
 
-async function deactivateBus(id) {
-  await apiPut(`/admin/bus/timings/${id}`, { is_active: false });
-  toast('Removed ✅', '#1B5E20'); loadBusTimings();
+async function deleteBusTiming(id) {
+  if (!confirm('Are you sure?')) return;
+  const data = await apiDelete(`/admin/bus/timings/${id}`);
+  if (data.success) { toast('Bus timing deleted ✅', '#1B5E20'); loadBusTimings(); }
+  else toast(data.error || 'Error', '#c62828');
 }
 
 // ══════════════════════════════════════════════
@@ -602,7 +663,7 @@ async function loadDoctors() {
     if (!doctors.length) { el.innerHTML = '<div class="empty">No doctors yet</div>'; return; }
     const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     el.innerHTML = `<table>
-      <tr><th>Name (Tamil)</th><th>Name (English)</th><th>Specialisation</th><th>Schedule</th><th>Status</th></tr>
+      <tr><th>Name (Tamil)</th><th>Name (English)</th><th>Specialisation</th><th>Schedule</th><th>Status</th><th>Action</th></tr>
       ${doctors.map(d => `
         <tr>
           <td>${d.name_tamil}</td>
@@ -612,6 +673,9 @@ async function loadDoctors() {
             ? d.schedules.map(s => `${days[s.day_of_week]}${s.notes_tamil ? ' — '+s.notes_tamil : ''}`).join(', ')
             : '—'}</td>
           <td><span class="badge ${d.is_active ? 'badge-active' : 'badge-off'}">${d.is_active ? 'Active' : 'Inactive'}</span></td>
+          <td>
+            <button class="btn-sm btn-danger" onclick="deleteDoctor(${d.id})">🗑 Delete</button>
+          </td>
         </tr>`).join('')}
     </table>`;
   } catch(e) { el.innerHTML = '<div class="empty">Error loading</div>'; }
@@ -640,6 +704,13 @@ async function addSchedule() {
   else toast(data.error || 'Error', '#c62828');
 }
 
+async function deleteDoctor(id) {
+  if (!confirm('Are you sure?')) return;
+  const data = await apiDelete(`/admin/hospital/doctors/${id}`);
+  if (data.success) { toast('Doctor deleted ✅', '#1B5E20'); loadDoctors(); }
+  else toast(data.error || 'Error', '#c62828');
+}
+
 // ══════════════════════════════════════════════
 // EMERGENCY CONTACTS
 // ══════════════════════════════════════════════
@@ -651,7 +722,7 @@ async function loadContacts() {
     if (!all.length) { el.innerHTML = '<div class="empty">No contacts yet</div>'; return; }
     const catLabel = { power:'⚡ மின்சாரம்', medical:'🏥 மருத்துவம்', police:'👮 போலீஸ்', panchayat:'🏛 பஞ்சாயத்து', fire:'🔥 தீயணைப்பு', other:'📞 மற்றவை' };
     el.innerHTML = `<table>
-      <tr><th>Category</th><th>Name (Tamil)</th><th>Name (English)</th><th>Phone</th><th>Verified</th></tr>
+      <tr><th>Category</th><th>Name (Tamil)</th><th>Name (English)</th><th>Phone</th><th>Verified</th><th>Action</th></tr>
       ${all.map(c => `
         <tr>
           <td>${catLabel[c.category] || c.category}</td>
@@ -659,6 +730,9 @@ async function loadContacts() {
           <td>${c.name_english || '—'}</td>
           <td><strong>${c.phone}</strong></td>
           <td>${c.is_verified ? '✅' : '⏳'}</td>
+          <td>
+            <button class="btn-sm btn-danger" onclick="deleteContact(${c.id})">🗑 Delete</button>
+          </td>
         </tr>`).join('')}
     </table>`;
   } catch(e) { el.innerHTML = '<div class="empty">Error loading</div>'; }
@@ -676,17 +750,104 @@ async function addContact() {
   else toast(data.error || 'Error', '#c62828');
 }
 
+async function deleteContact(id) {
+  if (!confirm('Are you sure?')) return;
+  const data = await apiDelete(`/admin/contacts/${id}`);
+  if (data.success) { toast('Contact deleted ✅', '#1B5E20'); loadContacts(); }
+  else toast(data.error || 'Error', '#c62828');
+}
+
+// ══════════════════════════════════════════════
+// WATER
+// ══════════════════════════════════════════════
+let editingWaterId = null;
+
+async function loadWater() {
+  const el = document.getElementById('waterList');
+  try {
+    const streets = await apiGet('/admin/water/streets');
+    if (!streets || !streets.length) { el.innerHTML = '<div class="empty">No streets yet</div>'; return; }
+    el.innerHTML = `<table>
+      <tr><th>Street (Tamil)</th><th>Street (English)</th><th>Every N Days</th><th>Supply Time</th><th>Notes</th><th>Action</th></tr>
+      ${streets.map((s,i) => {
+        const schedule = s.water_schedule || {};
+        return `
+        <tr id="water-row-${s.id}">
+          <td>${s.name_tamil || '—'}</td>
+          <td>${s.name_english || '—'}</td>
+          <td id="water-freq-${s.id}">${schedule.frequency_days || '—'}</td>
+          <td id="water-time-${s.id}">${schedule.supply_time || '—'}</td>
+          <td id="water-notes-${s.id}">${schedule.notes_tamil || '—'}</td>
+          <td>
+            <button class="btn-sm btn-edit" onclick="editWaterRow(${s.id}, '${s.name_tamil}', '${s.name_english}')">Edit</button>
+          </td>
+        </tr>`;
+      }).join('')}
+    </table>`;
+  } catch(e) { el.innerHTML = '<div class="empty">Error loading</div>'; }
+}
+
+function editWaterRow(streetId, nameTamil, nameEnglish) {
+  const row = document.getElementById(`water-row-${streetId}`);
+  const freqEl = document.getElementById(`water-freq-${streetId}`);
+  const timeEl = document.getElementById(`water-time-${streetId}`);
+  const notesEl = document.getElementById(`water-notes-${streetId}`);
+
+  const currentFreq = freqEl.textContent === '—' ? '' : freqEl.textContent;
+  const currentTime = timeEl.textContent === '—' ? '' : timeEl.textContent;
+  const currentNotes = notesEl.textContent === '—' ? '' : notesEl.textContent;
+
+  row.classList.add('water-edit-row');
+  freqEl.innerHTML = `<input type="number" id="edit-freq-${streetId}" value="${currentFreq}" placeholder="e.g., 3" min="1" max="30" />`;
+  timeEl.innerHTML = `<input type="time" id="edit-time-${streetId}" value="${currentTime}" />`;
+  notesEl.innerHTML = `<textarea id="edit-notes-${streetId}" placeholder="Notes" style="min-height:32px;width:100%;">${currentNotes}</textarea>`;
+
+  const actionCell = row.querySelector('td:last-child');
+  actionCell.innerHTML = `
+    <button class="btn-sm btn-success" onclick="saveWaterSchedule(${streetId})">Save</button>
+    <button class="btn-sm btn-danger" onclick="cancelWaterEdit(${streetId})">Cancel</button>
+  `;
+}
+
+function cancelWaterEdit(streetId) {
+  loadWater();
+}
+
+async function saveWaterSchedule(streetId) {
+  const frequency_days = document.getElementById(`edit-freq-${streetId}`).value;
+  const supply_time = document.getElementById(`edit-time-${streetId}`).value;
+  const notes_tamil = document.getElementById(`edit-notes-${streetId}`).value;
+
+  if (!frequency_days || !supply_time) {
+    toast('Frequency and time are required', '#c62828');
+    return;
+  }
+
+  const data = await apiPut(`/admin/water/schedule/${streetId}`, {
+    frequency_days: parseInt(frequency_days),
+    supply_time,
+    notes_tamil
+  });
+
+  if (data.success) {
+    toast('Water schedule updated ✅', '#1B5E20');
+    loadWater();
+  } else {
+    toast(data.error || 'Error', '#c62828');
+  }
+}
+
 // ══════════════════════════════════════════════
 // STREETS
 // ══════════════════════════════════════════════
 async function loadStreets() {
   const el = document.getElementById('streetList');
   try {
-    const streets = await apiGet('/api/water/schedule');
+    const streets = await apiGet('/admin/water/streets');
     if (!streets || !streets.length) { el.innerHTML = '<div class="empty">No streets yet</div>'; return; }
     el.innerHTML = `<table>
-      <tr><th>#</th><th>Name (Tamil)</th><th>Name (English)</th></tr>
-      ${streets.map((s,i) => `<tr><td>${i+1}</td><td>${s.name_tamil || s.nameTamil || '—'}</td><td>${s.name_english || s.nameEnglish || '—'}</td></tr>`).join('')}
+      <tr><th>#</th><th>Name (Tamil)</th><th>Name (English)</th><th>Ward</th></tr>
+      ${streets.map((s,i) => `<tr><td>${i+1}</td><td>${s.name_tamil || '—'}</td><td>${s.name_english || '—'}</td><td>${s.ward || '—'}</td></tr>`).join('')}
     </table>`;
   } catch(e) { el.innerHTML = '<div class="empty">Error loading</div>'; }
 }

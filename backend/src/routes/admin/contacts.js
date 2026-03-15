@@ -8,13 +8,10 @@ router.use(adminAuth);
 // POST /admin/contacts
 router.post('/', async (req, res) => {
   const { category, name_tamil, name_english, phone, is_national, display_order } = req.body;
-  if (!name_tamil || !phone) {
-    return res.status(400).json({ error: 'name_tamil and phone required' });
-  }
+  if (!name_tamil || !phone) return res.status(400).json({ error: 'name_tamil and phone required' });
   try {
     const result = await query(`
-      INSERT INTO emergency_contacts
-        (category, name_tamil, name_english, phone, is_national, is_verified, display_order)
+      INSERT INTO emergency_contacts (category, name_tamil, name_english, phone, is_national, is_verified, display_order)
       VALUES ($1,$2,$3,$4,$5,TRUE,$6) RETURNING *
     `, [category, name_tamil, name_english, phone, is_national || false, display_order || 0]);
     res.json({ success: true, data: result.rows[0] });
@@ -37,6 +34,16 @@ router.put('/:id', async (req, res) => {
       WHERE id = $6 RETURNING *
     `, [name_tamil, name_english, phone, is_verified, display_order, req.params.id]);
     res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// DELETE /admin/contacts/:id
+router.delete('/:id', async (req, res) => {
+  try {
+    await query('DELETE FROM emergency_contacts WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }

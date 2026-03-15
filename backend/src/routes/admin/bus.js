@@ -5,13 +5,22 @@ const { query } = require('../../db/pool');
 
 router.use(adminAuth);
 
+// GET /admin/bus/corridors
+router.get('/corridors', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM bus_corridors ORDER BY id');
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // POST /admin/bus/routes
 router.post('/routes', async (req, res) => {
   const { corridor_id, direction, origin_tamil, dest_tamil, stops_tamil, notes_tamil } = req.body;
   try {
     const result = await query(`
-      INSERT INTO bus_routes
-        (corridor_id, direction, origin_tamil, dest_tamil, stops_tamil, notes_tamil)
+      INSERT INTO bus_routes (corridor_id, direction, origin_tamil, dest_tamil, stops_tamil, notes_tamil)
       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *
     `, [corridor_id, direction, origin_tamil, dest_tamil, stops_tamil, notes_tamil]);
     res.json({ success: true, data: result.rows[0] });
@@ -48,6 +57,16 @@ router.put('/timings/:id', async (req, res) => {
       WHERE id = $6 RETURNING *
     `, [departs_at, days_of_week, bus_type, is_last_bus, is_active, req.params.id]);
     res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// DELETE /admin/bus/timings/:id
+router.delete('/timings/:id', async (req, res) => {
+  try {
+    await query('DELETE FROM bus_timings WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
