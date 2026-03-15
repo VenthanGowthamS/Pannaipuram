@@ -15,7 +15,12 @@ class ApiService {
     final uri = Uri.parse('$_base$path');
     final res = await http.get(uri).timeout(const Duration(seconds: 30));
     if (res.statusCode == 200) {
-      return parser(json.decode(res.body));
+      final decoded = json.decode(res.body);
+      // Unwrap { success: true, data: ... } envelope from backend
+      final payload = (decoded is Map && decoded.containsKey('data'))
+          ? decoded['data']
+          : decoded;
+      return parser(payload);
     }
     throw Exception('API error ${res.statusCode} on $path');
   }
