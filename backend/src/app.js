@@ -34,8 +34,9 @@ app.use(helmet({ contentSecurityPolicy: false })); // CSP off so admin HTML load
 app.use(cors());
 app.use(express.json());
 
-// ── Serve Admin Panel (static HTML) ────────────────────
+// ── Serve Admin Panels (static) ────────────────────
 app.use('/admin/panel', express.static(path.join(__dirname, '../public/admin')));
+app.use('/admin/v2', express.static(path.join(__dirname, '../public/admin-v2')));
 
 // ── Mobile API Routes ───────────────────────────────────
 app.use('/api/water',     waterRoutes);
