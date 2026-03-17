@@ -85,8 +85,26 @@ class ApiService {
     return this.request('POST', '/admin/bus/routes', data);
   }
 
-  addBusTiming(data) {
-    return this.request('POST', '/admin/bus/timings', data);
+  async addBusTiming(data) {
+    // First, create/find the route for this corridor
+    const corridor = data.corridor_id;
+    const routeData = await this.request('POST', '/admin/bus/routes', {
+      corridor_id: parseInt(corridor),
+      direction: 'outbound',
+      origin_tamil: 'பண்ணைப்புரம்',
+      dest_tamil: 'பண்ணைப்புரம்',
+    });
+    const routeId = routeData.id;
+    if (!routeId) throw new Error('Failed to create bus route');
+
+    // Then add the timing with the route_id
+    return this.request('POST', '/admin/bus/timings', {
+      route_id: routeId,
+      departs_at: data.departs_at,
+      days_of_week: data.days_of_week || 'daily',
+      bus_type: data.bus_type || 'ordinary',
+      is_last_bus: data.is_last_bus || false,
+    });
   }
 
   deleteBusTiming(id) {
@@ -159,7 +177,7 @@ class ApiService {
 
   // Streets
   getStreets() {
-    return this.request('GET', '/admin/streets');
+    return this.request('GET', '/admin/water/streets');
   }
 
   addStreet(data) {
