@@ -30,12 +30,13 @@ INSERT INTO bus_corridors (id, name_tamil, name_english, color_hex) VALUES
   (7,  'திருச்சி',         'Trichy',         '#4527A0'),
   (8,  'பழனி',            'Palani',          '#558B2F'),
   (9,  'குமுளி',           'Kumily',          '#00695C'),
-  (10, 'திண்டுக்கல்',     'Dindigul',        '#BF360C')
+  (10, 'திண்டுக்கல்',     'Dindigul',        '#BF360C'),
+  (11, 'கூடலூர்',          'Gudalur (Koodalur)', '#795548')
 ON CONFLICT (id) DO UPDATE
   SET name_tamil = EXCLUDED.name_tamil,
       name_english = EXCLUDED.name_english,
       color_hex = EXCLUDED.color_hex;
-SELECT setval('bus_corridors_id_seq', 10);
+SELECT setval('bus_corridors_id_seq', 11);
 
 -- ══════════════════════════════════════════════
 -- 3. BUS ROUTES (one outbound route per corridor)
@@ -54,8 +55,9 @@ INSERT INTO bus_routes (id, corridor_id, direction, origin_tamil, dest_tamil) VA
   (7,  7,  'outbound', 'பண்ணைப்புரம்', 'திருச்சி'),
   (8,  8,  'outbound', 'பண்ணைப்புரம்', 'பழனி'),
   (9,  9,  'outbound', 'பண்ணைப்புரம்', 'குமுளி'),
-  (10, 10, 'outbound', 'பண்ணைப்புரம்', 'திண்டுக்கல்');
-SELECT setval('bus_routes_id_seq', 10);
+  (10, 10, 'outbound', 'பண்ணைப்புரம்', 'திண்டுக்கல்'),
+  (11, 11, 'outbound', 'பண்ணைப்புரம்', 'கூடலூர்');
+SELECT setval('bus_routes_id_seq', 11);
 
 -- ══════════════════════════════════════════════
 -- 4. BUS TIMINGS — All from Thevaram Bus Stand + 10 min
