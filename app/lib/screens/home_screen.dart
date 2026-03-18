@@ -106,18 +106,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
 
-                // 6. Emergency
-                _ModuleTile(
-                  icon: Icons.emergency_rounded,
-                  emoji: '🚨',
-                  gradientColors: const [Color(0xFFB71C1C), Color(0xFFE53935)],
-                  label: 'அண்ணே, உதவி வேணும்!',
-                  sublabel: 'Emergency Contacts',
-                  onTap: () => _navigate(context, const EmergencyScreen()),
-                ),
-                const SizedBox(height: 12),
-
-                // 7. Local Services
+                // 6. Local Services
                 _ModuleTile(
                   icon: Icons.storefront_rounded,
                   emoji: '🛍',
@@ -125,6 +114,17 @@ class HomeScreen extends StatelessWidget {
                   label: 'ஊர்ல யாரை அழைக்கணும்?',
                   sublabel: 'Milk, Post, Plumber & More',
                   onTap: () => _navigate(context, const ServicesScreen()),
+                ),
+                const SizedBox(height: 12),
+
+                // 7. Emergency (last)
+                _ModuleTile(
+                  icon: Icons.emergency_rounded,
+                  emoji: '🚨',
+                  gradientColors: const [Color(0xFFB71C1C), Color(0xFFE53935)],
+                  label: 'அண்ணே, உதவி வேணும்!',
+                  sublabel: 'Emergency Contacts',
+                  onTap: () => _navigate(context, const EmergencyScreen()),
                 ),
                 const SizedBox(height: 20),
               ],

@@ -14,6 +14,7 @@ import AutoDrivers from './pages/AutoDrivers';
 import Water from './pages/Water';
 import Streets from './pages/Streets';
 import LocalServices from './pages/LocalServices';
+import UserManagement from './pages/UserManagement';
 
 const AppContent = () => {
   const { user, loading } = useAuth();
@@ -59,6 +60,8 @@ const AppContent = () => {
         return <Streets {...props} />;
       case 'services':
         return <LocalServices {...props} />;
+      case 'users':
+        return <UserManagement {...props} />;
       default:
         return <PowerCuts {...props} />;
     }

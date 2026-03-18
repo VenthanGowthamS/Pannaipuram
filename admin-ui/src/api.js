@@ -55,6 +55,22 @@ class ApiService {
     return this.request('POST', '/admin/auth/login', { email, password });
   }
 
+  signup(data) {
+    return this.request('POST', '/admin/auth/signup', data);
+  }
+
+  getUsers() {
+    return this.request('GET', '/admin/auth/users');
+  }
+
+  updateUserRole(id, role) {
+    return this.request('PUT', `/admin/auth/users/${id}/role`, { role });
+  }
+
+  toggleUserActive(id, isActive) {
+    return this.request('PUT', `/admin/auth/users/${id}/active`, { is_active: isActive });
+  }
+
   // Power
   getPowerCuts() {
     return this.request('GET', '/admin/power/cuts');
@@ -150,6 +166,14 @@ class ApiService {
   }
 
   // Auto
+  getAutoContact() {
+    return this.request('GET', '/admin/auto/contact');
+  }
+
+  updateAutoContact(data) {
+    return this.request('PUT', '/admin/auto/contact', data);
+  }
+
   getAutoDrivers() {
     return this.request('GET', '/admin/auto/drivers');
   }

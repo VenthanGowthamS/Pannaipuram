@@ -17,6 +17,7 @@ import {
   Container,
   Snackbar,
   Alert,
+  Chip,
 } from '@mui/material';
 import {
   Logout as LogoutIcon,
@@ -32,7 +33,7 @@ import { useAuth } from '../context/AuthContext';
 
 const Layout = ({ children, currentTab, onTabChange, snackbar, setSnackbar }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -45,7 +46,10 @@ const Layout = ({ children, currentTab, onTabChange, snackbar, setSnackbar }) =>
     { id: 'water', label: 'Water', icon: '💧', component: WaterIcon },
     { id: 'streets', label: 'Streets', icon: '🏘', component: StreetsIcon },
     { id: 'services', label: 'Services', icon: '🛍', component: StreetsIcon },
+    { id: 'users', label: 'Users', icon: '👥', component: StreetsIcon, role: 'super_admin' },
   ];
+
+  const visibleTabs = tabs.filter(t => !t.role || user?.role === t.role);
 
   const handleLogout = () => {
     logout();
@@ -53,7 +57,7 @@ const Layout = ({ children, currentTab, onTabChange, snackbar, setSnackbar }) =>
 
   const drawerContent = (
     <List>
-      {tabs.map((tab) => (
+      {visibleTabs.map((tab) => (
         <ListItem
           button
           key={tab.id}
@@ -85,6 +89,13 @@ const Layout = ({ children, currentTab, onTabChange, snackbar, setSnackbar }) =>
           >
             பண்ணைப்புரம் 🏡
           </Typography>
+          {user?.role && (
+            <Chip
+              label={user.role.replace('_', ' ').toUpperCase()}
+              size="small"
+              sx={{ mr: 2, bgcolor: '#2E7D32', color: 'white' }}
+            />
+          )}
           <Button
             color="inherit"
             startIcon={<LogoutIcon />}
@@ -149,7 +160,7 @@ const Layout = ({ children, currentTab, onTabChange, snackbar, setSnackbar }) =>
             },
           }}
         >
-          {tabs.map((tab) => (
+          {visibleTabs.map((tab) => (
             <BottomNavigationAction
               key={tab.id}
               value={tab.id}

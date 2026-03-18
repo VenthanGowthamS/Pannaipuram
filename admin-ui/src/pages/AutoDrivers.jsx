@@ -35,6 +35,10 @@ const AutoDrivers = ({ onSnackbar }) => {
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
 
+  // Registration contact state
+  const [contact, setContact] = useState({ name: 'கௌதம்', name_english: 'Gowtham', phone: '8888888888' });
+  const [contactSaving, setContactSaving] = useState(false);
+
   const vehicleTypes = [
     { id: 'auto', label: '🚙 Auto', emoji: '🚙' },
     { id: 'van', label: '🚐 Van', emoji: '🚐' },
@@ -53,8 +57,29 @@ const AutoDrivers = ({ onSnackbar }) => {
     }
   };
 
+  const loadContact = async () => {
+    try {
+      const data = await api.getAutoContact();
+      if (data) setContact(data);
+    } catch (_) { /* keep defaults */ }
+  };
+
+  const handleSaveContact = async () => {
+    if (!contact.phone) { onSnackbar('Phone number is required', 'warning'); return; }
+    setContactSaving(true);
+    try {
+      await api.updateAutoContact(contact);
+      onSnackbar('Registration contact updated!', 'success');
+    } catch {
+      onSnackbar('Failed to update contact', 'error');
+    } finally {
+      setContactSaving(false);
+    }
+  };
+
   useEffect(() => {
     loadDrivers();
+    loadContact();
   }, []);
 
   const handleAddDriver = async (e) => {
@@ -135,6 +160,57 @@ const AutoDrivers = ({ onSnackbar }) => {
       <Typography variant="h5" sx={{ mb: 3, fontWeight: 700 }}>
         🚗 Auto/Van Drivers Management
       </Typography>
+
+      {/* Registration Contact */}
+      <Card sx={{ p: 3, mb: 3, border: '2px solid #6A1B9A22' }}>
+        <Typography variant="h6" sx={{ mb: 2, color: '#6A1B9A' }}>
+          📞 Registration Contact (shown in app)
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 2, color: '#666' }}>
+          This contact is shown in the Auto section for users who want to add a new driver.
+        </Typography>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={4}>
+            <TextField
+              fullWidth
+              label="Name (Tamil)"
+              value={contact.name}
+              onChange={(e) => setContact({ ...contact, name: e.target.value })}
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <TextField
+              fullWidth
+              label="Name (English)"
+              value={contact.name_english}
+              onChange={(e) => setContact({ ...contact, name_english: e.target.value })}
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <TextField
+              fullWidth
+              label="Phone Number"
+              value={contact.phone}
+              onChange={(e) => setContact({ ...contact, phone: e.target.value })}
+              size="small"
+              inputProps={{ maxLength: 10 }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={2}>
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={handleSaveContact}
+              disabled={contactSaving}
+              sx={{ bgcolor: '#6A1B9A', '&:hover': { bgcolor: '#4A148C' } }}
+            >
+              {contactSaving ? 'Saving...' : 'Save'}
+            </Button>
+          </Grid>
+        </Grid>
+      </Card>
 
       {/* Add Form */}
       <Card sx={{ p: 3, mb: 3 }}>

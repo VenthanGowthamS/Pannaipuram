@@ -44,7 +44,7 @@ class HospitalScreen extends StatelessWidget {
                         Text('🏥', style: TextStyle(fontSize: 34)),
                         SizedBox(height: 4),
                         Text(
-                          'உடம்பு நல்லிருக்கா?',
+                          'உடம்பு நன்றாக இருக்கிறதா?',
                           style: TextStyle(
                             fontFamily: 'NotoSansTamil',
                             fontSize: 20,

@@ -154,13 +154,20 @@ const BusTimings = ({ onSnackbar }) => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
+                select
                 label="Days of Week"
                 value={form.days_of_week}
                 onChange={(e) =>
                   setForm({ ...form, days_of_week: e.target.value })
                 }
-                placeholder="e.g., Mon-Sun, Mon-Fri"
-              />
+                SelectProps={{ native: true }}
+              >
+                <option value="daily">Daily (Every day)</option>
+                <option value="Mon-Fri">Weekdays (Mon-Fri)</option>
+                <option value="Sat-Sun">Weekends (Sat-Sun)</option>
+                <option value="Mon-Sat">Mon-Sat</option>
+                <option value="Sun">Sunday only</option>
+              </TextField>
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField

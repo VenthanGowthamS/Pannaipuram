@@ -5,6 +5,32 @@ const { query } = require('../../db/pool');
 
 router.use(adminAuth);
 
+// GET /admin/auto/contact — get registration contact
+router.get('/contact', async (req, res) => {
+  try {
+    const result = await query(`SELECT value FROM app_config WHERE key = 'auto_registration_contact'`);
+    if (result.rows.length > 0) return res.json({ success: true, data: JSON.parse(result.rows[0].value) });
+    res.json({ success: true, data: { name: 'கௌதம்', name_english: 'Gowtham', phone: '8888888888' } });
+  } catch (_) {
+    res.json({ success: true, data: { name: 'கௌதம்', name_english: 'Gowtham', phone: '8888888888' } });
+  }
+});
+
+// PUT /admin/auto/contact — update registration contact
+router.put('/contact', async (req, res) => {
+  const { name, name_english, phone } = req.body;
+  if (!phone) return res.status(400).json({ success: false, error: 'phone required' });
+  const val = JSON.stringify({ name: name || '', name_english: name_english || '', phone });
+  try {
+    await query(`CREATE TABLE IF NOT EXISTS app_config (key TEXT PRIMARY KEY, value TEXT NOT NULL)`);
+    await query(`INSERT INTO app_config (key, value) VALUES ('auto_registration_contact', $1)
+      ON CONFLICT (key) DO UPDATE SET value = $1`, [val]);
+    res.json({ success: true, data: JSON.parse(val) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 // GET /admin/auto/drivers — list all (including inactive)
 router.get('/drivers', async (req, res) => {
   try {
