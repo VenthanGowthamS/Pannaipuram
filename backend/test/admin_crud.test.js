@@ -11,6 +11,10 @@
  *   ✅ Auto Drivers CRUD
  *   ✅ Streets CRUD
  *   ✅ Water Schedule UPDATE
+ *   ✅ Local Services CRUD
+ *   ✅ Auto Registration Contact GET/PUT
+ *   ✅ Announcements CRUD
+ *   ✅ Auth Signup & RBAC User Management
  *
  * Requires environment variables:
  *   API_BASE (default: https://pannaipuram-api.onrender.com)
@@ -195,8 +199,13 @@ async function testAuth() {
     });
     assert(status === 200, `Expected 200, got ${status}`);
     assert(body.success === true, 'Expected success: true');
-    assert(body.data && body.data.token, 'Expected token in response');
-    authToken = body.data.token;
+    // Handle both formats: { data: { token } } and { token }
+    const token = (body.data && body.data.token) || body.token;
+    assert(token, 'Expected token in response');
+    authToken = token;
+    // Capture role if present
+    const role = (body.data && body.data.role) || body.role;
+    if (role) console.log(`      Role: ${role}`);
     console.log(`      Token: ${authToken.substring(0, 20)}...`);
   });
 }
@@ -526,6 +535,345 @@ async function testWaterScheduleUpdate() {
   });
 }
 
+async function testLocalServicesCRUD() {
+  console.log('\n🛍  Local Services CRUD');
+
+  let createdServiceId = null;
+
+  await test('POST /admin/services adds a test service contact', async () => {
+    const { status, body } = await post('/admin/services', {
+      category: 'milk',
+      name_tamil: 'டெஸ்ட் பால்காரர்',
+      name_english: 'Test Milk Man',
+      phone: '9876543210',
+      area_tamil: 'முழு ஊர்',
+      area_english: 'Whole village',
+      notes_tamil: 'சோதனை',
+      display_order: 99,
+    }, getAuthHeaders());
+    assert(status === 200 || status === 201, `Expected 200/201, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(body.data && typeof body.data.id === 'number', 'Expected id in response');
+    assert(body.data.category === 'milk', `Expected category milk, got ${body.data.category}`);
+    assert(body.data.phone === '9876543210', 'Expected phone to match');
+    createdServiceId = body.data.id;
+  });
+
+  await test('POST /admin/services rejects missing required fields', async () => {
+    const { status, body } = await post('/admin/services', {
+      category: 'plumber',
+      // missing name_tamil and phone
+    }, getAuthHeaders());
+    assert(status === 400, `Expected 400, got ${status}`);
+    assert(body.success === false, 'Expected success: false');
+  });
+
+  await test('GET /admin/services lists all services including test service', async () => {
+    const { status, body } = await get('/admin/services', getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data to be an array');
+    if (createdServiceId) {
+      const found = body.data.find(s => s.id === createdServiceId);
+      assert(found, `Test service (id=${createdServiceId}) not found in list`);
+      assert(found.name_tamil === 'டெஸ்ட் பால்காரர்', 'Tamil name should match');
+    }
+  });
+
+  await test('PUT /admin/services/:id updates service', async () => {
+    if (!createdServiceId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await put(`/admin/services/${createdServiceId}`, {
+      phone: '9999999999',
+      notes_tamil: 'புதிய குறிப்பு',
+      is_active: false,
+    }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(body.data.phone === '9999999999', 'Phone should be updated');
+  });
+
+  await test('DELETE /admin/services/:id deletes service', async () => {
+    if (!createdServiceId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await del(`/admin/services/${createdServiceId}`, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+
+  await test('GET /admin/services verifies deletion', async () => {
+    if (!createdServiceId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await get('/admin/services', getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    const found = body.data.find(s => s.id === createdServiceId);
+    assert(!found, `Test service should be deleted but found id=${createdServiceId}`);
+  });
+}
+
+async function testAutoContactCRUD() {
+  console.log('\n📞 Auto Registration Contact GET/PUT');
+
+  await test('GET /admin/auto/contact returns contact info', async () => {
+    const { status, body } = await get('/admin/auto/contact', getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(body.data, 'Expected data object');
+    assert(typeof body.data.phone === 'string', 'Expected phone as string');
+  });
+
+  await test('PUT /admin/auto/contact updates contact', async () => {
+    const { status, body } = await put('/admin/auto/contact', {
+      name: 'டெஸ்ட் நபர்',
+      name_english: 'Test Person',
+      phone: '7777777777',
+    }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(body.data.phone === '7777777777', 'Phone should be updated');
+  });
+
+  await test('GET /admin/auto/contact verifies update', async () => {
+    const { status, body } = await get('/admin/auto/contact', getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.data.phone === '7777777777', 'Updated phone should persist');
+    assert(body.data.name_english === 'Test Person', 'Updated name should persist');
+  });
+
+  await test('PUT /admin/auto/contact rejects missing phone', async () => {
+    const { status, body } = await put('/admin/auto/contact', {
+      name: 'No Phone',
+    }, getAuthHeaders());
+    assert(status === 400, `Expected 400, got ${status}`);
+    assert(body.success === false, 'Expected success: false');
+  });
+
+  // Restore original default
+  await test('PUT /admin/auto/contact restores default contact', async () => {
+    const { status, body } = await put('/admin/auto/contact', {
+      name: 'கௌதம்',
+      name_english: 'Gowtham',
+      phone: '8888888888',
+    }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+}
+
+async function testAnnouncementsCRUD() {
+  console.log('\n📢 Announcements CRUD');
+
+  let createdAnnouncementId = null;
+
+  await test('POST /admin/announcements creates a test announcement', async () => {
+    const { status, body } = await post('/admin/announcements', {
+      message_tamil: 'சோதனை அறிவிப்பு — இது ஒரு டெஸ்ட்',
+      message_english: 'Test announcement — this is a test',
+      type: 'info',
+      priority: 5,
+    }, getAuthHeaders());
+    assert(status === 200 || status === 201, `Expected 200/201, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(body.data && typeof body.data.id === 'number', 'Expected id in response');
+    assert(body.data.type === 'info', `Expected type info, got ${body.data.type}`);
+    assert(body.data.message_tamil.includes('சோதனை'), 'Tamil message should match');
+    createdAnnouncementId = body.data.id;
+  });
+
+  await test('POST /admin/announcements rejects missing message_tamil', async () => {
+    const { status, body } = await post('/admin/announcements', {
+      message_english: 'English only — should fail',
+    }, getAuthHeaders());
+    assert(status === 400, `Expected 400, got ${status}`);
+    assert(body.success === false, 'Expected success: false');
+  });
+
+  await test('GET /admin/announcements lists all including test announcement', async () => {
+    const { status, body } = await get('/admin/announcements', getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data to be an array');
+    if (createdAnnouncementId) {
+      const found = body.data.find(a => a.id === createdAnnouncementId);
+      assert(found, `Test announcement (id=${createdAnnouncementId}) not found`);
+    }
+  });
+
+  await test('PUT /admin/announcements/:id updates announcement', async () => {
+    if (!createdAnnouncementId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await put(`/admin/announcements/${createdAnnouncementId}`, {
+      type: 'warning',
+      priority: 10,
+      is_active: false,
+    }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(body.data.type === 'warning', 'Type should be updated to warning');
+    assert(body.data.is_active === false, 'Should be deactivated');
+  });
+
+  await test('GET /api/announcements public endpoint returns only active', async () => {
+    const { status, body } = await get('/api/announcements');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data to be an array');
+    // Our test announcement is inactive, should not appear
+    if (createdAnnouncementId) {
+      const found = body.data.find(a => a.id === createdAnnouncementId);
+      assert(!found, 'Inactive announcement should not appear in public endpoint');
+    }
+  });
+
+  await test('DELETE /admin/announcements/:id deletes announcement', async () => {
+    if (!createdAnnouncementId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await del(`/admin/announcements/${createdAnnouncementId}`, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+}
+
+async function testAuthSignupAndRBAC() {
+  console.log('\n👥 Auth Signup & RBAC User Management');
+
+  const testEmail = `test_${Date.now()}@pannaipuram.local`;
+  const testPassword = 'testpass123';
+  let createdUserId = null;
+
+  await test('POST /admin/auth/signup creates viewer user', async () => {
+    const { status, body } = await post('/admin/auth/signup', {
+      email: testEmail,
+      password: testPassword,
+      name: 'Test Viewer',
+    }, getAuthHeaders());
+    assert(status === 200 || status === 201, `Expected 200/201, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(body.user, 'Expected user in response');
+    assert(body.user.role === 'viewer', `Expected role viewer, got ${body.user.role}`);
+    assert(body.user.email === testEmail, 'Email should match');
+    createdUserId = body.user.id;
+  });
+
+  await test('POST /admin/auth/signup rejects duplicate email', async () => {
+    const { status } = await post('/admin/auth/signup', {
+      email: testEmail,
+      password: testPassword,
+    }, getAuthHeaders());
+    assert(status === 400, `Expected 400 for duplicate, got ${status}`);
+  });
+
+  await test('POST /admin/auth/login works for new viewer user', async () => {
+    const { status, body } = await post('/admin/auth/login', {
+      email: testEmail,
+      password: testPassword,
+    });
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    const role = (body.data && body.data.role) || body.role;
+    assert(role === 'viewer', `Expected viewer role, got ${role}`);
+  });
+
+  await test('GET /admin/auth/users lists users (super_admin)', async () => {
+    const { status, body } = await get('/admin/auth/users', getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+    if (createdUserId) {
+      const found = body.data.find(u => u.id === createdUserId);
+      assert(found, 'Test user should appear in user list');
+      assert(found.role === 'viewer', 'Test user should be viewer');
+    }
+  });
+
+  await test('PUT /admin/auth/users/:id/role changes role to admin', async () => {
+    if (!createdUserId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await put(`/admin/auth/users/${createdUserId}/role`, {
+      role: 'admin',
+    }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(body.user.role === 'admin', `Expected admin, got ${body.user.role}`);
+  });
+
+  await test('PUT /admin/auth/users/:id/role rejects invalid role', async () => {
+    if (!createdUserId) { assert(true, 'Skipped'); return; }
+    const { status } = await put(`/admin/auth/users/${createdUserId}/role`, {
+      role: 'president',
+    }, getAuthHeaders());
+    assert(status === 400, `Expected 400 for invalid role, got ${status}`);
+  });
+
+  await test('PUT /admin/auth/users/:id/active deactivates user', async () => {
+    if (!createdUserId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await put(`/admin/auth/users/${createdUserId}/active`, {
+      is_active: false,
+    }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(body.user.is_active === false, 'User should be deactivated');
+  });
+
+  await test('POST /admin/auth/login rejects deactivated user', async () => {
+    const { status } = await post('/admin/auth/login', {
+      email: testEmail,
+      password: testPassword,
+    });
+    assert(status === 401, `Expected 401 for deactivated user, got ${status}`);
+  });
+
+  // Clean up: reactivate and note for manual cleanup
+  if (createdUserId) {
+    try {
+      await put(`/admin/auth/users/${createdUserId}/active`, { is_active: true }, getAuthHeaders());
+      // We leave the test user — can be cleaned up manually
+      console.log(`      ℹ️  Test user ${testEmail} (id=${createdUserId}) left in DB for cleanup`);
+    } catch (_) {}
+  }
+}
+
+async function testRBACViewerRestrictions() {
+  console.log('\n🔒 RBAC Viewer Restrictions');
+
+  const viewerEmail = `viewer_${Date.now()}@pannaipuram.local`;
+  const viewerPassword = 'viewer123';
+  let viewerToken = null;
+
+  // Create a viewer user
+  await test('Setup: create viewer for restriction tests', async () => {
+    const { status, body } = await post('/admin/auth/signup', {
+      email: viewerEmail,
+      password: viewerPassword,
+      name: 'Restriction Test Viewer',
+    }, getAuthHeaders());
+    assert(status === 200 || status === 201, `Expected 200/201, got ${status}`);
+
+    // Login as viewer to get their token
+    const loginRes = await post('/admin/auth/login', {
+      email: viewerEmail,
+      password: viewerPassword,
+    });
+    assert(loginRes.status === 200, `Login expected 200, got ${loginRes.status}`);
+    viewerToken = (loginRes.body.data && loginRes.body.data.token) || loginRes.body.token;
+    assert(viewerToken, 'Expected viewer token');
+  });
+
+  await test('GET /admin/auth/users forbidden for viewer', async () => {
+    if (!viewerToken) { assert(true, 'Skipped'); return; }
+    const { status } = await get('/admin/auth/users', {
+      'Authorization': `Bearer ${viewerToken}`,
+    });
+    assert(status === 403, `Expected 403 for viewer accessing user list, got ${status}`);
+  });
+
+  await test('PUT /admin/auth/users/:id/role forbidden for viewer', async () => {
+    if (!viewerToken) { assert(true, 'Skipped'); return; }
+    const { status } = await put('/admin/auth/users/1/role', {
+      role: 'admin',
+    }, {
+      'Authorization': `Bearer ${viewerToken}`,
+    });
+    assert(status === 403, `Expected 403 for viewer changing role, got ${status}`);
+  });
+
+  console.log(`      ℹ️  Test viewer ${viewerEmail} left in DB for cleanup`);
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -567,6 +915,11 @@ async function main() {
   await testAutoDriversCRUD();
   await testStreetsCRUD();
   await testWaterScheduleUpdate();
+  await testLocalServicesCRUD();
+  await testAutoContactCRUD();
+  await testAnnouncementsCRUD();
+  await testAuthSignupAndRBAC();
+  await testRBACViewerRestrictions();
 
   console.log('\n═══════════════════════════════════════════════');
   console.log(`  Results: ${passed} passed, ${failed} failed, ${skipped} skipped`);
