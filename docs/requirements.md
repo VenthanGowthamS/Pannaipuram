@@ -525,10 +525,17 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 
 | Detail | Value |
 |---|---|
-| URL | https://pannaipuram-api.onrender.com/admin/panel |
+| URL (v1) | https://pannaipuram-api.onrender.com/admin/panel |
+| URL (v2) | https://pannaipuram-api.onrender.com/admin/v2/ |
 | Login | venthan89@gmail.com + password you set |
 | First-time setup | POST /admin/auth/setup (only works once when no admin exists) |
 | JWT expires | 7 days (re-login required after) |
+
+**Admin Panel Features:**
+- ✅ Password visibility toggle on login screen
+- ✅ Empty credential validation (prevents blank email/password submission)
+- ✅ Admin panel v2 (React + Material-UI) at `/admin/v2/` with modern UI
+- 🔄 Multi-admin support planned (RBAC coming in Phase 8)
 
 **Admin Panel Tabs:**
 
@@ -573,6 +580,35 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 - Share QR code via WhatsApp
 - Print and post at panchayat, bus stand, hospital, TNEB office
 - Collect feedback from first users
+
+### Phase 8 — Future Enhancements 🔴 PLANNED
+
+**RBAC (Role-Based Access Control)**
+- Multiple admin users with different roles: `super_admin`, `editor`, `viewer`
+- Super admin manages other admins: invite, revoke, assign roles
+- Editor: can add/edit/delete content (power cuts, bus timings, doctors, etc.)
+- Viewer: read-only access to dashboard and reports
+- Admin panel v2 (React + Material-UI) at `/admin/v2/` with role-based UI
+
+**Audit History / Admin Logs**
+- All admin actions logged to `audit_log` table: who did what, when
+- Tracks: insertions, updates, deletions (power cuts, bus timings, doctors, emergency contacts, auto drivers, water schedules)
+- Audit dashboard shows recent activity: "Venthan added 3 bus timings (Bodi corridor) at 2026-03-18 14:22 UTC"
+- Helps troubleshoot data issues and accountability
+
+**WhatsApp Integration for Auto/Van Module**
+- Add WhatsApp contact number field to auto drivers (in addition to phone number)
+- Display WhatsApp icon + "Message on WhatsApp" button in Auto screen
+- One-tap click opens WhatsApp direct message chat with driver
+- Example: User taps → app opens WhatsApp pre-filled with: "Hi, need an auto from Pannaipuram to Kamban"
+- Drivers can reply directly without giving out personal phone numbers first
+
+**Google Play Store & App Store Distribution**
+- Publish app on Google Play Store ($25 one-time developer fee)
+- Later: Apple App Store distribution ($99/year developer account)
+- Removes need for manual QR code sharing and APK file hosting
+- In-app auto-update capability via Play Store
+- Wider reach to users outside Pannaipuram who may know someone there
 
 ---
 
