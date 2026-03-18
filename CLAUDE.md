@@ -103,6 +103,61 @@ Before making ANY changes to the codebase:
 
 ---
 
+## Data Validation — Internet Verification Rules
+
+**EVERY TIME** data is added or modified in this project, Claude MUST follow these validation steps:
+
+### 1. Place Names & Geography
+
+- **Search the internet** to verify Tamil place names, English spellings, and correct district/taluk before inserting
+- Cross-check with Google Maps or official Tamil Nadu government sources
+- Verify that the Tamil spelling (e.g., கூடலூர்) matches the official English name (e.g., Gudalur)
+- Confirm geographic relationships: which district, which corridor, nearby towns
+- **Example:** When "கடலூர்" appeared in handwritten notes, we searched and confirmed it was கூடலூர் (Gudalur/Koodalur) near Cumbum — NOT Cuddalore (கடலூர்) on the coast
+
+### 2. Bus Routes & Transport Data
+
+- Verify bus corridor destinations exist on actual TNSTC (Tamil Nadu State Transport) routes
+- Cross-check town distances and route order (e.g., Pannaipuram → Cumbum → Gudalur → Kumily)
+- Validate that bus timings are reasonable (e.g., first bus not before 3:30 AM, last bus not after 9:30 PM for rural routes)
+- If reading handwritten Tamil schedules, flag any ambiguous characters and ask Venthan before inserting
+- **Never assume** a destination name — if the handwriting is unclear, mark it as ❓ VERIFY
+
+### 3. Phone Numbers & Contacts
+
+- Verify phone number format: Indian mobile = 10 digits starting with 6/7/8/9
+- Landline numbers should include STD code (e.g., 04554 for Theni district)
+- Search online to validate hospital/police/fire station numbers against official directories
+- **Never insert a phone number without verifying format**
+
+### 4. Doctor & Hospital Data
+
+- Verify doctor names and specializations against hospital websites or health department listings when available
+- Cross-check GH (Government Hospital) names with Tamil Nadu Health Department data
+- Validate hospital timings against standard government hospital schedules (typically 8 AM–8 PM for OPD)
+
+### 5. General Validation Checklist
+
+Before ANY data insertion into Supabase:
+
+1. **Search internet** for the data point (place name, phone number, schedule, etc.)
+2. **Cross-reference** with at least one official source (government site, Google Maps, TNSTC)
+3. **Show Venthan** any data that couldn't be verified online — don't guess
+4. **Document** the source of verification in commit messages or SQL comments
+5. **Flag uncertainties** with `-- ⚠️ NEEDS VERIFICATION` comments in SQL
+
+### 6. Tamil Handwriting Reading Rules
+
+When extracting data from handwritten Tamil images:
+
+- **Always show extracted data to Venthan** before inserting into database
+- Tamil characters that look similar must be flagged: க/கா, ப/பா, ம/மா, சி/கி, etc.
+- Place name abbreviations (போடிநாய் = போடிநாயக்கனூர்) must be confirmed
+- If a word appears as a destination but doesn't match any known corridor, **create a verification list** — don't create new corridors without Venthan's approval
+- Time readings: verify AM/PM context from surrounding entries (e.g., if previous entry is 17:00, next entry "6:10" is likely 18:10 not 06:10)
+
+---
+
 ## Feature Management
 
 ### Before Removing a Feature
@@ -219,5 +274,5 @@ Before making ANY changes to the codebase:
 
 ---
 
-*Last updated: March 15, 2026*
+*Last updated: March 18, 2026*
 *Built with ❤️ for பண்ணைப்புரம்*

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'power_screen.dart';
 import 'water_screen.dart';
 import 'bus_screen.dart';
@@ -181,7 +182,10 @@ class _ModuleTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
       child: Container(
         constraints: const BoxConstraints(minHeight: 88),
         padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 18),

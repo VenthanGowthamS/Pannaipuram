@@ -371,7 +371,7 @@ Water is not wasted
 │   power_restorations      → User reports "power back"           │
 │   water_schedules         → Per-street water timing             │
 │   water_alerts            → Community "water came" reports       │
-│   bus_corridors           → 10 corridors from Pannaipuram       │
+│   bus_corridors           → 14 corridors from Pannaipuram       │
 │   bus_routes, bus_timings → Outbound departure times            │
 │   hospitals, doctors      → PTV (id=1) + SP Clinic (id=2)       │
 │   doctor_schedules        → Which doctor, which day             │
@@ -450,23 +450,26 @@ Before development begins, the following must be collected in person:
 - [ ] Hospital address
 - [ ] Pharmacy timings
 
-### Bus Routes — Collect Both Directions for Both Corridors
+### Bus Routes — Outbound Timings (Collected March 2026 from local residents)
 
-**போடி பக்கம் (Bodi Side)**
-- [ ] Pannaipuram → Thevaram → Bodi: all departure times
-- [ ] Bodi → Thevaram → Pannaipuram: all return times
-- [ ] Last bus time each way
-- [ ] Express buses if any (SETC / TNSTC)
+| Corridor | # | Timings Collected | Status |
+|---|---|---|---|
+| போடி / Bodi (#2) | 23 | Handwritten image | ✅ In SQL |
+| கம்பம் / Cumbum (#3) | 25 | Handwritten image | ✅ In SQL |
+| சின்னமனூர் / Chinnamanur (#4) | 17 | Typed by Venthan + image | ✅ In SQL |
+| மதுரை / Madurai (#5) | 5 | Typed by Venthan | ✅ In SQL |
+| குமுளி / Kumily (#9) | 2 | Handwritten image | ✅ In SQL |
+| கூடலூர் / Gudalur (#11) | 9 | Handwritten image | ✅ In SQL |
+| மேட்டுப்பாளையம் / Mettupalayam (#12) | 1 | Typed by Venthan | ✅ In SQL |
+| சுருளி தீர்த்தம் / Suruli Theertham (#13) | 1 | Typed by Venthan | ✅ In SQL |
+| தேவாரம் / Thevaram (#14) | ⏳ | Pending | ⏳ Needs timings |
+| திண்டுக்கல் / Dindigul (#10) | ⏳ | Pending | ⏳ Needs timings |
+| தேனி / Theni (#1) | — | Frequent service, no fixed times | ⏳ TBC |
+| கோயம்புத்தூர் / Coimbatore (#6) | ⏳ | Pending | ⏳ Needs timings |
+| திருச்சி / Trichy (#7) | ⏳ | Pending | ⏳ Needs timings |
+| பழனி / Palani (#8) | ⏳ | Pending | ⏳ Needs timings |
 
-**கம்பம் பக்கம் (Kamban Side)**
-- [ ] Pannaipuram → Uthamapalayam → Kamban: all departure times
-- [ ] Kamban → Uthamapalayam → Pannaipuram: all return times
-- [ ] Last bus time each way
-
-**General**
-- [ ] Any direct buses skipping intermediate stops
-- [ ] Sunday / holiday schedule differences
-- [ ] Confirm all times with local conductor or TNSTC Uthamapalayam depot
+**⚠️ Note:** Return (inbound) timings not yet collected for any corridor. Manually add via Admin Panel → Bus Timings tab once available.
 
 ### Panchayat & Utilities
 - [ ] Panchayat office contact number and hours
@@ -549,7 +552,10 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 - ⏳ Run `migrate_auto_drivers.sql` in Supabase SQL Editor (creates auto_drivers table)
 - ⏳ Add real phone numbers via Admin → 🚗 Auto/Van tab
 - ⏳ Enter all 57 streets via Streets tab (currently ~10 fallback streets seeded)
-- ⏳ Enter bus timings for all corridors via Bus Timings tab
+- ✅ Bus timings SQL ready: 96 timings across 8 corridors in `seed_bus_timings_complete.sql`
+- ⏳ Run `seed_bus_timings_complete.sql` in Supabase SQL Editor to insert all bus timings
+- ⏳ Collect and add timings for: Thevaram (#14), Dindigul (#10), Theni (#1), Coimbatore (#6), Trichy (#7), Palani (#8)
+- ⏳ Collect return (inbound) timings for all corridors
 - ⏳ Enter hospital doctors with correct hospital mapping (1=PTV, 2=SP Clinic)
 - ⏳ Enter all emergency contacts (police, fire, PHC, panchayat, TNEB)
 - ⏳ Set water schedules per street via Water tab

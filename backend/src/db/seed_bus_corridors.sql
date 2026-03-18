@@ -17,11 +17,14 @@ INSERT INTO bus_corridors (id, name_tamil, name_english, color_hex) VALUES
   (8,  'பழனி',            'Palani',          '#558B2F'),
   (9,  'குமுளி',           'Kumily',          '#00695C'),
   (10, 'திண்டுக்கல்',     'Dindigul',        '#BF360C'),
-  (11, 'கூடலூர்',          'Gudalur (Koodalur)', '#795548')
+  (11, 'கூடலூர்',            'Gudalur (Koodalur)',  '#795548'),
+  (12, 'மேட்டுப்பாளையம்',   'Mettupalayam',        '#0277BD'),
+  (13, 'சுருளி தீர்த்தம்',  'Suruli Theertham',    '#00897B'),
+  (14, 'தேவாரம்',           'Thevaram',             '#F57F17')
 ON CONFLICT (id) DO UPDATE
   SET name_tamil   = EXCLUDED.name_tamil,
       name_english = EXCLUDED.name_english,
       color_hex    = EXCLUDED.color_hex;
 
 -- Reset sequence
-SELECT setval('bus_corridors_id_seq', 11);
+SELECT setval('bus_corridors_id_seq', 14);

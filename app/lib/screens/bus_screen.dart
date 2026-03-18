@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import 'bus_route_screen.dart';
@@ -71,6 +73,27 @@ const _corridorMeta = <String, _CorridorMeta>{
     emoji: '🏰',
     routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல்',
   ),
+  'gudalur (koodalur)': _CorridorMeta(
+    emoji: '🌲',
+    routeDesc: 'பண்ணைப்புரம் → கம்பம் → கூடலூர்',
+    isLocal: true,
+  ),
+  'mettupalayam': _CorridorMeta(
+    emoji: '🏘️',
+    routeDesc: 'பண்ணைப்புரம் → மேட்டுப்பாளையம்',
+    isLocal: true,
+  ),
+  'suruli theertham': _CorridorMeta(
+    emoji: '💧',
+    routeDesc: 'பண்ணைப்புரம் → தேவாரம் → சுருளி தீர்த்தம்',
+    isLocal: true,
+  ),
+  'thevaram': _CorridorMeta(
+    emoji: '🛤️',
+    routeDesc: 'பண்ணைப்புரம் → தேவாரம்',
+    isFrequent: false,
+    isLocal: true,
+  ),
 };
 
 // ── Private data class for a bus route ────────────────────────────────
@@ -109,6 +132,7 @@ class _BusScreenState extends State<BusScreen> {
   List<_BusRoute>? _apiLocal;
   List<_BusRoute>? _apiLongDistance;
   String? _dataSource; // 'api' or null (fallback)
+  Timer? _countdownTimer;
 
   List<_BusRoute> get _local => _apiLocal ?? _fallbackLocal;
   List<_BusRoute> get _longDistance => _apiLongDistance ?? _fallbackLongDistance;
@@ -117,6 +141,16 @@ class _BusScreenState extends State<BusScreen> {
   void initState() {
     super.initState();
     _fetchFromApi();
+    // Live countdown: rebuild every 60s so "X நிமிடம்" stays accurate
+    _countdownTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _fetchFromApi() async {
@@ -196,7 +230,12 @@ class _BusScreenState extends State<BusScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F3F7),
-      body: CustomScrollView(
+      body: RefreshIndicator(
+        onRefresh: _fetchFromApi,
+        color: const Color(0xFF1A237E),
+        strokeWidth: 2.5,
+        child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           // ── Sticky gradient app bar ──────────────────────────────
           SliverAppBar(
@@ -345,6 +384,7 @@ class _BusScreenState extends State<BusScreen> {
           ),
         ],
       ),
+     ), // RefreshIndicator
     );
   }
 
@@ -563,7 +603,10 @@ class _RouteCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         elevation: 0,
         child: InkWell(
-          onTap: onTap,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            onTap();
+          },
           borderRadius: BorderRadius.circular(16),
           child: Container(
             decoration: BoxDecoration(
@@ -837,7 +880,10 @@ class _AutoCard extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            onTap();
+          },
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding:
