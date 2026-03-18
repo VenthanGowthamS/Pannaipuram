@@ -8,9 +8,33 @@ import 'hospital_screen.dart';
 import 'emergency_screen.dart';
 import 'about_screen.dart';
 import 'services_screen.dart';
+import '../services/api_service.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<Map<String, dynamic>> _announcements = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAnnouncements();
+  }
+
+  Future<void> _loadAnnouncements() async {
+    try {
+      final data = await ApiService.getAnnouncements();
+      if (!mounted) return;
+      setState(() => _announcements = data);
+    } catch (_) {
+      // silently ignore — announcements are optional
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +50,10 @@ class HomeScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(14, 16, 14, 28),
               children: [
+                // ── Announcements banner ─────────────────────────────
+                if (_announcements.isNotEmpty)
+                  _AnnouncementBanner(announcements: _announcements),
+
                 Padding(
                   padding: const EdgeInsets.only(left: 2, bottom: 4),
                   child: Text(
@@ -199,6 +227,134 @@ class HomeScreen extends StatelessWidget {
 
   void _navigate(BuildContext context, Widget screen) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+  }
+}
+
+// ── Announcement Banner (auto-scrolling PageView) ────────────────────────
+
+class _AnnouncementBanner extends StatefulWidget {
+  final List<Map<String, dynamic>> announcements;
+  const _AnnouncementBanner({required this.announcements});
+  @override
+  State<_AnnouncementBanner> createState() => _AnnouncementBannerState();
+}
+
+class _AnnouncementBannerState extends State<_AnnouncementBanner> {
+  late PageController _pageController;
+  int _currentPage = 0;
+
+  static const _typeStyles = {
+    'info':    (icon: Icons.campaign_rounded, color: Color(0xFF1565C0), bg: Color(0xFFE3F2FD)),
+    'warning': (icon: Icons.warning_amber_rounded, color: Color(0xFFE65100), bg: Color(0xFFFFF3E0)),
+    'urgent':  (icon: Icons.error_rounded, color: Color(0xFFC62828), bg: Color(0xFFFFEBEE)),
+    'event':   (icon: Icons.celebration_rounded, color: Color(0xFF6A1B9A), bg: Color(0xFFF3E5F5)),
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    if (widget.announcements.length > 1) {
+      Future.delayed(const Duration(seconds: 4), _autoScroll);
+    }
+  }
+
+  void _autoScroll() {
+    if (!mounted) return;
+    final next = (_currentPage + 1) % widget.announcements.length;
+    _pageController.animateToPage(next,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+    Future.delayed(const Duration(seconds: 4), _autoScroll);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 72,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.announcements.length,
+            onPageChanged: (i) => setState(() => _currentPage = i),
+            itemBuilder: (ctx, i) {
+              final a = widget.announcements[i];
+              final type = (a['type'] ?? 'info').toString();
+              final style = _typeStyles[type] ?? _typeStyles['info']!;
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: style.bg,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: style.color.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(style.icon, color: style.color, size: 28),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            (a['message_tamil'] ?? '').toString(),
+                            style: TextStyle(
+                              fontFamily: 'NotoSansTamil',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: style.color,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if ((a['message_english'] ?? '').toString().isNotEmpty)
+                            Text(
+                              a['message_english'].toString(),
+                              style: const TextStyle(
+                                fontFamily: 'Roboto',
+                                fontSize: 11,
+                                color: Color(0xFF757575),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        if (widget.announcements.length > 1)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(widget.announcements.length, (i) {
+              return Container(
+                width: _currentPage == i ? 16 : 6,
+                height: 6,
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                decoration: BoxDecoration(
+                  color: _currentPage == i ? const Color(0xFF1B5E20) : const Color(0xFFBDBDBD),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              );
+            }),
+          ),
+        const SizedBox(height: 8),
+      ],
+    );
   }
 }
 

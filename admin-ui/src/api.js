@@ -71,6 +71,23 @@ class ApiService {
     return this.request('PUT', `/admin/auth/users/${id}/active`, { is_active: isActive });
   }
 
+  // Announcements
+  getAnnouncements() {
+    return this.request('GET', '/admin/announcements');
+  }
+
+  addAnnouncement(data) {
+    return this.request('POST', '/admin/announcements', data);
+  }
+
+  updateAnnouncement(id, data) {
+    return this.request('PUT', `/admin/announcements/${id}`, data);
+  }
+
+  deleteAnnouncement(id) {
+    return this.request('DELETE', `/admin/announcements/${id}`);
+  }
+
   // Power
   getPowerCuts() {
     return this.request('GET', '/admin/power/cuts');

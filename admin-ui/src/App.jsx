@@ -15,6 +15,7 @@ import Water from './pages/Water';
 import Streets from './pages/Streets';
 import LocalServices from './pages/LocalServices';
 import UserManagement from './pages/UserManagement';
+import Announcements from './pages/Announcements';
 
 const AppContent = () => {
   const { user, loading } = useAuth();
@@ -62,6 +63,8 @@ const AppContent = () => {
         return <LocalServices {...props} />;
       case 'users':
         return <UserManagement {...props} />;
+      case 'announcements':
+        return <Announcements {...props} />;
       default:
         return <PowerCuts {...props} />;
     }

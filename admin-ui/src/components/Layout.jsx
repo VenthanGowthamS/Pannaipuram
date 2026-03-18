@@ -46,6 +46,7 @@ const Layout = ({ children, currentTab, onTabChange, snackbar, setSnackbar }) =>
     { id: 'water', label: 'Water', icon: '💧', component: WaterIcon },
     { id: 'streets', label: 'Streets', icon: '🏘', component: StreetsIcon },
     { id: 'services', label: 'Services', icon: '🛍', component: StreetsIcon },
+    { id: 'announcements', label: 'Announce', icon: '📢', component: StreetsIcon },
     { id: 'users', label: 'Users', icon: '👥', component: StreetsIcon, role: 'super_admin' },
   ];
 

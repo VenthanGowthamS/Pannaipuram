@@ -1,10 +1,10 @@
 # பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 2.4 (Auto module API-backed, Water street sync fixed, Tests added)
+> **Version:** 3.0 (RBAC, Announcements, Local Services, About Screen)
 > **Date:** March 2026
 > **Author:** Venthan (Senior Software Engineer)
-> **Status:** Phase 5 In Progress — All Modules API-Live, Data Entry Underway
+> **Status:** Phase 6 In Progress — RBAC Live, 8 Modules, Data Entry Underway
 > **Tagline:** உங்கள் ஊரின் தகவல் மையம் *(Your Village's Information Centre)*
 
 ---
@@ -542,12 +542,15 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 | Tab | What You Can Do |
 |---|---|
 | ⚡ Power Cuts | Add planned/unplanned cuts, mark resolved, delete |
-| 🚌 Bus Timings | Select corridor, add outbound departure times, delete |
-| 🏥 Doctors | Add doctors to hospital (PTV=1 / SP Clinic=2), schedule, edit, delete |
+| 🚌 Bus Timings | Select corridor, add departure times (dropdown for daily/weekdays/weekends), delete |
+| 🏥 Doctors | Add doctors to hospital (PTV=1 / SP Clinic=2), schedule with multi-day checkboxes, edit, delete |
 | 📞 Emergency | Add contacts by category, edit/verify phone numbers, delete |
-| 🚗 Auto/Van | Add drivers with phone + coverage area, edit, delete |
-| 💧 Water | Set per-street supply frequency, time, notes — inline edit |
-| 🏘 Streets | Add new streets (Tamil + English name), view all |
+| 🚗 Auto/Van | Edit registration contact (Gowtham) at top + add drivers with phone + coverage, edit, delete |
+| 💧 Water | Set per-street supply frequency, time (IST), notes — inline edit |
+| 🏘 Streets | Add new streets (Tamil + English name), inline edit, delete with confirm |
+| 🛍 Services | Add local service contacts by category (milk, post, flower, plumber, electrician), delete |
+| 📢 Announce | Post community announcements (info/warning/urgent/event), toggle active, set expiry, delete |
+| 👥 Users | (super_admin only) Manage admin users, change roles, activate/deactivate, invite new users |
 
 **⚠️ One-time setup needed — Run in Supabase SQL Editor:**
 ```sql
@@ -581,14 +584,36 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 - Print and post at panchayat, bus stand, hospital, TNEB office
 - Collect feedback from first users
 
-### Phase 8 — Future Enhancements 🔴 PLANNED
+### Phase 8 — RBAC & New Features ✅ COMPLETE (March 2026)
 
-**RBAC (Role-Based Access Control)**
-- Multiple admin users with different roles: `super_admin`, `editor`, `viewer`
-- Super admin manages other admins: invite, revoke, assign roles
-- Editor: can add/edit/delete content (power cuts, bus timings, doctors, etc.)
-- Viewer: read-only access to dashboard and reports
-- Admin panel v2 (React + Material-UI) at `/admin/v2/` with role-based UI
+**RBAC (Role-Based Access Control) — ✅ IMPLEMENTED**
+- Three roles: `super_admin`, `admin`, `viewer`
+- Super admin manages users: invite via signup, change roles, activate/deactivate
+- Admin: full CRUD on all data modules
+- Viewer: read-only access
+- JWT token carries role, middleware enforces permissions
+- Admin panel shows role badge, hides restricted tabs (Users = super_admin only)
+- Signup flow: new users register as 'viewer', admin promotes
+
+**Community Announcements — ✅ IMPLEMENTED**
+- Admin posts announcements (type: info/warning/urgent/event)
+- Auto-scrolling banner on app home screen with page indicators
+- Toggle active/inactive, set expiry date
+- Priority-based ordering
+
+**Local Services Module — ✅ IMPLEMENTED**
+- Categories: milk man (🥛), postman (📮), flower seller (🌺), plumber (🔧), electrician (⚡)
+- Admin CRUD via Services tab
+- Flutter screen with call buttons, grouped by category
+
+**About Screen — ✅ IMPLEMENTED**
+- Village stats from official data (population, area, wards, streets)
+- Cardamom estate heritage info
+- App modules overview, developer credit
+
+**Auto Registration Contact — ✅ IMPLEMENTED**
+- Editable from admin panel (name, phone)
+- Shown in app's Auto section with call button
 
 **Audit History / Admin Logs**
 - All admin actions logged to `audit_log` table: who did what, when

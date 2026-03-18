@@ -168,6 +168,13 @@ class ApiService {
         },
       );
 
+  // ─── Announcements ────────────────────────────────────────────────────────
+
+  static Future<List<Map<String, dynamic>>> getAnnouncements() => _get(
+        '/api/announcements',
+        (d) => (d as List).map((e) => Map<String, dynamic>.from(e as Map)).toList(),
+      );
+
   // ─── Device registration ─────────────────────────────────────────────────
 
   static Future<void> registerDevice(String fcmToken, int? streetId) async {
