@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 
-module.exports = function adminAuth(req, res, next) {
+// Main authentication middleware
+function adminAuth(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
 
@@ -15,4 +16,17 @@ module.exports = function adminAuth(req, res, next) {
   } catch (err) {
     return res.status(403).json({ error: 'தவறான அடையாளம் — Invalid token' });
   }
-};
+}
+
+// Role-based access control middleware
+function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!req.admin || !roles.includes(req.admin.role)) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
+    next();
+  };
+}
+
+module.exports = adminAuth;
+module.exports.requireRole = requireRole;

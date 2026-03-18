@@ -3,6 +3,8 @@ const router   = express.Router();
 const bcrypt   = require('bcryptjs');
 const jwt      = require('jsonwebtoken');
 const { query } = require('../../db/pool');
+const adminAuth = require('../../middleware/auth');
+const { requireRole } = require('../../middleware/auth');
 
 // POST /admin/auth/login
 router.post('/login', async (req, res) => {
@@ -21,6 +23,11 @@ router.post('/login', async (req, res) => {
     }
 
     const admin = result.rows[0];
+
+    if (!admin.is_active) {
+      return res.status(401).json({ error: 'Account is deactivated' });
+    }
+
     const valid = await bcrypt.compare(password, admin.password_hash);
 
     if (!valid) {
@@ -28,21 +35,21 @@ router.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: admin.id, email: admin.email },
+      { id: admin.id, email: admin.email, role: admin.role },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    res.json({ success: true, token });
+    res.json({ success: true, token, role: admin.role });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// POST /admin/auth/setup — first-time only, creates admin user
+// POST /admin/auth/setup — first-time only, creates super_admin user
 // Only works when no admin users exist yet
 router.post('/setup', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, name } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' });
   }
@@ -53,10 +60,137 @@ router.post('/setup', async (req, res) => {
     }
     const hash = await bcrypt.hash(password, 10);
     await query(
-      'INSERT INTO admin_users (email, password_hash) VALUES ($1, $2)',
-      [email, hash]
+      'INSERT INTO admin_users (email, password_hash, role, name, is_active) VALUES ($1, $2, $3, $4, $5)',
+      [email, hash, 'super_admin', name || email.split('@')[0], true]
     );
     res.json({ success: true, message: 'Admin created. You can now login.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error', detail: err.message });
+  }
+});
+
+// POST /admin/auth/signup — creates new user with 'viewer' role
+// Requires authentication (any logged-in admin)
+router.post('/signup', adminAuth, async (req, res) => {
+  const { email, password, name } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password required' });
+  }
+
+  try {
+    // Check if user already exists
+    const existing = await query(
+      'SELECT id FROM admin_users WHERE email = $1',
+      [email]
+    );
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'Email already in use' });
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+    const result = await query(
+      'INSERT INTO admin_users (email, password_hash, role, name, is_active) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, role, name',
+      [email, hash, 'viewer', name || email.split('@')[0], true]
+    );
+
+    const newUser = result.rows[0];
+    res.json({
+      success: true,
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error', detail: err.message });
+  }
+});
+
+// GET /admin/auth/users — list all users
+// Requires super_admin role
+router.get('/users', adminAuth, requireRole('super_admin'), async (req, res) => {
+  try {
+    const result = await query(
+      'SELECT id, email, name, role, is_active, created_at FROM admin_users ORDER BY created_at DESC'
+    );
+    res.json({
+      success: true,
+      data: result.rows
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error', detail: err.message });
+  }
+});
+
+// PUT /admin/auth/users/:id/role — update user role
+// Requires super_admin role
+router.put('/users/:id/role', adminAuth, requireRole('super_admin'), async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+
+  if (!role) {
+    return res.status(400).json({ error: 'Role required' });
+  }
+
+  if (!['super_admin', 'admin', 'viewer'].includes(role)) {
+    return res.status(400).json({ error: 'Invalid role' });
+  }
+
+  // Prevent self-demotion
+  if (req.admin.id === parseInt(id) && role !== 'super_admin') {
+    return res.status(400).json({ error: 'Cannot demote yourself' });
+  }
+
+  try {
+    const result = await query(
+      'UPDATE admin_users SET role = $1 WHERE id = $2 RETURNING id, email, name, role, is_active',
+      [role, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({
+      success: true,
+      user: result.rows[0]
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error', detail: err.message });
+  }
+});
+
+// PUT /admin/auth/users/:id/active — toggle user active status
+// Requires super_admin role
+router.put('/users/:id/active', adminAuth, requireRole('super_admin'), async (req, res) => {
+  const { id } = req.params;
+  const { is_active } = req.body;
+
+  if (typeof is_active !== 'boolean') {
+    return res.status(400).json({ error: 'is_active must be a boolean' });
+  }
+
+  // Prevent self-deactivation
+  if (req.admin.id === parseInt(id) && !is_active) {
+    return res.status(400).json({ error: 'Cannot deactivate yourself' });
+  }
+
+  try {
+    const result = await query(
+      'UPDATE admin_users SET is_active = $1 WHERE id = $2 RETURNING id, email, name, role, is_active',
+      [is_active, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({
+      success: true,
+      user: result.rows[0]
+    });
   } catch (err) {
     res.status(500).json({ error: 'Server error', detail: err.message });
   }
