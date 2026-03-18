@@ -29,7 +29,7 @@ const BusTimings = ({ onSnackbar }) => {
   const [form, setForm] = useState({
     corridor_id: '',
     departs_at: '',
-    days_of_week: 'Mon-Sun',
+    days_of_week: 'daily',
     bus_type: 'ordinary',
     is_last_bus: false,
   });
@@ -86,7 +86,7 @@ const BusTimings = ({ onSnackbar }) => {
       setForm({
         corridor_id: selectedCorridor,
         departs_at: '',
-        days_of_week: 'Mon-Sun',
+        days_of_week: 'daily',
         bus_type: 'ordinary',
         is_last_bus: false,
       });

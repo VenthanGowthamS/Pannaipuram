@@ -25,6 +25,12 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!email || !password) {
+      setError('Please enter email and password');
+      return;
+    }
+
     setLoading(true);
 
     const result = await login(email, password);
@@ -74,7 +80,7 @@ const Login = () => {
                 fontWeight: 500,
               }}
             >
-              Admin Panel — Venthan Only
+              Admin Panel
             </Typography>
           </Box>
 
@@ -87,10 +93,8 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               margin="normal"
               disabled={loading}
-              slotProps={{
-                input: {
-                  style: { fontFamily: 'Roboto' },
-                },
+              InputProps={{
+                style: { fontFamily: 'Roboto' },
               }}
             />
 
@@ -102,21 +106,19 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               margin="normal"
               disabled={loading}
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                        disabled={loading}
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                  style: { fontFamily: 'Roboto' },
-                },
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      disabled={loading}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+                style: { fontFamily: 'Roboto' },
               }}
             />
 
@@ -158,7 +160,7 @@ const Login = () => {
               mt: 2,
             }}
           >
-            Only Venthan can access this panel
+            Authorized administrators only
           </Typography>
         </Card>
       </Container>

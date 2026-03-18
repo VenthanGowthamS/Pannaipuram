@@ -57,7 +57,7 @@ class ApiService {
 
   // Power
   getPowerCuts() {
-    return this.request('GET', '/api/power/cuts');
+    return this.request('GET', '/admin/power/cuts');
   }
 
   addPowerCut(data) {
@@ -100,7 +100,7 @@ class ApiService {
     // Then add the timing with the route_id
     return this.request('POST', '/admin/bus/timings', {
       route_id: routeId,
-      departs_at: data.departs_at,
+      departs_at: data.departs_at.includes(':') && data.departs_at.split(':').length === 2 ? data.departs_at + ':00' : data.departs_at,
       days_of_week: data.days_of_week || 'daily',
       bus_type: data.bus_type || 'ordinary',
       is_last_bus: data.is_last_bus || false,
@@ -182,6 +182,14 @@ class ApiService {
 
   addStreet(data) {
     return this.request('POST', '/admin/streets', data);
+  }
+
+  updateStreet(id, data) {
+    return this.request('PUT', `/admin/streets/${id}`, data);
+  }
+
+  deleteStreet(id) {
+    return this.request('DELETE', `/admin/streets/${id}`);
   }
 }
 

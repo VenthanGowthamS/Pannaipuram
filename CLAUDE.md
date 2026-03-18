@@ -178,17 +178,33 @@ When extracting data from handwritten Tamil images:
 
 ## Git & Version Control
 
+### Git Command Rules
+
+- **ALWAYS include full path** — every git command must start with `cd /full/path && git ...`
+- **Never give a bare git command** without the cd prefix
+- **Project path:** `/sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram`
+- **Example — correct:**
+  ```bash
+  cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram && git status
+  cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram && git add backend/src/db/seed_bus_timings_complete.sql && git commit -m "Update bus timings"
+  cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram && git push origin main
+  ```
+- **Example — wrong (never do this):**
+  ```bash
+  git status          ← ❌ no cd
+  git push origin main  ← ❌ no cd
+  ```
+
 ### After Each Task
 
 1. **Commit with clear message:**
    ```bash
-   git add [files]
-   git commit -m "Update home screen Tamil labels to use colloquial text"
+   cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram && git add [files] && git commit -m "Update home screen Tamil labels to use colloquial text"
    ```
 
 2. **Push to main:**
    ```bash
-   git push origin main
+   cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram && git push origin main
    ```
 
 3. **Always push after completing a task** — keeps the repo up to date for Venthan

@@ -114,7 +114,7 @@ const Water = ({ onSnackbar }) => {
                 {schedules.map((schedule) =>
                   editingId === schedule.id ? (
                     <TableRow key={schedule.id}>
-                      <TableCell>{schedule.street_name_tamil || 'N/A'}</TableCell>
+                      <TableCell>{schedule.name_tamil || 'N/A'}</TableCell>
                       <TableCell>
                         <TextField
                           size="small"
@@ -177,7 +177,7 @@ const Water = ({ onSnackbar }) => {
                     </TableRow>
                   ) : (
                     <TableRow key={schedule.id}>
-                      <TableCell>{schedule.street_name_tamil || 'N/A'}</TableCell>
+                      <TableCell>{schedule.name_tamil || 'N/A'}</TableCell>
                       <TableCell>{schedule.frequency_days || 'N/A'}</TableCell>
                       <TableCell>{schedule.supply_time || 'N/A'}</TableCell>
                       <TableCell>{schedule.notes_tamil || ''}</TableCell>

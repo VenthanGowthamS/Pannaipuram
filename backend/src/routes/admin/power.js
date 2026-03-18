@@ -6,6 +6,16 @@ const { sendToAll } = require('../../services/pushNotifications');
 
 router.use(adminAuth);
 
+// GET /admin/power/cuts — list ALL power cuts (admin sees everything)
+router.get('/cuts', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM power_cuts ORDER BY start_time DESC');
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // POST /admin/power/cuts
 router.post('/cuts', async (req, res) => {
   const { area_description, cut_type, start_time, end_time, reason_tamil } = req.body;
