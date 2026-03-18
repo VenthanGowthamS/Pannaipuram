@@ -20,6 +20,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  FormControlLabel,
+  Checkbox,
+  FormGroup,
 } from '@mui/material';
 import { Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import api from '../api';
@@ -39,7 +42,7 @@ const Doctors = ({ onSnackbar }) => {
     doctorId: null,
   });
   const [scheduleForm, setScheduleForm] = useState({
-    day_of_week: 'Monday',
+    days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
     start_time: '',
     end_time: '',
     notes_tamil: '',
@@ -91,11 +94,19 @@ const Doctors = ({ onSnackbar }) => {
     }
 
     try {
-      await api.addDoctorSchedule(scheduleDialog.doctorId, scheduleForm);
+      const promises = scheduleForm.days.map(day =>
+        api.addDoctorSchedule(scheduleDialog.doctorId, {
+          day_of_week: day,
+          start_time: scheduleForm.start_time,
+          end_time: scheduleForm.end_time,
+          notes_tamil: scheduleForm.notes_tamil,
+        })
+      );
+      await Promise.all(promises);
       onSnackbar('Schedule added successfully', 'success');
       setScheduleDialog({ open: false, doctorId: null });
       setScheduleForm({
-        day_of_week: 'Monday',
+        days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
         start_time: '',
         end_time: '',
         notes_tamil: '',
@@ -277,29 +288,27 @@ const Doctors = ({ onSnackbar }) => {
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                select
-                label="Day of Week"
-                value={scheduleForm.day_of_week}
-                onChange={(e) =>
-                  setScheduleForm({
-                    ...scheduleForm,
-                    day_of_week: e.target.value,
-                  })
-                }
-                SelectProps={{
-                  native: true,
-                }}
-              >
-                <option value="Monday">Monday</option>
-                <option value="Tuesday">Tuesday</option>
-                <option value="Wednesday">Wednesday</option>
-                <option value="Thursday">Thursday</option>
-                <option value="Friday">Friday</option>
-                <option value="Saturday">Saturday</option>
-                <option value="Sunday">Sunday</option>
-              </TextField>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Select Days</Typography>
+              <FormGroup row>
+                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
+                  <FormControlLabel
+                    key={day}
+                    control={
+                      <Checkbox
+                        checked={scheduleForm.days.includes(day)}
+                        onChange={(e) => {
+                          const newDays = e.target.checked
+                            ? [...scheduleForm.days, day]
+                            : scheduleForm.days.filter(d => d !== day);
+                          setScheduleForm({ ...scheduleForm, days: newDays });
+                        }}
+                        size="small"
+                      />
+                    }
+                    label={day.substring(0, 3)}
+                  />
+                ))}
+              </FormGroup>
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
