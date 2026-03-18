@@ -5,6 +5,7 @@ import 'water_screen.dart';
 import 'bus_screen.dart';
 import 'auto_screen.dart';
 import 'hospital_screen.dart';
+import 'emergency_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -86,6 +87,17 @@ class HomeScreen extends StatelessWidget {
                   label: 'அக்கா, தண்ணி வந்துருச்சா?',
                   sublabel: 'Water Supply',
                   onTap: () => _navigate(context, const WaterScreen()),
+                ),
+                const SizedBox(height: 12),
+
+                // 6. Emergency
+                _ModuleTile(
+                  icon: Icons.emergency_rounded,
+                  emoji: '🚨',
+                  gradientColors: const [Color(0xFFB71C1C), Color(0xFFE53935)],
+                  label: 'அண்ணே, உதவி வேணும்!',
+                  sublabel: 'Emergency Contacts',
+                  onTap: () => _navigate(context, const EmergencyScreen()),
                 ),
                 const SizedBox(height: 20),
               ],
