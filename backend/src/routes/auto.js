@@ -2,6 +2,24 @@ const express = require('express');
 const router  = express.Router();
 const { query } = require('../db/pool');
 
+// GET /api/auto/contact — registration contact (admin-controlled in DB)
+router.get('/contact', async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT value FROM app_config WHERE key = 'auto_registration_contact'
+    `);
+    if (result.rows.length > 0) {
+      const cfg = JSON.parse(result.rows[0].value);
+      return res.json({ success: true, data: cfg });
+    }
+    // Default fallback
+    res.json({ success: true, data: { name: 'கௌதம்', name_english: 'Gowtham', phone: '8888888888' } });
+  } catch (_) {
+    // Table may not exist yet — return default
+    res.json({ success: true, data: { name: 'கௌதம்', name_english: 'Gowtham', phone: '8888888888' } });
+  }
+});
+
 // GET /api/auto/drivers — list all active auto/van drivers
 router.get('/drivers', async (req, res) => {
   try {

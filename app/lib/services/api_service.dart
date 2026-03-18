@@ -144,6 +144,30 @@ class ApiService {
         (d) => (d as List).map((e) => AutoDriver.fromJson(e)).toList(),
       );
 
+  static Future<Map<String, String>> getAutoContact() => _get(
+        '/api/auto/contact',
+        (d) => {
+          'name': (d['name'] ?? 'கௌதம்').toString(),
+          'name_english': (d['name_english'] ?? 'Gowtham').toString(),
+          'phone': (d['phone'] ?? '8888888888').toString(),
+        },
+      );
+
+  // ─── Local Services ───────────────────────────────────────────────────────
+
+  static Future<Map<String, List<Map<String, dynamic>>>> getLocalServices() => _get(
+        '/api/services',
+        (d) {
+          final map = <String, List<Map<String, dynamic>>>{};
+          (d as Map<String, dynamic>).forEach((key, value) {
+            map[key] = (value as List)
+                .map((e) => Map<String, dynamic>.from(e as Map))
+                .toList();
+          });
+          return map;
+        },
+      );
+
   // ─── Device registration ─────────────────────────────────────────────────
 
   static Future<void> registerDevice(String fcmToken, int? streetId) async {

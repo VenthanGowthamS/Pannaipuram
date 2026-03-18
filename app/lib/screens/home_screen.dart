@@ -6,6 +6,8 @@ import 'bus_screen.dart';
 import 'auto_screen.dart';
 import 'hospital_screen.dart';
 import 'emergency_screen.dart';
+import 'about_screen.dart';
+import 'services_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -113,6 +115,17 @@ class HomeScreen extends StatelessWidget {
                   sublabel: 'Emergency Contacts',
                   onTap: () => _navigate(context, const EmergencyScreen()),
                 ),
+                const SizedBox(height: 12),
+
+                // 7. Local Services
+                _ModuleTile(
+                  icon: Icons.storefront_rounded,
+                  emoji: '🛍',
+                  gradientColors: const [Color(0xFF00695C), Color(0xFF00897B)],
+                  label: 'ஊர்ல யாரை அழைக்கணும்?',
+                  sublabel: 'Milk, Post, Plumber & More',
+                  onTap: () => _navigate(context, const ServicesScreen()),
+                ),
                 const SizedBox(height: 20),
               ],
             ),
@@ -173,6 +186,11 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.info_outline_rounded, color: Colors.white70, size: 24),
+            tooltip: 'About Pannaipuram',
+            onPressed: () => _navigate(context, const AboutScreen()),
           ),
         ],
       ),

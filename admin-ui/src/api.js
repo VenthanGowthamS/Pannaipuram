@@ -191,6 +191,23 @@ class ApiService {
   deleteStreet(id) {
     return this.request('DELETE', `/admin/streets/${id}`);
   }
+
+  // Local Services
+  getLocalServices() {
+    return this.request('GET', '/admin/services');
+  }
+
+  addLocalService(data) {
+    return this.request('POST', '/admin/services', data);
+  }
+
+  updateLocalService(id, data) {
+    return this.request('PUT', `/admin/services/${id}`, data);
+  }
+
+  deleteLocalService(id) {
+    return this.request('DELETE', `/admin/services/${id}`);
+  }
 }
 
 export default new ApiService();

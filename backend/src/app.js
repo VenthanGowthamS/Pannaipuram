@@ -12,6 +12,7 @@ const hospitalRoutes  = require('./routes/hospital');
 const emergencyRoutes = require('./routes/emergency');
 const autoRoutes      = require('./routes/auto');
 const deviceRoutes    = require('./routes/devices');
+const servicesRoutes  = require('./routes/services');
 
 // Routes — Admin API
 const adminAuthRoutes     = require('./routes/admin/auth');
@@ -22,6 +23,7 @@ const adminHospitalRoutes = require('./routes/admin/hospital');
 const adminContactRoutes  = require('./routes/admin/contacts');
 const adminStreetRoutes   = require('./routes/admin/streets');
 const adminAutoRoutes     = require('./routes/admin/auto');
+const adminServicesRoutes = require('./routes/admin/services');
 
 // Services
 const { startTnebScraper }    = require('./services/tnebScraper');
@@ -46,6 +48,7 @@ app.use('/api/hospital',  hospitalRoutes);
 app.use('/api/emergency', emergencyRoutes);
 app.use('/api/auto',      autoRoutes);
 app.use('/api/devices',   deviceRoutes);
+app.use('/api/services',  servicesRoutes);
 
 // ── Admin API Routes ────────────────────────────────────
 app.use('/admin/auth',     adminAuthRoutes);
@@ -56,6 +59,7 @@ app.use('/admin/hospital', adminHospitalRoutes);
 app.use('/admin/contacts', adminContactRoutes);
 app.use('/admin/streets',  adminStreetRoutes);
 app.use('/admin/auto',     adminAutoRoutes);
+app.use('/admin/services', adminServicesRoutes);
 
 // ── Health Check ────────────────────────────────────────
 app.get('/health', (req, res) => {

@@ -172,7 +172,9 @@ class _WaterScreenState extends State<WaterScreen> {
     return '$displayH:${m.toString().padLeft(2, '0')} $period';
   }
 
-  String _formatAlertTime(DateTime dt) => DateFormat('h:mm a').format(dt);
+  // Convert UTC → IST (UTC+5:30) before formatting
+  String _formatAlertTime(DateTime dt) =>
+      DateFormat('h:mm a').format(dt.toLocal());
 
   @override
   Widget build(BuildContext context) {

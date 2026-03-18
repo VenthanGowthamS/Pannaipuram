@@ -369,7 +369,7 @@ class _BusScreenState extends State<BusScreen> {
                     child: Text(
                       _dataSource == 'api'
                           ? 'Live data from server'
-                          : 'Source: Thevaram Bus Stand (TNSTC, Feb 2026)\nPannaipuram stop = Thevaram +10 min',
+                          : 'பண்ணைப்புரம் பேருந்து நேரங்கள் — TNSTC',
                       style: const TextStyle(
                           fontFamily: 'Roboto',
                           fontSize: 11,

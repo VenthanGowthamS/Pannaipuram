@@ -44,6 +44,7 @@ const Layout = ({ children, currentTab, onTabChange, snackbar, setSnackbar }) =>
     { id: 'auto', label: 'Auto/Van', icon: '🚗', component: AutoIcon },
     { id: 'water', label: 'Water', icon: '💧', component: WaterIcon },
     { id: 'streets', label: 'Streets', icon: '🏘', component: StreetsIcon },
+    { id: 'services', label: 'Services', icon: '🛍', component: StreetsIcon },
   ];
 
   const handleLogout = () => {

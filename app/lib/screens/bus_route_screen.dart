@@ -171,15 +171,6 @@ class BusRouteScreen extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Source: Thevaram Bus Stand (TNSTC) • Pannaipuram stop',
-                      style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 11,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -319,7 +310,7 @@ class BusRouteScreen extends StatelessWidget {
                     ),
                   ),
                   const Text(
-                    'பண்ணைப்புரம் நிறுத்தம் • Thevaram +10 min',
+                    'பண்ணைப்புரம் நிறுத்தம்',
                     style: TextStyle(
                       fontFamily: 'Roboto',
                       fontSize: 11,
@@ -376,9 +367,9 @@ class BusRouteScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Source: Thevaram Bus Stand (TNSTC, Feb 2026)\nAll times adjusted +10 min for Pannaipuram stop',
+                'பண்ணைப்புரம் பேருந்து நேரங்கள் — TNSTC',
                 style: const TextStyle(
-                  fontFamily: 'Roboto',
+                  fontFamily: 'NotoSansTamil',
                   fontSize: 11,
                   color: AppColors.textSecondary,
                 ),

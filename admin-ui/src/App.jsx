@@ -13,6 +13,7 @@ import Emergency from './pages/Emergency';
 import AutoDrivers from './pages/AutoDrivers';
 import Water from './pages/Water';
 import Streets from './pages/Streets';
+import LocalServices from './pages/LocalServices';
 
 const AppContent = () => {
   const { user, loading } = useAuth();
@@ -56,6 +57,8 @@ const AppContent = () => {
         return <Water {...props} />;
       case 'streets':
         return <Streets {...props} />;
+      case 'services':
+        return <LocalServices {...props} />;
       default:
         return <PowerCuts {...props} />;
     }

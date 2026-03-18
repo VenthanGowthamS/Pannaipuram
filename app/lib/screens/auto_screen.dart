@@ -17,6 +17,10 @@ class _AutoScreenState extends State<AutoScreen> {
   String? _dataSource;
   bool _loading = true;
 
+  // Registration contact (fetched from API, fallback hardcoded)
+  String _contactName = 'கௌதம்';
+  String _contactPhone = '8888888888';
+
   // ── Fallback contacts (shown when API is unreachable) ──────────────────
   static const List<AutoDriver> _fallbackDrivers = [
     AutoDriver(
@@ -57,18 +61,25 @@ class _AutoScreenState extends State<AutoScreen> {
 
   Future<void> _fetchFromApi() async {
     try {
-      final drivers = await ApiService.getAutoDrivers();
+      final results = await Future.wait([
+        ApiService.getAutoDrivers(),
+        ApiService.getAutoContact(),
+      ]);
       if (!mounted) return;
+      final drivers = results[0] as List<AutoDriver>;
+      final contact = results[1] as Map<String, String>;
       setState(() {
         _apiDrivers = drivers;
         _dataSource = 'api';
+        _contactName = contact['name'] ?? _contactName;
+        _contactPhone = contact['phone'] ?? _contactPhone;
         _loading = false;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        // Keep fallback
+        // Keep fallback drivers and contact
       });
     }
   }
@@ -323,27 +334,82 @@ class _AutoScreenState extends State<AutoScreen> {
 
         const SizedBox(height: 16),
 
-        // ── Info note ─────────────────────────────────────────────
+        // ── Register a driver note ────────────────────────────────
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: _purple.withOpacity(0.06),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: _purple.withOpacity(0.2), width: 1),
           ),
-          child: const Column(
+          child: Column(
             children: [
-              Text('📞', style: TextStyle(fontSize: 28)),
-              SizedBox(height: 8),
-              Text(
-                'உங்க ஊர்ல ஆட்டோ ஓட்டுனர் இருந்தா\nவேந்தனிடம் சொல்லுங்க — சேர்த்துடுவோம்!',
+              const Text('📋', style: TextStyle(fontSize: 28)),
+              const SizedBox(height: 8),
+              const Text(
+                'உங்கள் ஊரில் ஆட்டோ / வண்டி ஓட்டுனரை சேர்க்கணுமா?',
                 style: TextStyle(
                   fontFamily: 'NotoSansTamil',
                   fontSize: 14,
                   color: _purple,
+                  fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Want to register a driver? Contact us:',
+                style: TextStyle(
+                  fontFamily: 'Roboto',
+                  fontSize: 12,
+                  color: Color(0xFF757575),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: () => _call(_contactPhone),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: _purple,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.phone_rounded, color: Colors.white, size: 20),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _contactName,
+                            style: const TextStyle(
+                              fontFamily: 'NotoSansTamil',
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            _contactPhone.replaceAllMapped(
+                              RegExp(r'(\d{5})(\d{5})'),
+                              (m) => '${m[1]} ${m[2]}',
+                            ),
+                            style: const TextStyle(
+                              fontFamily: 'Roboto',
+                              fontSize: 13,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
