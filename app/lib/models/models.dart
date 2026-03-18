@@ -56,7 +56,7 @@ class WaterAlert {
   factory WaterAlert.fromJson(Map<String, dynamic> j) => WaterAlert(
         id: j['id'],
         streetNameTamil: j['street_name_tamil'] ?? j['name_tamil'] ?? '',
-        reportedAt: DateTime.parse(j['reported_at']),
+        reportedAt: DateTime.parse(j['reported_at']).toLocal(),
         confirmations: j['confirmations'] ?? 0,
       );
 }
@@ -88,8 +88,8 @@ class PowerCut {
         id: j['id'],
         areaDescription: j['area_description'] ?? '',
         cutType: j['cut_type'] ?? 'planned',
-        startTime: DateTime.parse(j['start_time']),
-        endTime: j['end_time'] != null ? DateTime.parse(j['end_time']) : null,
+        startTime: DateTime.parse(j['start_time']).toLocal(),
+        endTime: j['end_time'] != null ? DateTime.parse(j['end_time']).toLocal() : null,
         reasonTamil: j['reason_tamil'],
         isResolved: j['is_resolved'] ?? false,
       );

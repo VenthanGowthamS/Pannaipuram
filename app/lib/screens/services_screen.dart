@@ -40,6 +40,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
   Map<String, List<Map<String, dynamic>>> _services = {};
   bool _loading = true;
 
+  // Gowtham contact for adding new services
+  String _contactName = 'கௌதம்';
+  String _contactNameEn = 'Gowtham';
+  String _contactPhone = '';
+
   @override
   void initState() {
     super.initState();
@@ -49,9 +54,20 @@ class _ServicesScreenState extends State<ServicesScreen> {
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final data = await ApiService.getLocalServices();
+      final results = await Future.wait([
+        ApiService.getLocalServices(),
+        ApiService.getAutoContact(),
+      ]);
       if (!mounted) return;
-      setState(() { _services = data; _loading = false; });
+      final data = results[0] as Map<String, List<Map<String, dynamic>>>;
+      final contact = results[1] as Map<String, String>;
+      setState(() {
+        _services = data;
+        _contactName = contact['name'] ?? 'கௌதம்';
+        _contactNameEn = contact['name_english'] ?? 'Gowtham';
+        _contactPhone = contact['phone'] ?? '';
+        _loading = false;
+      });
     } catch (_) {
       if (!mounted) return;
       setState(() => _loading = false);
@@ -167,21 +183,57 @@ class _ServicesScreenState extends State<ServicesScreen> {
           }),
         ],
 
-        // Footer note
+        // Contact Gowtham to add your service
         Container(
           margin: const EdgeInsets.fromLTRB(16, 16, 16, 28),
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: _teal.withOpacity(0.06),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: _teal.withOpacity(0.2)),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF7B1FA2), Color(0xFF9C27B0)],
+              begin: Alignment.topLeft, end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: const Color(0xFF7B1FA2).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
           ),
-          child: const Column(children: [
-            Text('📝', style: TextStyle(fontSize: 24)),
-            SizedBox(height: 6),
-            Text('உங்கள் தொடர்பை சேர்க்கணுமா?\nAdmin Panel மூலம் சேர்க்கலாம்.',
-              style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 13, color: Color(0xFF00695C)),
+          child: Column(children: [
+            const Text('📝', style: TextStyle(fontSize: 28)),
+            const SizedBox(height: 8),
+            const Text('உங்கள் தொடர்பை சேர்க்கணுமா?',
+              style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),
               textAlign: TextAlign.center),
+            const SizedBox(height: 2),
+            const Text('Want to add your service contact?',
+              style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Colors.white70),
+              textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            Row(children: [
+              Container(
+                width: 44, height: 44,
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(22)),
+                child: const Center(child: Text('📞', style: TextStyle(fontSize: 20))),
+              ),
+              const SizedBox(width: 12),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(_contactName,
+                  style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text(_contactNameEn,
+                  style: const TextStyle(fontFamily: 'Roboto', fontSize: 12, color: Colors.white70)),
+              ])),
+              if (_contactPhone.isNotEmpty)
+                GestureDetector(
+                  onTap: () => _call(_contactPhone),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      const Icon(Icons.phone_rounded, color: Color(0xFF7B1FA2), size: 16),
+                      const SizedBox(width: 6),
+                      Text('அழைக்க',
+                        style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 13, color: const Color(0xFF7B1FA2), fontWeight: FontWeight.w600)),
+                    ]),
+                  ),
+                ),
+            ]),
           ]),
         ),
       ],

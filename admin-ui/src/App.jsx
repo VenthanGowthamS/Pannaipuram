@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
+import { CssBaseline, Box, CircularProgress } from '@mui/material';
 import { HashRouter as Router } from 'react-router-dom';
 import theme from './theme';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -34,8 +34,13 @@ const AppContent = () => {
     });
   };
 
-  if (loading) {
-    return null;
+  if (loading && !user) {
+    return (
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'linear-gradient(135deg, #1B5E20 0%, #388E3C 100%)' }}>
+        <CircularProgress sx={{ color: '#fff' }} size={48} />
+      </Box>
+    );
   }
 
   if (!user) {

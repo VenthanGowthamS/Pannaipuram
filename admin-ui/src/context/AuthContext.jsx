@@ -27,19 +27,26 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (email, password) => {
-    setLoading(true);
+    // NOTE: Do NOT setLoading(true) here — it unmounts Login component
+    // and loses error state. Login.jsx manages its own loading spinner.
     try {
       const response = await api.login(email, password);
       const authToken = response.token || response;
+      if (!authToken || typeof authToken !== 'string') {
+        return { success: false, error: 'Invalid token received from server' };
+      }
       api.setToken(authToken);
       setToken(authToken);
       const role = decodeToken(authToken);
       setUser({ email, role });
       return { success: true };
     } catch (error) {
-      return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
+      const msg = error.message || 'Login failed';
+      // Provide user-friendly error messages
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('fetch')) {
+        return { success: false, error: 'Server unreachable — சர்வர் இணைப்பு இல்லை. Please try again later.' };
+      }
+      return { success: false, error: msg };
     }
   };
 

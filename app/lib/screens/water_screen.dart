@@ -172,9 +172,9 @@ class _WaterScreenState extends State<WaterScreen> {
     return '$displayH:${m.toString().padLeft(2, '0')} $period';
   }
 
-  // Convert UTC → IST (UTC+5:30) before formatting
+  // Already converted to local in model — just format
   String _formatAlertTime(DateTime dt) =>
-      DateFormat('h:mm a').format(dt.toLocal());
+      DateFormat('h:mm a').format(dt);
 
   @override
   Widget build(BuildContext context) {

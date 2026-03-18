@@ -38,13 +38,20 @@ const Login = () => {
 
     setLoading(true);
 
-    const result = await login(email, password);
-    if (!result.success) {
-      setError(result.error || 'Login failed');
-      setPassword('');
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        setSuccess('Login successful! ✅');
+        // User state is set — AppContent will render Layout on next tick
+      } else {
+        setError(result.error || 'Login failed');
+        setPassword('');
+        setLoading(false);
+      }
+    } catch (err) {
+      setError('Unexpected error — try again');
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleSignupSubmit = async (e) => {
@@ -195,6 +202,12 @@ const Login = () => {
               {error && (
                 <Alert severity="error" sx={{ mt: 2 }}>
                   {error}
+                </Alert>
+              )}
+
+              {success && (
+                <Alert severity="success" sx={{ mt: 2 }}>
+                  {success}
                 </Alert>
               )}
 
