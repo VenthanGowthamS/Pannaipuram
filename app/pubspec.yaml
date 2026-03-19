@@ -32,6 +32,9 @@ dependencies:
   # Connectivity
   connectivity_plus: ^6.1.0
 
+  # Shimmer loading effect
+  shimmer: ^3.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

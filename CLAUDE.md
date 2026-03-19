@@ -272,6 +272,141 @@ When extracting data from handwritten Tamil images:
 
 ---
 
+## Testing — MANDATORY After Every Change
+
+**Every feature or bug fix MUST be tested before committing.** Follow these steps:
+
+### 1. Backend Syntax Check
+
+```bash
+cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram/backend && node -c src/app.js && echo "✅ app.js OK"
+```
+
+Check every modified route file:
+```bash
+node -c src/routes/admin/auth.js && echo "✅ OK"
+node -c src/routes/admin/services.js && echo "✅ OK"
+# ... repeat for each modified file
+```
+
+### 2. Admin CRUD Tests (52 tests)
+
+```bash
+cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram/backend && node test/admin_crud.test.js
+```
+
+Tests cover:
+- 🔐 Authentication (login, token)
+- ⚡ Power Cuts CRUD
+- 🚌 Bus Timings CRUD
+- 👨‍⚕️ Doctors CRUD
+- 📞 Emergency Contacts CRUD
+- 🚗 Auto Drivers CRUD + Registration Contact GET/PUT
+- 🛣️ Streets CRUD
+- 💧 Water Schedule Update
+- 🛍 Local Services CRUD
+- 📢 Announcements CRUD
+- 👥 Auth Signup & RBAC User Management
+- 🔒 RBAC Viewer Restrictions
+
+### 3. Admin UI Build
+
+```bash
+cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram/admin-ui && npm run build
+```
+
+- Must complete with zero errors
+- Output goes to `../backend/public/admin-v2/`
+- After build, verify admin panel loads at `/admin/v2`
+
+### 4. Flutter Dart Analysis
+
+```bash
+cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram/app && flutter analyze
+```
+
+- Zero errors required (warnings OK)
+- If `flutter` not available in VM, manually verify:
+  - All imports resolve (check file paths exist)
+  - All braces `{}` and parentheses `()` are balanced
+  - All `setState` calls have `mounted` check in async methods
+  - Tamil text uses `fontFamily: 'NotoSansTamil'`
+
+### 5. Flutter App Build Test
+
+```bash
+cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram/app && flutter build apk --debug
+```
+
+### 6. Admin Panel Manual Test Checklist
+
+After deploying, verify in browser at `https://pannaipuram-api.onrender.com/admin/v2`:
+
+- [ ] Login works with correct password → shows "Login successful ✅"
+- [ ] Login fails with wrong password → shows error message
+- [ ] Login fails when server down → shows "Server unreachable" message
+- [ ] Each admin tab loads without errors (Power, Bus, Doctors, Emergency, Auto, Water, Streets, Services, Announcements)
+- [ ] CRUD: Can create, edit, delete items in each tab
+- [ ] Users tab visible only for super_admin role
+- [ ] Logout works and returns to login screen
+
+### 7. Flutter App Manual Test Checklist
+
+After `flutter run`:
+
+- [ ] Home screen loads with status dashboard cards (power, bus, water)
+- [ ] Shimmer loading shows while data loads
+- [ ] Pull-to-refresh works on home screen
+- [ ] Each module tile navigates with smooth slide transition
+- [ ] Power screen: shows current status, correct IST times (not UTC)
+- [ ] Water screen: street picker works, times display in IST
+- [ ] Bus screen: timings load for each corridor
+- [ ] Hospital screen: doctor schedules display
+- [ ] Auto screen: drivers list + Gowtham contact card with call button
+- [ ] Services screen: shows services + Gowtham contact footer card
+- [ ] Emergency screen: contacts grouped by category
+- [ ] About screen: village info displays
+- [ ] Announcements banner: scrolls auto if multiple announcements
+- [ ] Offline banner shows when no network
+
+### 8. When Adding New Features
+
+For any new module, ALL of the following must be created:
+
+1. **DB Migration SQL** in `backend/src/db/migration_*.sql`
+2. **Public API route** in `backend/src/routes/`
+3. **Admin API route** in `backend/src/routes/admin/`
+4. **Register routes** in `backend/src/app.js`
+5. **Admin UI page** in `admin-ui/src/pages/`
+6. **API methods** in `admin-ui/src/api.js`
+7. **Layout tab** in `admin-ui/src/components/Layout.jsx`
+8. **App.jsx switch case** in `admin-ui/src/App.jsx`
+9. **Flutter screen** in `app/lib/screens/`
+10. **API methods** in `app/lib/services/api_service.dart`
+11. **Home screen tile** in `app/lib/screens/home_screen.dart`
+12. **CRUD tests** added to `backend/test/admin_crud.test.js`
+13. **Docs updated**: `requirements.md`, `ui-design.md`, `backend-design.md`
+
+### 9. Quick Fix Verification
+
+For bug fixes, run the relevant SQL to verify in Supabase SQL Editor:
+
+```sql
+-- Check if user is active
+SELECT id, email, role, is_active FROM admin_users;
+
+-- Fix deactivated user
+UPDATE admin_users SET is_active = TRUE WHERE email = 'venthan89@gmail.com';
+
+-- Check announcements
+SELECT * FROM announcements WHERE is_active = TRUE ORDER BY priority DESC;
+
+-- Check local services
+SELECT * FROM local_services ORDER BY category, display_order;
+```
+
+---
+
 ## Important Notes
 
 - **No internet required for:** Bus, Hospital, Auto, Emergency (offline-capable)
@@ -290,5 +425,5 @@ When extracting data from handwritten Tamil images:
 
 ---
 
-*Last updated: March 18, 2026*
+*Last updated: March 19, 2026*
 *Built with ❤️ for பண்ணைப்புரம்*

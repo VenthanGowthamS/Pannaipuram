@@ -12,6 +12,9 @@ ALTER TABLE admin_users
 -- Set existing users as super_admin (they had implicit full access before)
 UPDATE admin_users SET role = 'super_admin' WHERE role = 'admin' OR role IS NULL;
 
+-- Ensure all existing users are active (fix NULL values from column addition)
+UPDATE admin_users SET is_active = TRUE WHERE is_active IS NULL;
+
 -- Create index on email for faster lookups
 CREATE INDEX IF NOT EXISTS idx_admin_users_email ON admin_users(email);
 

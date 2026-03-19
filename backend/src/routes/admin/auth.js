@@ -24,7 +24,8 @@ router.post('/login', async (req, res) => {
 
     const admin = result.rows[0];
 
-    if (!admin.is_active) {
+    // Treat NULL as active (migration may not have run yet)
+    if (admin.is_active === false) {
       return res.status(401).json({ error: 'Account is deactivated' });
     }
 

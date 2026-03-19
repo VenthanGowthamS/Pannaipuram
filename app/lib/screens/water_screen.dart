@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../services/prefs_service.dart';
@@ -187,8 +188,24 @@ class _WaterScreenState extends State<WaterScreen> {
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? _buildShimmer()
           : RefreshIndicator(onRefresh: _load, child: _buildBody()),
+    );
+  }
+
+  Widget _buildShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: ListView(padding: const EdgeInsets.all(16), children: [
+        Container(height: 140, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22))),
+        const SizedBox(height: 12),
+        Container(height: 60, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12))),
+        const SizedBox(height: 12),
+        Container(height: 100, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12))),
+        const SizedBox(height: 12),
+        Container(height: 68, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14))),
+      ]),
     );
   }
 
