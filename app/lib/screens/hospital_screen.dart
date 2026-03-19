@@ -478,9 +478,9 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
     widgets.add(const SizedBox(height: 10));
 
     if (_loading) {
-      widgets.add(const Center(
+      widgets.add(Center(
         child: Padding(
-          padding: EdgeInsets.all(40),
+          padding: const EdgeInsets.all(40),
           child: Shimmer.fromColors(
             baseColor: Colors.grey[300]!,
             highlightColor: Colors.grey[100]!,

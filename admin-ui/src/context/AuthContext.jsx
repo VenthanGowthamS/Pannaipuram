@@ -6,9 +6,9 @@ export const AuthContext = createContext();
 const decodeToken = (token) => {
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.role || 'viewer';
+    return { role: payload.role || 'viewer', email: payload.email || '' };
   } catch {
-    return 'viewer';
+    return { role: 'viewer', email: '' };
   }
 };
 
@@ -20,8 +20,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (token) {
       api.setToken(token);
-      const role = decodeToken(token);
-      setUser({ email: 'venthan89@gmail.com', role });
+      const { role, email } = decodeToken(token);
+      setUser({ email: email || 'admin', role });
     }
     setLoading(false);
   }, [token]);
@@ -31,13 +31,16 @@ export const AuthProvider = ({ children }) => {
     // and loses error state. Login.jsx manages its own loading spinner.
     try {
       const response = await api.login(email, password);
+      // Server returns { success, token, role } — api.request unwraps to { token, role, success }
       const authToken = response.token || response;
       if (!authToken || typeof authToken !== 'string') {
         return { success: false, error: 'Invalid token received from server' };
       }
       api.setToken(authToken);
       setToken(authToken);
-      const role = decodeToken(authToken);
+      // Use role from server response first, then fall back to JWT decode
+      const decoded = decodeToken(authToken);
+      const role = response.role || decoded.role;
       setUser({ email, role });
       return { success: true };
     } catch (error) {

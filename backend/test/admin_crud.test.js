@@ -18,11 +18,12 @@
  *
  * Requires environment variables:
  *   API_BASE (default: https://pannaipuram-api.onrender.com)
- *   ADMIN_EMAIL (default: admin@pannaipuram.local)
- *   ADMIN_PASSWORD (default: password123)
+ *   ADMIN_EMAIL (default: venthan89@gmail.com)
+ *   ADMIN_PASSWORD (default: admin123)
  *
  * Usage:
  *   node test/admin_crud.test.js
+ *   ADMIN_PASSWORD=yourpass node test/admin_crud.test.js
  *   API_BASE=http://localhost:3000 ADMIN_EMAIL=admin@test.com ADMIN_PASSWORD=pass node test/admin_crud.test.js
  */
 
@@ -31,8 +32,8 @@ const https = require('https');
 const querystring = require('querystring');
 
 const API_BASE = process.env.API_BASE || 'https://pannaipuram-api.onrender.com';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@pannaipuram.local';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'password123';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'venthan89@gmail.com';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 const isHttps = API_BASE.startsWith('https');
 const fetcher = isHttps ? https : http;
