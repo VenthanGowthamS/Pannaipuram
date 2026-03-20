@@ -66,8 +66,35 @@ app.use('/admin/services',      adminServicesRoutes);
 app.use('/admin/announcements', adminAnnouncementsRoutes);
 
 // ── Health Check ────────────────────────────────────────
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', app: 'பண்ணைப்புரம்', version: '1.0.0' });
+const { query: dbQuery } = require('./db/pool');
+app.get('/health', async (req, res) => {
+  try {
+    const result = await dbQuery('SELECT NOW() as time, current_database() as db');
+    res.json({
+      status: 'ok',
+      app: 'பண்ணைப்புரம்',
+      version: '1.0.0',
+      db: 'connected',
+      db_info: result.rows[0],
+      env: {
+        jwt_secret_set: !!process.env.JWT_SECRET,
+        database_url_set: !!process.env.DATABASE_URL,
+        node_env: process.env.NODE_ENV
+      }
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 'error',
+      app: 'பண்ணைப்புரம்',
+      db: 'disconnected',
+      error: err.message,
+      env: {
+        jwt_secret_set: !!process.env.JWT_SECRET,
+        database_url_set: !!process.env.DATABASE_URL,
+        node_env: process.env.NODE_ENV
+      }
+    });
+  }
 });
 
 // ── Start Background Services ───────────────────────────
