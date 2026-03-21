@@ -15,6 +15,8 @@
  *   ✅ Auto Registration Contact GET/PUT
  *   ✅ Announcements CRUD
  *   ✅ Auth Signup & RBAC User Management
+ *   ✅ Public Register (self-signup)
+ *   ✅ Health Check endpoint
  *
  * Requires environment variables:
  *   API_BASE (default: https://pannaipuram-api.onrender.com)
@@ -292,25 +294,21 @@ async function testBusTimingsCRUD() {
     }
   });
 
-  await test('GET /admin/bus/routes/:corridorId or POST /admin/bus/routes creates route', async () => {
+  await test('POST /admin/bus/routes finds or creates route for corridor', async () => {
     if (!corridorId) {
       assert(true, 'Skipped (no corridors available)');
       return;
     }
-    const { status, body } = await get(`/admin/bus/routes?corridor_id=${corridorId}`, getAuthHeaders());
-    if (status === 200 && body.data && body.data.length > 0) {
-      routeId = body.data[0].id;
-    } else {
-      // Try creating a route if it doesn't exist
-      const createRes = await post('/admin/bus/routes', {
-        corridor_id: corridorId,
-        route_number: 'TEST-001',
-      }, getAuthHeaders());
-      if (createRes.status === 200 || createRes.status === 201) {
-        routeId = createRes.body.data?.id;
-      }
-    }
-    assert(routeId, 'Could not get or create route');
+    const { status, body } = await post('/admin/bus/routes', {
+      corridor_id: corridorId,
+      direction: 'outbound',
+      origin_tamil: 'பண்ணைப்புரம்',
+      dest_tamil: 'பண்ணைப்புரம்',
+    }, getAuthHeaders());
+    assert(status === 200 || status === 201, `Expected 200/201, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    routeId = body.data && body.data.id;
+    assert(routeId, 'Expected route id in response');
   });
 
   await test('POST /admin/bus/timings adds a test timing', async () => {
@@ -875,6 +873,55 @@ async function testRBACViewerRestrictions() {
   console.log(`      ℹ️  Test viewer ${viewerEmail} left in DB for cleanup`);
 }
 
+async function testHealthCheck() {
+  console.log('\n🏥 Health Check');
+
+  await test('GET /health returns ok with db connected', async () => {
+    const { status, body } = await get('/health');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.status === 'ok', `Expected status ok, got ${body.status}`);
+    assert(body.db === 'connected', `Expected db connected, got ${body.db}`);
+    assert(body.env.jwt_secret_set === true, 'JWT_SECRET should be set');
+    assert(body.env.database_url_set === true, 'DATABASE_URL should be set');
+  });
+}
+
+async function testPublicRegister() {
+  console.log('\n📝 Public Registration');
+
+  const regEmail = `register_${Date.now()}@pannaipuram.local`;
+
+  await test('POST /admin/auth/register creates inactive user (no auth needed)', async () => {
+    const { status, body } = await post('/admin/auth/register', {
+      email: regEmail,
+      password: 'testpass123',
+      name: 'Test Register User',
+    });
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(body.user, 'Expected user in response');
+    assert(body.user.role === 'viewer', `Expected viewer role, got ${body.user.role}`);
+  });
+
+  await test('POST /admin/auth/login rejects inactive registered user', async () => {
+    const { status } = await post('/admin/auth/login', {
+      email: regEmail,
+      password: 'testpass123',
+    });
+    assert(status === 401, `Expected 401 for inactive user, got ${status}`);
+  });
+
+  await test('POST /admin/auth/register rejects duplicate email', async () => {
+    const { status } = await post('/admin/auth/register', {
+      email: regEmail,
+      password: 'testpass123',
+    });
+    assert(status === 400, `Expected 400 for duplicate, got ${status}`);
+  });
+
+  console.log(`      ℹ️  Test user ${regEmail} left in DB (inactive) for cleanup`);
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -907,6 +954,12 @@ async function main() {
     console.log('\n❌ Authentication failed. Cannot proceed with admin tests.');
     process.exit(1);
   }
+
+  // Health check
+  await testHealthCheck();
+
+  // Public register
+  await testPublicRegister();
 
   // Run all CRUD test suites
   await testPowerCutsCRUD();

@@ -67,13 +67,12 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await api.signup({
+      await api.register({
         name,
         email,
         password,
-        role: 'viewer',
       });
-      setSuccess('Account created! Please wait for admin approval.');
+      setSuccess('Account created! Please wait for admin approval. ✅');
       setName('');
       setEmail('');
       setPassword('');

@@ -59,6 +59,10 @@ class ApiService {
     return this.request('POST', '/admin/auth/signup', data);
   }
 
+  register(data) {
+    return this.request('POST', '/admin/auth/register', data);
+  }
+
   getUsers() {
     return this.request('GET', '/admin/auth/users');
   }

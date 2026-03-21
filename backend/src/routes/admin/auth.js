@@ -71,6 +71,46 @@ router.post('/setup', async (req, res) => {
   }
 });
 
+// POST /admin/auth/register — public self-registration (creates inactive user)
+// No auth required — user is created with is_active = false, needs admin approval
+router.post('/register', async (req, res) => {
+  const { email, password, name } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password required' });
+  }
+
+  try {
+    const existing = await query(
+      'SELECT id FROM admin_users WHERE email = $1',
+      [email]
+    );
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'Email already in use' });
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+    const result = await query(
+      'INSERT INTO admin_users (email, password_hash, role, name, is_active) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, role, name',
+      [email, hash, 'viewer', name || email.split('@')[0], false]
+    );
+
+    const newUser = result.rows[0];
+    res.json({
+      success: true,
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role
+      },
+      message: 'Account created. Please wait for admin approval.'
+    });
+  } catch (err) {
+    console.error('Register error:', err.message);
+    res.status(500).json({ error: 'Server error', detail: err.message });
+  }
+});
+
 // POST /admin/auth/signup — creates new user with 'viewer' role
 // Requires authentication (any logged-in admin)
 router.post('/signup', adminAuth, async (req, res) => {

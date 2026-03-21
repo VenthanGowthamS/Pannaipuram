@@ -72,8 +72,12 @@ const BusTimings = ({ onSnackbar }) => {
 
   const handleAddTiming = async (e) => {
     e.preventDefault();
-    if (!form.departs_at || !selectedCorridor) {
-      onSnackbar('Please fill in all required fields', 'warning');
+    if (!form.departs_at) {
+      onSnackbar('Please select a departure time', 'warning');
+      return;
+    }
+    if (!selectedCorridor) {
+      onSnackbar('Please select a corridor', 'warning');
       return;
     }
 
@@ -82,7 +86,7 @@ const BusTimings = ({ onSnackbar }) => {
         ...form,
         corridor_id: selectedCorridor,
       });
-      onSnackbar('Bus timing added successfully', 'success');
+      onSnackbar('Bus timing added successfully ✅', 'success');
       setForm({
         corridor_id: selectedCorridor,
         departs_at: '',
@@ -92,7 +96,7 @@ const BusTimings = ({ onSnackbar }) => {
       });
       loadTimings(selectedCorridor);
     } catch (error) {
-      onSnackbar('Failed to add bus timing', 'error');
+      onSnackbar(error.message || 'Failed to add bus timing', 'error');
     }
   };
 
