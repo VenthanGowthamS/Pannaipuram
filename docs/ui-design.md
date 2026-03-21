@@ -81,7 +81,7 @@
 
 ---
 
-### Screen 2 — Home Screen ✅ IMPLEMENTED
+### Screen 2 — Home Screen ✅ IMPLEMENTED (Updated March 2026)
 
 ```
 ┌─────────────────────────────────┐
@@ -110,10 +110,22 @@
 │ │ 💧 அக்கா, தண்ணி...        │ │
 │ │    Water Supply             │ │
 │ └─────────────────────────────┘ │
+│ ┌─────────────────────────────┐ │
+│ │ 🛍 ஊர்ல யாரை அழைக்கணும்?  │ │
+│ │    Milk, Post, Plumber...   │ │
+│ └─────────────────────────────┘ │
+├─────────────────────────────────┤
+│  🏠 முகப்பு  🚨 அவசரம்  ℹ️ பற்றி │
 └─────────────────────────────────┘
 ```
 
-**✅ Status:** Full-width rectangle tiles (one per row), colloquial Tamil labels with English sub-labels, cottage icon in header, NO live status chips on home screen. Tile order: Bus → Auto → Hospital → Electricity → Water
+**✅ Status:** 6 full-width rectangle tiles (no emergency tile), bottom nav bar with Home/Emergency/About, no live status dashboard, cottage icon in header (no info button). Tile order: Bus → Auto → Hospital → Electricity → Water → Services
+
+**Changes from previous version:**
+- Removed: Live status dashboard (3 mini cards for power/bus/water) — redundant with tile labels
+- Removed: Emergency tile from home — moved to bottom nav bar
+- Removed: About info icon from header — moved to bottom nav bar
+- Added: `BottomNavigationBar` with 3 items: 🏠 முகப்பு · 🚨 அவசரம் · ℹ️ பற்றி
 
 ---
 
@@ -326,7 +338,12 @@ Returning?  → Home directly
      Screen     Screen    Screen     Screen     Screen
 ```
 
-No bottom navigation bar — home screen IS the navigation. Back arrow returns to home from any screen.
+Bottom navigation bar (persistent on home screen):
+- 🏠 முகப்பு — Main tile grid (home)
+- 🚨 அவசரம் — Emergency contacts (push navigation)
+- ℹ️ பற்றி — About Pannaipuram (push navigation)
+
+Back arrow returns to home (with bottom nav) from any screen.
 
 ---
 

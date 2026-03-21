@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shimmer/shimmer.dart';
 import 'power_screen.dart';
 import 'water_screen.dart';
 import 'bus_screen.dart';
@@ -10,7 +9,6 @@ import 'emergency_screen.dart';
 import 'about_screen.dart';
 import 'services_screen.dart';
 import '../services/api_service.dart';
-import '../models/models.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,26 +19,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> _announcements = [];
-
-  // Live status data
-  bool _statusLoading = true;
-  String _powerStatus = '';
-  String _powerEmoji = '⚡';
-  Color _powerColor = const Color(0xFF4CAF50);
-  String _busStatus = '';
-  String _busEmoji = '🚌';
-  String _waterStatus = '';
-  String _waterEmoji = '💧';
+  int _selectedNavIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadAll();
-  }
-
-  Future<void> _loadAll() async {
     _loadAnnouncements();
-    await _loadLiveStatus();
   }
 
   Future<void> _loadAnnouncements() async {
@@ -51,87 +35,13 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (_) {}
   }
 
-  Future<void> _loadLiveStatus() async {
-    if (mounted) setState(() => _statusLoading = true);
-    try {
-      final results = await Future.wait([
-        ApiService.getPowerCuts().catchError((_) => <PowerCut>[]),
-        ApiService.getNextBuses().catchError((_) => <NextBus>[]),
-        ApiService.getTodayWaterAlerts().catchError((_) => <WaterAlert>[]),
-      ]);
-      if (!mounted) return;
-
-      final cuts = results[0] as List<PowerCut>;
-      final buses = results[1] as List<NextBus>;
-      final alerts = results[2] as List<WaterAlert>;
-
-      // Power status
-      final now = DateTime.now();
-      final activeCut = cuts.where((c) =>
-          c.startTime.isBefore(now) &&
-          (c.endTime == null || c.endTime!.isAfter(now)) &&
-          !c.isResolved).toList();
-      final hasCutToday = cuts.any((c) =>
-          c.startTime.year == now.year &&
-          c.startTime.month == now.month &&
-          c.startTime.day == now.day &&
-          !c.isResolved);
-
-      if (activeCut.isNotEmpty) {
-        _powerStatus = 'மின் தடை நடக்கிறது!';
-        _powerEmoji = '🔴';
-        _powerColor = const Color(0xFFC62828);
-      } else if (hasCutToday) {
-        _powerStatus = 'இன்று மின் தடை உள்ளது';
-        _powerEmoji = '⚠️';
-        _powerColor = const Color(0xFFE65100);
-      } else {
-        _powerStatus = 'கரண்ட் இருக்கு!';
-        _powerEmoji = '🟢';
-        _powerColor = const Color(0xFF2E7D32);
-      }
-
-      // Bus status
-      if (buses.isNotEmpty) {
-        final nearest = buses.where((b) => b.minutesUntil != null && b.minutesUntil! > 0).toList();
-        if (nearest.isNotEmpty) {
-          nearest.sort((a, b) => (a.minutesUntil ?? 999).compareTo(b.minutesUntil ?? 999));
-          final nb = nearest.first;
-          if (nb.minutesUntil! <= 60) {
-            _busStatus = '${nb.corridorNameTamil} — ${nb.minutesUntil} நிமிடம்';
-            _busEmoji = '🚌';
-          } else {
-            _busStatus = '${nb.corridorNameTamil} — ${nb.departsAt ?? ''}';
-            _busEmoji = '🕐';
-          }
-        } else {
-          _busStatus = 'இன்றைக்கு பஸ் முடிந்தது';
-          _busEmoji = '😴';
-        }
-      } else {
-        _busStatus = 'பஸ் தகவல் விரைவில்';
-        _busEmoji = '🚌';
-      }
-
-      // Water status
-      if (alerts.isNotEmpty) {
-        _waterStatus = 'இன்று வந்தது! (${alerts.length})';
-        _waterEmoji = '✅';
-      } else {
-        _waterStatus = 'இன்னும் வரலை...';
-        _waterEmoji = '⏳';
-      }
-
-      setState(() => _statusLoading = false);
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _statusLoading = false;
-        _powerStatus = 'இணைப்பு இல்லை';
-        _busStatus = 'இணைப்பு இல்லை';
-        _waterStatus = 'இணைப்பு இல்லை';
-      });
+  void _onNavTap(int index) {
+    if (index == 1) {
+      _navigate(context, const EmergencyScreen());
+    } else if (index == 2) {
+      _navigate(context, const AboutScreen());
     }
+    // index 0 = already on home
   }
 
   @override
@@ -150,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildHeader(context),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: _loadAll,
+              onRefresh: _loadAnnouncements,
               color: const Color(0xFF1B5E20),
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(14, 16, 14, 28),
@@ -169,11 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 15, color: Color(0xFF4A6741), fontWeight: FontWeight.w700)),
                   ),
 
-                  // ── LIVE STATUS DASHBOARD ──────────────────────────
-                  _buildStatusDashboard(),
-                  const SizedBox(height: 16),
-
-                  // Module tiles
+                  // ── Module Tiles ──────────────────────────────────────
                   _ModuleTile(
                     icon: Icons.directions_bus_rounded, emoji: '🚌',
                     gradientColors: const [Color(0xFFE65100), Color(0xFFF4511E)],
@@ -215,13 +121,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     label: 'ஊர்ல யாரை அழைக்கணும்?', sublabel: 'Milk, Post, Plumber & More',
                     onTap: () => _navigate(context, const ServicesScreen()),
                   ),
-                  const SizedBox(height: 12),
-                  _ModuleTile(
-                    icon: Icons.emergency_rounded, emoji: '🚨',
-                    gradientColors: const [Color(0xFFB71C1C), Color(0xFFE53935)],
-                    label: 'அண்ணே, உதவி வேணும்!', sublabel: 'Emergency Contacts',
-                    onTap: () => _navigate(context, const EmergencyScreen()),
-                  ),
                   const SizedBox(height: 20),
                 ],
               ),
@@ -229,45 +128,32 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  // ── Live Status Dashboard ────────────────────────────────────────────
-  Widget _buildStatusDashboard() {
-    if (_statusLoading) return _buildShimmerDashboard();
-
-    return Row(
-      children: [
-        Expanded(child: _StatusCard(
-          emoji: _powerEmoji, label: 'மின்சாரம்', value: _powerStatus,
-          color: _powerColor, onTap: () => _navigate(context, const PowerScreen()),
-        )),
-        const SizedBox(width: 8),
-        Expanded(child: _StatusCard(
-          emoji: _busEmoji, label: 'அடுத்த பஸ்', value: _busStatus,
-          color: const Color(0xFFE65100), onTap: () => _navigate(context, const BusScreen()),
-        )),
-        const SizedBox(width: 8),
-        Expanded(child: _StatusCard(
-          emoji: _waterEmoji, label: 'தண்ணீர்', value: _waterStatus,
-          color: const Color(0xFF0277BD), onTap: () => _navigate(context, const WaterScreen()),
-        )),
-      ],
-    );
-  }
-
-  Widget _buildShimmerDashboard() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
-      child: Row(
-        children: List.generate(3, (_) => Expanded(
-          child: Container(
-            height: 100,
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+      // ── Bottom Navigation Bar ──────────────────────────────────────────
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedNavIndex,
+        onTap: _onNavTap,
+        selectedItemColor: const Color(0xFF1B5E20),
+        unselectedItemColor: const Color(0xFF9E9E9E),
+        backgroundColor: Colors.white,
+        type: BottomNavigationBarType.fixed,
+        selectedLabelStyle: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 11, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 11),
+        elevation: 12,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_rounded),
+            label: 'முகப்பு',
           ),
-        )),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.emergency_rounded),
+            activeIcon: Icon(Icons.emergency_rounded, color: Color(0xFFB71C1C)),
+            label: 'அவசரம்',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.info_outline_rounded),
+            label: 'பற்றி',
+          ),
+        ],
       ),
     );
   }
@@ -283,22 +169,22 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: EdgeInsets.only(
         top: MediaQuery.of(context).padding.top + 10, left: 18, right: 18, bottom: 14,
       ),
-      child: Row(children: [
-        Container(
+      child: const Row(children: [
+        SizedBox(
           width: 46, height: 46,
-          decoration: BoxDecoration(color: Colors.white.withOpacity(0.18), borderRadius: BorderRadius.circular(23)),
-          child: const Icon(Icons.cottage_rounded, color: Colors.white, size: 26),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: Color(0x2DFFFFFF),
+              borderRadius: BorderRadius.all(Radius.circular(23)),
+            ),
+            child: Icon(Icons.cottage_rounded, color: Colors.white, size: 26),
+          ),
         ),
-        const SizedBox(width: 12),
-        const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('பண்ணைப்புரம்', style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
           Text('உங்கள் ஊரின் தகவல் மையம்', style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 12, color: Colors.white70)),
         ])),
-        IconButton(
-          icon: const Icon(Icons.info_outline_rounded, color: Colors.white70, size: 24),
-          tooltip: 'About Pannaipuram',
-          onPressed: () => _navigate(context, const AboutScreen()),
-        ),
       ]),
     );
   }
@@ -313,48 +199,6 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       transitionDuration: const Duration(milliseconds: 300),
     ));
-  }
-}
-
-// ── Status Card Widget ─────────────────────────────────────────────────────
-class _StatusCard extends StatelessWidget {
-  final String emoji;
-  final String label;
-  final String value;
-  final Color color;
-  final VoidCallback onTap;
-  const _StatusCard({required this.emoji, required this.label, required this.value, required this.color, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () { HapticFeedback.lightImpact(); onTap(); },
-      child: Container(
-        height: 100,
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withOpacity(0.2)),
-          boxShadow: [BoxShadow(color: color.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 3))],
-        ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Text(emoji, style: const TextStyle(fontSize: 18)),
-            const SizedBox(width: 4),
-            Expanded(child: Text(label,
-              style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 10, fontWeight: FontWeight.w600, color: color),
-              overflow: TextOverflow.ellipsis)),
-          ]),
-          const Spacer(),
-          Text(value,
-            style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF333333), height: 1.3),
-            maxLines: 2, overflow: TextOverflow.ellipsis),
-          const SizedBox(height: 4),
-          Container(height: 3, decoration: BoxDecoration(color: color.withOpacity(0.3), borderRadius: BorderRadius.circular(2))),
-        ]),
-      ),
-    );
   }
 }
 
