@@ -28,7 +28,6 @@ const adminServicesRoutes       = require('./routes/admin/services');
 const adminAnnouncementsRoutes  = require('./routes/admin/announcements');
 
 // Services
-const { startTnebScraper }    = require('./services/tnebScraper');
 const { startWaterScheduler } = require('./services/waterScheduler');
 
 const app = express();
@@ -113,7 +112,8 @@ app.get('/health', async (req, res) => {
 });
 
 // ── Start Background Services ───────────────────────────
-startTnebScraper();
+// Note: TNEB scraper removed — TNEB does not provide a public API/stable URL.
+// Power cuts are entered manually via the Admin Panel.
 startWaterScheduler();
 
 // ── Start Server ────────────────────────────────────────
