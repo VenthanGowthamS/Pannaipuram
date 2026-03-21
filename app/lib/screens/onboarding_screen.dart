@@ -17,6 +17,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   List<Street> _filtered = [];
   Street? _selected;
   bool _loading = true;
+  bool _usingFallback = false;
   final _searchCtrl = TextEditingController();
 
   // Fallback streets — populated as data is collected from panchayat
@@ -57,6 +58,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         _streets = fallback;
         _filtered = fallback;
         _loading = false;
+        _usingFallback = true;
       });
     }
   }
@@ -138,6 +140,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
 
               const SizedBox(height: 32),
+
+              // Offline fallback notice
+              if (_usingFallback)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  ),
+                  child: const Row(children: [
+                    Icon(Icons.wifi_off, color: Colors.orange, size: 18),
+                    SizedBox(width: 8),
+                    Expanded(child: Text(
+                      'இணையம் இல்லை — குறைவான தெருக்கள் காட்டப்படுகின்றன',
+                      style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 12, color: Colors.orange),
+                    )),
+                  ]),
+                ),
 
               // Street picker card
               Expanded(

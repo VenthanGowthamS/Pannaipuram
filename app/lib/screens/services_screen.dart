@@ -39,6 +39,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   static const Color _teal = Color(0xFF00695C);
   Map<String, List<Map<String, dynamic>>> _services = {};
   bool _loading = true;
+  bool _error = false;
 
   // Gowtham contact for adding new services
   String _contactName = 'கௌதம்';
@@ -52,7 +53,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
+    setState(() { _loading = true; _error = false; });
     try {
       final results = await Future.wait([
         ApiService.getLocalServices(),
@@ -70,7 +71,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() => _loading = false);
+      setState(() { _loading = false; _error = true; });
     }
   }
 
@@ -97,7 +98,16 @@ class _ServicesScreenState extends State<ServicesScreen> {
         backgroundColor: _teal,
       ),
       backgroundColor: const Color(0xFFF5F5F5),
-      body: RefreshIndicator(onRefresh: _load, child: _loading ? const Center(child: CircularProgressIndicator()) : _buildBody()),
+      body: RefreshIndicator(onRefresh: _load, child: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error
+              ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Icon(Icons.cloud_off_rounded, size: 48, color: Colors.grey[400]),
+                  const SizedBox(height: 12),
+                  const Text('இணைப்பு பிழை', style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 18)),
+                  const Text('Pull down to retry', style: TextStyle(fontFamily: 'Roboto', fontSize: 12, color: Color(0xFF757575))),
+                ]))
+              : _buildBody()),
     );
   }
 
@@ -153,7 +163,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
               style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 14, color: Color(0xFF555555), fontWeight: FontWeight.w600)),
           ),
           ..._categoryOrder.where((c) => c != 'other').map((cat) {
-            final meta = _categoryMeta[cat]!;
+            final meta = _categoryMeta[cat] ?? _fallbackMeta;
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               padding: const EdgeInsets.all(12),

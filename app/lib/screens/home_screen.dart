@@ -30,7 +30,11 @@ class _HomeScreenState extends State<HomeScreen> {
       final data = await ApiService.getAnnouncements();
       if (!mounted) return;
       setState(() => _announcements = data);
-    } catch (_) {}
+    } catch (_) {
+      // Announcements are non-critical — silently use empty list
+      if (!mounted) return;
+      setState(() => _announcements = []);
+    }
   }
 
   @override
@@ -270,7 +274,7 @@ class _AnnouncementBannerState extends State<_AnnouncementBanner> {
         itemBuilder: (ctx, i) {
           final a = widget.announcements[i];
           final type = (a['type'] ?? 'info').toString();
-          final style = _typeStyles[type] ?? _typeStyles['info']!;
+          final style = _typeStyles[type] ?? _typeStyles['info'] ?? (icon: Icons.campaign_rounded, color: const Color(0xFF1565C0), bg: const Color(0xFFE3F2FD));
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
