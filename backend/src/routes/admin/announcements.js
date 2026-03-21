@@ -3,6 +3,7 @@ const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
 const { validateIdParam } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
+const { trimStr } = require('../../middleware/validate');
 
 router.use(adminAuth);
 
@@ -18,13 +19,19 @@ router.get('/', async (req, res) => {
 
 // POST /admin/announcements — create
 router.post('/', async (req, res) => {
-  const { message_tamil, message_english, type, priority, expires_at } = req.body;
+  const message_tamil   = trimStr(req.body.message_tamil);
+  const message_english = trimStr(req.body.message_english);
+  const { type, priority, expires_at } = req.body;
   if (!message_tamil) return res.status(400).json({ success: false, error: 'message_tamil required' });
+  const validTypes = ['info', 'warning', 'urgent', 'event'];
+  if (type && !validTypes.includes(type)) {
+    return res.status(400).json({ success: false, error: `type must be one of: ${validTypes.join(', ')}` });
+  }
   try {
     const result = await query(`
       INSERT INTO announcements (message_tamil, message_english, type, priority, expires_at)
       VALUES ($1, $2, $3, $4, $5) RETURNING *
-    `, [message_tamil, message_english || null, type || 'info', priority || 0, expires_at || null]);
+    `, [message_tamil, message_english, type || 'info', priority || 0, expires_at || null]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });

@@ -3,6 +3,7 @@ const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
 const { validateIdParam } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
+const { trimStr } = require('../../middleware/validate');
 
 router.use(adminAuth);
 
@@ -42,11 +43,19 @@ router.post('/routes', async (req, res) => {
 // POST /admin/bus/timings
 router.post('/timings', async (req, res) => {
   const { route_id, departs_at, days_of_week, bus_type, is_last_bus } = req.body;
+  if (!route_id || !departs_at) {
+    return res.status(400).json({ success: false, error: 'route_id and departs_at are required' });
+  }
+  const departs = trimStr(departs_at);
+  // Basic HH:MM validation
+  if (!/^\d{2}:\d{2}$/.test(departs)) {
+    return res.status(400).json({ success: false, error: 'departs_at must be in HH:MM format' });
+  }
   try {
     const result = await query(`
       INSERT INTO bus_timings (route_id, departs_at, days_of_week, bus_type, is_last_bus)
       VALUES ($1,$2,$3,$4,$5) RETURNING *
-    `, [route_id, departs_at, days_of_week || 'daily', bus_type || 'ordinary', is_last_bus || false]);
+    `, [route_id, departs, days_of_week || 'daily', bus_type || 'ordinary', is_last_bus || false]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });
