@@ -145,23 +145,54 @@ class _WaterScreenState extends State<WaterScreen> {
   }
 
   Future<void> _reportWaterArrival() async {
-    final ok = await ApiService.reportWaterArrival(_selectedStreetId, PrefsService.deviceId);
-    if (ok && mounted) {
-      setState(() => _alertSent = true);
+    try {
+      final ok = await ApiService.reportWaterArrival(_selectedStreetId, PrefsService.deviceId);
+      if (!mounted) return;
+      if (ok) {
+        setState(() => _alertSent = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('💧 அறிவிப்பு அனுப்பப்பட்டது! அனைவருக்கும் தகவல் போகும்.'),
+            backgroundColor: AppColors.waterBlue,
+            duration: Duration(seconds: 4),
+          ),
+        );
+        await _load();
+      }
+    } catch (_) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('💧 அறிவிப்பு அனுப்பப்பட்டது! அனைவருக்கும் தகவல் போகும்.'),
-          backgroundColor: AppColors.waterBlue,
-          duration: Duration(seconds: 4),
+          content: Text('அறிவிப்பு அனுப்ப முடியவில்லை — இணைப்பை சரிபாருங்கள்'),
+          backgroundColor: Colors.red,
         ),
       );
-      await _load();
     }
   }
 
   Future<void> _confirmAlert(int alertId) async {
-    await ApiService.confirmWaterAlert(alertId);
-    await _load();
+    try {
+      final ok = await ApiService.confirmWaterAlert(alertId);
+      if (!mounted) return;
+      if (ok) {
+        await _load();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('உறுதிப்படுத்த முடியவில்லை — மீண்டும் முயற்சிக்கவும்'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('இணைப்பு பிழை — மீண்டும் முயற்சிக்கவும்'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   String _formatTime(String timeStr) {

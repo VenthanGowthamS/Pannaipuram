@@ -79,7 +79,7 @@ class _AutoScreenState extends State<AutoScreen> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        // Keep fallback drivers and contact
+        _dataSource = 'fallback';
       });
     }
   }

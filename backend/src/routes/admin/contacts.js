@@ -3,13 +3,20 @@ const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
 const { validateIdParam } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
+const { trimStr, isValidPhone } = require('../../middleware/validate');
 
 router.use(adminAuth);
 
 // POST /admin/contacts
 router.post('/', async (req, res) => {
-  const { category, name_tamil, name_english, phone, is_national, display_order } = req.body;
-  if (!name_tamil || !phone) return res.status(400).json({ error: 'name_tamil and phone required' });
+  const name_tamil   = trimStr(req.body.name_tamil);
+  const name_english = trimStr(req.body.name_english);
+  const phone        = trimStr(req.body.phone);
+  const { category, is_national, display_order } = req.body;
+  if (!name_tamil || !phone) return res.status(400).json({ success: false, error: 'name_tamil and phone required' });
+  if (!isValidPhone(phone)) {
+    return res.status(400).json({ success: false, error: 'Phone must be a 10-digit Indian mobile number starting with 6-9' });
+  }
   try {
     const result = await query(`
       INSERT INTO emergency_contacts (category, name_tamil, name_english, phone, is_national, is_verified, display_order)

@@ -3,6 +3,7 @@ const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
 const { validateIdParam } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
+const { trimStr, isValidPhone } = require('../../middleware/validate');
 
 router.use(adminAuth);
 
@@ -20,9 +21,15 @@ router.get('/', async (req, res) => {
 
 // POST /admin/services — add new service contact
 router.post('/', async (req, res) => {
-  const { category, name_tamil, name_english, phone, area_tamil, area_english, notes_tamil, display_order } = req.body;
+  const name_tamil   = trimStr(req.body.name_tamil);
+  const name_english = trimStr(req.body.name_english);
+  const phone        = trimStr(req.body.phone);
+  const { category, display_order } = req.body;
   if (!category || !name_tamil || !phone) {
     return res.status(400).json({ success: false, error: 'category, name_tamil, phone are required' });
+  }
+  if (!isValidPhone(phone)) {
+    return res.status(400).json({ success: false, error: 'Phone must be a 10-digit Indian mobile number starting with 6-9' });
   }
   try {
     const result = await query(`
@@ -30,7 +37,7 @@ router.post('/', async (req, res) => {
         (category, name_tamil, name_english, phone, area_tamil, area_english, notes_tamil, display_order)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
-    `, [category, name_tamil, name_english || null, phone, area_tamil || null, area_english || null, notes_tamil || null, display_order || 0]);
+    `, [category, name_tamil, name_english, phone, trimStr(req.body.area_tamil), trimStr(req.body.area_english), trimStr(req.body.notes_tamil), display_order || 0]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });

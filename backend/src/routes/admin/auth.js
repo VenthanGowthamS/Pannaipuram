@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit');
 const { query } = require('../../db/pool');
 const adminAuth = require('../../middleware/auth');
 const { requireRole, validateIdParam } = require('../../middleware/auth');
+const { isValidEmail } = require('../../middleware/validate');
 
 // Rate limiters for public auth endpoints
 const loginLimiter = rateLimit({
@@ -26,9 +27,13 @@ const registerLimiter = rateLimit({
 
 // POST /admin/auth/login
 router.post('/login', loginLimiter, async (req, res) => {
-  const { email, password } = req.body;
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const { password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' });
+  }
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
   }
 
   try {
@@ -62,16 +67,20 @@ router.post('/login', loginLimiter, async (req, res) => {
     res.json({ success: true, token, role: admin.role });
   } catch (err) {
     console.error('Login error:', err.message, err.stack);
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
 // POST /admin/auth/setup — first-time only, creates super_admin user
 // Only works when no admin users exist yet
 router.post('/setup', registerLimiter, async (req, res) => {
-  const { email, password, name } = req.body;
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const { password, name } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' });
+  }
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
   }
   try {
     const existing = await query('SELECT id FROM admin_users LIMIT 1');
@@ -85,16 +94,20 @@ router.post('/setup', registerLimiter, async (req, res) => {
     );
     res.json({ success: true, message: 'Admin created. You can now login.' });
   } catch (err) {
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
 // POST /admin/auth/register — public self-registration (creates inactive user)
 // No auth required — user is created with is_active = false, needs admin approval
 router.post('/register', registerLimiter, async (req, res) => {
-  const { email, password, name } = req.body;
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const { password, name } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' });
+  }
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
   }
 
   try {
@@ -125,16 +138,20 @@ router.post('/register', registerLimiter, async (req, res) => {
     });
   } catch (err) {
     console.error('Register error:', err.message);
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
 // POST /admin/auth/signup — creates new user with 'viewer' role
 // Requires authentication (any logged-in admin)
 router.post('/signup', adminAuth, async (req, res) => {
-  const { email, password, name } = req.body;
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const { password, name } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' });
+  }
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
   }
 
   try {
@@ -164,7 +181,7 @@ router.post('/signup', adminAuth, async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -180,7 +197,7 @@ router.get('/users', adminAuth, requireRole('super_admin'), async (req, res) => 
       data: result.rows
     });
   } catch (err) {
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -218,7 +235,7 @@ router.put('/users/:id/role', adminAuth, requireRole('super_admin'), validateIdP
       user: result.rows[0]
     });
   } catch (err) {
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -252,7 +269,7 @@ router.put('/users/:id/active', adminAuth, requireRole('super_admin'), validateI
       user: result.rows[0]
     });
   } catch (err) {
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 

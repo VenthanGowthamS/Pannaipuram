@@ -3,6 +3,7 @@ const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
 const { validateIdParam } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
+const { trimStr, isValidTime, isStartBeforeEnd } = require('../../middleware/validate');
 
 router.use(adminAuth);
 
@@ -28,8 +29,11 @@ router.put('/info', async (req, res) => {
 
 // POST /admin/hospital/doctors
 router.post('/doctors', async (req, res) => {
-  const { hospital_id, name_tamil, name_english, specialisation, photo_url } = req.body;
-  if (!name_tamil) return res.status(400).json({ error: 'name_tamil required' });
+  const name_tamil    = trimStr(req.body.name_tamil);
+  const name_english  = trimStr(req.body.name_english);
+  const specialisation = trimStr(req.body.specialisation);
+  const { hospital_id, photo_url } = req.body;
+  if (!name_tamil) return res.status(400).json({ success: false, error: 'name_tamil required' });
   try {
     const result = await query(`
       INSERT INTO doctors (hospital_id, name_tamil, name_english, specialisation, photo_url)
@@ -73,7 +77,17 @@ router.delete('/doctors/:id', validateIdParam, async (req, res) => {
 
 // POST /admin/hospital/doctors/:id/schedule
 router.post('/doctors/:id/schedule', validateIdParam, async (req, res) => {
-  const { day_of_week, start_time, end_time, notes_tamil } = req.body;
+  const { day_of_week, start_time, end_time } = req.body;
+  const notes_tamil = trimStr(req.body.notes_tamil);
+  if (!day_of_week || !start_time || !end_time) {
+    return res.status(400).json({ success: false, error: 'day_of_week, start_time, end_time are required' });
+  }
+  if (!isValidTime(start_time) || !isValidTime(end_time)) {
+    return res.status(400).json({ success: false, error: 'Times must be in HH:MM format' });
+  }
+  if (!isStartBeforeEnd(start_time, end_time)) {
+    return res.status(400).json({ success: false, error: 'start_time must be before end_time' });
+  }
   try {
     const result = await query(`
       INSERT INTO doctor_schedules (doctor_id, day_of_week, start_time, end_time, notes_tamil)

@@ -65,9 +65,13 @@ class ApiService {
   }
 
   static Future<bool> confirmWaterAlert(int alertId) async {
-    final uri = Uri.parse('$_base/api/water/alert/$alertId/confirm');
-    final res = await http.post(uri).timeout(const Duration(seconds: 10));
-    return res.statusCode == 200;
+    try {
+      final uri = Uri.parse('$_base/api/water/alert/$alertId/confirm');
+      final res = await http.post(uri).timeout(const Duration(seconds: 10));
+      return res.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
   }
 
   // ─── Power ───────────────────────────────────────────────────────────────
@@ -185,11 +189,15 @@ class ApiService {
   }
 
   static Future<void> updateDeviceStreet(String fcmToken, int streetId) async {
-    final uri = Uri.parse('$_base/api/devices/street');
-    await http.put(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'fcm_token': fcmToken, 'street_id': streetId}),
-    ).timeout(const Duration(seconds: 10));
+    try {
+      final uri = Uri.parse('$_base/api/devices/street');
+      await http.put(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'fcm_token': fcmToken, 'street_id': streetId}),
+      ).timeout(const Duration(seconds: 10));
+    } catch (_) {
+      // Silently fail — device street update is non-critical
+    }
   }
 }

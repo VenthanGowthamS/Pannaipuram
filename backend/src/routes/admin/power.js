@@ -4,6 +4,7 @@ const adminAuth = require('../../middleware/auth');
 const { validateIdParam } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 const { sendToAll } = require('../../services/pushNotifications');
+const { trimStr } = require('../../middleware/validate');
 
 router.use(adminAuth);
 
@@ -19,7 +20,15 @@ router.get('/cuts', async (req, res) => {
 
 // POST /admin/power/cuts
 router.post('/cuts', async (req, res) => {
-  const { area_description, cut_type, start_time, end_time, reason_tamil } = req.body;
+  const area_description = trimStr(req.body.area_description);
+  const reason_tamil     = trimStr(req.body.reason_tamil);
+  const { cut_type, start_time, end_time } = req.body;
+  if (!area_description || !start_time || !end_time) {
+    return res.status(400).json({ success: false, error: 'area_description, start_time, end_time are required' });
+  }
+  if (new Date(end_time) <= new Date(start_time)) {
+    return res.status(400).json({ success: false, error: 'end_time must be after start_time' });
+  }
   try {
     const result = await query(`
       INSERT INTO power_cuts (area_description, cut_type, start_time, end_time, reason_tamil, source)
