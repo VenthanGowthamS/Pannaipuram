@@ -51,8 +51,12 @@ const PowerCuts = ({ onSnackbar }) => {
 
   const handleAddCut = async (e) => {
     e.preventDefault();
-    if (!form.area_description || !form.start_time || !form.end_time) {
+    if (!form.area_description.trim() || !form.start_time || !form.end_time) {
       onSnackbar('Please fill in all required fields', 'warning');
+      return;
+    }
+    if (new Date(form.end_time) <= new Date(form.start_time)) {
+      onSnackbar('End time must be after start time', 'warning');
       return;
     }
 

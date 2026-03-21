@@ -88,8 +88,16 @@ const Doctors = ({ onSnackbar }) => {
   };
 
   const handleAddSchedule = async () => {
+    if (scheduleForm.days.length === 0) {
+      onSnackbar('Please select at least one day', 'warning');
+      return;
+    }
     if (!scheduleForm.start_time || !scheduleForm.end_time) {
-      onSnackbar('Please fill in all time fields', 'warning');
+      onSnackbar('Please fill in start and end times', 'warning');
+      return;
+    }
+    if (scheduleForm.start_time >= scheduleForm.end_time) {
+      onSnackbar('End time must be after start time', 'warning');
       return;
     }
 
