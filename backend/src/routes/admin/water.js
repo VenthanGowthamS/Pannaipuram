@@ -23,7 +23,7 @@ router.put('/schedule/:streetId', async (req, res) => {
 
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -38,7 +38,7 @@ router.post('/streets', async (req, res) => {
     `, [name_tamil, name_english, ward_id]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -55,7 +55,7 @@ router.get('/streets', async (req, res) => {
     `);
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 

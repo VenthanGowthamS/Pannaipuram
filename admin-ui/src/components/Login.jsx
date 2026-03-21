@@ -17,7 +17,7 @@ import api from '../api';
 
 const Login = () => {
   const [mode, setMode] = useState('login'); // 'login' or 'signup'
-  const [email, setEmail] = useState('venthan89@gmail.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);

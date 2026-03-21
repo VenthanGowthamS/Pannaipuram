@@ -8,7 +8,7 @@ router.get('/info', async (req, res) => {
     const result = await query('SELECT * FROM hospitals WHERE id = 1');
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -37,7 +37,7 @@ router.get('/doctors', async (req, res) => {
     `);
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -58,7 +58,7 @@ router.get('/doctors/today', async (req, res) => {
 
     res.json({ success: true, data: result.rows, day: dayOfWeek });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 

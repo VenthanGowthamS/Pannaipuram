@@ -1,6 +1,7 @@
 const express   = require('express');
 const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
+const { validateIdParam } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 
 router.use(adminAuth);
@@ -16,12 +17,12 @@ router.post('/', async (req, res) => {
     `, [category, name_tamil, name_english, phone, is_national || false, display_order || 0]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
 // PUT /admin/contacts/:id
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateIdParam, async (req, res) => {
   const { name_tamil, name_english, phone, is_verified, display_order } = req.body;
   try {
     const result = await query(`
@@ -35,17 +36,17 @@ router.put('/:id', async (req, res) => {
     `, [name_tamil, name_english, phone, is_verified, display_order, req.params.id]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
 // DELETE /admin/contacts/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', validateIdParam, async (req, res) => {
   try {
     await query('DELETE FROM emergency_contacts WHERE id = $1', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 

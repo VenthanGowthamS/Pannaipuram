@@ -2,12 +2,30 @@ const express  = require('express');
 const router   = express.Router();
 const bcrypt   = require('bcryptjs');
 const jwt      = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const { query } = require('../../db/pool');
 const adminAuth = require('../../middleware/auth');
-const { requireRole } = require('../../middleware/auth');
+const { requireRole, validateIdParam } = require('../../middleware/auth');
+
+// Rate limiters for public auth endpoints
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,                   // 10 attempts per IP
+  message: { error: 'Too many login attempts — try again after 15 minutes' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,                    // 5 registrations per IP per hour
+  message: { error: 'Too many registration attempts — try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // POST /admin/auth/login
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' });
@@ -50,7 +68,7 @@ router.post('/login', async (req, res) => {
 
 // POST /admin/auth/setup — first-time only, creates super_admin user
 // Only works when no admin users exist yet
-router.post('/setup', async (req, res) => {
+router.post('/setup', registerLimiter, async (req, res) => {
   const { email, password, name } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' });
@@ -73,7 +91,7 @@ router.post('/setup', async (req, res) => {
 
 // POST /admin/auth/register — public self-registration (creates inactive user)
 // No auth required — user is created with is_active = false, needs admin approval
-router.post('/register', async (req, res) => {
+router.post('/register', registerLimiter, async (req, res) => {
   const { email, password, name } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' });
@@ -168,7 +186,7 @@ router.get('/users', adminAuth, requireRole('super_admin'), async (req, res) => 
 
 // PUT /admin/auth/users/:id/role — update user role
 // Requires super_admin role
-router.put('/users/:id/role', adminAuth, requireRole('super_admin'), async (req, res) => {
+router.put('/users/:id/role', adminAuth, requireRole('super_admin'), validateIdParam, async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
 
@@ -206,7 +224,7 @@ router.put('/users/:id/role', adminAuth, requireRole('super_admin'), async (req,
 
 // PUT /admin/auth/users/:id/active — toggle user active status
 // Requires super_admin role
-router.put('/users/:id/active', adminAuth, requireRole('super_admin'), async (req, res) => {
+router.put('/users/:id/active', adminAuth, requireRole('super_admin'), validateIdParam, async (req, res) => {
   const { id } = req.params;
   const { is_active } = req.body;
 

@@ -1,6 +1,7 @@
 const express   = require('express');
 const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
+const { validateIdParam } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 
 router.use(adminAuth);
@@ -11,7 +12,7 @@ router.get('/corridors', async (req, res) => {
     const result = await query('SELECT * FROM bus_corridors ORDER BY id');
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -34,7 +35,7 @@ router.post('/routes', async (req, res) => {
     `, [corridor_id, direction, origin_tamil, dest_tamil, stops_tamil, notes_tamil]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -48,12 +49,12 @@ router.post('/timings', async (req, res) => {
     `, [route_id, departs_at, days_of_week || 'daily', bus_type || 'ordinary', is_last_bus || false]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
 // PUT /admin/bus/timings/:id
-router.put('/timings/:id', async (req, res) => {
+router.put('/timings/:id', validateIdParam, async (req, res) => {
   const { departs_at, days_of_week, bus_type, is_last_bus, is_active } = req.body;
   try {
     const result = await query(`
@@ -67,17 +68,17 @@ router.put('/timings/:id', async (req, res) => {
     `, [departs_at, days_of_week, bus_type, is_last_bus, is_active, req.params.id]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
 // DELETE /admin/bus/timings/:id
-router.delete('/timings/:id', async (req, res) => {
+router.delete('/timings/:id', validateIdParam, async (req, res) => {
   try {
     await query('DELETE FROM bus_timings WHERE id = $1', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 

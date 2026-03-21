@@ -9,8 +9,12 @@ router.get('/contact', async (req, res) => {
       SELECT value FROM app_config WHERE key = 'auto_registration_contact'
     `);
     if (result.rows.length > 0) {
-      const cfg = JSON.parse(result.rows[0].value);
-      return res.json({ success: true, data: cfg });
+      try {
+        const cfg = JSON.parse(result.rows[0].value);
+        return res.json({ success: true, data: cfg });
+      } catch (parseErr) {
+        console.error('JSON parse error for auto_registration_contact:', parseErr.message);
+      }
     }
     // Default fallback
     res.json({ success: true, data: { name: 'கௌதம்', name_english: 'Gowtham', phone: '8888888888' } });

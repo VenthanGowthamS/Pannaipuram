@@ -1,6 +1,7 @@
 const express   = require('express');
 const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
+const { validateIdParam } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 
 router.use(adminAuth);
@@ -16,12 +17,12 @@ router.post('/', async (req, res) => {
     );
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
 // PUT /admin/streets/:id — update a street
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateIdParam, async (req, res) => {
   const { name_tamil, name_english, ward_id } = req.body;
   try {
     const result = await query(`
@@ -34,18 +35,18 @@ router.put('/:id', async (req, res) => {
     if (result.rows.length === 0) return res.status(404).json({ error: 'Street not found' });
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
 // DELETE /admin/streets/:id — delete a street
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', validateIdParam, async (req, res) => {
   try {
     const result = await query('DELETE FROM streets WHERE id = $1 RETURNING id', [req.params.id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Street not found' });
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: 'Server error', detail: err.message });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
