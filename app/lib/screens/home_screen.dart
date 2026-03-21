@@ -5,8 +5,6 @@ import 'water_screen.dart';
 import 'bus_screen.dart';
 import 'auto_screen.dart';
 import 'hospital_screen.dart';
-import 'emergency_screen.dart';
-import 'about_screen.dart';
 import 'services_screen.dart';
 import '../services/api_service.dart';
 
@@ -19,7 +17,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> _announcements = [];
-  int _selectedNavIndex = 0;
 
   @override
   void initState() {
@@ -33,15 +30,6 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       setState(() => _announcements = data);
     } catch (_) {}
-  }
-
-  void _onNavTap(int index) {
-    if (index == 1) {
-      _navigate(context, const EmergencyScreen());
-    } else if (index == 2) {
-      _navigate(context, const AboutScreen());
-    }
-    // index 0 = already on home
   }
 
   @override
@@ -118,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _ModuleTile(
                     icon: Icons.storefront_rounded, emoji: '🛍',
                     gradientColors: const [Color(0xFF00695C), Color(0xFF00897B)],
-                    label: 'ஊர்ல யாரை அழைக்கணும்?', sublabel: 'Milk, Post, Plumber & More',
+                    label: 'பால், பூ, குழாய் — ஊர் சேவை', sublabel: 'Milk, Flower, Plumber & Daily Services',
                     onTap: () => _navigate(context, const ServicesScreen()),
                   ),
                   const SizedBox(height: 20),
@@ -128,33 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      // ── Bottom Navigation Bar ──────────────────────────────────────────
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedNavIndex,
-        onTap: _onNavTap,
-        selectedItemColor: const Color(0xFF1B5E20),
-        unselectedItemColor: const Color(0xFF9E9E9E),
-        backgroundColor: Colors.white,
-        type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 11, fontWeight: FontWeight.w600),
-        unselectedLabelStyle: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 11),
-        elevation: 12,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: 'முகப்பு',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.emergency_rounded),
-            activeIcon: Icon(Icons.emergency_rounded, color: Color(0xFFB71C1C)),
-            label: 'அவசரம்',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.info_outline_rounded),
-            label: 'பற்றி',
-          ),
-        ],
-      ),
+      // No bottomNavigationBar here — MainShell provides it
     );
   }
 
@@ -167,25 +129,50 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 10, left: 18, right: 18, bottom: 14,
+        top: MediaQuery.of(context).padding.top + 14, left: 18, right: 18, bottom: 16,
       ),
-      child: const Row(children: [
-        SizedBox(
-          width: 46, height: 46,
-          child: DecoratedBox(
+      child: Column(
+        children: [
+          // Centered icon
+          Container(
+            width: 52, height: 52,
             decoration: BoxDecoration(
-              color: Color(0x2DFFFFFF),
-              borderRadius: BorderRadius.all(Radius.circular(23)),
+              color: Colors.white.withOpacity(0.18),
+              borderRadius: BorderRadius.circular(26),
             ),
-            child: Icon(Icons.cottage_rounded, color: Colors.white, size: 26),
+            child: const Icon(Icons.cottage_rounded, color: Colors.white, size: 28),
           ),
-        ),
-        SizedBox(width: 12),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('பண்ணைப்புரம்', style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-          Text('உங்கள் ஊரின் தகவல் மையம்', style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 12, color: Colors.white70)),
-        ])),
-      ]),
+          const SizedBox(height: 8),
+          // Centered app name
+          const Text(
+            'பண்ணைப்புரம்',
+            style: TextStyle(
+              fontFamily: 'NotoSansTamil',
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: 0.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 2),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Text(
+              'உங்கள் ஊரின் தகவல் மையம்',
+              style: TextStyle(
+                fontFamily: 'NotoSansTamil',
+                fontSize: 12,
+                color: Colors.white70,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

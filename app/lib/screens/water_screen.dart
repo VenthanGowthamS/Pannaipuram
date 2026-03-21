@@ -165,12 +165,34 @@ class _WaterScreenState extends State<WaterScreen> {
   }
 
   String _formatTime(String timeStr) {
-    final parts = timeStr.split(':');
-    final h = int.parse(parts[0]);
-    final m = int.parse(parts[1]);
-    final period = h < 12 ? 'காலை' : h < 17 ? 'பகல்' : 'மாலை';
-    final displayH = h > 12 ? h - 12 : (h == 0 ? 12 : h);
-    return '$displayH:${m.toString().padLeft(2, '0')} $period';
+    try {
+      // Handle various formats: "06:00:00", "06:00:00+05:30", "06:00:00+00"
+      final cleaned = timeStr.split('+')[0].split('-')[0]; // strip timezone
+      final parts = cleaned.split(':');
+      if (parts.length < 2) return timeStr;
+      final h = int.parse(parts[0]);
+      final m = int.parse(parts[1]);
+      final period = h < 12 ? 'காலை' : h < 17 ? 'பகல்' : 'மாலை';
+      final displayH = h > 12 ? h - 12 : (h == 0 ? 12 : h);
+      return '$displayH:${m.toString().padLeft(2, '0')} $period';
+    } catch (_) {
+      return timeStr;
+    }
+  }
+
+  /// Format ISO date string "2026-03-22T00:00:00.000Z" → "சனி, மார்ச் 22"
+  String _formatDate(String dateStr) {
+    try {
+      final dt = DateTime.parse(dateStr).toLocal();
+      const dayNames = ['திங்கள்', 'செவ்வாய்', 'புதன்', 'வியாழன்', 'வெள்ளி', 'சனி', 'ஞாயிறு'];
+      const monthNames = ['ஜனவரி', 'பிப்ரவரி', 'மார்ச்', 'ஏப்ரல்', 'மே', 'ஜூன்',
+                          'ஜூலை', 'ஆகஸ்ட்', 'செப்டம்பர்', 'அக்டோபர்', 'நவம்பர்', 'டிசம்பர்'];
+      final dayName = dayNames[dt.weekday - 1]; // weekday: 1=Mon .. 7=Sun
+      final month = monthNames[dt.month - 1];
+      return '$dayName, $month ${dt.day}';
+    } catch (_) {
+      return dateStr;
+    }
   }
 
   // Already converted to local in model — just format
@@ -216,7 +238,7 @@ class _WaterScreenState extends State<WaterScreen> {
     final String statusText = hasAlertToday
         ? 'தண்ணி வந்துருச்சு! (${_todayAlerts.length} அறிவிப்பு)'
         : (_schedule?.nextSupplyDate != null
-            ? 'அடுத்து: ${_schedule!.nextSupplyDate}'
+            ? 'அடுத்து: ${_formatDate(_schedule!.nextSupplyDate!)}'
             : 'இன்னும் வரலை...');
 
     return ListView(
@@ -323,7 +345,7 @@ class _WaterScreenState extends State<WaterScreen> {
                   ),
                   const Divider(height: 20),
                   if (_schedule!.nextSupplyDate != null)
-                    Text(_schedule!.nextSupplyDate!, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.waterBlue)),
+                    Text(_formatDate(_schedule!.nextSupplyDate!), style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.waterBlue)),
                   const SizedBox(height: 4),
                   Row(
                     children: [

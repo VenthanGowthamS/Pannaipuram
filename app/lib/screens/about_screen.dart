@@ -256,7 +256,7 @@ class AboutScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Venthan அவர்களால் பண்ணைப்புரம் மக்களுக்காக கட்டமைக்கப்பட்டது',
+                  'வேந்தன் அவர்களால் பண்ணைப்புரம் மக்களுக்காக கட்டமைக்கப்பட்டது',
                   style: TextStyle(
                     fontFamily: 'NotoSansTamil',
                     fontSize: 13,
@@ -265,7 +265,7 @@ class AboutScreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const Text(
-                  'Built with ❤️ for Pannaipuram by Venthan',
+                  'Built with ❤️ for Pannaipuram by வேந்தன்',
                   style: TextStyle(
                     fontFamily: 'Roboto',
                     fontSize: 11,
