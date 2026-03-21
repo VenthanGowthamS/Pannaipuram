@@ -14,7 +14,7 @@ router.get('/cuts', async (req, res) => {
     `);
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    console.error('DB error:', err.message); res.status(500).json({ error: 'Server error' });
+    console.error('DB error:', err.message); res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -29,7 +29,7 @@ router.get('/cuts/today', async (req, res) => {
     `);
     res.json({ success: true, data: result.rows, hasCut: result.rows.length > 0 });
   } catch (err) {
-    console.error('DB error:', err.message); res.status(500).json({ error: 'Server error' });
+    console.error('DB error:', err.message); res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -59,7 +59,7 @@ router.post('/restored', async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    console.error('DB error:', err.message); res.status(500).json({ error: 'Server error' });
+    console.error('DB error:', err.message); res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 

@@ -1,6 +1,7 @@
 const express   = require('express');
 const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
+const { validateIdParam } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 const { sendToAll } = require('../../services/pushNotifications');
 
@@ -12,7 +13,7 @@ router.get('/cuts', async (req, res) => {
     const result = await query('SELECT * FROM power_cuts ORDER BY start_time DESC');
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -29,12 +30,12 @@ router.post('/cuts', async (req, res) => {
     await sendToAll({ title: 'பண்ணைப்புரம் ⚡', body: `${startStr} — மின் தடை — ${cut.reason_tamil || 'பராமரிப்பு'}` });
     res.json({ success: true, data: cut });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
 // PUT /admin/power/cuts/:id
-router.put('/cuts/:id', async (req, res) => {
+router.put('/cuts/:id', validateIdParam, async (req, res) => {
   const { area_description, cut_type, start_time, end_time, reason_tamil, is_resolved } = req.body;
   try {
     const result = await query(`
@@ -49,17 +50,17 @@ router.put('/cuts/:id', async (req, res) => {
     `, [area_description, cut_type, start_time, end_time, reason_tamil, is_resolved, req.params.id]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
 // DELETE /admin/power/cuts/:id
-router.delete('/cuts/:id', async (req, res) => {
+router.delete('/cuts/:id', validateIdParam, async (req, res) => {
   try {
     await query('DELETE FROM power_cuts WHERE id = $1', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 

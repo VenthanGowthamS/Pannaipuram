@@ -1,6 +1,7 @@
 const express   = require('express');
 const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
+const { validateIdParam } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 
 router.use(adminAuth);
@@ -9,8 +10,16 @@ router.use(adminAuth);
 router.get('/contact', async (req, res) => {
   try {
     const result = await query(`SELECT value FROM app_config WHERE key = 'auto_registration_contact'`);
-    if (result.rows.length > 0) return res.json({ success: true, data: JSON.parse(result.rows[0].value) });
-    res.json({ success: true, data: { name: 'கௌதம்', name_english: 'Gowtham', phone: '8888888888' } });
+    const defaultContact = { name: 'கௌதம்', name_english: 'Gowtham', phone: '8888888888' };
+    if (result.rows.length > 0) {
+      try {
+        return res.json({ success: true, data: JSON.parse(result.rows[0].value) });
+      } catch (parseErr) {
+        console.error('JSON parse error for auto_registration_contact:', parseErr.message);
+        return res.json({ success: true, data: defaultContact });
+      }
+    }
+    res.json({ success: true, data: defaultContact });
   } catch (_) {
     res.json({ success: true, data: { name: 'கௌதம்', name_english: 'Gowtham', phone: '8888888888' } });
   }
@@ -61,7 +70,7 @@ router.post('/drivers', async (req, res) => {
 });
 
 // PUT /admin/auto/drivers/:id — update driver
-router.put('/drivers/:id', async (req, res) => {
+router.put('/drivers/:id', validateIdParam, async (req, res) => {
   const { name_tamil, name_english, phone, vehicle_type, coverage_tamil, coverage_english, schedule_tamil, is_active, display_order } = req.body;
   try {
     const result = await query(`
@@ -84,7 +93,7 @@ router.put('/drivers/:id', async (req, res) => {
 });
 
 // DELETE /admin/auto/drivers/:id — delete driver
-router.delete('/drivers/:id', async (req, res) => {
+router.delete('/drivers/:id', validateIdParam, async (req, res) => {
   try {
     await query('DELETE FROM auto_drivers WHERE id = $1', [req.params.id]);
     res.json({ success: true });

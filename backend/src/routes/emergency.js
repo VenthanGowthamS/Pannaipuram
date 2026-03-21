@@ -22,7 +22,7 @@ router.get('/contacts', async (req, res) => {
     res.json({ success: true, data: grouped });
   } catch (err) {
     console.error('Emergency contacts error:', err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 

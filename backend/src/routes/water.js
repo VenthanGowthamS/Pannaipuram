@@ -13,7 +13,7 @@ router.get('/streets', async (req, res) => {
     `);
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -33,7 +33,7 @@ router.get('/schedule/:streetId', async (req, res) => {
     }
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -50,7 +50,7 @@ router.get('/schedule', async (req, res) => {
     `);
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -83,7 +83,7 @@ router.post('/alert', async (req, res) => {
 
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -97,7 +97,7 @@ router.post('/alert/:alertId/confirm', async (req, res) => {
     `, [req.params.alertId]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -113,7 +113,7 @@ router.get('/alerts/today', async (req, res) => {
     `);
     res.json({ success: true, data: result.rows });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 

@@ -61,12 +61,14 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   Future<void> _load() async {
     try {
       final data = await ApiService.getEmergencyContacts();
+      if (!mounted) return;
       setState(() {
         _contacts = data;
         _loading = false;
         _offline = false;
       });
     } catch (_) {
+      if (!mounted) return;
       setState(() {
         _contacts = _fallback;
         _loading = false;

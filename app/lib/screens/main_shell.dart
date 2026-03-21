@@ -19,21 +19,22 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    // ignore: deprecated_member_use
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
         // If on non-home tab, go to home first
         if (_currentIndex != 0) {
           setState(() => _currentIndex = 0);
-          return false;
+          return;
         }
         // If home tab has sub-navigation, pop it
         if (_homeNavKey.currentState?.canPop() ?? false) {
           _homeNavKey.currentState!.pop();
-          return false;
+          return;
         }
         // Otherwise let system handle (exit app)
-        return true;
+        Navigator.of(context).pop();
       },
       child: Scaffold(
         body: IndexedStack(

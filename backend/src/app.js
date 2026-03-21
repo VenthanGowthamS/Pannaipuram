@@ -33,9 +33,35 @@ const { startWaterScheduler } = require('./services/waterScheduler');
 
 const app = express();
 
+// ── Environment Validation ───────────────────────────────
+const requiredEnvVars = ['JWT_SECRET', 'DATABASE_URL'];
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    console.error(`FATAL: ${envVar} environment variable is not set`);
+    process.exit(1);
+  }
+}
+
 // ── Middleware ──────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false })); // CSP off so admin HTML loads
-app.use(cors());
+
+// CORS — restrict origins in production
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : [];
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+    // In development, allow all origins
+    if (process.env.NODE_ENV !== 'production') return callback(null, true);
+    // In production, check whitelist
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+}));
+
 app.use(express.json());
 
 // ── Serve Admin Panels (static) ────────────────────
@@ -75,24 +101,13 @@ app.get('/health', async (req, res) => {
       app: 'பண்ணைப்புரம்',
       version: '1.0.0',
       db: 'connected',
-      db_info: result.rows[0],
-      env: {
-        jwt_secret_set: !!process.env.JWT_SECRET,
-        database_url_set: !!process.env.DATABASE_URL,
-        node_env: process.env.NODE_ENV
-      }
+      db_time: result.rows[0].time,
     });
   } catch (err) {
     res.status(500).json({
       status: 'error',
       app: 'பண்ணைப்புரம்',
       db: 'disconnected',
-      error: err.message,
-      env: {
-        jwt_secret_set: !!process.env.JWT_SECRET,
-        database_url_set: !!process.env.DATABASE_URL,
-        node_env: process.env.NODE_ENV
-      }
     });
   }
 });

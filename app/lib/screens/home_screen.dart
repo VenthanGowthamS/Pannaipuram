@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'power_screen.dart';
@@ -231,6 +232,7 @@ class _AnnouncementBanner extends StatefulWidget {
 
 class _AnnouncementBannerState extends State<_AnnouncementBanner> {
   late PageController _pageController;
+  Timer? _autoScrollTimer;
   int _currentPage = 0;
   static const _typeStyles = {
     'info':    (icon: Icons.campaign_rounded, color: Color(0xFF1565C0), bg: Color(0xFFE3F2FD)),
@@ -243,19 +245,20 @@ class _AnnouncementBannerState extends State<_AnnouncementBanner> {
   void initState() {
     super.initState();
     _pageController = PageController();
-    if (widget.announcements.length > 1) Future.delayed(const Duration(seconds: 4), _autoScroll);
+    if (widget.announcements.length > 1) {
+      _autoScrollTimer = Timer.periodic(const Duration(seconds: 4), (_) => _autoScroll());
+    }
   }
 
   void _autoScroll() {
-    if (!mounted) return;
+    if (!mounted || !_pageController.hasClients) return;
     _pageController.animateToPage(
       (_currentPage + 1) % widget.announcements.length,
       duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
-    Future.delayed(const Duration(seconds: 4), _autoScroll);
   }
 
   @override
-  void dispose() { _pageController.dispose(); super.dispose(); }
+  void dispose() { _autoScrollTimer?.cancel(); _pageController.dispose(); super.dispose(); }
 
   @override
   Widget build(BuildContext context) {

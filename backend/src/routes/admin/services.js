@@ -1,6 +1,7 @@
 const express   = require('express');
 const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
+const { validateIdParam } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 
 router.use(adminAuth);
@@ -37,7 +38,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /admin/services/:id — update
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateIdParam, async (req, res) => {
   const { category, name_tamil, name_english, phone, area_tamil, area_english, notes_tamil, is_active, display_order } = req.body;
   try {
     const result = await query(`
@@ -62,7 +63,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /admin/services/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', validateIdParam, async (req, res) => {
   try {
     await query('DELETE FROM local_services WHERE id = $1', [req.params.id]);
     res.json({ success: true });

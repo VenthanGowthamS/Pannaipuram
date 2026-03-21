@@ -42,12 +42,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _loadStreets() async {
     try {
       final streets = await ApiService.getStreets();
+      if (!mounted) return;
       setState(() {
         _streets = streets;
         _filtered = streets;
         _loading = false;
       });
     } catch (_) {
+      if (!mounted) return;
       final fallback = _fallbackStreets
           .map((e) => Street.fromJson(e))
           .toList();

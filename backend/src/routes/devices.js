@@ -18,7 +18,7 @@ router.post('/register', async (req, res) => {
 
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -35,7 +35,7 @@ router.put('/street', async (req, res) => {
     `, [streetId, fcmToken]);
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 

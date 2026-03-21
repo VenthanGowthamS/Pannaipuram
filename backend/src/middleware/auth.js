@@ -14,6 +14,9 @@ function adminAuth(req, res, next) {
     req.admin = decoded;
     next();
   } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expired — மீண்டும் உள்நுழையவும்', code: 'TOKEN_EXPIRED' });
+    }
     return res.status(403).json({ error: 'தவறான அடையாளம் — Invalid token' });
   }
 }
@@ -28,5 +31,16 @@ function requireRole(...roles) {
   };
 }
 
+// Validate that :id param is a positive integer
+function validateIdParam(req, res, next) {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id) || id <= 0) {
+    return res.status(400).json({ success: false, error: 'Invalid ID parameter' });
+  }
+  req.params.id = id;
+  next();
+}
+
 module.exports = adminAuth;
 module.exports.requireRole = requireRole;
+module.exports.validateIdParam = validateIdParam;
