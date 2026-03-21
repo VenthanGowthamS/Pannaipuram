@@ -121,57 +121,70 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft, end: Alignment.bottomRight,
-          colors: [Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF388E3C)],
+    final topPad = MediaQuery.of(context).padding.top;
+    return ClipPath(
+      clipper: _HeaderCurveClipper(),
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1A5217), Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF43A047)],
+          ),
         ),
-      ),
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 14, left: 18, right: 18, bottom: 16,
-      ),
-      child: Column(
-        children: [
-          // Centered icon
+        padding: EdgeInsets.fromLTRB(18, topPad + 14, 18, 36),
+        child: Row(children: [
+          // Icon with double-ring effect
           Container(
             width: 52, height: 52,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.18),
-              borderRadius: BorderRadius.circular(26),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withOpacity(0.35), width: 2),
+              color: Colors.white.withOpacity(0.15),
             ),
             child: const Icon(Icons.cottage_rounded, color: Colors.white, size: 28),
           ),
-          const SizedBox(height: 8),
-          // Centered app name
-          const Text(
-            'பண்ணைப்புரம்',
-            style: TextStyle(
-              fontFamily: 'NotoSansTamil',
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 0.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 2),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Text(
-              'உங்கள் ஊரின் தகவல் மையம்',
-              style: TextStyle(
-                fontFamily: 'NotoSansTamil',
-                fontSize: 12,
-                color: Colors.white70,
+          const SizedBox(width: 14),
+          // Title + subtitle
+          Expanded(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'பண்ணைப்புரம்',
+                style: TextStyle(
+                  fontFamily: 'NotoSansTamil',
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 0.3,
+                ),
               ),
+              const SizedBox(height: 3),
+              const Text(
+                'உங்கள் ஊரின் தகவல் மையம்',
+                style: TextStyle(
+                  fontFamily: 'NotoSansTamil',
+                  fontSize: 12,
+                  color: Colors.white70,
+                ),
+              ),
+            ],
+          )),
+          // Location badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
             ),
+            child: const Row(mainAxisSize: MainAxisSize.min, children: [
+              Text('🌿', style: TextStyle(fontSize: 11)),
+              SizedBox(width: 4),
+              Text('தேனி', style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 11, color: Colors.white, fontWeight: FontWeight.w500)),
+            ]),
           ),
-        ],
+        ]),
       ),
     );
   }
@@ -187,6 +200,25 @@ class _HomeScreenState extends State<HomeScreen> {
       transitionDuration: const Duration(milliseconds: 300),
     ));
   }
+}
+
+/// Clips the header with a gentle bottom curve
+class _HeaderCurveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(0, size.height - 22);
+    path.quadraticBezierTo(
+      size.width * 0.5, size.height + 18,
+      size.width, size.height - 22,
+    );
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(_HeaderCurveClipper old) => false;
 }
 
 // ── Announcement Banner ────────────────────────────────────────────────────
