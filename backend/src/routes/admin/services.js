@@ -40,7 +40,11 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
     `, [category, name_tamil, name_english, phone, trimStr(req.body.area_tamil), trimStr(req.body.area_english), trimStr(req.body.notes_tamil), display_order || 0]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ success: false, error: 'Server error' });
+    console.error('Services POST error:', err.message);
+    const msg = err.message && err.message.includes('does not exist')
+      ? 'Table local_services not found — run migration first'
+      : err.message || 'Server error';
+    res.status(500).json({ success: false, error: msg });
   }
 });
 

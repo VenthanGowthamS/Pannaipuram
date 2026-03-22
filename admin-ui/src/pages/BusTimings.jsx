@@ -17,7 +17,7 @@ import {
   Grid,
   Skeleton,
 } from '@mui/material';
-import { Delete as DeleteIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -26,6 +26,7 @@ const BusTimings = ({ onSnackbar, canEdit }) => {
   const [timings, setTimings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedCorridor, setSelectedCorridor] = useState('');
+  const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     corridor_id: '',
     departs_at: '06:00',
@@ -70,7 +71,18 @@ const BusTimings = ({ onSnackbar, canEdit }) => {
     loadTimings(corridorId);
   };
 
-  const handleAddTiming = async (e) => {
+  const resetForm = () => {
+    setEditingId(null);
+    setForm({
+      corridor_id: selectedCorridor,
+      departs_at: '06:00',
+      days_of_week: 'daily',
+      bus_type: 'ordinary',
+      is_last_bus: false,
+    });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.departs_at) {
       onSnackbar('Please select a departure time', 'warning');
@@ -82,22 +94,43 @@ const BusTimings = ({ onSnackbar, canEdit }) => {
     }
 
     try {
-      await api.addBusTiming({
-        ...form,
-        corridor_id: selectedCorridor,
-      });
-      onSnackbar('Bus timing added successfully ✅', 'success');
-      setForm({
-        corridor_id: selectedCorridor,
-        departs_at: '06:00',
-        days_of_week: 'daily',
-        bus_type: 'ordinary',
-        is_last_bus: false,
-      });
+      if (editingId) {
+        // Update existing timing
+        await api.updateBusTiming(editingId, {
+          departs_at: form.departs_at.includes(':') && form.departs_at.split(':').length === 2
+            ? form.departs_at + ':00' : form.departs_at,
+          days_of_week: form.days_of_week,
+          bus_type: form.bus_type,
+          is_last_bus: form.is_last_bus,
+        });
+        onSnackbar('Bus timing updated ✅', 'success');
+      } else {
+        // Add new timing
+        await api.addBusTiming({
+          ...form,
+          corridor_id: selectedCorridor,
+        });
+        onSnackbar('Bus timing added ✅', 'success');
+      }
+      resetForm();
       loadTimings(selectedCorridor);
     } catch (error) {
-      onSnackbar(error.message || 'Failed to add bus timing', 'error');
+      onSnackbar(error.message || 'Failed to save bus timing', 'error');
     }
+  };
+
+  const handleEdit = (timing) => {
+    setEditingId(timing.id);
+    // Parse time: might be "06:00:00" → need "06:00"
+    let time = timing.departs_at || '06:00';
+    if (time.split(':').length === 3) time = time.split(':').slice(0, 2).join(':');
+    setForm({
+      corridor_id: selectedCorridor,
+      departs_at: time,
+      days_of_week: timing.days_of_week || 'daily',
+      bus_type: timing.bus_type || 'ordinary',
+      is_last_bus: timing.is_last_bus || false,
+    });
   };
 
   const handleDelete = async () => {
@@ -117,13 +150,13 @@ const BusTimings = ({ onSnackbar, canEdit }) => {
         🚌 Bus Timings Management
       </Typography>
 
-      {/* Add Form */}
+      {/* Add/Edit Form */}
       {canEdit && (
         <Card sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Add New Bus Timing
+            {editingId ? 'Edit Bus Timing' : 'Add New Bus Timing'}
           </Typography>
-          <Box component="form" onSubmit={handleAddTiming}>
+          <Box component="form" onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -191,13 +224,20 @@ const BusTimings = ({ onSnackbar, canEdit }) => {
               </TextField>
             </Grid>
             <Grid item xs={12}>
-              <Button
-                type="submit"
-                variant="contained"
-                sx={{ bgcolor: '#1B5E20' }}
-              >
-                Add Bus Timing
-              </Button>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  sx={{ bgcolor: '#1B5E20' }}
+                >
+                  {editingId ? 'Update Timing' : 'Add Bus Timing'}
+                </Button>
+                {editingId && (
+                  <Button onClick={resetForm} color="inherit">
+                    Cancel
+                  </Button>
+                )}
+              </Box>
             </Grid>
           </Grid>
         </Box>
@@ -247,16 +287,26 @@ const BusTimings = ({ onSnackbar, canEdit }) => {
                     </TableCell>
                     <TableCell>
                       {canEdit && (
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() =>
-                            setConfirmDelete({ open: true, id: timing.id })
-                          }
-                          title="Delete"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                        <>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => handleEdit(timing)}
+                            title="Edit"
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() =>
+                              setConfirmDelete({ open: true, id: timing.id })
+                            }
+                            title="Delete"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </>
                       )}
                     </TableCell>
                   </TableRow>

@@ -239,6 +239,8 @@ When extracting data from handwritten Tamil images:
 | Hospital (மருத்துவமனை) | ✅ Complete (2 hospitals) | hospital_screen.dart | /api/hospital/* |
 | Auto (ஆட்டோ / வண்டி) | ✅ Complete | auto_screen.dart | /api/auto/* |
 | Emergency (அவசர தொலைபேசி) | ✅ Complete | emergency_screen.dart | /api/emergency/* |
+| Services (ஊரு சேவை) | ✅ Complete | services_screen.dart | /api/services/* |
+| Announcements (அறிவிப்புகள்) | ✅ Complete | home_screen.dart (banner) | /api/announcements/* |
 
 ---
 
@@ -248,12 +250,19 @@ When extracting data from handwritten Tamil images:
 1. Admin panel → 🚗 Auto/Van tab → fill in name (Tamil), phone, vehicle type, coverage
 2. Flutter: `auto_screen.dart` fetches from `/api/auto/drivers`
 3. Phone number empty = shows "விரைவில்" button (no crash)
-4. Run regression tests: `cd backend && npm test`
+4. WhatsApp Contact: admin sets number + message from admin panel → app uses dynamically
+5. Run regression tests: `cd backend && npm test`
 
 ### Add a new emergency contact
-1. Backend: Add to `routes/emergency.js` or database
-2. Flutter: Emergency screen reads from API
+1. Admin panel → 📞 Emergency tab → fill in category, Tamil/English name, phone
+2. Flutter: Emergency screen reads from API, categories scroll horizontally
 3. Update `requirements.md` data collection checklist
+
+### Add a local service contact
+1. Admin panel → 🛍 Services tab → pick category (horizontal tiles), fill name + phone
+2. **IMPORTANT:** `local_services` table must exist in Supabase — run migration SQL first
+3. Flutter: `services_screen.dart` fetches from `/api/services`
+4. Categories: milk, post, flower, plumber, electrician, other
 
 ### Update a doctor's schedule
 1. Edit hospital in `hospital_screen.dart` (temp) or database (prod)

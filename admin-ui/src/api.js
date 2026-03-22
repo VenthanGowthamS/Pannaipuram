@@ -144,6 +144,10 @@ class ApiService {
     });
   }
 
+  updateBusTiming(id, data) {
+    return this.request('PUT', `/admin/bus/timings/${id}`, data);
+  }
+
   deleteBusTiming(id) {
     return this.request('DELETE', `/admin/bus/timings/${id}`);
   }

@@ -110,24 +110,27 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
       body: Column(
         children: [
           if (_offline) const OfflineBanner(),
-          // Category tabs
+          // Category tabs — horizontal scroll
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: _categories.map((c) {
-                final selected = _selectedCategory == c.$1;
-                return Expanded(
-                  child: GestureDetector(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: _categories.map((c) {
+                  final selected = _selectedCategory == c.$1;
+                  return GestureDetector(
                     onTap: () => setState(() => _selectedCategory = c.$1),
                     child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         color: selected ? c.$4 : Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: selected ? c.$4 : Colors.grey[300]!,
+                          width: selected ? 2 : 1,
                         ),
                       ),
                       child: Column(
@@ -135,12 +138,13 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                           Text(
                             c.$2,
                             style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
+                              fontFamily: 'NotoSansTamil',
+                              fontSize: 14,
+                              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                               color: selected ? Colors.white : AppColors.textPrimary,
                             ),
-                            textAlign: TextAlign.center,
                           ),
+                          const SizedBox(height: 2),
                           Text(
                             c.$3,
                             style: TextStyle(
@@ -152,9 +156,9 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
                         ],
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           ),
           Expanded(
