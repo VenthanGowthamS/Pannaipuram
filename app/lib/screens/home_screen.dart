@@ -58,8 +58,21 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(14, 16, 14, 28),
                 children: [
-                  if (_announcements.isNotEmpty)
+                  if (_announcements.isNotEmpty) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(left: 2, bottom: 6),
+                      child: Row(children: [
+                        Icon(Icons.campaign_rounded, color: const Color(0xFF1B5E20).withOpacity(0.7), size: 20),
+                        const SizedBox(width: 6),
+                        const Text('அறிவிப்புகள்',
+                          style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF4A6741))),
+                        const SizedBox(width: 4),
+                        const Text('Announcements',
+                          style: TextStyle(fontFamily: 'Roboto', fontSize: 10, color: Color(0xFF9E9E9E))),
+                      ]),
+                    ),
                     _AnnouncementBanner(announcements: _announcements),
+                  ],
 
                   Padding(
                     padding: const EdgeInsets.only(left: 2, bottom: 4),

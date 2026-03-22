@@ -103,6 +103,16 @@ class _AutoScreenState extends State<AutoScreen> {
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
+  Future<void> _openWhatsApp(String phone) async {
+    if (phone.isEmpty) return;
+    final cleaned = phone.replaceAll(RegExp(r'\D'), '');
+    final number = cleaned.startsWith('91') ? cleaned : '91$cleaned';
+    final uri = Uri.parse('https://wa.me/$number?text=${Uri.encodeComponent('வணக்கம், பண்ணைப்புரம் app பற்றி...')}');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -334,7 +344,7 @@ class _AutoScreenState extends State<AutoScreen> {
 
         const SizedBox(height: 16),
 
-        // ── Register a driver note ────────────────────────────────
+        // ── Register a driver — WhatsApp contact ──────────────────
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           padding: const EdgeInsets.all(16),
@@ -348,7 +358,7 @@ class _AutoScreenState extends State<AutoScreen> {
               const Text('📋', style: TextStyle(fontSize: 28)),
               const SizedBox(height: 8),
               const Text(
-                'உங்கள் ஊரில் ஆட்டோ / வண்டி ஓட்டுனரை சேர்க்கணுமா?',
+                'ஆட்டோ / வண்டி ஓட்டுனரை சேர்க்கணுமா?',
                 style: TextStyle(
                   fontFamily: 'NotoSansTamil',
                   fontSize: 14,
@@ -359,7 +369,7 @@ class _AutoScreenState extends State<AutoScreen> {
               ),
               const SizedBox(height: 4),
               const Text(
-                'Want to register a driver? Contact us:',
+                'Want to register a driver? Message us:',
                 style: TextStyle(
                   fontFamily: 'Roboto',
                   fontSize: 12,
@@ -369,39 +379,36 @@ class _AutoScreenState extends State<AutoScreen> {
               ),
               const SizedBox(height: 12),
               GestureDetector(
-                onTap: () => _call(_contactPhone),
+                onTap: () => _openWhatsApp(_contactPhone),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   decoration: BoxDecoration(
-                    color: _purple,
+                    color: const Color(0xFF25D366),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.phone_rounded, color: Colors.white, size: 20),
-                      const SizedBox(width: 10),
+                      Icon(Icons.chat_rounded, color: Colors.white, size: 20),
+                      SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            _contactName,
-                            style: const TextStyle(
+                            'Admin-கு WhatsApp செய்யவும்',
+                            style: TextStyle(
                               fontFamily: 'NotoSansTamil',
-                              fontSize: 16,
+                              fontSize: 14,
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                           Text(
-                            _contactPhone.replaceAllMapped(
-                              RegExp(r'(\d{5})(\d{5})'),
-                              (m) => '${m[1]} ${m[2]}',
-                            ),
-                            style: const TextStyle(
+                            'Message the admin on WhatsApp',
+                            style: TextStyle(
                               fontFamily: 'Roboto',
-                              fontSize: 13,
+                              fontSize: 11,
                               color: Colors.white70,
                             ),
                           ),

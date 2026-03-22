@@ -270,6 +270,49 @@ When extracting data from handwritten Tamil images:
 2. Keep colloquial Tamil labels
 3. Update `ui-design.md` with new layout
 
+### Build Release APK
+
+**MANDATORY: Generate APK after every fix.** The APK is the final deliverable.
+
+```bash
+cd /path/to/Pannaipuram/app && flutter build apk --release
+```
+
+APK output path:
+```
+app/build/app/outputs/flutter-apk/app-release.apk
+```
+
+For debug APK (faster build, larger file):
+```bash
+cd /path/to/Pannaipuram/app && flutter build apk --debug
+```
+
+### Quick Test Commands (copy-paste ready)
+
+```bash
+# Pull latest, build admin UI, run backend tests
+cd /path/to/Pannaipuram && git pull origin main
+
+# Backend tests
+cd backend && node test/admin_crud.test.js
+
+# Admin UI build
+cd ../admin-ui && npm run build
+
+# Flutter run (debug on connected device)
+cd ../app && flutter run
+
+# Flutter release APK
+cd ../app && flutter build apk --release
+```
+
+### Push Changes to GitHub
+
+```bash
+cd /path/to/Pannaipuram && git add -A && git commit -m "description" && git push origin main
+```
+
 ---
 
 ## Testing — MANDATORY After Every Change

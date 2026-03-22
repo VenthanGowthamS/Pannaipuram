@@ -41,9 +41,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   bool _loading = true;
   bool _error = false;
 
-  // Gowtham contact for adding new services
-  String _contactName = 'கௌதம்';
-  String _contactNameEn = 'Gowtham';
+  // Admin contact for adding new services
   String _contactPhone = '';
 
   @override
@@ -64,8 +62,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
       final contact = results[1] as Map<String, String>;
       setState(() {
         _services = data;
-        _contactName = contact['name'] ?? 'கௌதம்';
-        _contactNameEn = contact['name_english'] ?? 'Gowtham';
         _contactPhone = contact['phone'] ?? '';
         _loading = false;
       });
@@ -88,6 +84,16 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
     final uri = Uri(scheme: 'tel', path: phone);
     if (await canLaunchUrl(uri)) await launchUrl(uri);
+  }
+
+  Future<void> _openWhatsApp(String phone) async {
+    if (phone.isEmpty) return;
+    final cleaned = phone.replaceAll(RegExp(r'\D'), '');
+    final number = cleaned.startsWith('91') ? cleaned : '91$cleaned';
+    final uri = Uri.parse('https://wa.me/$number?text=${Uri.encodeComponent('வணக்கம், பண்ணைப்புரம் app — சேவை சேர்க்க வேண்டும்')}');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   @override
@@ -193,7 +199,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
           }),
         ],
 
-        // Contact Gowtham to add your service
+        // WhatsApp admin to add your service
         Container(
           margin: const EdgeInsets.fromLTRB(16, 16, 16, 28),
           padding: const EdgeInsets.all(16),
@@ -216,34 +222,33 @@ class _ServicesScreenState extends State<ServicesScreen> {
               style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Colors.white70),
               textAlign: TextAlign.center),
             const SizedBox(height: 12),
-            Row(children: [
-              Container(
-                width: 44, height: 44,
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(22)),
-                child: const Center(child: Text('📞', style: TextStyle(fontSize: 20))),
-              ),
-              const SizedBox(width: 12),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(_contactName,
-                  style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                Text(_contactNameEn,
-                  style: const TextStyle(fontFamily: 'Roboto', fontSize: 12, color: Colors.white70)),
-              ])),
-              if (_contactPhone.isNotEmpty)
-                GestureDetector(
-                  onTap: () => _call(_contactPhone),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      const Icon(Icons.phone_rounded, color: Color(0xFF7B1FA2), size: 16),
-                      const SizedBox(width: 6),
-                      Text('அழைக்க',
-                        style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 13, color: const Color(0xFF7B1FA2), fontWeight: FontWeight.w600)),
-                    ]),
-                  ),
+            GestureDetector(
+              onTap: () => _openWhatsApp(_contactPhone),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF25D366),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-            ]),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.chat_rounded, color: Colors.white, size: 20),
+                    SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Admin-கு WhatsApp செய்யவும்',
+                          style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 14, color: Colors.white, fontWeight: FontWeight.w700)),
+                        Text('Message the admin on WhatsApp',
+                          style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Colors.white70)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ]),
         ),
       ],
