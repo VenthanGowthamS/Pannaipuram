@@ -796,7 +796,9 @@ class _NextBusBadge extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
-            '$mins நிமிடம்',
+            mins >= 60
+                ? '${mins ~/ 60} மணி ${mins % 60} நிமி'
+                : '$mins நிமிடம்',
             style: const TextStyle(
               fontFamily: 'NotoSansTamil',
               color: Colors.white,

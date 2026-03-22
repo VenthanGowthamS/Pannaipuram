@@ -347,6 +347,7 @@ class _InfoCard extends StatelessWidget {
                     Text(row.emoji, style: const TextStyle(fontSize: 20)),
                     const SizedBox(width: 12),
                     Expanded(
+                      flex: 2,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -369,15 +370,19 @@ class _InfoCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Text(
-                      row.value,
-                      style: const TextStyle(
-                        fontFamily: 'NotoSansTamil',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1B5E20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        row.value,
+                        style: const TextStyle(
+                          fontFamily: 'NotoSansTamil',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1B5E20),
+                        ),
+                        textAlign: TextAlign.right,
                       ),
-                      textAlign: TextAlign.right,
                     ),
                   ],
                 ),
