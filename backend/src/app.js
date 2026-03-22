@@ -44,6 +44,12 @@ for (const envVar of requiredEnvVars) {
 // ── Middleware ──────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false })); // CSP off so admin HTML loads
 
+// ── Serve Admin Panel (static — before CORS so module scripts load) ──
+app.use('/admin/v2', express.static(path.join(__dirname, '../public/admin-v2')));
+// Redirect old v1 URL and /admin shortcut to v2
+app.get('/admin/panel', (req, res) => res.redirect('/admin/v2/'));
+app.get('/admin', (req, res) => res.redirect('/admin/v2/'));
+
 // CORS — restrict origins in production
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
@@ -56,16 +62,14 @@ app.use(cors({
     if (process.env.NODE_ENV !== 'production') return callback(null, true);
     // In production, check whitelist
     if (allowedOrigins.includes(origin)) return callback(null, true);
+    // Allow same-origin requests (admin panel JS modules)
+    if (origin === `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
 }));
 
 app.use(express.json());
-
-// ── Serve Admin Panels (static) ────────────────────
-app.use('/admin/panel', express.static(path.join(__dirname, '../public/admin')));
-app.use('/admin/v2', express.static(path.join(__dirname, '../public/admin-v2')));
 
 // ── Mobile API Routes ───────────────────────────────────
 app.use('/api/water',     waterRoutes);
