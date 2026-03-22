@@ -21,7 +21,7 @@ import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
 
-const Emergency = ({ onSnackbar }) => {
+const Emergency = ({ onSnackbar, canEdit }) => {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -147,11 +147,12 @@ const Emergency = ({ onSnackbar }) => {
       </Typography>
 
       {/* Add Form */}
-      <Card sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          {editingId ? 'Edit Contact' : 'Add New Emergency Contact'}
-        </Typography>
-        <Box component="form" onSubmit={handleAddContact}>
+      {canEdit && (
+        <Card sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            {editingId ? 'Edit Contact' : 'Add New Emergency Contact'}
+          </Typography>
+          <Box component="form" onSubmit={handleAddContact}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -224,6 +225,7 @@ const Emergency = ({ onSnackbar }) => {
           </Grid>
         </Box>
       </Card>
+      )}
 
       {/* Data Table */}
       <Card>
@@ -269,24 +271,28 @@ const Emergency = ({ onSnackbar }) => {
                       <TableCell>{contact.name_english}</TableCell>
                       <TableCell>{contact.phone}</TableCell>
                       <TableCell>
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          onClick={() => handleEdit(contact)}
-                          title="Edit"
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() =>
-                            setConfirmDelete({ open: true, id: contact.id })
-                          }
-                          title="Delete"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                        {canEdit && (
+                          <>
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => handleEdit(contact)}
+                              title="Edit"
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() =>
+                                setConfirmDelete({ open: true, id: contact.id })
+                              }
+                              title="Delete"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </>
+                        )}
                       </TableCell>
                     </TableRow>
                   );

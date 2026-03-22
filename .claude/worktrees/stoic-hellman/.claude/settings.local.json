@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(flutter --version)",
+      "Bash(node -c src/app.js)",
+      "Bash(node -c src/middleware/auth.js)",
+      "Bash(node -c src/routes/admin/auth.js)",
+      "Bash(node -c src/routes/admin/power.js)",
+      "Bash(node -c src/routes/admin/auto.js)",
+      "Bash(node -c src/routes/admin/hospital.js)",
+      "Bash(node -c src/routes/admin/bus.js)",
+      "Bash(node -c src/routes/admin/contacts.js)",
+      "Bash(node -c src/routes/admin/streets.js)",
+      "Bash(node -c src/routes/admin/services.js)",
+      "Bash(npm run:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(npx vite:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr:*)",
+      "Bash(node -c backend/src/app.js)",
+      "Bash(git remote:*)",
+      "Bash(node -c src/middleware/validate.js)",
+      "Bash(node -c src/routes/admin/announcements.js)",
+      "Bash(flutter build:*)",
+      "WebFetch(domain:pannaipuram-api.onrender.com)",
+      "Bash(curl -s -X POST https://pannaipuram-api.onrender.com/admin/auth/login -H \"Content-Type: application/json\" -d '{\"\"\"\"email\"\"\"\":\"\"\"\"venthan89@gmail.com\"\"\"\",\"\"\"\"password\"\"\"\":\"\"\"\"test\"\"\"\"}')",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s https://pannaipuram-api.onrender.com/health)",
+      "Bash(curl -s https://pannaipuram-api.onrender.com/admin/v2/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://pannaipuram-api.onrender.com/admin/v2/assets/index-CEQjQXrU.js)",
+      "Read(//Users/gowtham/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/backend/**)",
+      "Bash(node -e \":*)",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}

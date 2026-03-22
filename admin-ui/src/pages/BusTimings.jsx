@@ -21,7 +21,7 @@ import { Delete as DeleteIcon } from '@mui/icons-material';
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
 
-const BusTimings = ({ onSnackbar }) => {
+const BusTimings = ({ onSnackbar, canEdit }) => {
   const [corridors, setCorridors] = useState([]);
   const [timings, setTimings] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -118,11 +118,12 @@ const BusTimings = ({ onSnackbar }) => {
       </Typography>
 
       {/* Add Form */}
-      <Card sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Add New Bus Timing
-        </Typography>
-        <Box component="form" onSubmit={handleAddTiming}>
+      {canEdit && (
+        <Card sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Add New Bus Timing
+          </Typography>
+          <Box component="form" onSubmit={handleAddTiming}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -201,6 +202,7 @@ const BusTimings = ({ onSnackbar }) => {
           </Grid>
         </Box>
       </Card>
+      )}
 
       {/* Data Table */}
       <Card>
@@ -244,16 +246,18 @@ const BusTimings = ({ onSnackbar }) => {
                       {timing.is_last_bus ? '✓' : ''}
                     </TableCell>
                     <TableCell>
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() =>
-                          setConfirmDelete({ open: true, id: timing.id })
-                        }
-                        title="Delete"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                      {canEdit && (
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() =>
+                            setConfirmDelete({ open: true, id: timing.id })
+                          }
+                          title="Delete"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

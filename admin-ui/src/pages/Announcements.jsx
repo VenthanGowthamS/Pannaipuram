@@ -29,7 +29,7 @@ const TYPES = [
   { id: 'event', label: 'Event', color: '#6A1B9A' },
 ];
 
-const Announcements = ({ onSnackbar }) => {
+const Announcements = ({ onSnackbar, canEdit }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -102,9 +102,10 @@ const Announcements = ({ onSnackbar }) => {
         📢 Community Announcements
       </Typography>
 
-      <Card sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>Post New Announcement</Typography>
-        <Box component="form" onSubmit={handleAdd}>
+      {canEdit && (
+        <Card sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>Post New Announcement</Typography>
+          <Box component="form" onSubmit={handleAdd}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
@@ -168,6 +169,7 @@ const Announcements = ({ onSnackbar }) => {
           </Grid>
         </Box>
       </Card>
+      )}
 
       <Card>
         <TableContainer component={Paper}>
@@ -210,24 +212,35 @@ const Announcements = ({ onSnackbar }) => {
                         {item.message_english || '—'}
                       </TableCell>
                       <TableCell>
-                        <Switch
-                          checked={item.is_active}
-                          onChange={() => handleToggle(item)}
-                          size="small"
-                          color="success"
-                        />
+                        {canEdit ? (
+                          <Switch
+                            checked={item.is_active}
+                            onChange={() => handleToggle(item)}
+                            size="small"
+                            color="success"
+                          />
+                        ) : (
+                          <Switch
+                            checked={item.is_active}
+                            disabled
+                            size="small"
+                            color="success"
+                          />
+                        )}
                       </TableCell>
                       <TableCell sx={{ fontSize: '12px' }}>
                         {item.expires_at ? new Date(item.expires_at).toLocaleString() : 'Never'}
                       </TableCell>
                       <TableCell align="center">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => setConfirmDelete({ open: true, id: item.id })}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                        {canEdit && (
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => setConfirmDelete({ open: true, id: item.id })}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        )}
                       </TableCell>
                     </TableRow>
                   );

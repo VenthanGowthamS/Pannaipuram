@@ -35,7 +35,7 @@ const CATEGORIES = [
 const getCategoryInfo = (id) =>
   CATEGORIES.find((c) => c.id === id) || { emoji: '?', tamil: id, english: id };
 
-const LocalServices = ({ onSnackbar }) => {
+const LocalServices = ({ onSnackbar, canEdit }) => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -108,9 +108,10 @@ const LocalServices = ({ onSnackbar }) => {
       </Typography>
 
       {/* Add Form */}
-      <Card sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>Add Service Contact</Typography>
-        <Box component="form" onSubmit={handleAdd}>
+      {canEdit && (
+        <Card sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>Add Service Contact</Typography>
+          <Box component="form" onSubmit={handleAdd}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -199,6 +200,7 @@ const LocalServices = ({ onSnackbar }) => {
           </Grid>
         </Box>
       </Card>
+      )}
 
       {/* Data Table */}
       <Card>
@@ -246,13 +248,15 @@ const LocalServices = ({ onSnackbar }) => {
                         {svc.area_tamil || '—'}
                       </TableCell>
                       <TableCell align="center">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => setConfirmDelete({ open: true, id: svc.id })}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                        {canEdit && (
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => setConfirmDelete({ open: true, id: svc.id })}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        )}
                       </TableCell>
                     </TableRow>
                   );

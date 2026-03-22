@@ -1,7 +1,7 @@
 const express   = require('express');
 const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
-const { validateIdParam } = require('../../middleware/auth');
+const { validateIdParam, requireRole } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 const { trimStr } = require('../../middleware/validate');
 
@@ -18,7 +18,7 @@ router.get('/corridors', async (req, res) => {
 });
 
 // POST /admin/bus/routes — find or create
-router.post('/routes', async (req, res) => {
+router.post('/routes', requireRole('admin', 'super_admin'), async (req, res) => {
   const { corridor_id, direction, origin_tamil, dest_tamil, stops_tamil, notes_tamil } = req.body;
   try {
     // First check if route already exists for this corridor+direction
@@ -41,7 +41,7 @@ router.post('/routes', async (req, res) => {
 });
 
 // POST /admin/bus/timings
-router.post('/timings', async (req, res) => {
+router.post('/timings', requireRole('admin', 'super_admin'), async (req, res) => {
   const { route_id, departs_at, days_of_week, bus_type, is_last_bus } = req.body;
   if (!route_id || !departs_at) {
     return res.status(400).json({ success: false, error: 'route_id and departs_at are required' });
@@ -63,7 +63,7 @@ router.post('/timings', async (req, res) => {
 });
 
 // PUT /admin/bus/timings/:id
-router.put('/timings/:id', validateIdParam, async (req, res) => {
+router.put('/timings/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   const { departs_at, days_of_week, bus_type, is_last_bus, is_active } = req.body;
   try {
     const result = await query(`
@@ -82,7 +82,7 @@ router.put('/timings/:id', validateIdParam, async (req, res) => {
 });
 
 // DELETE /admin/bus/timings/:id
-router.delete('/timings/:id', validateIdParam, async (req, res) => {
+router.delete('/timings/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   try {
     await query('DELETE FROM bus_timings WHERE id = $1', [req.params.id]);
     res.json({ success: true });

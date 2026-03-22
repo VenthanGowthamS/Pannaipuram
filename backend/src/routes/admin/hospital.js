@@ -1,14 +1,14 @@
 const express   = require('express');
 const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
-const { validateIdParam } = require('../../middleware/auth');
+const { validateIdParam, requireRole } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 const { trimStr, isValidTime, isStartBeforeEnd } = require('../../middleware/validate');
 
 router.use(adminAuth);
 
 // PUT /admin/hospital/info
-router.put('/info', async (req, res) => {
+router.put('/info', requireRole('admin', 'super_admin'), async (req, res) => {
   const { name_tamil, address_tamil, phone_casualty, phone_ambulance, phone_general, pharmacy_hours } = req.body;
   try {
     const result = await query(`
@@ -28,7 +28,7 @@ router.put('/info', async (req, res) => {
 });
 
 // POST /admin/hospital/doctors
-router.post('/doctors', async (req, res) => {
+router.post('/doctors', requireRole('admin', 'super_admin'), async (req, res) => {
   const name_tamil    = trimStr(req.body.name_tamil);
   const name_english  = trimStr(req.body.name_english);
   const specialisation = trimStr(req.body.specialisation);
@@ -46,7 +46,7 @@ router.post('/doctors', async (req, res) => {
 });
 
 // PUT /admin/hospital/doctors/:id
-router.put('/doctors/:id', validateIdParam, async (req, res) => {
+router.put('/doctors/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   const { hospital_id, name_tamil, name_english, specialisation, is_active } = req.body;
   try {
     const result = await query(`
@@ -65,7 +65,7 @@ router.put('/doctors/:id', validateIdParam, async (req, res) => {
 });
 
 // DELETE /admin/hospital/doctors/:id
-router.delete('/doctors/:id', validateIdParam, async (req, res) => {
+router.delete('/doctors/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   try {
     await query('DELETE FROM doctor_schedules WHERE doctor_id = $1', [req.params.id]);
     await query('DELETE FROM doctors WHERE id = $1', [req.params.id]);
@@ -76,7 +76,7 @@ router.delete('/doctors/:id', validateIdParam, async (req, res) => {
 });
 
 // POST /admin/hospital/doctors/:id/schedule
-router.post('/doctors/:id/schedule', validateIdParam, async (req, res) => {
+router.post('/doctors/:id/schedule', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   const { day_of_week, start_time, end_time } = req.body;
   const notes_tamil = trimStr(req.body.notes_tamil);
   if (!day_of_week || !start_time || !end_time) {

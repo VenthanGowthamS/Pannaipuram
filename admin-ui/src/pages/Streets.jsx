@@ -39,7 +39,7 @@ const ConfirmDialog = ({ open, title, message, onConfirm, onCancel }) => (
   </Dialog>
 );
 
-const Streets = ({ onSnackbar }) => {
+const Streets = ({ onSnackbar, canEdit }) => {
   const [streets, setStreets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -154,11 +154,12 @@ const Streets = ({ onSnackbar }) => {
       </Typography>
 
       {/* Add Form */}
-      <Card sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Add New Street
-        </Typography>
-        <Box component="form" onSubmit={handleAddStreet}>
+      {canEdit && (
+        <Card sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Add New Street
+          </Typography>
+          <Box component="form" onSubmit={handleAddStreet}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -193,6 +194,7 @@ const Streets = ({ onSnackbar }) => {
           </Grid>
         </Box>
       </Card>
+      )}
 
       {/* Data Table */}
       <Card>
@@ -226,7 +228,7 @@ const Streets = ({ onSnackbar }) => {
                 {streets.map((street, index) => (
                   <TableRow key={street.id}>
                     <TableCell>{index + 1}</TableCell>
-                    {editingId === street.id ? (
+                    {editingId === street.id && canEdit ? (
                       <>
                         <TableCell>
                           <TextField
@@ -287,20 +289,24 @@ const Streets = ({ onSnackbar }) => {
                         <TableCell>{street.name_english}</TableCell>
                         <TableCell>{street.ward_id || '-'}</TableCell>
                         <TableCell align="center">
-                          <IconButton
-                            size="small"
-                            color="primary"
-                            onClick={() => handleEditStart(street)}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => handleDeleteStart(street.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
+                          {canEdit && (
+                            <>
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => handleEditStart(street)}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => handleDeleteStart(street.id)}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            </>
+                          )}
                         </TableCell>
                       </>
                     )}

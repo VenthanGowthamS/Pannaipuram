@@ -21,7 +21,7 @@ import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
 
-const AutoDrivers = ({ onSnackbar }) => {
+const AutoDrivers = ({ onSnackbar, canEdit }) => {
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -162,62 +162,65 @@ const AutoDrivers = ({ onSnackbar }) => {
       </Typography>
 
       {/* Registration Contact */}
-      <Card sx={{ p: 3, mb: 3, border: '2px solid #6A1B9A22' }}>
-        <Typography variant="h6" sx={{ mb: 2, color: '#6A1B9A' }}>
-          📞 Registration Contact (shown in app)
-        </Typography>
-        <Typography variant="body2" sx={{ mb: 2, color: '#666' }}>
-          This contact is shown in the Auto section for users who want to add a new driver.
-        </Typography>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={4}>
-            <TextField
-              fullWidth
-              label="Name (Tamil)"
-              value={contact.name}
-              onChange={(e) => setContact({ ...contact, name: e.target.value })}
-              size="small"
-            />
+      {canEdit && (
+        <Card sx={{ p: 3, mb: 3, border: '2px solid #6A1B9A22' }}>
+          <Typography variant="h6" sx={{ mb: 2, color: '#6A1B9A' }}>
+            📞 Registration Contact (shown in app)
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2, color: '#666' }}>
+            This contact is shown in the Auto section for users who want to add a new driver.
+          </Typography>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                label="Name (Tamil)"
+                value={contact.name}
+                onChange={(e) => setContact({ ...contact, name: e.target.value })}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <TextField
+                fullWidth
+                label="Name (English)"
+                value={contact.name_english}
+                onChange={(e) => setContact({ ...contact, name_english: e.target.value })}
+                size="small"
+              />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <TextField
+                fullWidth
+                label="Phone Number"
+                value={contact.phone}
+                onChange={(e) => setContact({ ...contact, phone: e.target.value })}
+                size="small"
+                inputProps={{ maxLength: 10 }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={2}>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={handleSaveContact}
+                disabled={contactSaving}
+                sx={{ bgcolor: '#6A1B9A', '&:hover': { bgcolor: '#4A148C' } }}
+              >
+                {contactSaving ? 'Saving...' : 'Save'}
+              </Button>
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={3}>
-            <TextField
-              fullWidth
-              label="Name (English)"
-              value={contact.name_english}
-              onChange={(e) => setContact({ ...contact, name_english: e.target.value })}
-              size="small"
-            />
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <TextField
-              fullWidth
-              label="Phone Number"
-              value={contact.phone}
-              onChange={(e) => setContact({ ...contact, phone: e.target.value })}
-              size="small"
-              inputProps={{ maxLength: 10 }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={2}>
-            <Button
-              fullWidth
-              variant="contained"
-              onClick={handleSaveContact}
-              disabled={contactSaving}
-              sx={{ bgcolor: '#6A1B9A', '&:hover': { bgcolor: '#4A148C' } }}
-            >
-              {contactSaving ? 'Saving...' : 'Save'}
-            </Button>
-          </Grid>
-        </Grid>
-      </Card>
+        </Card>
+      )}
 
       {/* Add Form */}
-      <Card sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          {editingId ? 'Edit Driver' : 'Add New Driver'}
-        </Typography>
-        <Box component="form" onSubmit={handleAddDriver}>
+      {canEdit && (
+        <Card sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            {editingId ? 'Edit Driver' : 'Add New Driver'}
+          </Typography>
+          <Box component="form" onSubmit={handleAddDriver}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -312,6 +315,7 @@ const AutoDrivers = ({ onSnackbar }) => {
           </Grid>
         </Box>
       </Card>
+      )}
 
       {/* Data Table */}
       <Card>
@@ -361,24 +365,28 @@ const AutoDrivers = ({ onSnackbar }) => {
                       <TableCell>{driver.coverage_tamil}</TableCell>
                       <TableCell>{driver.schedule_tamil}</TableCell>
                       <TableCell>
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          onClick={() => handleEdit(driver)}
-                          title="Edit"
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() =>
-                            setConfirmDelete({ open: true, id: driver.id })
-                          }
-                          title="Delete"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                        {canEdit && (
+                          <>
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => handleEdit(driver)}
+                              title="Edit"
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() =>
+                                setConfirmDelete({ open: true, id: driver.id })
+                              }
+                              title="Delete"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </>
+                        )}
                       </TableCell>
                     </TableRow>
                   );

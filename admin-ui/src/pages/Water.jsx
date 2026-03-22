@@ -18,7 +18,7 @@ import {
 import { Edit as EditIcon, Save as SaveIcon, Close as CloseIcon } from '@mui/icons-material';
 import api from '../api';
 
-const Water = ({ onSnackbar }) => {
+const Water = ({ onSnackbar, canEdit }) => {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -117,6 +117,7 @@ const Water = ({ onSnackbar }) => {
                       <TableCell>{schedule.name_tamil || 'N/A'}</TableCell>
                       <TableCell>
                         <TextField
+                          disabled={!canEdit}
                           size="small"
                           type="number"
                           value={editForm.frequency_days}
@@ -131,6 +132,7 @@ const Water = ({ onSnackbar }) => {
                       </TableCell>
                       <TableCell>
                         <TextField
+                          disabled={!canEdit}
                           size="small"
                           type="time"
                           value={editForm.supply_time}
@@ -145,6 +147,7 @@ const Water = ({ onSnackbar }) => {
                       </TableCell>
                       <TableCell>
                         <TextField
+                          disabled={!canEdit}
                           size="small"
                           value={editForm.notes_tamil}
                           onChange={(e) =>
@@ -157,22 +160,36 @@ const Water = ({ onSnackbar }) => {
                         />
                       </TableCell>
                       <TableCell>
-                        <IconButton
-                          size="small"
-                          color="success"
-                          onClick={handleSave}
-                          title="Save"
-                        >
-                          <SaveIcon />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          color="inherit"
-                          onClick={handleCancel}
-                          title="Cancel"
-                        >
-                          <CloseIcon />
-                        </IconButton>
+                        {canEdit && (
+                          <>
+                            <IconButton
+                              size="small"
+                              color="success"
+                              onClick={handleSave}
+                              title="Save"
+                            >
+                              <SaveIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="inherit"
+                              onClick={handleCancel}
+                              title="Cancel"
+                            >
+                              <CloseIcon />
+                            </IconButton>
+                          </>
+                        )}
+                        {!canEdit && (
+                          <IconButton
+                            size="small"
+                            color="inherit"
+                            onClick={handleCancel}
+                            title="Cancel"
+                          >
+                            <CloseIcon />
+                          </IconButton>
+                        )}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -182,14 +199,16 @@ const Water = ({ onSnackbar }) => {
                       <TableCell>{schedule.supply_time || 'N/A'}</TableCell>
                       <TableCell>{schedule.notes_tamil || ''}</TableCell>
                       <TableCell>
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          onClick={() => handleEdit(schedule)}
-                          title="Edit"
-                        >
-                          <EditIcon />
-                        </IconButton>
+                        {canEdit && (
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => handleEdit(schedule)}
+                            title="Edit"
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        )}
                       </TableCell>
                     </TableRow>
                   )

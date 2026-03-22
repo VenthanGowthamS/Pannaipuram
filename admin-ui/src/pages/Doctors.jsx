@@ -28,7 +28,7 @@ import { Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
 
-const Doctors = ({ onSnackbar }) => {
+const Doctors = ({ onSnackbar, canEdit }) => {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -143,11 +143,12 @@ const Doctors = ({ onSnackbar }) => {
       </Typography>
 
       {/* Add Form */}
-      <Card sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Add New Doctor
-        </Typography>
-        <Box component="form" onSubmit={handleAddDoctor}>
+      {canEdit && (
+        <Card sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Add New Doctor
+          </Typography>
+          <Box component="form" onSubmit={handleAddDoctor}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -210,6 +211,7 @@ const Doctors = ({ onSnackbar }) => {
           </Grid>
         </Box>
       </Card>
+      )}
 
       {/* Data Table */}
       <Card>
@@ -253,29 +255,33 @@ const Doctors = ({ onSnackbar }) => {
                       />
                     </TableCell>
                     <TableCell>
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={() =>
-                          setScheduleDialog({
-                            open: true,
-                            doctorId: doctor.id,
-                          })
-                        }
-                        title="Add Schedule"
-                      >
-                        <AddIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() =>
-                          setConfirmDelete({ open: true, id: doctor.id })
-                        }
-                        title="Delete"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                      {canEdit && (
+                        <>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() =>
+                              setScheduleDialog({
+                                open: true,
+                                doctorId: doctor.id,
+                              })
+                            }
+                            title="Add Schedule"
+                          >
+                            <AddIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() =>
+                              setConfirmDelete({ open: true, id: doctor.id })
+                            }
+                            title="Delete"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -286,12 +292,13 @@ const Doctors = ({ onSnackbar }) => {
       </Card>
 
       {/* Add Schedule Dialog */}
-      <Dialog
-        open={scheduleDialog.open}
-        onClose={() => setScheduleDialog({ open: false, doctorId: null })}
-        maxWidth="sm"
-        fullWidth
-      >
+      {canEdit && (
+        <Dialog
+          open={scheduleDialog.open}
+          onClose={() => setScheduleDialog({ open: false, doctorId: null })}
+          maxWidth="sm"
+          fullWidth
+        >
         <DialogTitle>Add Doctor Schedule</DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
@@ -380,6 +387,7 @@ const Doctors = ({ onSnackbar }) => {
           </Button>
         </DialogActions>
       </Dialog>
+      )}
 
       <ConfirmDialog
         open={confirmDelete.open}

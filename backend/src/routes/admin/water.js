@@ -1,12 +1,13 @@
 const express   = require('express');
 const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
+const { requireRole } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 
 router.use(adminAuth);
 
 // PUT /admin/water/schedule/:streetId
-router.put('/schedule/:streetId', async (req, res) => {
+router.put('/schedule/:streetId', requireRole('admin', 'super_admin'), async (req, res) => {
   const { frequency_days, supply_time, last_supply_date, notes_tamil } = req.body;
   try {
     const result = await query(`
@@ -28,7 +29,7 @@ router.put('/schedule/:streetId', async (req, res) => {
 });
 
 // POST /admin/streets — add a new street
-router.post('/streets', async (req, res) => {
+router.post('/streets', requireRole('admin', 'super_admin'), async (req, res) => {
   const { name_tamil, name_english, ward_id } = req.body;
   if (!name_tamil) return res.status(400).json({ error: 'name_tamil required' });
   try {

@@ -21,7 +21,7 @@ import { Delete as DeleteIcon, CheckCircle as ResolveIcon } from '@mui/icons-mat
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
 
-const PowerCuts = ({ onSnackbar }) => {
+const PowerCuts = ({ onSnackbar, canEdit }) => {
   const [cuts, setCuts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -104,11 +104,12 @@ const PowerCuts = ({ onSnackbar }) => {
       </Typography>
 
       {/* Add Form */}
-      <Card sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Add New Power Cut
-        </Typography>
-        <Box component="form" onSubmit={handleAddCut}>
+      {canEdit && (
+        <Card sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Add New Power Cut
+          </Typography>
+          <Box component="form" onSubmit={handleAddCut}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -181,6 +182,7 @@ const PowerCuts = ({ onSnackbar }) => {
           </Grid>
         </Box>
       </Card>
+      )}
 
       {/* Data Table */}
       <Card>
@@ -235,26 +237,30 @@ const PowerCuts = ({ onSnackbar }) => {
                       />
                     </TableCell>
                     <TableCell>
-                      {!cut.is_resolved && (
-                        <IconButton
-                          size="small"
-                          color="success"
-                          onClick={() => handleResolve(cut.id)}
-                          title="Mark as Resolved"
-                        >
-                          <ResolveIcon />
-                        </IconButton>
+                      {canEdit && (
+                        <>
+                          {!cut.is_resolved && (
+                            <IconButton
+                              size="small"
+                              color="success"
+                              onClick={() => handleResolve(cut.id)}
+                              title="Mark as Resolved"
+                            >
+                              <ResolveIcon />
+                            </IconButton>
+                          )}
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() =>
+                              setConfirmDelete({ open: true, id: cut.id })
+                            }
+                            title="Delete"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </>
                       )}
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() =>
-                          setConfirmDelete({ open: true, id: cut.id })
-                        }
-                        title="Delete"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}

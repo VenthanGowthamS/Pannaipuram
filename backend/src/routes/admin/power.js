@@ -1,7 +1,7 @@
 const express   = require('express');
 const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
-const { validateIdParam } = require('../../middleware/auth');
+const { validateIdParam, requireRole } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 const { sendToAll } = require('../../services/pushNotifications');
 const { trimStr } = require('../../middleware/validate');
@@ -19,7 +19,7 @@ router.get('/cuts', async (req, res) => {
 });
 
 // POST /admin/power/cuts
-router.post('/cuts', async (req, res) => {
+router.post('/cuts', requireRole('admin', 'super_admin'), async (req, res) => {
   const area_description = trimStr(req.body.area_description);
   const reason_tamil     = trimStr(req.body.reason_tamil);
   const { cut_type, start_time, end_time } = req.body;
@@ -44,7 +44,7 @@ router.post('/cuts', async (req, res) => {
 });
 
 // PUT /admin/power/cuts/:id
-router.put('/cuts/:id', validateIdParam, async (req, res) => {
+router.put('/cuts/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   const { area_description, cut_type, start_time, end_time, reason_tamil, is_resolved } = req.body;
   try {
     const result = await query(`
@@ -64,7 +64,7 @@ router.put('/cuts/:id', validateIdParam, async (req, res) => {
 });
 
 // DELETE /admin/power/cuts/:id
-router.delete('/cuts/:id', validateIdParam, async (req, res) => {
+router.delete('/cuts/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   try {
     await query('DELETE FROM power_cuts WHERE id = $1', [req.params.id]);
     res.json({ success: true });

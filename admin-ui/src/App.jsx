@@ -48,7 +48,8 @@ const AppContent = () => {
   }
 
   const renderTab = () => {
-    const props = { onSnackbar: handleShowSnackbar };
+    const canEdit = user?.role === 'admin' || user?.role === 'super_admin';
+    const props = { onSnackbar: handleShowSnackbar, canEdit };
     switch (currentTab) {
       case 'power':
         return <PowerCuts {...props} />;

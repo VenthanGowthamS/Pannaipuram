@@ -1,7 +1,7 @@
 const express   = require('express');
 const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
-const { validateIdParam } = require('../../middleware/auth');
+const { validateIdParam, requireRole } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 const { trimStr, isValidPhone } = require('../../middleware/validate');
 
@@ -27,7 +27,7 @@ router.get('/contact', async (req, res) => {
 });
 
 // PUT /admin/auto/contact — update registration contact
-router.put('/contact', async (req, res) => {
+router.put('/contact', requireRole('admin', 'super_admin'), async (req, res) => {
   const phone        = trimStr(req.body.phone);
   const name        = trimStr(req.body.name) || '';
   const name_english = trimStr(req.body.name_english) || '';
@@ -59,7 +59,7 @@ router.get('/drivers', async (req, res) => {
 });
 
 // POST /admin/auto/drivers — add new driver
-router.post('/drivers', async (req, res) => {
+router.post('/drivers', requireRole('admin', 'super_admin'), async (req, res) => {
   const name_tamil   = trimStr(req.body.name_tamil);
   const name_english = trimStr(req.body.name_english);
   const phone        = trimStr(req.body.phone);
@@ -82,7 +82,7 @@ router.post('/drivers', async (req, res) => {
 });
 
 // PUT /admin/auto/drivers/:id — update driver
-router.put('/drivers/:id', validateIdParam, async (req, res) => {
+router.put('/drivers/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   const { name_tamil, name_english, phone, vehicle_type, coverage_tamil, coverage_english, schedule_tamil, is_active, display_order } = req.body;
   try {
     const result = await query(`
@@ -105,7 +105,7 @@ router.put('/drivers/:id', validateIdParam, async (req, res) => {
 });
 
 // DELETE /admin/auto/drivers/:id — delete driver
-router.delete('/drivers/:id', validateIdParam, async (req, res) => {
+router.delete('/drivers/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   try {
     await query('DELETE FROM auto_drivers WHERE id = $1', [req.params.id]);
     res.json({ success: true });

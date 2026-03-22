@@ -1,7 +1,7 @@
 const express   = require('express');
 const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
-const { validateIdParam } = require('../../middleware/auth');
+const { validateIdParam, requireRole } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 const { trimStr } = require('../../middleware/validate');
 
@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /admin/announcements — create
-router.post('/', async (req, res) => {
+router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
   const message_tamil   = trimStr(req.body.message_tamil);
   const message_english = trimStr(req.body.message_english);
   const { type, priority, expires_at } = req.body;
@@ -39,7 +39,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /admin/announcements/:id — update
-router.put('/:id', validateIdParam, async (req, res) => {
+router.put('/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   const { message_tamil, message_english, type, priority, is_active, expires_at } = req.body;
   try {
     const result = await query(`
@@ -60,7 +60,7 @@ router.put('/:id', validateIdParam, async (req, res) => {
 });
 
 // DELETE /admin/announcements/:id
-router.delete('/:id', validateIdParam, async (req, res) => {
+router.delete('/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   try {
     await query('DELETE FROM announcements WHERE id = $1', [req.params.id]);
     res.json({ success: true });

@@ -1,14 +1,14 @@
 const express   = require('express');
 const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
-const { validateIdParam } = require('../../middleware/auth');
+const { validateIdParam, requireRole } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 const { trimStr, isValidPhone } = require('../../middleware/validate');
 
 router.use(adminAuth);
 
 // POST /admin/contacts
-router.post('/', async (req, res) => {
+router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
   const name_tamil   = trimStr(req.body.name_tamil);
   const name_english = trimStr(req.body.name_english);
   const phone        = trimStr(req.body.phone);
@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /admin/contacts/:id
-router.put('/:id', validateIdParam, async (req, res) => {
+router.put('/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   const { name_tamil, name_english, phone, is_verified, display_order } = req.body;
   try {
     const result = await query(`
@@ -50,7 +50,7 @@ router.put('/:id', validateIdParam, async (req, res) => {
 });
 
 // DELETE /admin/contacts/:id
-router.delete('/:id', validateIdParam, async (req, res) => {
+router.delete('/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   try {
     await query('DELETE FROM emergency_contacts WHERE id = $1', [req.params.id]);
     res.json({ success: true });
