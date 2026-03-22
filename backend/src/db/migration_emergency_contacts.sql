@@ -47,5 +47,10 @@ VALUES
   ('other', 'தேனி மாவட்ட கலெக்டர் அலுவலகம்', 'Theni Collectorate', '04546-255410', FALSE, TRUE, 43)
 ON CONFLICT DO NOTHING;
 
--- ⚠️ NEEDS VERIFICATION: Pannaipuram Primary Health Centre phone number
--- not found online — need to verify with Venthan or local directory
+-- Kombai PHC (nearest 24x7 PHC to Pannaipuram — Uthamapalayam taluk)
+-- ⚠️ NEEDS VERIFICATION: number from NHM PHC directory, confirm with local contact
+INSERT INTO emergency_contacts (category, name_tamil, name_english, phone, is_national, is_verified, display_order)
+VALUES
+  ('medical', 'கோம்பை அரசு ஆரம்ப சுகாதார நிலையம்', 'Kombai Primary Health Centre (24x7)', '9788160116', FALSE, FALSE, 23)
+ON CONFLICT DO NOTHING;
+-- is_verified = FALSE until Venthan confirms this number locally
