@@ -124,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _ModuleTile(
                     icon: Icons.storefront_rounded, emoji: '🛍',
                     gradientColors: const [Color(0xFF00695C), Color(0xFF00897B)],
-                    label: 'ஊரு சேவை — பாலுக்காரங்க, பூக்காரங்க', sublabel: 'Milk, Flower, Plumber & Daily Services',
+                    label: 'ஊரு சேவை — பாலுக்காரங்க, குழாய் சரி செய்பவர்', sublabel: 'Milk, Plumber & Daily Services',
                     onTap: () => _navigate(context, const ServicesScreen()),
                   ),
                   const SizedBox(height: 20),
