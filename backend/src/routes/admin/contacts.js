@@ -14,8 +14,10 @@ router.post('/', async (req, res) => {
   const phone        = trimStr(req.body.phone);
   const { category, is_national, display_order } = req.body;
   if (!name_tamil || !phone) return res.status(400).json({ success: false, error: 'name_tamil and phone required' });
-  if (!isValidPhone(phone)) {
-    return res.status(400).json({ success: false, error: 'Phone must be a 10-digit Indian mobile number starting with 6-9' });
+  // Emergency contacts can have short numbers (100, 108, etc.) or landlines with STD codes
+  // Only validate if it looks like a mobile number (10+ digits)
+  if (phone.replace(/\D/g, '').length >= 10 && !isValidPhone(phone)) {
+    return res.status(400).json({ success: false, error: 'Phone must be a valid Indian mobile number starting with 6-9' });
   }
   try {
     const result = await query(`

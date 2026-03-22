@@ -47,9 +47,9 @@ router.post('/timings', async (req, res) => {
     return res.status(400).json({ success: false, error: 'route_id and departs_at are required' });
   }
   const departs = trimStr(departs_at);
-  // Basic HH:MM validation
-  if (!/^\d{2}:\d{2}$/.test(departs)) {
-    return res.status(400).json({ success: false, error: 'departs_at must be in HH:MM format' });
+  // Accept HH:MM or HH:MM:SS format (admin UI sends HH:MM:SS)
+  if (!/^\d{2}:\d{2}(:\d{2})?$/.test(departs)) {
+    return res.status(400).json({ success: false, error: 'departs_at must be in HH:MM or HH:MM:SS format' });
   }
   try {
     const result = await query(`
