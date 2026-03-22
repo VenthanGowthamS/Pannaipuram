@@ -19,10 +19,11 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   String _selectedCategory = 'power';
 
   static const _categories = [
-    ('power', 'மின்சாரம்', 'Electricity', AppColors.powerYellow),
-    ('medical', 'மருத்துவம்', 'Medical', AppColors.hospitalRed),
-    ('police', 'போலீஸ்', 'Police', Color(0xFF1565C0)),
-    ('panchayat', 'பஞ்சாயத்து', 'Panchayat', AppColors.primary),
+    ('power',   'மின்சாரம்', 'Electricity', AppColors.powerYellow),
+    ('medical', 'மருத்துவம்', 'Medical',    AppColors.hospitalRed),
+    ('police',  'போலீஸ்',    'Police',      Color(0xFF1565C0)),
+    ('fire',    'தீயணைப்பு', 'Fire',        Color(0xFFBF360C)),
+    ('other',   'மற்றவை',    'Others',      AppColors.primary),
   ];
 
   // Fallback data — works 100% offline
@@ -49,7 +50,8 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     ],
     'medical': [],
     'police': [],
-    'panchayat': [],
+    'fire':   [],
+    'other':  [],
   };
 
   @override

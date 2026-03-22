@@ -15,12 +15,15 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- Local Police Stations (nearest to Pannaipuram)
--- Source: Tamil Nadu Police eservices portal, Theni NIC directory
+-- Source: Tamil Nadu Police eservices portal, Theni NIC directory, TamilarOnline
+-- Note: Correct Tamil spelling is கம்பம் (Kambam/Cumbum) per TNSTC bus data
 INSERT INTO emergency_contacts (category, name_tamil, name_english, phone, is_national, is_verified, display_order)
 VALUES
   ('police', 'உத்தமபாளையம் காவல் நிலையம்', 'Uthamapalayam Police Station', '04554-265230', FALSE, TRUE, 10),
-  ('police', 'கும்பம் வடக்கு காவல் நிலையம்', 'Cumbum North Police Station', '04554-271291', FALSE, TRUE, 11),
-  ('police', 'கும்பம் தெற்கு காவல் நிலையம்', 'Cumbum South Police Station', '04554-271422', FALSE, TRUE, 12)
+  ('police', 'கம்பம் வடக்கு காவல் நிலையம்',  'Kambam North Police Station',  '04554-271291', FALSE, TRUE, 11),
+  ('police', 'கம்பம் தெற்கு காவல் நிலையம்',  'Kambam South Police Station',  '04554-271422', FALSE, TRUE, 12),
+  ('police', 'தேவாரம் காவல் நிலையம்',         'Thevaram Police Station',       '9498101584',   FALSE, TRUE, 13),
+  ('police', 'கோம்பை காவல் நிலையம்',           'Kombai Police Station',          '9498101585',   FALSE, TRUE, 14)
 ON CONFLICT DO NOTHING;
 
 -- Government Hospitals (nearest to Pannaipuram)
