@@ -16,20 +16,18 @@ import {
   Skeleton,
   IconButton,
   Chip,
-  Switch,
-  FormControlLabel,
 } from '@mui/material';
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
 
 const CATEGORIES = [
-  { id: 'milk',        emoji: '🥛', tamil: 'பால் காரர்',        english: 'Milk Man' },
-  { id: 'post',        emoji: '📮', tamil: 'தபால்காரர்',         english: 'Postman' },
-  { id: 'flower',      emoji: '🌺', tamil: 'பூ காரர்',           english: 'Flower Seller' },
-  { id: 'plumber',     emoji: '🔧', tamil: 'குழாய்காரர்',        english: 'Plumber' },
-  { id: 'electrician', emoji: '⚡', tamil: 'மின் தொழிலாளி',     english: 'Electrician' },
-  { id: 'other',       emoji: '🛠', tamil: 'மற்றவை',             english: 'Others' },
+  { id: 'milk',        emoji: '🥛', tamil: 'பால் விற்பனையாளர்', english: 'Milk Man' },
+  { id: 'post',        emoji: '📮', tamil: 'தபால்காரர்',          english: 'Postman' },
+  { id: 'flower',      emoji: '🌺', tamil: 'பூ விற்பனையாளர்',    english: 'Flower Seller' },
+  { id: 'plumber',     emoji: '🔧', tamil: 'குழாய் சரி செய்பவர்', english: 'Plumber' },
+  { id: 'electrician', emoji: '⚡', tamil: 'மின் தொழிலாளி',      english: 'Electrician' },
+  { id: 'other',       emoji: '🛠', tamil: 'மற்றவை',              english: 'Others' },
 ];
 
 const getCategoryInfo = (id) =>
@@ -112,94 +110,141 @@ const LocalServices = ({ onSnackbar, canEdit }) => {
         <Card sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>Add Service Contact</Typography>
           <Box component="form" onSubmit={handleAdd}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                select
-                label="Category"
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-                SelectProps={{ native: true }}
-              >
-                {CATEGORIES.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.emoji} {c.english} — {c.tamil}
-                  </option>
-                ))}
-              </TextField>
+
+            {/* ── Category Horizontal Scroll Tabs ── */}
+            <Typography variant="body2" sx={{ mb: 1, color: '#555', fontWeight: 600 }}>
+              Category
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 1,
+                overflowX: 'auto',
+                pb: 1,
+                mb: 2,
+                '&::-webkit-scrollbar': { height: 4 },
+                '&::-webkit-scrollbar-thumb': { bgcolor: '#ccc', borderRadius: 2 },
+              }}
+            >
+              {CATEGORIES.map((cat) => {
+                const selected = form.category === cat.id;
+                return (
+                  <Box
+                    key={cat.id}
+                    onClick={() => setForm({ ...form, category: cat.id })}
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      minWidth: 88,
+                      px: 1.5,
+                      py: 1,
+                      borderRadius: 2,
+                      border: selected ? '2px solid #1B5E20' : '2px solid #e0e0e0',
+                      bgcolor: selected ? '#E8F5E9' : '#fafafa',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                      userSelect: 'none',
+                      '&:hover': { borderColor: '#388E3C', bgcolor: '#F1F8E9' },
+                    }}
+                  >
+                    <Typography sx={{ fontSize: 22, lineHeight: 1.2 }}>{cat.emoji}</Typography>
+                    <Typography
+                      sx={{
+                        fontSize: 11,
+                        fontFamily: '"Noto Sans Tamil", sans-serif',
+                        fontWeight: selected ? 700 : 400,
+                        color: selected ? '#1B5E20' : '#555',
+                        textAlign: 'center',
+                        mt: 0.4,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {cat.tamil}
+                    </Typography>
+                    <Typography
+                      sx={{ fontSize: 10, color: selected ? '#2E7D32' : '#999', textAlign: 'center' }}
+                    >
+                      {cat.english}
+                    </Typography>
+                  </Box>
+                );
+              })}
+            </Box>
+
+            {/* ── Rest of Form ── */}
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Phone Number"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  placeholder="e.g. 9876543210"
+                  inputProps={{ maxLength: 10 }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Name (Tamil)"
+                  value={form.name_tamil}
+                  onChange={(e) => setForm({ ...form, name_tamil: e.target.value })}
+                  placeholder="தமிழ் பெயர்..."
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Name (English)"
+                  value={form.name_english}
+                  onChange={(e) => setForm({ ...form, name_english: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Area Covered (Tamil)"
+                  value={form.area_tamil}
+                  onChange={(e) => setForm({ ...form, area_tamil: e.target.value })}
+                  placeholder="எ.கா. முழு ஊர், 1-5 வார்டு..."
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Area Covered (English)"
+                  value={form.area_english}
+                  onChange={(e) => setForm({ ...form, area_english: e.target.value })}
+                  placeholder="e.g. Whole village, Ward 1-5..."
+                />
+              </Grid>
+              <Grid item xs={12} sm={8}>
+                <TextField
+                  fullWidth
+                  label="Notes (Tamil)"
+                  value={form.notes_tamil}
+                  onChange={(e) => setForm({ ...form, notes_tamil: e.target.value })}
+                  placeholder="எ.கா. காலை 6-8 மணி மட்டும்..."
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  label="Display Order"
+                  type="number"
+                  value={form.display_order}
+                  onChange={(e) => setForm({ ...form, display_order: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Button type="submit" variant="contained" sx={{ bgcolor: '#1B5E20' }}>
+                  Add Service Contact
+                </Button>
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Phone Number"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                placeholder="e.g. 9876543210"
-                inputProps={{ maxLength: 10 }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Name (Tamil)"
-                value={form.name_tamil}
-                onChange={(e) => setForm({ ...form, name_tamil: e.target.value })}
-                placeholder="தமிழ் பெயர்..."
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Name (English)"
-                value={form.name_english}
-                onChange={(e) => setForm({ ...form, name_english: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Area Covered (Tamil)"
-                value={form.area_tamil}
-                onChange={(e) => setForm({ ...form, area_tamil: e.target.value })}
-                placeholder="எ.கா. முழு ஊர், 1-5 வார்டு..."
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Area Covered (English)"
-                value={form.area_english}
-                onChange={(e) => setForm({ ...form, area_english: e.target.value })}
-                placeholder="e.g. Whole village, Ward 1-5..."
-              />
-            </Grid>
-            <Grid item xs={12} sm={8}>
-              <TextField
-                fullWidth
-                label="Notes (Tamil)"
-                value={form.notes_tamil}
-                onChange={(e) => setForm({ ...form, notes_tamil: e.target.value })}
-                placeholder="எ.கா. காலை 6-8 மணி மட்டும்..."
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                label="Display Order"
-                type="number"
-                value={form.display_order}
-                onChange={(e) => setForm({ ...form, display_order: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Button type="submit" variant="contained" sx={{ bgcolor: '#1B5E20' }}>
-                Add Service Contact
-              </Button>
-            </Grid>
-          </Grid>
-        </Box>
-      </Card>
+          </Box>
+        </Card>
       )}
 
       {/* Data Table */}

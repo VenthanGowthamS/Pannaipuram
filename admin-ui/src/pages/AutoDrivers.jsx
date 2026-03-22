@@ -35,8 +35,12 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
 
-  // Registration contact state
-  const [contact, setContact] = useState({ name: 'கௌதம்', name_english: 'Gowtham', phone: '8888888888' });
+  // WhatsApp contact state (phone = WA number, name_english = custom message)
+  const [contact, setContact] = useState({
+    name: 'Admin',
+    name_english: 'வணக்கம், பண்ணைப்புரம் app பற்றி கேட்கணும்...',
+    phone: '8888888888',
+  });
   const [contactSaving, setContactSaving] = useState(false);
 
   const vehicleTypes = [
@@ -161,42 +165,37 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
         🚗 Auto/Van Drivers Management
       </Typography>
 
-      {/* Registration Contact */}
+      {/* WhatsApp Contact */}
       {canEdit && (
-        <Card sx={{ p: 3, mb: 3, border: '2px solid #6A1B9A22' }}>
-          <Typography variant="h6" sx={{ mb: 2, color: '#6A1B9A' }}>
-            📞 Registration Contact (shown in app)
+        <Card sx={{ p: 3, mb: 3, border: '2px solid #25D36622' }}>
+          <Typography variant="h6" sx={{ mb: 1, color: '#128C7E' }}>
+            📱 WhatsApp Contact (shown in app)
           </Typography>
           <Typography variant="body2" sx={{ mb: 2, color: '#666' }}>
-            This contact is shown in the Auto section for users who want to add a new driver.
+            Users tap "Admin-கு WhatsApp செய்யவும்" in the app — this is the number and message they get.
           </Typography>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
-                label="Name (Tamil)"
-                value={contact.name}
-                onChange={(e) => setContact({ ...contact, name: e.target.value })}
-                size="small"
-              />
-            </Grid>
-            <Grid item xs={12} sm={3}>
-              <TextField
-                fullWidth
-                label="Name (English)"
-                value={contact.name_english}
-                onChange={(e) => setContact({ ...contact, name_english: e.target.value })}
-                size="small"
-              />
-            </Grid>
-            <Grid item xs={12} sm={3}>
-              <TextField
-                fullWidth
-                label="Phone Number"
+                label="WhatsApp Number"
                 value={contact.phone}
                 onChange={(e) => setContact({ ...contact, phone: e.target.value })}
                 size="small"
+                placeholder="e.g. 9876543210"
                 inputProps={{ maxLength: 10 }}
+                helperText="10-digit mobile number"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Default WhatsApp Message (Tamil)"
+                value={contact.name_english}
+                onChange={(e) => setContact({ ...contact, name_english: e.target.value })}
+                size="small"
+                placeholder="வணக்கம், பண்ணைப்புரம் app பற்றி..."
+                helperText="Message pre-filled when user taps the button"
               />
             </Grid>
             <Grid item xs={12} sm={2}>
@@ -205,7 +204,7 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
                 variant="contained"
                 onClick={handleSaveContact}
                 disabled={contactSaving}
-                sx={{ bgcolor: '#6A1B9A', '&:hover': { bgcolor: '#4A148C' } }}
+                sx={{ bgcolor: '#128C7E', '&:hover': { bgcolor: '#075E54' } }}
               >
                 {contactSaving ? 'Saving...' : 'Save'}
               </Button>

@@ -28,7 +28,7 @@ const BusTimings = ({ onSnackbar, canEdit }) => {
   const [selectedCorridor, setSelectedCorridor] = useState('');
   const [form, setForm] = useState({
     corridor_id: '',
-    departs_at: '',
+    departs_at: '06:00',
     days_of_week: 'daily',
     bus_type: 'ordinary',
     is_last_bus: false,
@@ -89,7 +89,7 @@ const BusTimings = ({ onSnackbar, canEdit }) => {
       onSnackbar('Bus timing added successfully ✅', 'success');
       setForm({
         corridor_id: selectedCorridor,
-        departs_at: '',
+        departs_at: '06:00',
         days_of_week: 'daily',
         bus_type: 'ordinary',
         is_last_bus: false,

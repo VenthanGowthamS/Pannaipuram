@@ -17,9 +17,10 @@ class _AutoScreenState extends State<AutoScreen> {
   String? _dataSource;
   bool _loading = true;
 
-  // Registration contact (fetched from API, fallback hardcoded)
-  String _contactName = 'கௌதம்';
+  // WhatsApp contact (fetched from API, fallback hardcoded)
+  String _contactName = 'Admin';
   String _contactPhone = '8888888888';
+  String _contactMessage = 'வணக்கம், பண்ணைப்புரம் app பற்றி கேட்கணும்...';
 
   // ── Fallback contacts (shown when API is unreachable) ──────────────────
   static const List<AutoDriver> _fallbackDrivers = [
@@ -73,6 +74,7 @@ class _AutoScreenState extends State<AutoScreen> {
         _dataSource = 'api';
         _contactName = contact['name'] ?? _contactName;
         _contactPhone = contact['phone'] ?? _contactPhone;
+        _contactMessage = contact['name_english'] ?? _contactMessage;
         _loading = false;
       });
     } catch (_) {
@@ -107,7 +109,7 @@ class _AutoScreenState extends State<AutoScreen> {
     if (phone.isEmpty) return;
     final cleaned = phone.replaceAll(RegExp(r'\D'), '');
     final number = cleaned.startsWith('91') ? cleaned : '91$cleaned';
-    final uri = Uri.parse('https://wa.me/$number?text=${Uri.encodeComponent('வணக்கம், பண்ணைப்புரம் app பற்றி...')}');
+    final uri = Uri.parse('https://wa.me/$number?text=${Uri.encodeComponent(_contactMessage)}');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
