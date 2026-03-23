@@ -152,11 +152,24 @@ class ApiService {
     return this.request('DELETE', `/admin/bus/timings/${id}`);
   }
 
-  // Hospital
+  // Hospital CRUD
   getHospitals() {
     return this.request('GET', '/admin/hospital/list');
   }
 
+  addHospital(data) {
+    return this.request('POST', '/admin/hospital', data);
+  }
+
+  updateHospital(id, data) {
+    return this.request('PUT', `/admin/hospital/${id}`, data);
+  }
+
+  deleteHospital(id) {
+    return this.request('DELETE', `/admin/hospital/${id}`);
+  }
+
+  // Doctor CRUD
   getDoctors() {
     return this.request('GET', '/api/hospital/doctors');
   }
@@ -165,16 +178,21 @@ class ApiService {
     return this.request('POST', '/admin/hospital/doctors', data);
   }
 
-  addDoctorSchedule(doctorId, data) {
-    return this.request('POST', `/admin/hospital/doctors/${doctorId}/schedule`, data);
-  }
-
   updateDoctor(id, data) {
     return this.request('PUT', `/admin/hospital/doctors/${id}`, data);
   }
 
   deleteDoctor(id) {
     return this.request('DELETE', `/admin/hospital/doctors/${id}`);
+  }
+
+  // Doctor Schedule
+  replaceDoctorSchedule(doctorId, schedules) {
+    return this.request('PUT', `/admin/hospital/doctors/${doctorId}/schedule`, { schedules });
+  }
+
+  clearDoctorSchedule(doctorId) {
+    return this.request('DELETE', `/admin/hospital/doctors/${doctorId}/schedule`);
   }
 
   // Emergency
