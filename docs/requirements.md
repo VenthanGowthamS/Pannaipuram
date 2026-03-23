@@ -348,7 +348,7 @@ Water is not wasted
 │   /api/power/*     → Power cut status                           │
 │   /api/water/*     → Water schedule + community alerts          │
 │   /api/water/streets → All streets (for street picker)          │
-│   /api/bus/*       → Bus timings (outbound from Pannaipuram)    │
+│   /api/bus/*       → Bus timings (departure times from Pannaipuram stop) │
 │   /api/hospital/*  → Doctors + schedules (by hospital_id)       │
 │   /api/emergency/* → Emergency contacts                         │
 │   /api/auto/*      → Auto/van driver list                       │
@@ -372,7 +372,7 @@ Water is not wasted
 │   water_schedules         → Per-street water timing             │
 │   water_alerts            → Community "water came" reports       │
 │   bus_corridors           → 14 corridors from Pannaipuram       │
-│   bus_routes, bus_timings → Outbound departure times            │
+│   bus_routes, bus_timings → Departure times from Pannaipuram stop │
 │   hospitals, doctors      → PTV (id=1) + SP Clinic (id=2)       │
 │   doctor_schedules        → Which doctor, which day             │
 │   emergency_contacts      → TNEB, police, fire, panchayat       │
@@ -388,7 +388,7 @@ Water is not wasted
 │          (Venthan only — JWT login)                              │
 │                                                                  │
 │   • Add / resolve power cuts                                     │
-│   • Add bus timings (outbound only from Pannaipuram)            │
+│   • Add bus departure times from Pannaipuram stop (per corridor) │
 │   • Add doctors + weekly schedules (mapped to hospital)         │
 │   • Add emergency contacts                                       │
 │   • Add/edit auto/van drivers + phone numbers                   │
@@ -469,7 +469,7 @@ Before development begins, the following must be collected in person:
 | திருச்சி / Trichy (#7) | ⏳ | Pending | ⏳ Needs timings |
 | பழனி / Palani (#8) | ⏳ | Pending | ⏳ Needs timings |
 
-**⚠️ Note:** Return (inbound) timings not yet collected for any corridor. Manually add via Admin Panel → Bus Timings tab once available.
+**ℹ️ Note:** Pannaipuram is a bus stop, not a terminus. There is no "inbound/outbound" distinction — every timing recorded is simply when a bus departs from the Pannaipuram stop heading toward the corridor destination. One set of timings per corridor is all that's needed.
 
 ### Panchayat & Utilities
 - [ ] Panchayat office contact number and hours
@@ -567,8 +567,7 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 - ✅ Doctors: Dr. Sekar + Dr. Shanmugapriya added via admin panel
 - ⏳ Add real auto/van driver phone numbers via Admin → 🚗 Auto/Van tab
 - ⏳ Enter all 57 streets via Streets tab (currently partial)
-- ⏳ Collect and add timings for: Thevaram (#14), Dindigul (#10), Theni (#1), Coimbatore (#6), Trichy (#7), Palani (#8)
-- ⏳ Collect return (inbound) timings for all corridors
+- ⏳ Collect and enter departure timings for remaining corridors: Thevaram (#14), Dindigul (#10), Theni (#1), Coimbatore (#6), Trichy (#7), Palani (#8) — ask conductors at the stop or TNSTC office
 - ⏳ Set water schedules per street via Water tab (only வள்ளுவர் தெரு confirmed so far)
 - ⏳ Add panchayat office contact number and hours to Emergency tab
 - ⏳ Test on physical Android device (Tamil rendering check)

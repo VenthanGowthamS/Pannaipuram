@@ -117,6 +117,7 @@ Before making ANY changes to the codebase:
 
 ### 2. Bus Routes & Transport Data
 
+- **Pannaipuram is a bus STOP, not a terminus.** There is no "inbound/outbound" — every timing is simply when a bus departs from the Pannaipuram stop heading toward the corridor destination. One set of timings per corridor only.
 - Verify bus corridor destinations exist on actual TNSTC (Tamil Nadu State Transport) routes
 - Cross-check town distances and route order (e.g., Pannaipuram → Cumbum → Gudalur → Kumily)
 - Validate that bus timings are reasonable (e.g., first bus not before 3:30 AM, last bus not after 9:30 PM for rural routes)
