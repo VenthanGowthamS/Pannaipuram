@@ -27,32 +27,31 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
     ('other',   'மற்றவை',    'Others',      AppColors.primary),
   ];
 
-  // Fallback data — works 100% offline
+  // Fallback data — works 100% offline with essential emergency numbers
   static final Map<String, List<EmergencyContact>> _fallback = {
     'power': [
-      EmergencyContact(
-        id: 1,
-        category: 'power',
-        nameTamil: 'TNEB உள்ளூர் புகார் எண்',
-        nameEnglish: 'TNEB Local Complaint',
-        phone: '9498794987',
-        isVerified: true,
-        displayOrder: 1,
-      ),
-      EmergencyContact(
-        id: 2,
-        category: 'power',
-        nameTamil: 'TNEB தேசிய புகார் எண்',
-        nameEnglish: 'TNEB National Fault Line',
-        phone: '1912',
-        isVerified: true,
-        displayOrder: 2,
-      ),
+      EmergencyContact(id: 1, category: 'power', nameTamil: 'TNEB உள்ளூர் புகார் எண்', nameEnglish: 'TNEB Local Complaint', phone: '9498794987', isVerified: true, displayOrder: 1),
+      EmergencyContact(id: 2, category: 'power', nameTamil: 'TNEB தேசிய புகார் எண்', nameEnglish: 'TNEB National Fault Line', phone: '1912', isVerified: true, displayOrder: 2),
     ],
-    'medical': [],
-    'police': [],
-    'fire':   [],
-    'other':  [],
+    'medical': [
+      EmergencyContact(id: 10, category: 'medical', nameTamil: 'ஆம்புலன்ஸ் அவசர எண்', nameEnglish: 'Ambulance / 108 Emergency', phone: '108', isVerified: true, displayOrder: 1),
+      EmergencyContact(id: 11, category: 'medical', nameTamil: 'மருத்துவ அவசர உதவி', nameEnglish: 'Medical Emergency', phone: '102', isVerified: true, displayOrder: 2),
+      EmergencyContact(id: 12, category: 'medical', nameTamil: 'உத்தமபாளையம் அரசு மருத்துவமனை', nameEnglish: 'Govt Hospital Uthamapalayam', phone: '9894840333', isVerified: true, displayOrder: 3),
+    ],
+    'police': [
+      EmergencyContact(id: 20, category: 'police', nameTamil: 'ஒருங்கிணைந்த அவசர எண்', nameEnglish: 'Unified Emergency', phone: '112', isVerified: true, displayOrder: 1),
+      EmergencyContact(id: 21, category: 'police', nameTamil: 'காவல் கட்டுப்பாட்டு அறை', nameEnglish: 'Police Control Room', phone: '100', isVerified: true, displayOrder: 2),
+      EmergencyContact(id: 22, category: 'police', nameTamil: 'உத்தமபாளையம் காவல் நிலையம்', nameEnglish: 'Uthamapalayam Police Station', phone: '04554265230', isVerified: true, displayOrder: 3),
+      EmergencyContact(id: 23, category: 'police', nameTamil: 'தேவாரம் காவல் நிலையம்', nameEnglish: 'Thevaram Police Station', phone: '9498101584', isVerified: true, displayOrder: 4),
+    ],
+    'fire': [
+      EmergencyContact(id: 30, category: 'fire', nameTamil: 'தீயணைப்பு அவசர எண்', nameEnglish: 'Fire & Rescue', phone: '101', isVerified: true, displayOrder: 1),
+    ],
+    'other': [
+      EmergencyContact(id: 40, category: 'other', nameTamil: 'பெண்கள் உதவி எண்', nameEnglish: 'Women Helpline', phone: '1091', isVerified: true, displayOrder: 1),
+      EmergencyContact(id: 41, category: 'other', nameTamil: 'குழந்தைகள் உதவி எண்', nameEnglish: 'Child Helpline', phone: '1098', isVerified: true, displayOrder: 2),
+      EmergencyContact(id: 42, category: 'other', nameTamil: 'பேரிடர் அவசர எண்', nameEnglish: 'Disaster Helpline', phone: '1077', isVerified: true, displayOrder: 3),
+    ],
   };
 
   @override

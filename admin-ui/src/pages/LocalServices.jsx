@@ -17,7 +17,7 @@ import {
   IconButton,
   Chip,
 } from '@mui/material';
-import { Delete as DeleteIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -36,6 +36,7 @@ const getCategoryInfo = (id) =>
 const LocalServices = ({ onSnackbar, canEdit }) => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     category: 'milk',
     name_tamil: '',
@@ -62,28 +63,56 @@ const LocalServices = ({ onSnackbar, canEdit }) => {
 
   useEffect(() => { loadServices(); }, []);
 
-  const handleAdd = async (e) => {
+  const resetForm = () => {
+    setForm({
+      category: 'milk',
+      name_tamil: '',
+      name_english: '',
+      phone: '',
+      area_tamil: '',
+      area_english: '',
+      notes_tamil: '',
+      display_order: '0',
+    });
+    setEditingId(null);
+  };
+
+  const handleEdit = (svc) => {
+    setEditingId(svc.id);
+    setForm({
+      category: svc.category || 'milk',
+      name_tamil: svc.name_tamil || '',
+      name_english: svc.name_english || '',
+      phone: svc.phone || '',
+      area_tamil: svc.area_tamil || '',
+      area_english: svc.area_english || '',
+      notes_tamil: svc.notes_tamil || '',
+      display_order: String(svc.display_order || 0),
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name_tamil || !form.phone) {
       onSnackbar('Please fill in Tamil name and phone number', 'warning');
       return;
     }
     try {
-      await api.addLocalService(form);
-      onSnackbar('Service contact added!', 'success');
-      setForm({
-        category: form.category,
-        name_tamil: '',
-        name_english: '',
-        phone: '',
-        area_tamil: '',
-        area_english: '',
-        notes_tamil: '',
-        display_order: '0',
-      });
+      if (editingId) {
+        await api.updateLocalService(editingId, {
+          ...form,
+          display_order: parseInt(form.display_order) || 0,
+        });
+        onSnackbar('Service contact updated!', 'success');
+      } else {
+        await api.addLocalService(form);
+        onSnackbar('Service contact added!', 'success');
+      }
+      resetForm();
       loadServices();
     } catch (error) {
-      onSnackbar(error.message || 'Failed to add service contact', 'error');
+      onSnackbar(error.message || (editingId ? 'Failed to update service' : 'Failed to add service contact'), 'error');
     }
   };
 
@@ -105,11 +134,20 @@ const LocalServices = ({ onSnackbar, canEdit }) => {
         🛍 Local Services Management
       </Typography>
 
-      {/* Add Form */}
+      {/* Add / Edit Form */}
       {canEdit && (
-        <Card sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>Add Service Contact</Typography>
-          <Box component="form" onSubmit={handleAdd}>
+        <Card sx={{ p: 3, mb: 3, border: editingId ? '2px solid #1B5E20' : 'none' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">
+              {editingId ? '✏️ Edit Service Contact' : 'Add Service Contact'}
+            </Typography>
+            {editingId && (
+              <Button size="small" color="inherit" onClick={resetForm}>
+                Cancel Edit
+              </Button>
+            )}
+          </Box>
+          <Box component="form" onSubmit={handleSubmit}>
 
             {/* ── Category Horizontal Scroll Tabs ── */}
             <Typography variant="body2" sx={{ mb: 1, color: '#555', fontWeight: 600 }}>
@@ -238,9 +276,14 @@ const LocalServices = ({ onSnackbar, canEdit }) => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <Button type="submit" variant="contained" sx={{ bgcolor: '#1B5E20' }}>
-                  Add Service Contact
+                <Button type="submit" variant="contained" sx={{ bgcolor: '#1B5E20', mr: 1 }}>
+                  {editingId ? 'Update Service Contact' : 'Add Service Contact'}
                 </Button>
+                {editingId && (
+                  <Button variant="outlined" color="inherit" onClick={resetForm}>
+                    Cancel
+                  </Button>
+                )}
               </Grid>
             </Grid>
           </Box>
@@ -274,7 +317,7 @@ const LocalServices = ({ onSnackbar, canEdit }) => {
                 {services.map((svc) => {
                   const cat = getCategoryInfo(svc.category);
                   return (
-                    <TableRow key={svc.id}>
+                    <TableRow key={svc.id} sx={editingId === svc.id ? { bgcolor: '#E8F5E9' } : {}}>
                       <TableCell>
                         <Chip
                           label={`${cat.emoji} ${cat.english}`}
@@ -294,13 +337,24 @@ const LocalServices = ({ onSnackbar, canEdit }) => {
                       </TableCell>
                       <TableCell align="center">
                         {canEdit && (
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => setConfirmDelete({ open: true, id: svc.id })}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
+                          <>
+                            <IconButton
+                              size="small"
+                              sx={{ color: '#1B5E20' }}
+                              onClick={() => handleEdit(svc)}
+                              title="Edit"
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => setConfirmDelete({ open: true, id: svc.id })}
+                              title="Delete"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </>
                         )}
                       </TableCell>
                     </TableRow>

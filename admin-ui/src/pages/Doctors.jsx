@@ -200,6 +200,20 @@ const Doctors = ({ onSnackbar, canEdit }) => {
     return h ? h.name_english : `Hospital #${hospitalId}`;
   };
 
+  const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const formatSchedule = (schedules) => {
+    if (!schedules || schedules.length === 0) return null;
+    // Group by time slot
+    const slots = {};
+    schedules.forEach(s => {
+      const key = `${s.start_time?.slice(0,5)}-${s.end_time?.slice(0,5)}`;
+      if (!slots[key]) slots[key] = [];
+      const dayNum = typeof s.day_of_week === 'number' ? s.day_of_week : parseInt(s.day_of_week);
+      slots[key].push(DAY_NAMES[dayNum] || `D${dayNum}`);
+    });
+    return Object.entries(slots).map(([time, days]) => `${days.join(', ')}: ${time}`);
+  };
+
   return (
     <Box>
       <Typography variant="h5" sx={{ mb: 3, fontWeight: 700 }}>
@@ -314,6 +328,7 @@ const Doctors = ({ onSnackbar, canEdit }) => {
                   <TableCell sx={{ fontWeight: 600 }}>Name (Tamil)</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Name (English)</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Specialisation</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Schedule</TableCell>
                   <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -341,6 +356,21 @@ const Doctors = ({ onSnackbar, canEdit }) => {
                         size="small"
                         variant="outlined"
                       />
+                    </TableCell>
+                    <TableCell>
+                      {(() => {
+                        const lines = formatSchedule(doctor.schedules);
+                        if (!lines) return (
+                          <Typography variant="caption" color="textSecondary">
+                            No schedule — click + to add
+                          </Typography>
+                        );
+                        return lines.map((line, idx) => (
+                          <Typography key={idx} variant="caption" sx={{ display: 'block', fontSize: '11px' }}>
+                            {line}
+                          </Typography>
+                        ));
+                      })()}
                     </TableCell>
                     <TableCell align="center">
                       {canEdit && (
