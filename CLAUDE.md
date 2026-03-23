@@ -2,7 +2,7 @@
 
 **Project:** பண்ணைப்புரம் (Pannaipuram) Village Information App
 **Developer:** Venthan (venthan89@gmail.com)
-**Last Updated:** March 2026
+**Last Updated:** March 23, 2026
 
 ---
 
@@ -236,7 +236,7 @@ When extracting data from handwritten Tamil images:
 | Power (மின்சாரம்) | ✅ Complete | power_screen.dart | /api/power/* |
 | Water (தண்ணீர்) | ✅ Complete | water_screen.dart | /api/water/* |
 | Bus (பேருந்து) | ✅ Complete | bus_screen.dart + bus_route_screen.dart | /api/bus/* |
-| Hospital (மருத்துவமனை) | ✅ Complete (2 hospitals) | hospital_screen.dart | /api/hospital/* |
+| Hospital (மருத்துவமனை) | ✅ Complete — Hospital+Doctor CRUD, Schedule Replace | hospital_screen.dart | /api/hospital/*, /admin/hospital/* |
 | Auto (ஆட்டோ / வண்டி) | ✅ Complete | auto_screen.dart | /api/auto/* |
 | Emergency (அவசர தொலைபேசி) | ✅ Complete | emergency_screen.dart | /api/emergency/* |
 | Services (ஊர் சேவை) | ✅ Complete | services_screen.dart | /api/services/* |
@@ -264,10 +264,28 @@ When extracting data from handwritten Tamil images:
 3. Flutter: `services_screen.dart` fetches from `/api/services`
 4. Categories: milk, post, flower, plumber, electrician, other
 
+### Add or update a hospital
+1. Admin panel → 🏥 Doctors tab → Hospital section at top → Add Hospital
+2. Fill: Name Tamil, Name English (required), address, phone fields
+3. API: `POST /admin/hospital` (new) or `PUT /admin/hospital/:id` (edit)
+4. Hospital list chips appear at top — click chip to edit, ✕ to delete
+5. Deleting a hospital with doctors linked will return an error — delete doctors first
+
+### Add a doctor to a hospital
+1. Admin panel → 🏥 Doctors tab → "Add New Doctor" form
+2. Hospital dropdown is **dynamic** (fetched from DB, not hardcoded)
+3. If no hospitals exist, form shows a warning — add hospital first
+4. API: `POST /admin/hospital/doctors`
+
 ### Update a doctor's schedule
-1. Edit hospital in `hospital_screen.dart` (temp) or database (prod)
-2. Test on actual device
-3. Document in `requirements.md`
+1. Admin panel → 🏥 Doctors tab → click ➕ icon on the doctor row
+2. If schedule already exists → dialog says "Replace Schedule" — it will DELETE all existing entries and re-insert
+3. Check the days, set start/end time, add Tamil notes if needed
+4. "Clear All" button removes all schedules for that doctor
+5. API: `PUT /admin/hospital/doctors/:id/schedule` (replaces all), `DELETE /admin/hospital/doctors/:id/schedule` (clears)
+6. **Never add individual schedules one-by-one** — always use the Replace dialog
+7. Flutter app: pull down to refresh hospital screen to see updated schedules
+8. Cache: CacheService.cacheDoctors() stores data in SharedPreferences for offline use
 
 ### Change bus timings
 1. Backend: Update `bus_timings` table
@@ -321,6 +339,59 @@ cd ../app && flutter build apk --release
 ```bash
 cd /path/to/Pannaipuram && git add -A && git commit -m "description" && git push origin main
 ```
+
+---
+
+## Hospital & Doctor Admin — Architecture Rules
+
+These rules must ALWAYS be followed when working on hospital/doctor features:
+
+### Backend (hospital.js) — Key Patterns
+
+```javascript
+// Day name → integer conversion (ALWAYS use this)
+const DAY_MAP = { 'sunday':0,'monday':1,'tuesday':2,'wednesday':3,'thursday':4,'friday':5,'saturday':6 };
+function parseDayOfWeek(val) {
+  if (typeof val === 'number') return val;
+  return DAY_MAP[String(val).toLowerCase()] ?? null;
+}
+
+// Schedule replace = DELETE all then INSERT (NEVER just INSERT — creates duplicates)
+await client.query('DELETE FROM doctor_schedules WHERE doctor_id = $1', [doctorId]);
+// then insert each schedule one by one
+
+// Time from DB is "HH:MM:SS" — always slice to "HH:MM" for display
+const start = s.start_time ? s.start_time.slice(0,5) : '??';
+```
+
+### Admin UI (Doctors.jsx) — Key Patterns
+
+- Hospital dropdown is **always dynamic** — fetched from `GET /admin/hospital/list`, never hardcoded
+- Schedule replace uses `PUT /admin/hospital/doctors/:id/schedule` with `{ schedules: [...] }` body
+- `schedules` array contains `{ day_of_week: INTEGER, start_time, end_time, notes_tamil }`
+- `formatSchedule()` must always guard for null times — use `s.start_time?.slice(0,5) ?? '??'`
+- Days stored as integers (0=Sun, 1=Mon, ... 6=Sat) in DB and in the schedule dialog state
+
+### Flutter (hospital_screen.dart) — Cache Pattern
+
+```dart
+// Fetch → cache → on error load from cache → last resort: hardcoded fallback
+Future<void> _fetchDoctors() async {
+  try {
+    final allDoctors = await ApiService.getAllDoctors();
+    await CacheService.cacheDoctors(allDoctors);  // always cache on success
+    if (!mounted) return;
+    setState(() { _apiDoctors = filtered; _offline = false; });
+  } catch (_) {
+    final cached = await CacheService.getCachedDoctors();
+    if (!mounted) return;
+    setState(() { _apiDoctors = cached; _offline = true; });
+  }
+}
+```
+
+- `RefreshIndicator` must wrap the `CustomScrollView` with `AlwaysScrollableScrollPhysics`
+- All `setState` calls must have `if (!mounted) return;` before them in async methods
 
 ---
 

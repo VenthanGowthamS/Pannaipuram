@@ -1,10 +1,10 @@
 # பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 3.0 (RBAC, Announcements, Local Services, About Screen)
+> **Version:** 3.1 (Hospital Admin Redo, Schedule Replace, Full CRUD)
 > **Date:** March 2026
 > **Author:** Venthan (Senior Software Engineer)
-> **Status:** Phase 6 In Progress — RBAC Live, 8 Modules, Data Entry Underway
+> **Status:** Phase 5 In Progress — 8 Modules Live, Data Entry Underway, Hospital Admin Complete
 > **Tagline:** உங்கள் ஊரின் தகவல் மையம் *(Your Village's Information Centre)*
 
 ---
@@ -543,7 +543,7 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 |---|---|
 | ⚡ Power Cuts | Add planned/unplanned cuts, mark resolved, delete |
 | 🚌 Bus Timings | Select corridor, add departure times (dropdown for daily/weekdays/weekends), delete |
-| 🏥 Doctors | Add doctors to hospital (PTV=1 / SP Clinic=2), schedule with multi-day checkboxes, edit, delete — schedule column shows days & times in table |
+| 🏥 Doctors | **Add/edit/delete hospitals** (Tamil+English name, address, phone fields). Add doctors linked to hospital with dropdown. Set/replace schedule (multi-day checkboxes, replaces all at once). Clear schedule. Schedule column shows grouped days & times. |
 | 📞 Emergency | Add contacts by category, edit/verify phone numbers, delete |
 | 🚗 Auto/Van | Edit registration contact (Gowtham) at top + add drivers with phone + coverage, edit, delete |
 | 💧 Water | Set per-street supply frequency, time (IST), notes — inline edit |
@@ -645,6 +645,19 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 - Doctors admin: schedule column shows days & times in table
 - About screen: Assembly constituency English spelling corrected to "Cumbum"
 - Admin UI error messages: show actual API errors instead of generic text
+
+**Hospital/Doctor Admin Redo — March 2026 — ✅ DONE**
+- Backend: Full Hospital CRUD (POST/PUT/DELETE /admin/hospital, GET /admin/hospital/list)
+- Backend: Schedule replace endpoint (PUT /admin/hospital/doctors/:id/schedule) — replaces all at once
+- Backend: Schedule clear endpoint (DELETE /admin/hospital/doctors/:id/schedule)
+- Backend: Doctor POST validates hospital_id exists before inserting
+- Backend: parseDayOfWeek() — handles string day names → integer (no more type mismatch)
+- Admin UI: Hospital management section — add/edit/delete hospitals from Doctors page
+- Admin UI: "Replace Schedule" replaces all days at once — no duplicate schedules ever
+- Admin UI: Pre-fills existing schedule when editing, "Clear All" button, shows info alert
+- Admin UI: formatSchedule() — fixed null handling (no more "undefined" in table)
+- Admin UI: Alert shown when no hospitals exist (prevents saving doctor with no hospital)
+- Flutter app: RefreshIndicator + CacheService already working (pull-to-refresh, offline cache)
 
 **Google Play Store & App Store Distribution**
 - Publish app on Google Play Store ($25 one-time developer fee)
