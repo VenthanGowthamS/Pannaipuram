@@ -564,6 +564,7 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 - ✅ Emergency contacts: `migration_emergency_contacts.sql` run — police, medical, fire, helplines
 - ✅ Local services: `migration_local_services.sql` run — local_services table live
 - ✅ Hospitals seeded: PTV Padmavathy (id=1), SP Clinic (id=2)
+- ✅ `migration_user_feedback.sql` run — user_feedback table live in Supabase
 - ✅ Doctors: Dr. Sekar + Dr. Shanmugapriya added via admin panel
 - ⏳ Add real auto/van driver phone numbers via Admin → 🚗 Auto/Van tab
 - ⏳ Enter all 57 streets via Streets tab (currently partial)
@@ -610,7 +611,9 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 **About Screen — ✅ IMPLEMENTED**
 - Village stats from official data (population, area, wards, streets)
 - Cardamom estate heritage info
-- App modules overview, developer credit
+- App modules overview
+- 7-step Tamil how-to-use guide
+- Village footer: "பண்ணைப்புரம் மக்களால், மக்களுக்காக"
 
 **Auto Registration Contact — ✅ IMPLEMENTED**
 - Editable from admin panel (name, phone)
@@ -630,6 +633,19 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 **App Lifecycle Fix — ✅ IMPLEMENTED**
 - Black screen on app resume fixed (WidgetsBindingObserver in main.dart)
 - App rebuilds properly when resumed from background
+
+**Feedback Module — ✅ IMPLEMENTED (March 2026)**
+- Villagers submit feedback/suggestions from app (💬 கருத்து — 4th bottom nav tab)
+- Simple Tamil form: message text area + optional name/contact
+- Anonymous submission supported
+- DB: `user_feedback` table ✅ created in Supabase
+- Backend: `POST /api/feedback` (public), `GET/PUT/DELETE /admin/feedback` (admin)
+- Admin panel: 💬 Feedback tab — lists all submissions, unread badge, mark-as-read, delete
+- **Email notification (deferred — later phase):** Gmail SMTP via Nodemailer to notify venthan89@gmail.com on each submission. Requires one-time Gmail App Password setup. Not implemented yet — admin checks panel manually for now.
+
+**Coming Soon Banners — ✅ IMPLEMENTED**
+- Power screen: yellow banner "விரைவில் — நேரடி TNEB தகவல் வரும்!"
+- Water screen: blue banner "விரைவில் — ஊராட்சி நேர அட்டவணை வரும்!"
 
 **Offline Caching — ✅ IMPLEMENTED**
 - CacheService using SharedPreferences
