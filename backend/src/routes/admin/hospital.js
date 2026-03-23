@@ -7,6 +7,16 @@ const { trimStr, isValidTime, isStartBeforeEnd } = require('../../middleware/val
 
 router.use(adminAuth);
 
+// GET /admin/hospital/list — all hospitals for dropdown
+router.get('/list', async (req, res) => {
+  try {
+    const result = await query('SELECT id, name_tamil, name_english FROM hospitals ORDER BY id');
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 // PUT /admin/hospital/info
 router.put('/info', requireRole('admin', 'super_admin'), async (req, res) => {
   const { name_tamil, address_tamil, phone_casualty, phone_ambulance, phone_general, pharmacy_hours } = req.body;

@@ -153,6 +153,10 @@ class ApiService {
   }
 
   // Hospital
+  getHospitals() {
+    return this.request('GET', '/admin/hospital/list');
+  }
+
   getDoctors() {
     return this.request('GET', '/api/hospital/doctors');
   }

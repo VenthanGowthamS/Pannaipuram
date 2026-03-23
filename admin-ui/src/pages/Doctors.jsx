@@ -28,17 +28,13 @@ import { Delete as DeleteIcon, Add as AddIcon, Edit as EditIcon } from '@mui/ico
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
 
-const HOSPITALS = [
-  { id: 1, name: 'PTV Padmavathy Hospital' },
-  { id: 2, name: 'SP Clinic' },
-];
-
 const Doctors = ({ onSnackbar, canEdit }) => {
   const [doctors, setDoctors] = useState([]);
+  const [hospitals, setHospitals] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
-    hospital_id: '1',
+    hospital_id: '',
     name_tamil: '',
     name_english: '',
     specialisation: '',
@@ -56,6 +52,24 @@ const Doctors = ({ onSnackbar, canEdit }) => {
   });
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
 
+  const loadHospitals = async () => {
+    try {
+      const data = await api.getHospitals();
+      setHospitals(data || []);
+      // Set default hospital_id to first hospital
+      if (data && data.length > 0 && !form.hospital_id) {
+        setForm(prev => ({ ...prev, hospital_id: String(data[0].id) }));
+      }
+    } catch (error) {
+      console.error('Failed to load hospitals:', error);
+      // Fallback: at least show hospital 1
+      setHospitals([{ id: 1, name_english: 'PTV Padmavathy Hospital' }]);
+      if (!form.hospital_id) {
+        setForm(prev => ({ ...prev, hospital_id: '1' }));
+      }
+    }
+  };
+
   const loadDoctors = async () => {
     setLoading(true);
     try {
@@ -70,12 +84,13 @@ const Doctors = ({ onSnackbar, canEdit }) => {
   };
 
   useEffect(() => {
+    loadHospitals();
     loadDoctors();
   }, []);
 
   const resetForm = () => {
     setForm({
-      hospital_id: '1',
+      hospital_id: hospitals.length > 0 ? String(hospitals[0].id) : '1',
       name_tamil: '',
       name_english: '',
       specialisation: '',
@@ -181,8 +196,8 @@ const Doctors = ({ onSnackbar, canEdit }) => {
   };
 
   const getHospitalName = (hospitalId) => {
-    const h = HOSPITALS.find(h => h.id === hospitalId);
-    return h ? h.name : `Hospital #${hospitalId}`;
+    const h = hospitals.find(h => h.id === hospitalId);
+    return h ? h.name_english : `Hospital #${hospitalId}`;
   };
 
   return (
@@ -219,8 +234,8 @@ const Doctors = ({ onSnackbar, canEdit }) => {
                   native: true,
                 }}
               >
-                {HOSPITALS.map((h) => (
-                  <option key={h.id} value={h.id}>{h.name}</option>
+                {hospitals.map((h) => (
+                  <option key={h.id} value={h.id}>{h.name_english}</option>
                 ))}
               </TextField>
             </Grid>

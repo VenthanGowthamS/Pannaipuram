@@ -111,7 +111,7 @@ class AboutScreen extends StatelessWidget {
           _InfoCard(rows: const [
             _InfoRow('🚌', 'உத்தமபாளையம்', 'To Uthamapalayam', '11 கி.மீ'),
             _InfoRow('🏙', 'தேனி', 'To Theni HQ', '32 கி.மீ'),
-            _InfoRow('🗳', 'சட்டமன்றம்', 'Assembly', 'கம்பம் (Kamban)'),
+            _InfoRow('🗳', 'சட்டமன்றம்', 'Assembly', 'கம்பம் (Cumbum)'),
             _InfoRow('🏛', 'நாடாளுமன்றம்', 'Lok Sabha', 'தேனி (Theni)'),
           ]),
 

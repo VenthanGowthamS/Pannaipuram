@@ -1,32 +1,27 @@
 -- ═══════════════════════════════════════════════════════════════
--- Doctor seed data for Pannaipuram hospitals
--- Source: Medindia directory, Theni NIC, local verification needed
--- Date: 2026-03-22
+-- Doctor seed data for Pannaipuram
+-- Only verified local doctors: Dr. Sekar & Dr. Shanmugapriya
+-- Date: 2026-03-23
 -- ═══════════════════════════════════════════════════════════════
-
--- Hospital 1: Uthamapalayam GH (nearest to Pannaipuram)
--- Hospital 2: Bodinayakkanur GH
 
 -- ⚠️ IMPORTANT: Verify hospital IDs before running.
 -- Run this first to check: SELECT id, name_english FROM hospitals;
--- Adjust hospital_id values below to match your actual IDs.
 
--- Uthamapalayam GH doctors (hospital_id = 1, adjust if different)
+-- Only inserting verified doctors (confirmed by Venthan)
 INSERT INTO doctors (hospital_id, name_tamil, name_english, specialisation)
 VALUES
-  (1, 'டாக்டர் செல்வராஜ்', 'Dr. Selvaraj', 'பொது மருத்துவம் (General Medicine)'),
-  (1, 'டாக்டர் கவிதா', 'Dr. Kavitha', 'மகப்பேறு மருத்துவம் (OB/GYN)'),
-  (1, 'டாக்டர் முருகன்', 'Dr. Murugan', 'அறுவை சிகிச்சை (General Surgery)')
+  (1, 'டாக்டர் சேகர்', 'Dr. Sekar', 'பொது மருத்துவம் (General Medicine)'),
+  (1, 'டாக்டர் சண்முகப்பிரியா', 'Dr. Shanmugapriya', 'பொது மருத்துவம் (General Medicine)')
 ON CONFLICT DO NOTHING;
--- ⚠️ NEEDS VERIFICATION: confirm names with Uthamapalayam GH locally
 
--- Bodinayakkanur GH doctors (hospital_id = 2, adjust if different)
--- Source: Dr. S Rajavel verified via Medindia directory
--- Source: Dr. Inbarathi verified via Medindia directory
-INSERT INTO doctors (hospital_id, name_tamil, name_english, specialisation)
-VALUES
-  (2, 'டாக்டர் எஸ். ராஜவேல்', 'Dr. S. Rajavel', 'பொது மருத்துவம் (General Medicine)'),
-  (2, 'டாக்டர் இன்பராதி', 'Dr. Inbarathi', 'மகப்பேறு மருத்துவம் (OB/GYN)'),
-  (2, 'டாக்டர் குமார்', 'Dr. Kumar', 'குழந்தை மருத்துவம் (Pediatrics)')
+-- Default schedules (Mon-Sat, 9 AM to 5 PM)
+-- Adjust after confirming actual timings with the doctors
+INSERT INTO doctor_schedules (doctor_id, day_of_week, start_time, end_time, notes_tamil)
+SELECT d.id, day.day_name, '09:00', '17:00', 'காலை 9 – மாலை 5'
+FROM doctors d
+CROSS JOIN (
+  VALUES ('Monday'), ('Tuesday'), ('Wednesday'), ('Thursday'), ('Friday'), ('Saturday')
+) AS day(day_name)
+WHERE d.name_english IN ('Dr. Sekar', 'Dr. Shanmugapriya')
 ON CONFLICT DO NOTHING;
--- ⚠️ Dr. Kumar NEEDS VERIFICATION — common name placeholder, confirm locally
+-- ⚠️ NEEDS VERIFICATION: confirm actual schedule timings with Venthan
