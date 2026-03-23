@@ -82,8 +82,8 @@ const LocalServices = ({ onSnackbar, canEdit }) => {
         display_order: '0',
       });
       loadServices();
-    } catch {
-      onSnackbar('Failed to add service contact', 'error');
+    } catch (error) {
+      onSnackbar(error.message || 'Failed to add service contact', 'error');
     }
   };
 

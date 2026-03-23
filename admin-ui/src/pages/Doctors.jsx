@@ -141,7 +141,7 @@ const Doctors = ({ onSnackbar, canEdit }) => {
       loadDoctors();
     } catch (error) {
       console.error('Doctor save error:', error);
-      onSnackbar(editingId ? 'Failed to update doctor' : 'Failed to add doctor', 'error');
+      onSnackbar(error.message || (editingId ? 'Failed to update doctor' : 'Failed to add doctor'), 'error');
     }
   };
 
@@ -180,7 +180,7 @@ const Doctors = ({ onSnackbar, canEdit }) => {
       loadDoctors();
     } catch (error) {
       console.error('Schedule add error:', error);
-      onSnackbar('Failed to add schedule', 'error');
+      onSnackbar(error.message || 'Failed to add schedule', 'error');
     }
   };
 

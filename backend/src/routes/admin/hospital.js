@@ -86,11 +86,29 @@ router.delete('/doctors/:id', validateIdParam, requireRole('admin', 'super_admin
 });
 
 // POST /admin/hospital/doctors/:id/schedule
+// day_of_week: accepts integer 0-6 OR day name string ("Monday"=1 ... "Sunday"=0)
+const DAY_MAP = {
+  'sunday': 0, 'monday': 1, 'tuesday': 2, 'wednesday': 3,
+  'thursday': 4, 'friday': 5, 'saturday': 6
+};
 router.post('/doctors/:id/schedule', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
-  const { day_of_week, start_time, end_time } = req.body;
+  let { day_of_week, start_time, end_time } = req.body;
   const notes_tamil = trimStr(req.body.notes_tamil);
-  if (!day_of_week || !start_time || !end_time) {
+  if (day_of_week === undefined || day_of_week === null || !start_time || !end_time) {
     return res.status(400).json({ success: false, error: 'day_of_week, start_time, end_time are required' });
+  }
+  // Convert day name string to integer if needed
+  if (typeof day_of_week === 'string' && isNaN(day_of_week)) {
+    const mapped = DAY_MAP[day_of_week.toLowerCase()];
+    if (mapped === undefined) {
+      return res.status(400).json({ success: false, error: `Invalid day_of_week: "${day_of_week}". Use 0-6 or day name (Monday, Tuesday, etc.)` });
+    }
+    day_of_week = mapped;
+  } else {
+    day_of_week = parseInt(day_of_week);
+    if (isNaN(day_of_week) || day_of_week < 0 || day_of_week > 6) {
+      return res.status(400).json({ success: false, error: 'day_of_week must be 0 (Sun) to 6 (Sat)' });
+    }
   }
   if (!isValidTime(start_time) || !isValidTime(end_time)) {
     return res.status(400).json({ success: false, error: 'Times must be in HH:MM format' });
@@ -105,7 +123,8 @@ router.post('/doctors/:id/schedule', validateIdParam, requireRole('admin', 'supe
     `, [req.params.id, day_of_week, start_time, end_time, notes_tamil]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
-    res.status(500).json({ success: false, error: 'Server error' });
+    console.error('Schedule POST error:', err.message);
+    res.status(500).json({ success: false, error: err.message || 'Server error' });
   }
 });
 

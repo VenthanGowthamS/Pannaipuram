@@ -97,8 +97,8 @@ const Announcements = ({ onSnackbar, canEdit }) => {
       }
       resetForm();
       load();
-    } catch {
-      onSnackbar(editingId ? 'Failed to update announcement' : 'Failed to add announcement', 'error');
+    } catch (error) {
+      onSnackbar(error.message || (editingId ? 'Failed to update announcement' : 'Failed to add announcement'), 'error');
     }
   };
 
