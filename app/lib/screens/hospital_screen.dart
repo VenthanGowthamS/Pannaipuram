@@ -3,6 +3,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
+import '../services/cache_service.dart';
 import '../theme/app_theme.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -382,8 +383,13 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
   }
 
   Future<void> _fetchDoctors() async {
+    if (!_loading) {
+      setState(() => _loading = true);
+    }
     try {
       final allDoctors = await ApiService.getAllDoctors();
+      // Cache the doctors data for offline use
+      await CacheService.cacheDoctors(allDoctors);
       // Filter doctors for this specific hospital
       final doctors = allDoctors
           .where((d) => d.hospitalId == null || d.hospitalId == widget.hospitalId)
@@ -396,10 +402,25 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() {
-        _loading = false;
-        _offline = true;
-      });
+      // Try loading from cache
+      final cached = await CacheService.getCachedDoctors();
+      if (cached != null && cached.isNotEmpty) {
+        final doctors = cached
+            .where((d) => d.hospitalId == null || d.hospitalId == widget.hospitalId)
+            .toList();
+        if (!mounted) return;
+        setState(() {
+          _apiDoctors = doctors;
+          _loading = false;
+          _offline = true;
+        });
+      } else {
+        if (!mounted) return;
+        setState(() {
+          _loading = false;
+          _offline = true;
+        });
+      }
     }
   }
 
@@ -409,64 +430,69 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF5F5),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 140,
-            pinned: true,
-            backgroundColor: widget.accentColor,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
-            ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [widget.accentColor, widget.accentColor.withOpacity(0.7)],
+      body: RefreshIndicator(
+        onRefresh: _fetchDoctors,
+        color: widget.accentColor,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 140,
+              pinned: true,
+              backgroundColor: widget.accentColor,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [widget.accentColor, widget.accentColor.withOpacity(0.7)],
+                    ),
                   ),
-                ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 44),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(widget.icon, color: Colors.white, size: 30),
-                          const SizedBox(height: 6),
-                          Text(
-                            widget.hospitalName,
-                            style: const TextStyle(
-                              fontFamily: 'NotoSansTamil',
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 44),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(widget.icon, color: Colors.white, size: 30),
+                            const SizedBox(height: 6),
+                            Text(
+                              widget.hospitalName,
+                              style: const TextStyle(
+                                fontFamily: 'NotoSansTamil',
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          // ── Doctor cards ──────────────────────────────────────────
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate(
-                _buildContent(todayDow),
+            // ── Doctor cards ──────────────────────────────────────────
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate(
+                  _buildContent(todayDow),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -514,8 +540,17 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
       widgets.add(_buildEmptyState());
     }
 
+    // Refresh hint
+    widgets.add(const SizedBox(height: 8));
+    widgets.add(const Center(
+      child: Text(
+        'கீழே இழுத்து புதுப்பிக்கவும் • Pull down to refresh',
+        style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 11, color: Color(0xFF9E9E9E)),
+      ),
+    ));
+
     // Call button for hospital
-    widgets.add(const SizedBox(height: 16));
+    widgets.add(const SizedBox(height: 12));
     widgets.add(_buildContactCard(
       label: 'மருத்துவமனை அழைக்க',
       sublabel: 'Call Hospital',

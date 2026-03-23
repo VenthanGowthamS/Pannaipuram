@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
+import '../services/cache_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/call_button.dart';
 import '../widgets/offline_banner.dart';
@@ -63,6 +64,8 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   Future<void> _load() async {
     try {
       final data = await ApiService.getEmergencyContacts();
+      // Cache for offline use
+      await CacheService.cacheEmergencyContacts(data);
       if (!mounted) return;
       setState(() {
         _contacts = data;
@@ -71,11 +74,22 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() {
-        _contacts = _fallback;
-        _loading = false;
-        _offline = true;
-      });
+      // Try loading from cache first
+      final cached = await CacheService.getCachedEmergencyContacts();
+      if (!mounted) return;
+      if (cached != null && cached.values.any((l) => l.isNotEmpty)) {
+        setState(() {
+          _contacts = cached;
+          _loading = false;
+          _offline = true;
+        });
+      } else {
+        setState(() {
+          _contacts = _fallback;
+          _loading = false;
+          _offline = true;
+        });
+      }
     }
   }
 

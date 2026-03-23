@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../services/prefs_service.dart';
@@ -192,6 +193,14 @@ class _WaterScreenState extends State<WaterScreen> {
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+
+  Future<void> _contactAdmin() async {
+    const message = 'வணக்கம், பண்ணைப்புரம் app — தண்ணீர் நேரம் update செய்யவும்';
+    final uri = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(message)}');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
@@ -499,6 +508,55 @@ class _WaterScreenState extends State<WaterScreen> {
               ),
             ),
           )),
+
+        // Contact admin section
+        const SizedBox(height: 16),
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.waterBlue.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.waterBlue.withOpacity(0.25)),
+          ),
+          child: Column(
+            children: [
+              const Text('💧', style: TextStyle(fontSize: 28)),
+              const SizedBox(height: 8),
+              const Text(
+                'தண்ணீர் நேரம் admin மூலம் update ஆகும்',
+                style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 14, color: Color(0xFF1565C0), fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 2),
+              const Text(
+                'Water schedule updates are managed by admin',
+                style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Color(0xFF757575)),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: _contactAdmin,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF25D366),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.chat_rounded, color: Colors.white, size: 18),
+                      SizedBox(width: 8),
+                      Text('Admin-கு WhatsApp செய்யவும்',
+                        style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 13, color: Colors.white, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

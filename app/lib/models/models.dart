@@ -259,6 +259,15 @@ class Doctor {
             .map((s) => DoctorSchedule.fromJson(s))
             .toList(),
       );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'hospital_id': hospitalId,
+        'name_tamil': nameTamil,
+        'name_english': nameEnglish,
+        'specialisation': specialisation,
+        'schedules': schedules.map((s) => s.toJson()).toList(),
+      };
 }
 
 class DoctorSchedule {
@@ -287,6 +296,13 @@ class DoctorSchedule {
         endTime: j['end_time'],
         notesTamil: j['notes_tamil'],
       );
+
+  Map<String, dynamic> toJson() => {
+        'day_of_week': dayOfWeek,
+        'start_time': startTime,
+        'end_time': endTime,
+        'notes_tamil': notesTamil,
+      };
 }
 
 // ─── Auto / Van Drivers ───────────────────────────────────────────────────────
@@ -354,4 +370,14 @@ class EmergencyContact {
         isVerified: j['is_verified'] ?? false,
         displayOrder: j['display_order'] ?? 0,
       );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'category': category,
+        'name_tamil': nameTamil,
+        'name_english': nameEnglish,
+        'phone': phone,
+        'is_verified': isVerified,
+        'display_order': displayOrder,
+      };
 }

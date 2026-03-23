@@ -18,7 +18,7 @@ import {
   Chip,
   Switch,
 } from '@mui/material';
-import { Delete as DeleteIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -32,6 +32,7 @@ const TYPES = [
 const Announcements = ({ onSnackbar, canEdit }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     message_tamil: '',
     message_english: '',
@@ -55,23 +56,49 @@ const Announcements = ({ onSnackbar, canEdit }) => {
 
   useEffect(() => { load(); }, []);
 
-  const handleAdd = async (e) => {
+  const resetForm = () => {
+    setForm({ message_tamil: '', message_english: '', type: 'info', priority: '0', expires_at: '' });
+    setEditingId(null);
+  };
+
+  const handleEdit = (item) => {
+    setEditingId(item.id);
+    setForm({
+      message_tamil: item.message_tamil || '',
+      message_english: item.message_english || '',
+      type: item.type || 'info',
+      priority: String(item.priority || 0),
+      expires_at: item.expires_at ? item.expires_at.slice(0, 16) : '',
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.message_tamil) {
       onSnackbar('Tamil message is required', 'warning');
       return;
     }
     try {
-      await api.addAnnouncement({
-        ...form,
+      const payload = {
+        message_tamil: form.message_tamil,
+        message_english: form.message_english || null,
+        type: form.type,
         priority: parseInt(form.priority) || 0,
         expires_at: form.expires_at || null,
-      });
-      onSnackbar('Announcement added!', 'success');
-      setForm({ message_tamil: '', message_english: '', type: 'info', priority: '0', expires_at: '' });
+      };
+
+      if (editingId) {
+        await api.updateAnnouncement(editingId, payload);
+        onSnackbar('Announcement updated!', 'success');
+      } else {
+        await api.addAnnouncement(payload);
+        onSnackbar('Announcement added!', 'success');
+      }
+      resetForm();
       load();
     } catch {
-      onSnackbar('Failed to add announcement', 'error');
+      onSnackbar(editingId ? 'Failed to update announcement' : 'Failed to add announcement', 'error');
     }
   };
 
@@ -103,9 +130,18 @@ const Announcements = ({ onSnackbar, canEdit }) => {
       </Typography>
 
       {canEdit && (
-        <Card sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>Post New Announcement</Typography>
-          <Box component="form" onSubmit={handleAdd}>
+        <Card sx={{ p: 3, mb: 3, border: editingId ? '2px solid #1B5E20' : 'none' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">
+              {editingId ? '✏️ Edit Announcement' : 'Post New Announcement'}
+            </Typography>
+            {editingId && (
+              <Button size="small" color="inherit" onClick={resetForm}>
+                Cancel Edit
+              </Button>
+            )}
+          </Box>
+          <Box component="form" onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
@@ -162,9 +198,14 @@ const Announcements = ({ onSnackbar, canEdit }) => {
               />
             </Grid>
             <Grid item xs={12}>
-              <Button type="submit" variant="contained" sx={{ bgcolor: '#1B5E20' }}>
-                Post Announcement
+              <Button type="submit" variant="contained" sx={{ bgcolor: '#1B5E20', mr: 1 }}>
+                {editingId ? 'Update Announcement' : 'Post Announcement'}
               </Button>
+              {editingId && (
+                <Button variant="outlined" color="inherit" onClick={resetForm}>
+                  Cancel
+                </Button>
+              )}
             </Grid>
           </Grid>
         </Box>
@@ -197,7 +238,7 @@ const Announcements = ({ onSnackbar, canEdit }) => {
                 {items.map((item) => {
                   const typeInfo = TYPES.find((t) => t.id === item.type);
                   return (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.id} sx={editingId === item.id ? { bgcolor: '#E8F5E9' } : {}}>
                       <TableCell>
                         <Chip
                           label={typeInfo?.label || item.type}
@@ -233,13 +274,23 @@ const Announcements = ({ onSnackbar, canEdit }) => {
                       </TableCell>
                       <TableCell align="center">
                         {canEdit && (
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => setConfirmDelete({ open: true, id: item.id })}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
+                          <>
+                            <IconButton
+                              size="small"
+                              sx={{ color: '#1B5E20' }}
+                              onClick={() => handleEdit(item)}
+                              title="Edit"
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => setConfirmDelete({ open: true, id: item.id })}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </>
                         )}
                       </TableCell>
                     </TableRow>

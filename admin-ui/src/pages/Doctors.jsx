@@ -24,13 +24,19 @@ import {
   Checkbox,
   FormGroup,
 } from '@mui/material';
-import { Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
+
+const HOSPITALS = [
+  { id: 1, name: 'PTV Padmavathy Hospital' },
+  { id: 2, name: 'SP Clinic' },
+];
 
 const Doctors = ({ onSnackbar, canEdit }) => {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     hospital_id: '1',
     name_tamil: '',
@@ -40,11 +46,12 @@ const Doctors = ({ onSnackbar, canEdit }) => {
   const [scheduleDialog, setScheduleDialog] = useState({
     open: false,
     doctorId: null,
+    doctorName: '',
   });
   const [scheduleForm, setScheduleForm] = useState({
     days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-    start_time: '',
-    end_time: '',
+    start_time: '09:00',
+    end_time: '17:00',
     notes_tamil: '',
   });
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
@@ -55,6 +62,7 @@ const Doctors = ({ onSnackbar, canEdit }) => {
       const data = await api.getDoctors();
       setDoctors(data || []);
     } catch (error) {
+      console.error('Failed to load doctors:', error);
       onSnackbar('Failed to load doctors', 'error');
     } finally {
       setLoading(false);
@@ -65,7 +73,29 @@ const Doctors = ({ onSnackbar, canEdit }) => {
     loadDoctors();
   }, []);
 
-  const handleAddDoctor = async (e) => {
+  const resetForm = () => {
+    setForm({
+      hospital_id: '1',
+      name_tamil: '',
+      name_english: '',
+      specialisation: '',
+    });
+    setEditingId(null);
+  };
+
+  const handleEdit = (doctor) => {
+    setEditingId(doctor.id);
+    setForm({
+      hospital_id: String(doctor.hospital_id || '1'),
+      name_tamil: doctor.name_tamil || '',
+      name_english: doctor.name_english || '',
+      specialisation: doctor.specialisation || '',
+    });
+    // Scroll to form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name_tamil || !form.name_english || !form.specialisation) {
       onSnackbar('Please fill in all required fields', 'warning');
@@ -73,17 +103,30 @@ const Doctors = ({ onSnackbar, canEdit }) => {
     }
 
     try {
-      await api.addDoctor(form);
-      onSnackbar('Doctor added successfully', 'success');
-      setForm({
-        hospital_id: '1',
-        name_tamil: '',
-        name_english: '',
-        specialisation: '',
-      });
+      if (editingId) {
+        // Update existing doctor
+        await api.updateDoctor(editingId, {
+          hospital_id: parseInt(form.hospital_id),
+          name_tamil: form.name_tamil,
+          name_english: form.name_english,
+          specialisation: form.specialisation,
+        });
+        onSnackbar('Doctor updated successfully', 'success');
+      } else {
+        // Add new doctor
+        await api.addDoctor({
+          hospital_id: parseInt(form.hospital_id),
+          name_tamil: form.name_tamil,
+          name_english: form.name_english,
+          specialisation: form.specialisation,
+        });
+        onSnackbar('Doctor added successfully', 'success');
+      }
+      resetForm();
       loadDoctors();
     } catch (error) {
-      onSnackbar('Failed to add doctor', 'error');
+      console.error('Doctor save error:', error);
+      onSnackbar(editingId ? 'Failed to update doctor' : 'Failed to add doctor', 'error');
     }
   };
 
@@ -112,15 +155,16 @@ const Doctors = ({ onSnackbar, canEdit }) => {
       );
       await Promise.all(promises);
       onSnackbar('Schedule added successfully', 'success');
-      setScheduleDialog({ open: false, doctorId: null });
+      setScheduleDialog({ open: false, doctorId: null, doctorName: '' });
       setScheduleForm({
         days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-        start_time: '',
-        end_time: '',
+        start_time: '09:00',
+        end_time: '17:00',
         notes_tamil: '',
       });
       loadDoctors();
     } catch (error) {
+      console.error('Schedule add error:', error);
       onSnackbar('Failed to add schedule', 'error');
     }
   };
@@ -136,19 +180,31 @@ const Doctors = ({ onSnackbar, canEdit }) => {
     }
   };
 
+  const getHospitalName = (hospitalId) => {
+    const h = HOSPITALS.find(h => h.id === hospitalId);
+    return h ? h.name : `Hospital #${hospitalId}`;
+  };
+
   return (
     <Box>
       <Typography variant="h5" sx={{ mb: 3, fontWeight: 700 }}>
         🏥 Doctors Management
       </Typography>
 
-      {/* Add Form */}
+      {/* Add / Edit Form */}
       {canEdit && (
-        <Card sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Add New Doctor
-          </Typography>
-          <Box component="form" onSubmit={handleAddDoctor}>
+        <Card sx={{ p: 3, mb: 3, border: editingId ? '2px solid #1B5E20' : 'none' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">
+              {editingId ? '✏️ Edit Doctor' : '➕ Add New Doctor'}
+            </Typography>
+            {editingId && (
+              <Button size="small" color="inherit" onClick={resetForm}>
+                Cancel Edit
+              </Button>
+            )}
+          </Box>
+          <Box component="form" onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -163,8 +219,9 @@ const Doctors = ({ onSnackbar, canEdit }) => {
                   native: true,
                 }}
               >
-                <option value="1">PTV Hospital</option>
-                <option value="2">SP Clinic</option>
+                {HOSPITALS.map((h) => (
+                  <option key={h.id} value={h.id}>{h.name}</option>
+                ))}
               </TextField>
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -175,7 +232,7 @@ const Doctors = ({ onSnackbar, canEdit }) => {
                 onChange={(e) =>
                   setForm({ ...form, name_tamil: e.target.value })
                 }
-                placeholder="பெயர்..."
+                placeholder="டாக்டர் பெயர்..."
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -186,6 +243,7 @@ const Doctors = ({ onSnackbar, canEdit }) => {
                 onChange={(e) =>
                   setForm({ ...form, name_english: e.target.value })
                 }
+                placeholder="Dr. Name"
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -196,17 +254,22 @@ const Doctors = ({ onSnackbar, canEdit }) => {
                 onChange={(e) =>
                   setForm({ ...form, specialisation: e.target.value })
                 }
-                placeholder="e.g., General, Cardiology"
+                placeholder="e.g., பொது மருத்துவம் (General Medicine)"
               />
             </Grid>
             <Grid item xs={12}>
               <Button
                 type="submit"
                 variant="contained"
-                sx={{ bgcolor: '#1B5E20' }}
+                sx={{ bgcolor: '#1B5E20', mr: 1 }}
               >
-                Add Doctor
+                {editingId ? 'Update Doctor' : 'Add Doctor'}
               </Button>
+              {editingId && (
+                <Button variant="outlined" color="inherit" onClick={resetForm}>
+                  Cancel
+                </Button>
+              )}
             </Grid>
           </Grid>
         </Box>
@@ -225,27 +288,37 @@ const Doctors = ({ onSnackbar, canEdit }) => {
           ) : doctors.length === 0 ? (
             <Box sx={{ p: 3, textAlign: 'center' }}>
               <Typography color="textSecondary">
-                No doctors recorded
+                No doctors recorded — use the form above to add doctors
               </Typography>
             </Box>
           ) : (
             <Table>
               <TableHead sx={{ bgcolor: '#f5f5f5' }}>
                 <TableRow>
-                  <TableCell>Hospital</TableCell>
-                  <TableCell>Name (Tamil)</TableCell>
-                  <TableCell>Name (English)</TableCell>
-                  <TableCell>Specialisation</TableCell>
-                  <TableCell>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Hospital</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Name (Tamil)</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Name (English)</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Specialisation</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {doctors.map((doctor) => (
-                  <TableRow key={doctor.id}>
+                  <TableRow key={doctor.id} sx={editingId === doctor.id ? { bgcolor: '#E8F5E9' } : {}}>
                     <TableCell>
-                      {doctor.hospital_id === 1 ? 'PTV Hospital' : 'SP Clinic'}
+                      <Chip
+                        label={getHospitalName(doctor.hospital_id)}
+                        size="small"
+                        sx={{
+                          bgcolor: doctor.hospital_id === 1 ? '#FFEBEE' : '#FFF3E0',
+                          color: doctor.hospital_id === 1 ? '#B71C1C' : '#E65100',
+                          fontWeight: 600,
+                        }}
+                      />
                     </TableCell>
-                    <TableCell>{doctor.name_tamil}</TableCell>
+                    <TableCell sx={{ fontFamily: '"Noto Sans Tamil", sans-serif' }}>
+                      {doctor.name_tamil}
+                    </TableCell>
                     <TableCell>{doctor.name_english}</TableCell>
                     <TableCell>
                       <Chip
@@ -254,7 +327,7 @@ const Doctors = ({ onSnackbar, canEdit }) => {
                         variant="outlined"
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       {canEdit && (
                         <>
                           <IconButton
@@ -264,11 +337,20 @@ const Doctors = ({ onSnackbar, canEdit }) => {
                               setScheduleDialog({
                                 open: true,
                                 doctorId: doctor.id,
+                                doctorName: doctor.name_english || doctor.name_tamil,
                               })
                             }
                             title="Add Schedule"
                           >
                             <AddIcon />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            sx={{ color: '#1B5E20' }}
+                            onClick={() => handleEdit(doctor)}
+                            title="Edit Doctor"
+                          >
+                            <EditIcon />
                           </IconButton>
                           <IconButton
                             size="small"
@@ -295,11 +377,13 @@ const Doctors = ({ onSnackbar, canEdit }) => {
       {canEdit && (
         <Dialog
           open={scheduleDialog.open}
-          onClose={() => setScheduleDialog({ open: false, doctorId: null })}
+          onClose={() => setScheduleDialog({ open: false, doctorId: null, doctorName: '' })}
           maxWidth="sm"
           fullWidth
         >
-        <DialogTitle>Add Doctor Schedule</DialogTitle>
+        <DialogTitle>
+          Add Schedule {scheduleDialog.doctorName ? `for ${scheduleDialog.doctorName}` : ''}
+        </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
@@ -368,7 +452,7 @@ const Doctors = ({ onSnackbar, canEdit }) => {
                     notes_tamil: e.target.value,
                   })
                 }
-                placeholder="குறிப்புகள்..."
+                placeholder="e.g., காலை 9 – மாலை 5"
               />
             </Grid>
           </Grid>
@@ -376,13 +460,13 @@ const Doctors = ({ onSnackbar, canEdit }) => {
         <DialogActions>
           <Button
             onClick={() =>
-              setScheduleDialog({ open: false, doctorId: null })
+              setScheduleDialog({ open: false, doctorId: null, doctorName: '' })
             }
             color="inherit"
           >
             Cancel
           </Button>
-          <Button onClick={handleAddSchedule} variant="contained">
+          <Button onClick={handleAddSchedule} variant="contained" sx={{ bgcolor: '#1B5E20' }}>
             Add Schedule
           </Button>
         </DialogActions>
@@ -392,7 +476,7 @@ const Doctors = ({ onSnackbar, canEdit }) => {
       <ConfirmDialog
         open={confirmDelete.open}
         title="Delete Doctor"
-        message="Are you sure you want to delete this doctor?"
+        message="Are you sure you want to delete this doctor? This will also delete all their schedules."
         onConfirm={handleDelete}
         onCancel={() => setConfirmDelete({ open: false, id: null })}
       />
