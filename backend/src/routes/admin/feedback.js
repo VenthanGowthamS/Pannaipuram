@@ -1,11 +1,12 @@
 const express = require('express');
 const router  = express.Router();
 const { query } = require('../../db/pool');
-const { requireAuth } = require('./auth');
+const adminAuth = require('../../middleware/auth');
 
-// GET /admin/feedback — list all feedback, newest first, unread first
-router.get('/', requireAuth, async (req, res) => {
+router.use(adminAuth);
 
+// GET /admin/feedback — list all feedback, unread first then newest
+router.get('/', async (req, res) => {
   try {
     const result = await query(
       `SELECT id, message, name_or_contact, is_read, created_at
@@ -20,8 +21,7 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // PUT /admin/feedback/:id/read — mark as read
-router.put('/:id/read', requireAuth, async (req, res) => {
-
+router.put('/:id/read', async (req, res) => {
   try {
     await query(
       'UPDATE user_feedback SET is_read = TRUE WHERE id = $1',
@@ -34,9 +34,8 @@ router.put('/:id/read', requireAuth, async (req, res) => {
   }
 });
 
-// DELETE /admin/feedback/:id — delete a feedback entry
-router.delete('/:id', requireAuth, async (req, res) => {
-
+// DELETE /admin/feedback/:id
+router.delete('/:id', async (req, res) => {
   try {
     await query('DELETE FROM user_feedback WHERE id = $1', [req.params.id]);
     res.json({ success: true });
