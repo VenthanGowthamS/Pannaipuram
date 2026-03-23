@@ -239,7 +239,7 @@ When extracting data from handwritten Tamil images:
 | Hospital (மருத்துவமனை) | ✅ Complete (2 hospitals) | hospital_screen.dart | /api/hospital/* |
 | Auto (ஆட்டோ / வண்டி) | ✅ Complete | auto_screen.dart | /api/auto/* |
 | Emergency (அவசர தொலைபேசி) | ✅ Complete | emergency_screen.dart | /api/emergency/* |
-| Services (ஊரு சேவை) | ✅ Complete | services_screen.dart | /api/services/* |
+| Services (ஊர் சேவை) | ✅ Complete | services_screen.dart | /api/services/* |
 | Announcements (அறிவிப்புகள்) | ✅ Complete | home_screen.dart (banner) | /api/announcements/* |
 
 ---
@@ -477,5 +477,5 @@ SELECT * FROM local_services ORDER BY category, display_order;
 
 ---
 
-*Last updated: March 19, 2026*
+*Last updated: March 23, 2026*
 *Built with ❤️ for பண்ணைப்புரம்*

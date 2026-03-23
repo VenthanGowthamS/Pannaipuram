@@ -42,7 +42,7 @@ This app is not for the internet. It is for Pannaipuram.
 | Pincode | 625524 |
 | Distance to Uthamapalayam | 11 km |
 | Distance to Theni (HQ) | 32 km |
-| Assembly Constituency | கம்பம் (Kamban) |
+| Assembly Constituency | கம்பம் (Cumbum) |
 | Lok Sabha | தேனி (Theni) |
 | Known For | Cardamom estate region — ஏலக்காய் தோட்டம் |
 | Transport | Public bus, private bus |
@@ -423,14 +423,14 @@ WHY NOT STATIC DATA IN THE APP?
 
 | Layer | Choice | Status |
 |---|---|---|
-| Mobile App | Flutter (Dart) — Android APK | ✅ Built & Tested |
-| Local Storage | SQLite (via Drift) + SharedPreferences | ✅ Implemented |
-| Push Notifications | Firebase Cloud Messaging (FCM) | ⏳ Deferred (app scaffolded, not integrated yet) |
-| Backend | Node.js + Express (lightweight) | ⏳ Scaffolded, not deployed |
-| Database | Supabase (PostgreSQL, Asia-Pacific Singapore) | ⏳ Project: eoiaexdbnyzysolgwitw |
+| Mobile App | Flutter (Dart) — Android APK | ✅ Built & Deployed |
+| Local Storage | SharedPreferences (CacheService for offline) | ✅ Implemented — doctors & emergency cached |
+| Push Notifications | Firebase Cloud Messaging (FCM) | ⏳ Deferred (scaffolded, not integrated yet) |
+| Backend | Node.js + Express (lightweight) | ✅ Deployed — https://pannaipuram-api.onrender.com |
+| Database | Supabase (PostgreSQL, Asia-Pacific Singapore) | ✅ Live — project: eoiaexdbnyzysolgwitw |
 | Hosting | Render.com (free tier Node.js) | ✅ Production URL: https://pannaipuram-api.onrender.com |
-| Admin Panel | REST API + simple web UI | ⏳ Postman/REST client can be used as stopgap |
-| TNEB Data | Web scraping (Cheerio/Puppeteer) | ✅ Code ready, not tested against live site yet |
+| Admin Panel | React + MUI (admin-v2) | ✅ Live at /admin/v2 — full CRUD all modules |
+| TNEB Data | Manual admin entry (scraper deferred) | ⏳ Scraper code ready, not integrated yet |
 | Analytics | Firebase Analytics | ⏳ Deferred for later phases |
 
 ---
@@ -535,7 +535,7 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 - ✅ Password visibility toggle on login screen
 - ✅ Empty credential validation (prevents blank email/password submission)
 - ✅ Admin panel v2 (React + Material-UI) at `/admin/v2/` with modern UI
-- 🔄 Multi-admin support planned (RBAC coming in Phase 8)
+- ✅ RBAC implemented — super_admin / admin / viewer roles (Phase 8 complete)
 
 **Admin Panel Tabs:**
 
@@ -543,12 +543,12 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 |---|---|
 | ⚡ Power Cuts | Add planned/unplanned cuts, mark resolved, delete |
 | 🚌 Bus Timings | Select corridor, add departure times (dropdown for daily/weekdays/weekends), delete |
-| 🏥 Doctors | Add doctors to hospital (PTV=1 / SP Clinic=2), schedule with multi-day checkboxes, edit, delete |
+| 🏥 Doctors | Add doctors to hospital (PTV=1 / SP Clinic=2), schedule with multi-day checkboxes, edit, delete — schedule column shows days & times in table |
 | 📞 Emergency | Add contacts by category, edit/verify phone numbers, delete |
 | 🚗 Auto/Van | Edit registration contact (Gowtham) at top + add drivers with phone + coverage, edit, delete |
 | 💧 Water | Set per-street supply frequency, time (IST), notes — inline edit |
 | 🏘 Streets | Add new streets (Tamil + English name), inline edit, delete with confirm |
-| 🛍 Services | Add local service contacts by category (milk, post, flower, plumber, electrician), delete |
+| 🛍 Services | Add local service contacts by category (milk, post, flower, plumber, electrician), edit, delete |
 | 📢 Announce | Post community announcements (info/warning/urgent/event), toggle active, set expiry, delete |
 | 👥 Users | (super_admin only) Manage admin users, change roles, activate/deactivate, invite new users |
 
@@ -559,18 +559,20 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 ```
 
 **Remaining for Phase 5:**
-- ⏳ Run `migrate_auto_drivers.sql` in Supabase SQL Editor (creates auto_drivers table)
-- ⏳ Add real phone numbers via Admin → 🚗 Auto/Van tab
-- ⏳ Enter all 57 streets via Streets tab (currently ~10 fallback streets seeded)
-- ✅ Bus timings SQL ready: 96 timings across 8 corridors in `seed_bus_timings_complete.sql`
-- ⏳ Run `seed_bus_timings_complete.sql` in Supabase SQL Editor to insert all bus timings
+- ✅ `migrate_auto_drivers.sql` — auto_drivers table live
+- ✅ Bus timings SQL: `seed_bus_timings_complete.sql` — 96 timings across 8 corridors in DB
+- ✅ Emergency contacts: `migration_emergency_contacts.sql` run — police, medical, fire, helplines
+- ✅ Local services: `migration_local_services.sql` run — local_services table live
+- ✅ Hospitals seeded: PTV Padmavathy (id=1), SP Clinic (id=2)
+- ✅ Doctors: Dr. Sekar + Dr. Shanmugapriya added via admin panel
+- ⏳ Add real auto/van driver phone numbers via Admin → 🚗 Auto/Van tab
+- ⏳ Enter all 57 streets via Streets tab (currently partial)
 - ⏳ Collect and add timings for: Thevaram (#14), Dindigul (#10), Theni (#1), Coimbatore (#6), Trichy (#7), Palani (#8)
 - ⏳ Collect return (inbound) timings for all corridors
-- ⏳ Enter hospital doctors with correct hospital mapping (1=PTV, 2=SP Clinic)
-- ⏳ Enter all emergency contacts (police, fire, PHC, panchayat, TNEB)
-- ⏳ Set water schedules per street via Water tab
-- ⏳ Test on physical Android device (Tamil rendering)
-- ⏳ QR code generation for WhatsApp sharing
+- ⏳ Set water schedules per street via Water tab (only வள்ளுவர் தெரு confirmed so far)
+- ⏳ Add panchayat office contact number and hours to Emergency tab
+- ⏳ Test on physical Android device (Tamil rendering check)
+- ⏳ QR code generation for WhatsApp APK sharing
 
 ### Phase 6 — Testing 🔴 PENDING
 - Test on low-end Android devices (2GB RAM)
@@ -621,12 +623,28 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 - Audit dashboard shows recent activity: "Venthan added 3 bus timings (Bodi corridor) at 2026-03-18 14:22 UTC"
 - Helps troubleshoot data issues and accountability
 
-**WhatsApp Integration for Auto/Van Module**
-- Add WhatsApp contact number field to auto drivers (in addition to phone number)
-- Display WhatsApp icon + "Message on WhatsApp" button in Auto screen
-- One-tap click opens WhatsApp direct message chat with driver
-- Example: User taps → app opens WhatsApp pre-filled with: "Hi, need an auto from Pannaipuram to Kamban"
-- Drivers can reply directly without giving out personal phone numbers first
+**WhatsApp Integration — ✅ IMPLEMENTED**
+- Auto/Van: WhatsApp contact number per driver, "Message on WhatsApp" button
+- Power screen: WhatsApp share button (shares current cut info in Tamil)
+- Power + Water screens: "Contact admin" via WhatsApp if info missing
+
+**App Lifecycle Fix — ✅ IMPLEMENTED**
+- Black screen on app resume fixed (WidgetsBindingObserver in main.dart)
+- App rebuilds properly when resumed from background
+
+**Offline Caching — ✅ IMPLEMENTED**
+- CacheService using SharedPreferences
+- Doctors and Emergency Contacts cached on first load
+- Pull-to-refresh in hospital screen
+- Emergency fallback data covers all categories (medical, police, fire, helplines)
+
+**Bug Fixes — March 2026 — ✅ DONE**
+- Doctor schedule admin: day name → integer conversion (Monday → 1 etc.)
+- Hospital dropdown: fetches hospitals from DB dynamically (not hardcoded)
+- Services admin: edit/pencil icon added
+- Doctors admin: schedule column shows days & times in table
+- About screen: Assembly constituency English spelling corrected to "Cumbum"
+- Admin UI error messages: show actual API errors instead of generic text
 
 **Google Play Store & App Store Distribution**
 - Publish app on Google Play Store ($25 one-time developer fee)
