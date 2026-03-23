@@ -109,6 +109,10 @@ app.get('/health', async (req, res) => {
       version: '1.0.0',
       db: 'connected',
       db_time: result.rows[0].time,
+      env: {
+        jwt_secret_set: !!process.env.JWT_SECRET,
+        database_url_set: !!process.env.DATABASE_URL,
+      },
     });
   } catch (err) {
     res.status(500).json({

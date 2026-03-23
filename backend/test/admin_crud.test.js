@@ -220,7 +220,7 @@ async function testPowerCutsCRUD() {
 
   await test('POST /admin/power/cuts creates a new power cut', async () => {
     const { status, body } = await post('/admin/power/cuts', {
-      street_id: 1,
+      area_description: 'Test Area - Pannaipuram',
       cut_type: 'planned',
       start_time: '2026-03-18T09:00:00Z',
       end_time: '2026-03-18T13:00:00Z',
