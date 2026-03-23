@@ -47,6 +47,60 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 
 ---
 
+## Git Pull & Push Rules — When to Do What
+
+### 🔽 PULL — Do this first, every time you open a session
+```bash
+cd ~/Project1/Pannaipuram && git pull origin main
+```
+**Pull when:**
+- Starting any new session — always, no exceptions
+- Before making any changes — avoids merge conflicts
+- After Venthan has made changes from a different machine or directly on GitHub
+- After Claude has pushed in a previous session and you're continuing work
+
+**Never skip pull at session start — if you do and then push, you risk overwriting newer work.**
+
+---
+
+### 🔼 PUSH — Do this after every meaningful change
+
+```bash
+cd ~/Project1/Pannaipuram && git push origin main
+```
+**Push when:**
+- After every commit that has been tested and verified
+- After completing a feature, fix, or data entry session
+- At end of every session (always — part of Skill 5 Git Checkpoint)
+- After fixing a bug and confirming the fix works
+
+**Always push from your Mac terminal** — Cowork VM does not have GitHub credentials and cannot push.
+
+**Push order — always this sequence:**
+```bash
+# 1. Check what's changed
+git status
+
+# 2. Stage only source files
+git add app/lib/ backend/src/ admin-ui/src/ docs/ CLAUDE.md
+
+# 3. Commit with a clear message
+git commit -m "what you did"
+
+# 4. Push
+git push origin main
+
+# 5. Confirm
+git log --oneline -3
+```
+
+**Never push:**
+- Without running the relevant test/build first
+- `.DS_Store`, `build/`, `.gradle/`, `*.apk`, `node_modules/`, `.env`
+- Directly to `main` with broken code — commit a checkpoint branch if unsure
+
+---
+
 ## Language & Localization Rules
 
 - **Always use colloquial Tamil** — not formal/literary
