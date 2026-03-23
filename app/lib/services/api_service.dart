@@ -200,4 +200,21 @@ class ApiService {
       // Silently fail — device street update is non-critical
     }
   }
+
+  // ─── Feedback ────────────────────────────────────────────────────────────
+
+  static Future<void> submitFeedback({
+    required String message,
+    String? nameOrContact,
+  }) async {
+    final body = <String, dynamic>{'message': message};
+    if (nameOrContact != null && nameOrContact.isNotEmpty) {
+      body['name_or_contact'] = nameOrContact;
+    }
+    final res = await _post('/api/feedback', body);
+    if (res.statusCode != 200 && res.statusCode != 201) {
+      final decoded = json.decode(res.body);
+      throw Exception(decoded['error'] ?? 'Failed to submit feedback');
+    }
+  }
 }

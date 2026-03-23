@@ -16,6 +16,7 @@ import Streets from './pages/Streets';
 import LocalServices from './pages/LocalServices';
 import UserManagement from './pages/UserManagement';
 import Announcements from './pages/Announcements';
+import Feedback from './pages/Feedback';
 
 const AppContent = () => {
   const { user, loading } = useAuth();
@@ -71,6 +72,8 @@ const AppContent = () => {
         return <UserManagement {...props} />;
       case 'announcements':
         return <Announcements {...props} />;
+      case 'feedback':
+        return <Feedback {...props} />;
       default:
         return <PowerCuts {...props} />;
     }

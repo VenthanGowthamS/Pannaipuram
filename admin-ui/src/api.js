@@ -279,6 +279,19 @@ class ApiService {
   deleteLocalService(id) {
     return this.request('DELETE', `/admin/services/${id}`);
   }
+
+  // Feedback
+  getFeedback() {
+    return this.request('GET', '/admin/feedback');
+  }
+
+  markFeedbackRead(id) {
+    return this.request('PUT', `/admin/feedback/${id}/read`);
+  }
+
+  deleteFeedback(id) {
+    return this.request('DELETE', `/admin/feedback/${id}`);
+  }
 }
 
 export default new ApiService();

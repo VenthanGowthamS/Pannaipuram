@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'emergency_screen.dart';
 import 'about_screen.dart';
+import 'feedback_screen.dart';
+import '../theme/app_theme.dart';
 
 /// Persistent bottom navigation shell.
 /// Home tab uses a nested Navigator so sub-screens (Bus, Power, etc.)
@@ -51,6 +53,8 @@ class _MainShellState extends State<MainShell> {
             const EmergencyScreen(),
             // About tab
             const AboutScreen(),
+            // Feedback tab
+            const FeedbackScreen(),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -86,6 +90,11 @@ class _MainShellState extends State<MainShell> {
             BottomNavigationBarItem(
               icon: Icon(Icons.info_outline_rounded),
               label: 'பற்றி',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.chat_bubble_outline_rounded),
+              activeIcon: Icon(Icons.chat_bubble_rounded, color: AppColors.primary),
+              label: 'கருத்து',
             ),
           ],
         ),

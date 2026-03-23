@@ -184,6 +184,43 @@ class _PowerScreenState extends State<PowerScreen> {
       children: [
         if (_offline) const OfflineBanner(),
 
+        // ── COMING SOON BANNER ────────────────────────────────────
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFDE7),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFFFD600).withOpacity(0.6)),
+          ),
+          child: Row(
+            children: const [
+              Text('🔔', style: TextStyle(fontSize: 18)),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'விரைவில் — நேரடி TNEB தகவல் வரும்!',
+                      style: TextStyle(
+                        fontFamily: 'NotoSansTamil',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF5D4037),
+                      ),
+                    ),
+                    Text(
+                      'Live power cut alerts coming soon',
+                      style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Color(0xFF8D6E63)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
         // ── HERO TILE ─────────────────────────────────────────────
         Container(
           width: double.infinity,

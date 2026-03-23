@@ -286,6 +286,43 @@ class _WaterScreenState extends State<WaterScreen> {
       children: [
         if (_offline) const OfflineBanner(),
 
+        // ── COMING SOON BANNER ────────────────────────────────────
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE3F2FD),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF42A5F5).withOpacity(0.5)),
+          ),
+          child: Row(
+            children: const [
+              Text('💧', style: TextStyle(fontSize: 18)),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'விரைவில் — ஊராட்சி நேர அட்டவணை வரும்!',
+                      style: TextStyle(
+                        fontFamily: 'NotoSansTamil',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF0D47A1),
+                      ),
+                    ),
+                    Text(
+                      'Street-wise water schedule coming soon',
+                      style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Color(0xFF1565C0)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
         // ── HERO TILE ─────────────────────────────────────────────
         Container(
           width: double.infinity,

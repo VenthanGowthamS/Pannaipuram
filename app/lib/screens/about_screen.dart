@@ -239,39 +239,106 @@ class AboutScreen extends StatelessWidget {
             ),
           ),
 
-          // ── Developer credit ─────────────────────────────────────────
+          // ── How to use ──────────────────────────────────────────────
+          _SectionHeader(title: 'App எப்படி பயன்படுத்துவது?', subtitle: 'How to use this app'),
           Container(
-            margin: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2)),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ...[
+                  ('1️⃣', 'முகப்பு பக்கம்',
+                    'App திறந்தவுடன் முகப்பு பக்கம் வரும். '
+                    'அங்க கரண்ட், தண்ணீர், பஸ் நிலை — எல்லாம் ஒரே பார்வையில் தெரியும்.'),
+                  ('2️⃣', 'உங்கள் தெருவை தேர்வு செய்யுங்க',
+                    'முதல் முறை திறக்கும்போது தெரு கேக்கும். '
+                    'உங்கள் தெருவை தேர்வு செய்தால் அந்த தெருவுக்கான தண்ணீர் நேரம் தெரியும்.'),
+                  ('3️⃣', 'பேருந்து நேரம் பார்க்க',
+                    'பஸ் tile-ஐ தட்டினால் எந்த பக்கம் போகணும்னு corridor தேர்வு செய்யலாம். '
+                    'இணையம் இல்லாமலும் பஸ் நேரம் தெரியும்.'),
+                  ('4️⃣', 'டாக்டர் நேரம் தெரிய',
+                    'மருத்துவமனை tile-ஐ தட்டினால் PTV Padmavathy மற்றும் SP Clinic-ல் '
+                    'எந்த டாக்டர் எந்த நாளில் வருவார் என்று தெரியும்.'),
+                  ('5️⃣', 'அவசர உதவி',
+                    'கீழே "அவசரம்" button-ஐ தட்டினால் ஆம்புலன்ஸ், காவல் நிலையம், '
+                    'தீயணைப்பு — எல்லா எண்களும் ஒரே இடத்தில் தெரியும். '
+                    'ஒரே தட்டலில் அழைக்கலாம்.'),
+                  ('6️⃣', 'ஆட்டோ / வண்டி அழைக்க',
+                    'ஆட்டோ tile-ஐ தட்டினால் ஊரில் உள்ள ஆட்டோ drivers-ஐ '
+                    'நேரடியாக அழைக்கலாம் அல்லது WhatsApp-ல் message அனுப்பலாம்.'),
+                  ('7️⃣', 'கருத்து சொல்ல',
+                    'கீழே "கருத்து" button-ஐ தட்டினால் app-பற்றிய கருத்து, '
+                    'திருத்தம், அல்லது ஊர் தகவல் — எதுவும் அனுப்பலாம்.'),
+                ].map((item) => Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.$1, style: const TextStyle(fontSize: 20)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.$2,
+                              style: const TextStyle(
+                                fontFamily: 'NotoSansTamil',
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1B5E20),
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              item.$3,
+                              style: const TextStyle(
+                                fontFamily: 'NotoSansTamil',
+                                fontSize: 13,
+                                color: Color(0xFF444444),
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+              ],
+            ),
+          ),
+
+          // ── Village for villagers footer ───────────────────────────
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 4, 16, 32),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: _green.withOpacity(0.06),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: _green.withOpacity(0.2)),
+              border: Border.all(color: _green.withOpacity(0.18)),
             ),
-            child: Column(
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  '❤️',
-                  style: TextStyle(fontSize: 24),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'வேந்தன் அவர்களால் பண்ணைப்புரம் மக்களுக்காக கட்டமைக்கப்பட்டது',
+                Text('🌿', style: TextStyle(fontSize: 20)),
+                SizedBox(width: 10),
+                Text(
+                  'பண்ணைப்புரம் மக்களால், மக்களுக்காக',
                   style: TextStyle(
                     fontFamily: 'NotoSansTamil',
                     fontSize: 13,
                     color: Color(0xFF1B5E20),
+                    fontWeight: FontWeight.w600,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const Text(
-                  'Built with ❤️ for Pannaipuram by வேந்தன்',
-                  style: TextStyle(
-                    fontFamily: 'Roboto',
-                    fontSize: 11,
-                    color: Color(0xFF757575),
-                  ),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),
