@@ -1,356 +1,265 @@
-# பண்ணைப்புரம் — Claude Development Rules
+# CLAUDE.md — பண்ணைப்புரம் (Pannaipuram) Project
 
-**Project:** பண்ணைப்புரம் (Pannaipuram) Village Information App
-**Developer:** Venthan (venthan89@gmail.com)
-**Last Updated:** March 23, 2026
-
----
-
-## Documentation First
-
-Before making ANY changes to the codebase:
-
-1. **Always read these documents in order:**
-   - `/docs/requirements.md` — What the app does and current phase status
-   - `/docs/ui-design.md` — Screen layouts and visual design (implemented)
-   - `/docs/backend-design.md` — Database, API, deployment info
-
-2. **Always check the current code** before editing
-   - Read the file you're about to edit
-   - Understand the existing pattern
-   - Don't break existing functionality
-
-3. **After ANY change, update relevant docs**
-   - If you modify a feature → update `requirements.md` phase status
-   - If you change a screen → update `ui-design.md`
-   - If you change an API endpoint → update `backend-design.md`
+## Project
+**பண்ணைப்புரம்** — Village Information App for Pannaipuram, Theni District, Tamil Nadu.
+Repo: https://github.com/VenthanGowthamS/Pannaipuram
+Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, water, buses, doctors, auto, emergency contacts, and local services.
 
 ---
 
-## Language & Localization
+## Tech Stack
 
-### Tamil Text Rules
+| Layer | Tech | Location |
+|---|---|---|
+| Mobile App | Flutter (Dart) | `app/` |
+| Backend API | Node.js + Express | `backend/` |
+| Admin Panel | React + MUI (Vite) | `admin-ui/` |
+| Database | Supabase (PostgreSQL) | Cloud — Asia-Pacific Singapore |
+| Hosting | Render.com (Node.js) | https://pannaipuram-api.onrender.com |
+| Docs | Markdown | `docs/` |
 
-- **Always use colloquial Tamil** (not formal/literary)
-- **Never use formal "வணக்கம்" or similar** — use street-level Tamil like "சார்", "சிஸ்டர்", "அண்ணை", "அக்கா"
-- **Example colloquial phrases already in app:**
-  - "சொல்லுங்க, என்ன வேணும்?" (What do you need?)
-  - "சார், ஆட்டோ வேணுமா?" (Sir, need an auto?)
-  - "சிஸ்டர், டாக்டர் வந்துட்டாரா?" (Sister, did the doctor come?)
+---
 
-- **ALWAYS include English sub-label below Tamil**
-  - Tamil: 22–24sp, bold, `NotoSansTamil`
-  - English: 12sp, regular, `Roboto`
-  - Example:
-    ```dart
-    Text('சார், ஆட்டோ வேணுமா?', style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 20, fontWeight: FontWeight.bold))
-    Text('Auto & Car Transport', style: TextStyle(fontFamily: 'Roboto', fontSize: 12))
-    ```
+## Environment (Mac)
 
-### Font Rules
+- **Machine:** M1 MacBook Air (Apple Silicon)
+- **Local path:** `~/Project1/Pannaipuram`
+- **Java:** JDK 17 (for Flutter Android builds)
+- **Flutter:** Stable channel, ARM64 native
+- **Node.js:** v18+ (LTS)
+- **Android Studio:** For emulator + SDK
+- **Supabase project ID:** `eoiaexdbnyzysolgwitw`
 
-- **Tamil text:** Always use `NotoSansTamil` (already in `pubspec.yaml`)
-- **English text:** Use `Roboto` (standard Material font)
-- **Minimum font size:** 18sp for body text (readable for elderly)
-- **Minimum tap target:** 48dp (Material Design accessibility standard)
+---
+
+## Rules (Always Follow These)
+
+- Fix **ONE issue at a time** — don't chain multiple fixes without checking with Venthan
+- After each fix, **run the relevant test/build** to verify it worked
+- If a fix fails twice, **STOP** and explain the problem instead of trying again
+- **Never modify more than 3 files in one go** without asking first
+- Before any risky change, commit a checkpoint: `git add . && git commit -m "checkpoint: <describe state>"`
+- **Never commit:** `.DS_Store`, `build/`, `.gradle/`, `*.apk`, `node_modules/`, `.env`
+- Before installing anything, check if already installed: `which <tool>` or `<tool> --version`
+- **Always use Homebrew** for macOS package installs
+- If a command fails, show the **FULL error** — don't summarize it
+- **Git commands** always start with `cd ~/Project1/Pannaipuram &&` — never bare `git` commands
+
+---
+
+## Language & Localization Rules
+
+- **Always use colloquial Tamil** — not formal/literary
+- **Never use "வணக்கம்"** — use "சார்", "அண்ணை", "அக்கா", "சிஸ்டர்"
+- **Every Tamil label needs an English sub-label:**
+  ```dart
+  Text('சார், ஆட்டோ வேணுமா?', style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 20, fontWeight: FontWeight.bold))
+  Text('Auto & Car Transport', style: TextStyle(fontFamily: 'Roboto', fontSize: 12))
+  ```
+- **Tamil font:** `NotoSansTamil` — minimum 18sp for body, 22–24sp for headers
+- **English font:** `Roboto` — 12sp for sub-labels
+- **Minimum tap target:** 48dp (accessibility)
+
+---
+
+## Skill 1 — Environment Setup
+*Use when starting fresh or on a new machine*
+
+1. Check Flutter: `flutter --version` → if missing, install from flutter.dev (ARM64 build)
+2. Check Node.js: `node --version` → if missing: `brew install node`
+3. Check Java: `java -version` → if missing: `brew install openjdk@17`
+4. Set environment variables in `~/.zshrc`:
+   ```bash
+   export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+   export ANDROID_HOME=$HOME/Library/Android/sdk
+   export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools
+   ```
+5. Run `flutter doctor` → fix any issues shown
+6. Run `cd ~/Project1/Pannaipuram/backend && npm install` → install backend deps
+7. Run `cd ~/Project1/Pannaipuram/admin-ui && npm install` → install admin deps
+8. Report what was installed vs already present
+
+---
+
+## Skill 2 — Build Flutter APK
+*Use when ready to build the Android APK*
+
+1. Navigate: `cd ~/Project1/Pannaipuram/app`
+2. Get dependencies: `flutter pub get`
+3. Analyze for errors: `flutter analyze` → fix any errors (warnings OK)
+4. Build debug APK (faster): `flutter build apk --debug`
+5. Build release APK (final): `flutter build apk --release`
+6. If build fails, show the FULL error log — don't summarize
+7. APK output path: `app/build/app/outputs/flutter-apk/app-release.apk`
+8. Report the APK size
+9. Share via WhatsApp: send APK + QR code to village WhatsApp group
+
+---
+
+## Skill 3 — Backend Deploy
+*Use when backend changes are ready*
+
+1. Navigate: `cd ~/Project1/Pannaipuram/backend`
+2. Run syntax check: `node -c src/app.js && echo "✅ app.js OK"`
+3. Run all tests: `node test/admin_crud.test.js`
+   - Tests cover: auth, power, bus, doctors, emergency, auto, streets, water, services, announcements, RBAC
+   - Must pass all 52 tests before deploy
+4. If tests pass: push to GitHub → Render auto-deploys from `main` branch
+5. Verify live at: https://pannaipuram-api.onrender.com
+6. Note: Render free tier sleeps after inactivity — first request may take 60s to wake
+
+---
+
+## Skill 4 — Admin Panel Build
+*Use when admin UI changes are ready*
+
+1. Navigate: `cd ~/Project1/Pannaipuram/admin-ui`
+2. Build: `npm run build`
+   - Output goes to: `../backend/public/admin-v2/`
+   - Must complete with **zero errors**
+3. Test locally: open `http://localhost:3000/admin/v2` (if backend running locally)
+4. Or verify live at: `https://pannaipuram-api.onrender.com/admin/v2`
+5. Login and check each tab loads correctly
+
+---
+
+## Skill 5 — Git Checkpoint
+*Use before any risky change and at end of every session*
+
+1. Run: `cd ~/Project1/Pannaipuram && git status`
+2. Stage only source files (no .DS_Store, build/, .gradle/, *.apk, node_modules/):
+   ```bash
+   git add app/lib/ backend/src/ admin-ui/src/ docs/ CLAUDE.md
+   ```
+3. Commit with clear message: `git commit -m "describe what changed"`
+4. Push: `git push origin main`
+5. Confirm: `git log --oneline -3`
+
+---
+
+## Skill 6 — Troubleshoot Build Failure
+*Use when any build fails*
+
+1. Show the **last 50 lines** of the error log
+2. Identify root cause (dependency issue, SDK mismatch, missing file, syntax error)
+3. Suggest **ONE fix at a time** — don't fix everything at once
+4. After each fix, re-run the failing command to verify
+5. If still failing after 3 attempts, summarize what was tried and what the blocker is
+
+---
+
+## Skill 7 — Database Migration
+*Use when adding new tables or columns to Supabase*
+
+1. Write the migration SQL in `backend/src/db/migration_<feature>.sql`
+2. Always use `CREATE TABLE IF NOT EXISTS` and `ADD COLUMN IF NOT EXISTS`
+3. Paste the SQL into **Supabase SQL Editor** (cloud) and run it there
+4. Verify with: `SELECT * FROM <table> LIMIT 5;`
+5. Update `docs/backend-design.md` with new schema
+
+**Supabase project:** `eoiaexdbnyzysolgwitw` (Asia-Pacific Singapore)
+
+---
+
+## Skill 8 — Data Entry (Venthan's Task)
+*Use when adding real village data via Admin Panel*
+
+1. Open: https://pannaipuram-api.onrender.com/admin/v2
+2. Login with Venthan's credentials
+
+**Priority data still needed:**
+- 🚌 **Bus timings** — 6 corridors pending: Thevaram, Dindigul, Theni, Coimbatore, Trichy, Palani
+  - Only 1 set of timings per corridor (Pannaipuram is a STOP, not a terminus — no inbound/outbound)
+- 💧 **Water schedules** — 56 streets pending (only வள்ளுவர் தெரு done)
+- 🚗 **Auto drivers** — fill phone numbers for all registered drivers
+- 📞 **Emergency** — add Panchayat office + water board numbers
+- 🛣️ **Streets** — enter all 57 street names in Streets tab
+
+---
+
+## Control Prompts (Use During Sessions)
+
+**When Claude goes off track:**
+> "Stop. Summarize what you've changed so far and what the current error is. Don't make any more changes yet."
+
+**Before a risky fix:**
+> "Before touching anything, commit a checkpoint of the current working state."
+
+**To narrow focus:**
+> "Ignore everything else. Focus only on this one error: [paste error]. What is the single most likely cause?"
+
+**To recover from a bad fix:**
+```bash
+git revert HEAD        # undo last commit
+git checkout .         # discard all uncommitted changes
+```
+
+---
+
+## Session Workflow
+
+### Every Session Start:
+1. Open Terminal → `cd ~/Project1/Pannaipuram`
+2. `git pull origin main` — get latest
+3. `git status` — see current state
+4. Tell Claude: *"Read CLAUDE.md and tell me the current project status"*
+
+### During Session:
+- Use Skill prompts above for each task type
+- Commit checkpoints before risky changes
+- If something breaks → `git revert`, don't switch tools
+
+### Every Session End:
+- Run **Skill 5 (Git Checkpoint)** before closing
+- Note what was done and what's next in the commit message
+
+---
+
+## Documentation First Rule
+
+Before making ANY changes to the codebase, always read:
+1. `docs/requirements.md` — current phase and feature status
+2. `docs/ui-design.md` — screen layouts and design (implemented)
+3. `docs/backend-design.md` — database, API, deployment
+
+After ANY change:
+- Modified a feature → update `requirements.md`
+- Changed a screen → update `ui-design.md`
+- Changed an API endpoint → update `backend-design.md`
 
 ---
 
 ## Code Standards
 
-### Flutter
+### Flutter (Dart)
 
-- **Always check `mounted` before `setState` in async methods**
-  ```dart
-  Future<void> _load() async {
-    try {
-      final data = await someApiCall();
-      if (!mounted) return;  // ← REQUIRED
-      setState(() => _data = data);
-    } catch (_) {
-      if (!mounted) return;  // ← REQUIRED
-      setState(() => _error = true);
-    }
+```dart
+// ALWAYS check mounted before setState in async methods
+Future<void> _load() async {
+  try {
+    final data = await someApiCall();
+    if (!mounted) return;
+    setState(() => _data = data);
+  } catch (_) {
+    if (!mounted) return;
+    setState(() => _error = true);
   }
-  ```
+}
 
-- **Always use NotoSansTamil for Tamil text:**
-  ```dart
-  Text('பண்ணைப்புரம்',
-    style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 22, fontWeight: FontWeight.bold))
-  ```
-
-- **Icon sizing:** 48dp minimum for tap targets
-  - Large icons in hero tiles: 44–52px
-  - Header icons: 26–28px
-
-- **Colors:** Use values from `app_theme.dart`
-  - `AppColors.primary` = deep green
-  - `AppColors.powerYellow`, `AppColors.waterBlue`, `AppColors.busOrange`, `AppColors.hospitalRed`
+// ALWAYS use NotoSansTamil for Tamil text
+Text('பண்ணைப்புரம்',
+  style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 22, fontWeight: FontWeight.bold))
+```
 
 ### Backend (Node.js)
 
-- **API Response Format — ALWAYS use this envelope:**
-  ```javascript
-  res.json({ success: true, data: [...] })
-  // For errors:
-  res.status(500).json({ success: false, error: 'message' })
-  ```
-
-- **All routes expect this format** — Flutter's `ApiService` unwraps the `data` field
-  - Water, Power, Bus, Hospital, Emergency, Devices routes
-  - Admin routes
-
----
-
-## Data Validation — Internet Verification Rules
-
-**EVERY TIME** data is added or modified in this project, Claude MUST follow these validation steps:
-
-### 1. Place Names & Geography
-
-- **Search the internet** to verify Tamil place names, English spellings, and correct district/taluk before inserting
-- Cross-check with Google Maps or official Tamil Nadu government sources
-- Verify that the Tamil spelling (e.g., கூடலூர்) matches the official English name (e.g., Gudalur)
-- Confirm geographic relationships: which district, which corridor, nearby towns
-- **Example:** When "கடலூர்" appeared in handwritten notes, we searched and confirmed it was கூடலூர் (Gudalur/Koodalur) near Cumbum — NOT Cuddalore (கடலூர்) on the coast
-
-### 2. Bus Routes & Transport Data
-
-- **Pannaipuram is a bus STOP, not a terminus.** There is no "inbound/outbound" — every timing is simply when a bus departs from the Pannaipuram stop heading toward the corridor destination. One set of timings per corridor only.
-- Verify bus corridor destinations exist on actual TNSTC (Tamil Nadu State Transport) routes
-- Cross-check town distances and route order (e.g., Pannaipuram → Cumbum → Gudalur → Kumily)
-- Validate that bus timings are reasonable (e.g., first bus not before 3:30 AM, last bus not after 9:30 PM for rural routes)
-- If reading handwritten Tamil schedules, flag any ambiguous characters and ask Venthan before inserting
-- **Never assume** a destination name — if the handwriting is unclear, mark it as ❓ VERIFY
-
-### 3. Phone Numbers & Contacts
-
-- Verify phone number format: Indian mobile = 10 digits starting with 6/7/8/9
-- Landline numbers should include STD code (e.g., 04554 for Theni district)
-- Search online to validate hospital/police/fire station numbers against official directories
-- **Never insert a phone number without verifying format**
-
-### 4. Doctor & Hospital Data
-
-- Verify doctor names and specializations against hospital websites or health department listings when available
-- Cross-check GH (Government Hospital) names with Tamil Nadu Health Department data
-- Validate hospital timings against standard government hospital schedules (typically 8 AM–8 PM for OPD)
-
-### 5. General Validation Checklist
-
-Before ANY data insertion into Supabase:
-
-1. **Search internet** for the data point (place name, phone number, schedule, etc.)
-2. **Cross-reference** with at least one official source (government site, Google Maps, TNSTC)
-3. **Show Venthan** any data that couldn't be verified online — don't guess
-4. **Document** the source of verification in commit messages or SQL comments
-5. **Flag uncertainties** with `-- ⚠️ NEEDS VERIFICATION` comments in SQL
-
-### 6. Tamil Handwriting Reading Rules
-
-When extracting data from handwritten Tamil images:
-
-- **Always show extracted data to Venthan** before inserting into database
-- Tamil characters that look similar must be flagged: க/கா, ப/பா, ம/மா, சி/கி, etc.
-- Place name abbreviations (போடிநாய் = போடிநாயக்கனூர்) must be confirmed
-- If a word appears as a destination but doesn't match any known corridor, **create a verification list** — don't create new corridors without Venthan's approval
-- Time readings: verify AM/PM context from surrounding entries (e.g., if previous entry is 17:00, next entry "6:10" is likely 18:10 not 06:10)
-
----
-
-## Feature Management
-
-### Before Removing a Feature
-
-- **NEVER remove features without asking Venthan first**
-- This is Venthan's village app — all features serve real people
-- If a feature seems unused, clarify with Venthan before deleting code
-
-### Adding New Modules
-
-1. Define in `requirements.md`
-2. Design screen in `ui-design.md`
-3. Add API endpoints in `backend-design.md`
-4. Build Flutter screen + backend route
-5. Update all 3 docs when done
-
----
-
-## Git & Version Control
-
-### Git Command Rules
-
-- **ALWAYS include full path** — every git command must start with `cd /full/path && git ...`
-- **Never give a bare git command** without the cd prefix
-- **Project path:** `/sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram`
-- **Example — correct:**
-  ```bash
-  cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram && git status
-  cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram && git add backend/src/db/seed_bus_timings_complete.sql && git commit -m "Update bus timings"
-  cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram && git push origin main
-  ```
-- **Example — wrong (never do this):**
-  ```bash
-  git status          ← ❌ no cd
-  git push origin main  ← ❌ no cd
-  ```
-
-### After Each Task
-
-1. **Commit with clear message:**
-   ```bash
-   cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram && git add [files] && git commit -m "Update home screen Tamil labels to use colloquial text"
-   ```
-
-2. **Push to main:**
-   ```bash
-   cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram && git push origin main
-   ```
-
-3. **Always push after completing a task** — keeps the repo up to date for Venthan
-
----
-
-## Deployment & Production
-
-### Production Settings
-
-- **App name:** பண்ணைப்புரம் (Pannaipuram)
-- **Production API:** https://pannaipuram-api.onrender.com
-- **Database:** Supabase (eoiaexdbnyzysolgwitw), region: Asia-Pacific Singapore
-- **Backend:** Hosted on Render.com (Node.js)
-
-### Before Deploying
-
-1. Ensure all unit tests pass
-2. Verify Tamil text rendering on actual Android device
-3. Test offline mode (no network)
-4. Check API responses format: `{success: true, data: [...]}`
-
----
-
-## Modules Checklist
-
-| Module | Status | Screens | API Routes |
-|---|---|---|---|
-| Power (மின்சாரம்) | ✅ Complete | power_screen.dart | /api/power/* |
-| Water (தண்ணீர்) | ✅ Complete | water_screen.dart | /api/water/* |
-| Bus (பேருந்து) | ✅ Complete | bus_screen.dart + bus_route_screen.dart | /api/bus/* |
-| Hospital (மருத்துவமனை) | ✅ Complete — Hospital+Doctor CRUD, Schedule Replace | hospital_screen.dart | /api/hospital/*, /admin/hospital/* |
-| Auto (ஆட்டோ / வண்டி) | ✅ Complete | auto_screen.dart | /api/auto/* |
-| Emergency (அவசர தொலைபேசி) | ✅ Complete | emergency_screen.dart | /api/emergency/* |
-| Services (ஊர் சேவை) | ✅ Complete | services_screen.dart | /api/services/* |
-| Announcements (அறிவிப்புகள்) | ✅ Complete | home_screen.dart (banner) | /api/announcements/* |
-
----
-
-## Common Tasks
-
-### Add or update an auto/van driver
-1. Admin panel → 🚗 Auto/Van tab → fill in name (Tamil), phone, vehicle type, coverage
-2. Flutter: `auto_screen.dart` fetches from `/api/auto/drivers`
-3. Phone number empty = shows "விரைவில்" button (no crash)
-4. WhatsApp Contact: admin sets number + message from admin panel → app uses dynamically
-5. Run regression tests: `cd backend && npm test`
-
-### Add a new emergency contact
-1. Admin panel → 📞 Emergency tab → fill in category, Tamil/English name, phone
-2. Flutter: Emergency screen reads from API, categories scroll horizontally
-3. Update `requirements.md` data collection checklist
-
-### Add a local service contact
-1. Admin panel → 🛍 Services tab → pick category (horizontal tiles), fill name + phone
-2. **IMPORTANT:** `local_services` table must exist in Supabase — run migration SQL first
-3. Flutter: `services_screen.dart` fetches from `/api/services`
-4. Categories: milk, post, flower, plumber, electrician, other
-
-### Add or update a hospital
-1. Admin panel → 🏥 Doctors tab → Hospital section at top → Add Hospital
-2. Fill: Name Tamil, Name English (required), address, phone fields
-3. API: `POST /admin/hospital` (new) or `PUT /admin/hospital/:id` (edit)
-4. Hospital list chips appear at top — click chip to edit, ✕ to delete
-5. Deleting a hospital with doctors linked will return an error — delete doctors first
-
-### Add a doctor to a hospital
-1. Admin panel → 🏥 Doctors tab → "Add New Doctor" form
-2. Hospital dropdown is **dynamic** (fetched from DB, not hardcoded)
-3. If no hospitals exist, form shows a warning — add hospital first
-4. API: `POST /admin/hospital/doctors`
-
-### Update a doctor's schedule
-1. Admin panel → 🏥 Doctors tab → click ➕ icon on the doctor row
-2. If schedule already exists → dialog says "Replace Schedule" — it will DELETE all existing entries and re-insert
-3. Check the days, set start/end time, add Tamil notes if needed
-4. "Clear All" button removes all schedules for that doctor
-5. API: `PUT /admin/hospital/doctors/:id/schedule` (replaces all), `DELETE /admin/hospital/doctors/:id/schedule` (clears)
-6. **Never add individual schedules one-by-one** — always use the Replace dialog
-7. Flutter app: pull down to refresh hospital screen to see updated schedules
-8. Cache: CacheService.cacheDoctors() stores data in SharedPreferences for offline use
-
-### Change bus timings
-1. Backend: Update `bus_timings` table
-2. Flutter: `bus_screen.dart` fetches from API
-3. Mark data collection status in `requirements.md`
-
-### Modify home screen
-1. Edit `home_screen.dart`
-2. Keep colloquial Tamil labels
-3. Update `ui-design.md` with new layout
-
-### Build Release APK
-
-**MANDATORY: Generate APK after every fix.** The APK is the final deliverable.
-
-```bash
-cd /path/to/Pannaipuram/app && flutter build apk --release
-```
-
-APK output path:
-```
-app/build/app/outputs/flutter-apk/app-release.apk
-```
-
-For debug APK (faster build, larger file):
-```bash
-cd /path/to/Pannaipuram/app && flutter build apk --debug
-```
-
-### Quick Test Commands (copy-paste ready)
-
-```bash
-# Pull latest, build admin UI, run backend tests
-cd /path/to/Pannaipuram && git pull origin main
-
-# Backend tests
-cd backend && node test/admin_crud.test.js
-
-# Admin UI build
-cd ../admin-ui && npm run build
-
-# Flutter run (debug on connected device)
-cd ../app && flutter run
-
-# Flutter release APK
-cd ../app && flutter build apk --release
-```
-
-### Push Changes to GitHub
-
-```bash
-cd /path/to/Pannaipuram && git add -A && git commit -m "description" && git push origin main
-```
-
----
-
-## Hospital & Doctor Admin — Architecture Rules
-
-These rules must ALWAYS be followed when working on hospital/doctor features:
-
-### Backend (hospital.js) — Key Patterns
-
 ```javascript
-// Day name → integer conversion (ALWAYS use this)
+// ALWAYS use this API response envelope
+res.json({ success: true, data: [...] })
+// For errors:
+res.status(500).json({ success: false, error: 'message' })
+
+// Day name → integer for doctor schedules
 const DAY_MAP = { 'sunday':0,'monday':1,'tuesday':2,'wednesday':3,'thursday':4,'friday':5,'saturday':6 };
 function parseDayOfWeek(val) {
   if (typeof val === 'number') return val;
@@ -359,30 +268,58 @@ function parseDayOfWeek(val) {
 
 // Schedule replace = DELETE all then INSERT (NEVER just INSERT — creates duplicates)
 await client.query('DELETE FROM doctor_schedules WHERE doctor_id = $1', [doctorId]);
+```
+
+### Colors (use from `app_theme.dart`)
+- `AppColors.primary` — deep green (main brand)
+- `AppColors.powerYellow` — power module
+- `AppColors.waterBlue` — water module
+- `AppColors.busOrange` — bus module
+- `AppColors.hospitalRed` — hospital module
+
+---
+
+## Data Validation Rules
+
+**EVERY TIME** data is added, Claude must:
+
+1. **Search the internet** to verify Tamil place names, English spellings, district/taluk
+2. **Verify bus corridors** exist on actual TNSTC routes — cross-check town distances
+3. **Validate phone numbers** — Indian mobile = 10 digits starting with 6/7/8/9
+4. **Show Venthan** any data that couldn't be verified online — never guess
+5. **Flag uncertainties** with `-- ⚠️ NEEDS VERIFICATION` in SQL comments
+
+**Bus route rule:** Pannaipuram is a **STOP**, not a terminus. One set of departure timings per corridor only. No "inbound/outbound" distinction.
+
+**Tamil handwriting rule:** When reading handwritten Tamil images, always show extracted data to Venthan before inserting into the database. Never assume ambiguous characters — flag them.
+
+---
+
+## Hospital & Doctor Admin — Architecture Rules
+
+```javascript
+// Schedule replace = DELETE all then INSERT (NEVER just INSERT — creates duplicates)
+await client.query('DELETE FROM doctor_schedules WHERE doctor_id = $1', [doctorId]);
 // then insert each schedule one by one
 
 // Time from DB is "HH:MM:SS" — always slice to "HH:MM" for display
 const start = s.start_time ? s.start_time.slice(0,5) : '??';
 ```
 
-### Admin UI (Doctors.jsx) — Key Patterns
-
-- Hospital dropdown is **always dynamic** — fetched from `GET /admin/hospital/list`, never hardcoded
-- Schedule replace uses `PUT /admin/hospital/doctors/:id/schedule` with `{ schedules: [...] }` body
-- `schedules` array contains `{ day_of_week: INTEGER, start_time, end_time, notes_tamil }`
-- `formatSchedule()` must always guard for null times — use `s.start_time?.slice(0,5) ?? '??'`
-- Days stored as integers (0=Sun, 1=Mon, ... 6=Sat) in DB and in the schedule dialog state
-
-### Flutter (hospital_screen.dart) — Cache Pattern
+```jsx
+// Hospital dropdown is ALWAYS dynamic — fetched from API, never hardcoded
+// formatSchedule() must always guard for null times
+const formatSchedule = (s) => `${s.start_time?.slice(0,5) ?? '??'} – ${s.end_time?.slice(0,5) ?? '??'}`;
+```
 
 ```dart
 // Fetch → cache → on error load from cache → last resort: hardcoded fallback
 Future<void> _fetchDoctors() async {
   try {
     final allDoctors = await ApiService.getAllDoctors();
-    await CacheService.cacheDoctors(allDoctors);  // always cache on success
+    await CacheService.cacheDoctors(allDoctors);
     if (!mounted) return;
-    setState(() { _apiDoctors = filtered; _offline = false; });
+    setState(() { _apiDoctors = allDoctors; _offline = false; });
   } catch (_) {
     final cached = await CacheService.getCachedDoctors();
     if (!mounted) return;
@@ -391,153 +328,102 @@ Future<void> _fetchDoctors() async {
 }
 ```
 
-- `RefreshIndicator` must wrap the `CustomScrollView` with `AlwaysScrollableScrollPhysics`
-- All `setState` calls must have `if (!mounted) return;` before them in async methods
-
 ---
 
-## Testing — MANDATORY After Every Change
+## Testing — Run After Every Change
 
-**Every feature or bug fix MUST be tested before committing.** Follow these steps:
-
-### 1. Backend Syntax Check
-
+### 1. Backend syntax check
 ```bash
-cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram/backend && node -c src/app.js && echo "✅ app.js OK"
+cd ~/Project1/Pannaipuram/backend && node -c src/app.js && echo "✅ OK"
 ```
 
-Check every modified route file:
+### 2. All API tests (52 tests) — run from Mac terminal only
 ```bash
-node -c src/routes/admin/auth.js && echo "✅ OK"
-node -c src/routes/admin/services.js && echo "✅ OK"
-# ... repeat for each modified file
+cd ~/Project1/Pannaipuram/backend && node test/admin_crud.test.js
+```
+> Note: Tests target https://pannaipuram-api.onrender.com — cannot run from Cowork VM (outbound proxy blocks Render). Run from your Mac terminal.
+
+### 3. Admin UI build
+```bash
+cd ~/Project1/Pannaipuram/admin-ui && npm run build
 ```
 
-### 2. Admin CRUD Tests (52 tests)
-
+### 4. Flutter analyze (zero errors required)
 ```bash
-cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram/backend && node test/admin_crud.test.js
+cd ~/Project1/Pannaipuram/app && flutter analyze
 ```
 
-Tests cover:
-- 🔐 Authentication (login, token)
-- ⚡ Power Cuts CRUD
-- 🚌 Bus Timings CRUD
-- 👨‍⚕️ Doctors CRUD
-- 📞 Emergency Contacts CRUD
-- 🚗 Auto Drivers CRUD + Registration Contact GET/PUT
-- 🛣️ Streets CRUD
-- 💧 Water Schedule Update
-- 🛍 Local Services CRUD
-- 📢 Announcements CRUD
-- 👥 Auth Signup & RBAC User Management
-- 🔒 RBAC Viewer Restrictions
-
-### 3. Admin UI Build
-
+### 5. Flutter APK build test
 ```bash
-cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram/admin-ui && npm run build
-```
-
-- Must complete with zero errors
-- Output goes to `../backend/public/admin-v2/`
-- After build, verify admin panel loads at `/admin/v2`
-
-### 4. Flutter Dart Analysis
-
-```bash
-cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram/app && flutter analyze
-```
-
-- Zero errors required (warnings OK)
-- If `flutter` not available in VM, manually verify:
-  - All imports resolve (check file paths exist)
-  - All braces `{}` and parentheses `()` are balanced
-  - All `setState` calls have `mounted` check in async methods
-  - Tamil text uses `fontFamily: 'NotoSansTamil'`
-
-### 5. Flutter App Build Test
-
-```bash
-cd /sessions/hopeful-peaceful-wozniak/mnt/Pannaipuram/app && flutter build apk --debug
-```
-
-### 6. Admin Panel Manual Test Checklist
-
-After deploying, verify in browser at `https://pannaipuram-api.onrender.com/admin/v2`:
-
-- [ ] Login works with correct password → shows "Login successful ✅"
-- [ ] Login fails with wrong password → shows error message
-- [ ] Login fails when server down → shows "Server unreachable" message
-- [ ] Each admin tab loads without errors (Power, Bus, Doctors, Emergency, Auto, Water, Streets, Services, Announcements)
-- [ ] CRUD: Can create, edit, delete items in each tab
-- [ ] Users tab visible only for super_admin role
-- [ ] Logout works and returns to login screen
-
-### 7. Flutter App Manual Test Checklist
-
-After `flutter run`:
-
-- [ ] Home screen loads with status dashboard cards (power, bus, water)
-- [ ] Shimmer loading shows while data loads
-- [ ] Pull-to-refresh works on home screen
-- [ ] Each module tile navigates with smooth slide transition
-- [ ] Power screen: shows current status, correct IST times (not UTC)
-- [ ] Water screen: street picker works, times display in IST
-- [ ] Bus screen: timings load for each corridor
-- [ ] Hospital screen: doctor schedules display
-- [ ] Auto screen: drivers list + Gowtham contact card with call button
-- [ ] Services screen: shows services + Gowtham contact footer card
-- [ ] Emergency screen: contacts grouped by category
-- [ ] About screen: village info displays
-- [ ] Announcements banner: scrolls auto if multiple announcements
-- [ ] Offline banner shows when no network
-
-### 8. When Adding New Features
-
-For any new module, ALL of the following must be created:
-
-1. **DB Migration SQL** in `backend/src/db/migration_*.sql`
-2. **Public API route** in `backend/src/routes/`
-3. **Admin API route** in `backend/src/routes/admin/`
-4. **Register routes** in `backend/src/app.js`
-5. **Admin UI page** in `admin-ui/src/pages/`
-6. **API methods** in `admin-ui/src/api.js`
-7. **Layout tab** in `admin-ui/src/components/Layout.jsx`
-8. **App.jsx switch case** in `admin-ui/src/App.jsx`
-9. **Flutter screen** in `app/lib/screens/`
-10. **API methods** in `app/lib/services/api_service.dart`
-11. **Home screen tile** in `app/lib/screens/home_screen.dart`
-12. **CRUD tests** added to `backend/test/admin_crud.test.js`
-13. **Docs updated**: `requirements.md`, `ui-design.md`, `backend-design.md`
-
-### 9. Quick Fix Verification
-
-For bug fixes, run the relevant SQL to verify in Supabase SQL Editor:
-
-```sql
--- Check if user is active
-SELECT id, email, role, is_active FROM admin_users;
-
--- Fix deactivated user
-UPDATE admin_users SET is_active = TRUE WHERE email = 'venthan89@gmail.com';
-
--- Check announcements
-SELECT * FROM announcements WHERE is_active = TRUE ORDER BY priority DESC;
-
--- Check local services
-SELECT * FROM local_services ORDER BY category, display_order;
+cd ~/Project1/Pannaipuram/app && flutter build apk --debug
 ```
 
 ---
 
-## Important Notes
+## Current Status (March 2026)
 
-- **No internet required for:** Bus, Hospital, Auto, Emergency (offline-capable)
-- **Requires internet for:** Power cuts, Water alerts (real-time)
-- **Offline banner:** Shows when no network available (widget: `offline_banner.dart`)
-- **Street selection:** User selects once in onboarding, app remembers via `PrefsService.streetId`
-- **Device registration:** Optional (deferred) — for push notifications later
+### ✅ Live & Complete (9 Modules)
+
+| Module | Flutter Screen | Backend Route | Admin Tab |
+|---|---|---|---|
+| ⚡ Power | power_screen.dart | /api/power | PowerCuts.jsx |
+| 💧 Water | water_screen.dart | /api/water | Water.jsx |
+| 🚌 Bus | bus_screen.dart + bus_route_screen.dart | /api/bus | BusTimings.jsx |
+| 🏥 Hospital + Doctors | hospital_screen.dart | /api/hospital, /admin/hospital | Doctors.jsx |
+| 🚗 Auto/Van | auto_screen.dart | /api/auto | AutoDrivers.jsx |
+| 📞 Emergency | emergency_screen.dart | /api/emergency | Emergency.jsx |
+| 🛍 Local Services | services_screen.dart | /api/services | LocalServices.jsx |
+| 📢 Announcements | home_screen.dart (banner) | /api/announcements | Announcements.jsx |
+| 💬 Feedback | feedback_screen.dart | /api/feedback | Feedback.jsx |
+
+### ✅ Infrastructure
+- JWT auth + RBAC (super_admin, admin, viewer)
+- User management tab in admin panel
+- Streets management (57 streets, admin tab ready)
+- Offline cache (CacheService with SharedPreferences)
+- Pull-to-refresh with AlwaysScrollableScrollPhysics
+- Coming-soon banners on Power + Water screens
+- Admin panel mobile: hamburger drawer (not broken bottom nav)
+- About screen with 7-step how-to-use guide in Tamil
+- "விரைவில்" banners for live power/water alerts
+
+### 🔜 Next Up (In Priority Order)
+
+1. **APK rebuild** — build new release APK with all recent changes (Feedback, banners, About screen)
+2. **Data entry** — Venthan enters real data via Admin panel (bus, water, streets, drivers)
+3. **QR code** — generate APK QR code for WhatsApp distribution
+4. **Email notifications for feedback** — Phase 6+ (Nodemailer + Gmail App Password)
+5. **Push notifications** — Phase 7+ (FCM, device registration table already exists)
+6. **Live TNEB power cuts** — Phase 7+ (needs TNEB data feed integration)
+7. **Live water schedule** — Phase 7+ (needs Panchayat coordination)
+8. **iOS build** — not planned yet
+
+---
+
+## Quick Command Reference
+
+```bash
+# Start a session
+cd ~/Project1/Pannaipuram && git pull && git status
+
+# Backend tests (Mac terminal only — VM can't reach Render)
+cd ~/Project1/Pannaipuram/backend && node test/admin_crud.test.js
+
+# Admin UI build
+cd ~/Project1/Pannaipuram/admin-ui && npm run build
+
+# Flutter analyze
+cd ~/Project1/Pannaipuram/app && flutter analyze
+
+# Flutter release APK
+cd ~/Project1/Pannaipuram/app && flutter build apk --release
+
+# Git checkpoint
+cd ~/Project1/Pannaipuram && git add app/lib/ backend/src/ admin-ui/src/ docs/ CLAUDE.md && git commit -m "checkpoint" && git push origin main
+
+# APK output location
+~/Project1/Pannaipuram/app/build/app/outputs/flutter-apk/app-release.apk
+```
 
 ---
 
@@ -545,9 +431,10 @@ SELECT * FROM local_services ORDER BY category, display_order;
 
 - **Developer:** Venthan
 - **Email:** venthan89@gmail.com
-- **Questions about design/features:** Check the docs first, then contact Venthan
+- **Admin panel:** https://pannaipuram-api.onrender.com/admin/v2
+- **Production API:** https://pannaipuram-api.onrender.com
 
 ---
 
 *Last updated: March 23, 2026*
-*Built with ❤️ for பண்ணைப்புரம்*
+*Built with ❤️ for பண்ணைப்புரம் — உங்கள் ஊரின் தகவல் மையம்*
