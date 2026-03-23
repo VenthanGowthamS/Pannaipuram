@@ -1,13 +1,13 @@
 const express = require('express');
 const router  = express.Router();
-const { getClient } = require('../../db');
+const { query } = require('../../db/pool');
 const { requireAuth } = require('./auth');
 
 // GET /admin/feedback — list all feedback, newest first, unread first
 router.get('/', requireAuth, async (req, res) => {
-  const client = getClient();
+
   try {
-    const result = await client.query(
+    const result = await query(
       `SELECT id, message, name_or_contact, is_read, created_at
        FROM user_feedback
        ORDER BY is_read ASC, created_at DESC`
@@ -21,9 +21,9 @@ router.get('/', requireAuth, async (req, res) => {
 
 // PUT /admin/feedback/:id/read — mark as read
 router.put('/:id/read', requireAuth, async (req, res) => {
-  const client = getClient();
+
   try {
-    await client.query(
+    await query(
       'UPDATE user_feedback SET is_read = TRUE WHERE id = $1',
       [req.params.id]
     );
@@ -36,9 +36,9 @@ router.put('/:id/read', requireAuth, async (req, res) => {
 
 // DELETE /admin/feedback/:id — delete a feedback entry
 router.delete('/:id', requireAuth, async (req, res) => {
-  const client = getClient();
+
   try {
-    await client.query('DELETE FROM user_feedback WHERE id = $1', [req.params.id]);
+    await query('DELETE FROM user_feedback WHERE id = $1', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     console.error('admin feedback DELETE error:', err);

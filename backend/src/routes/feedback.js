@@ -1,6 +1,6 @@
 const express = require('express');
 const router  = express.Router();
-const { getClient } = require('../db');
+const { query } = require('../db/pool');
 
 // POST /api/feedback — public, no auth needed
 // Body: { message: string, name_or_contact?: string }
@@ -9,9 +9,9 @@ router.post('/', async (req, res) => {
   if (!message || String(message).trim().length < 5) {
     return res.status(400).json({ success: false, error: 'Message too short (min 5 characters)' });
   }
-  const client = getClient();
+
   try {
-    const result = await client.query(
+    const result = await query(
       `INSERT INTO user_feedback (message, name_or_contact)
        VALUES ($1, $2)
        RETURNING id, created_at`,
