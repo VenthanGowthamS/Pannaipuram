@@ -41,10 +41,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final hour = DateTime.now().hour;
     final greeting = hour < 12
-        ? 'காலை நேரம் சார் 🌅'
+        ? 'காலை வணக்கம் 🌅'
         : hour < 17
-            ? 'மதியம் சார் 🌤️'
-            : 'மாலை சார் 🌙';
+            ? 'மதிய வணக்கம் 🌤️'
+            : 'மாலை வணக்கம் 🌙';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF2F6F2),
