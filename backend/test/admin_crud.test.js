@@ -4,19 +4,37 @@
  *
  * Tests all admin endpoints for CREATE, READ, UPDATE, DELETE operations:
  *   ✅ Authentication (POST /admin/auth/login)
+ *   ✅ Health Check endpoint
+ *   ✅ Public Register (self-signup)
+ *
+ *   ADMIN CRUD:
  *   ✅ Power Cuts CRUD
- *   ✅ Bus Timings CRUD
+ *   ✅ Bus Timings CRUD (+ update)
  *   ✅ Doctors CRUD
+ *   ✅ Hospital CRUD (add/update/delete)
+ *   ✅ Doctor Schedule CRUD (replace/clear)
  *   ✅ Emergency Contacts CRUD
  *   ✅ Auto Drivers CRUD
+ *   ✅ Auto Registration Contact GET/PUT
  *   ✅ Streets CRUD
  *   ✅ Water Schedule UPDATE
+ *   ✅ Water Streets GET
  *   ✅ Local Services CRUD
- *   ✅ Auto Registration Contact GET/PUT
  *   ✅ Announcements CRUD
+ *   ✅ Feedback CRUD (list/read/delete)
  *   ✅ Auth Signup & RBAC User Management
- *   ✅ Public Register (self-signup)
- *   ✅ Health Check endpoint
+ *
+ *   PUBLIC API:
+ *   ✅ Power (cuts, today)
+ *   ✅ Bus (corridors, timings, next)
+ *   ✅ Hospital (info, doctors, today)
+ *   ✅ Emergency (contacts)
+ *   ✅ Auto (contact, drivers)
+ *   ✅ Services (all, by category)
+ *   ✅ Water (streets, schedule, alerts/today)
+ *   ✅ Announcements (active)
+ *   ✅ Feedback (submit, reject short)
+ *   ✅ Devices (register)
  *
  * Requires environment variables:
  *   API_BASE (default: https://pannaipuram-api.onrender.com)
@@ -961,7 +979,7 @@ async function main() {
   // Public register
   await testPublicRegister();
 
-  // Run all CRUD test suites
+  // Run all CRUD test suites (admin)
   await testPowerCutsCRUD();
   await testBusTimingsCRUD();
   await testDoctorsCRUD();
@@ -974,6 +992,25 @@ async function main() {
   await testAnnouncementsCRUD();
   await testAuthSignupAndRBAC();
   await testRBACViewerRestrictions();
+
+  // Public API tests (no auth needed)
+  await testPublicPowerAPI();
+  await testPublicBusAPI();
+  await testPublicHospitalAPI();
+  await testPublicEmergencyAPI();
+  await testPublicAutoAPI();
+  await testPublicServicesAPI();
+  await testPublicWaterAPI();
+  await testPublicAnnouncementsAPI();
+  await testPublicFeedbackAPI();
+  await testPublicDevicesAPI();
+
+  // Admin CRUD — Hospital, Feedback, Water, Bus (new)
+  await testAdminHospitalCRUD();
+  await testAdminDoctorScheduleCRUD();
+  await testAdminFeedbackCRUD();
+  await testAdminWaterStreets();
+  await testAdminBusTimingsUpdate();
 
   console.log('\n═══════════════════════════════════════════════');
   console.log(`  Results: ${passed} passed, ${failed} failed, ${skipped} skipped`);
@@ -990,3 +1027,377 @@ main().catch(e => {
   console.error('Fatal error:', e);
   process.exit(1);
 });
+
+// ══════════════════════════════════════════════════════════════════════════
+// MISSING TESTS — Public API Routes + Admin Hospital/Feedback/Water/Bus
+// ══════════════════════════════════════════════════════════════════════════
+
+async function testPublicPowerAPI() {
+  console.log('\n⚡ Public Power API');
+
+  await test('GET /api/power/cuts returns power cuts list', async () => {
+    const { status, body } = await get('/api/power/cuts');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+  });
+
+  await test('GET /api/power/cuts/today returns today cuts', async () => {
+    const { status, body } = await get('/api/power/cuts/today');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+  });
+}
+
+async function testPublicBusAPI() {
+  console.log('\n🚌 Public Bus API');
+
+  let corridorId = null;
+
+  await test('GET /api/bus/corridors returns corridors list', async () => {
+    const { status, body } = await get('/api/bus/corridors');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+    if (body.data.length > 0) corridorId = body.data[0].id;
+  });
+
+  await test('GET /api/bus/timings/:corridorId returns timings', async () => {
+    const id = corridorId || 1;
+    const { status, body } = await get(`/api/bus/timings/${id}`);
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+
+  await test('GET /api/bus/next returns next bus info', async () => {
+    const { status, body } = await get('/api/bus/next');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+}
+
+async function testPublicHospitalAPI() {
+  console.log('\n🏥 Public Hospital API');
+
+  await test('GET /api/hospital/info returns hospital info', async () => {
+    const { status, body } = await get('/api/hospital/info');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+
+  await test('GET /api/hospital/doctors returns doctors list', async () => {
+    const { status, body } = await get('/api/hospital/doctors');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+  });
+
+  await test('GET /api/hospital/doctors/today returns today doctors', async () => {
+    const { status, body } = await get('/api/hospital/doctors/today');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+  });
+}
+
+async function testPublicEmergencyAPI() {
+  console.log('\n📞 Public Emergency API');
+
+  await test('GET /api/emergency/contacts returns contacts list', async () => {
+    const { status, body } = await get('/api/emergency/contacts');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+  });
+}
+
+async function testPublicAutoAPI() {
+  console.log('\n🚗 Public Auto API');
+
+  await test('GET /api/auto/contact returns contact info', async () => {
+    const { status, body } = await get('/api/auto/contact');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+
+  await test('GET /api/auto/drivers returns drivers list', async () => {
+    const { status, body } = await get('/api/auto/drivers');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+  });
+}
+
+async function testPublicServicesAPI() {
+  console.log('\n🛍 Public Services API');
+
+  await test('GET /api/services returns all services', async () => {
+    const { status, body } = await get('/api/services');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+  });
+
+  await test('GET /api/services/:category returns filtered services', async () => {
+    const { status, body } = await get('/api/services/plumber');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+  });
+}
+
+async function testPublicWaterAPI() {
+  console.log('\n💧 Public Water API');
+
+  await test('GET /api/water/streets returns streets list', async () => {
+    const { status, body } = await get('/api/water/streets');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+  });
+
+  await test('GET /api/water/schedule returns all schedules', async () => {
+    const { status, body } = await get('/api/water/schedule');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+
+  await test('GET /api/water/alerts/today returns today alerts', async () => {
+    const { status, body } = await get('/api/water/alerts/today');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+}
+
+async function testPublicAnnouncementsAPI() {
+  console.log('\n📢 Public Announcements API');
+
+  await test('GET /api/announcements returns active announcements', async () => {
+    const { status, body } = await get('/api/announcements');
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+  });
+}
+
+async function testPublicFeedbackAPI() {
+  console.log('\n💬 Public Feedback API');
+
+  await test('POST /api/feedback submits feedback successfully', async () => {
+    const { status, body } = await post('/api/feedback', {
+      message: 'Test feedback from automated test suite',
+      name_or_contact: 'Test User',
+    });
+    assert(status === 200 || status === 201, `Expected 200/201, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(body.data && body.data.id, 'Expected feedback id in response');
+  });
+
+  await test('POST /api/feedback rejects short message', async () => {
+    const { status, body } = await post('/api/feedback', {
+      message: 'Hi',
+    });
+    assert(status === 400, `Expected 400, got ${status}`);
+    assert(body.success === false, 'Expected success: false');
+  });
+}
+
+async function testPublicDevicesAPI() {
+  console.log('\n📱 Public Devices API');
+
+  await test('POST /api/devices/register registers a device', async () => {
+    const { status, body } = await post('/api/devices/register', {
+      fcm_token: `test_token_${Date.now()}`,
+    });
+    assert(status === 200 || status === 201, `Expected 200/201, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+}
+
+async function testAdminHospitalCRUD() {
+  console.log('\n🏥 Admin Hospital CRUD');
+
+  let createdHospitalId = null;
+
+  await test('GET /admin/hospital/list returns hospitals', async () => {
+    const { status, body } = await get('/admin/hospital/list', getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+  });
+
+  await test('POST /admin/hospital creates a hospital', async () => {
+    const { status, body } = await post('/admin/hospital', {
+      name_tamil: 'டெஸ்ட் மருத்துவமனை',
+      name_english: 'Test Hospital',
+      address_tamil: 'டெஸ்ட் முகவரி',
+    }, getAuthHeaders());
+    assert(status === 200 || status === 201, `Expected 200/201, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(body.data && body.data.id, 'Expected hospital id');
+    createdHospitalId = body.data.id;
+  });
+
+  await test('PUT /admin/hospital/:id updates hospital', async () => {
+    if (!createdHospitalId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await put(`/admin/hospital/${createdHospitalId}`, {
+      name_english: 'Test Hospital Updated',
+    }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+
+  await test('DELETE /admin/hospital/:id deletes hospital', async () => {
+    if (!createdHospitalId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await del(`/admin/hospital/${createdHospitalId}`, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+}
+
+async function testAdminDoctorScheduleCRUD() {
+  console.log('\n📅 Admin Doctor Schedule CRUD');
+
+  let testDoctorId = null;
+
+  // Create a doctor for schedule tests
+  await test('POST /admin/hospital/doctors creates doctor for schedule tests', async () => {
+    const { status, body } = await post('/admin/hospital/doctors', {
+      hospital_id: 1,
+      name_tamil: 'அட்டவணை டாக்டர்',
+      name_english: 'Schedule Test Doctor',
+      specialization_tamil: 'பொது',
+      specialization_english: 'General',
+    }, getAuthHeaders());
+    assert(status === 200 || status === 201, `Expected 200/201, got ${status}`);
+    testDoctorId = body.data && body.data.id;
+  });
+
+  await test('PUT /admin/hospital/doctors/:id updates doctor', async () => {
+    if (!testDoctorId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await put(`/admin/hospital/doctors/${testDoctorId}`, {
+      name_english: 'Schedule Test Doctor Updated',
+    }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+
+  await test('PUT /admin/hospital/doctors/:id/schedule replaces schedule', async () => {
+    if (!testDoctorId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await put(`/admin/hospital/doctors/${testDoctorId}/schedule`, {
+      schedules: [
+        { day_of_week: 1, start_time: '09:00', end_time: '13:00' },
+        { day_of_week: 3, start_time: '14:00', end_time: '18:00' },
+      ],
+    }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+
+  await test('DELETE /admin/hospital/doctors/:id/schedule clears all schedules', async () => {
+    if (!testDoctorId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await del(`/admin/hospital/doctors/${testDoctorId}/schedule`, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+
+  // Cleanup
+  await test('DELETE /admin/hospital/doctors/:id cleanup schedule test doctor', async () => {
+    if (!testDoctorId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await del(`/admin/hospital/doctors/${testDoctorId}`, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+  });
+}
+
+async function testAdminFeedbackCRUD() {
+  console.log('\n💬 Admin Feedback CRUD');
+
+  let feedbackId = null;
+
+  // First submit feedback via public API to have something to work with
+  await test('POST /api/feedback creates test feedback for admin tests', async () => {
+    const { status, body } = await post('/api/feedback', {
+      message: 'Admin test feedback entry - should be cleaned up',
+      name_or_contact: 'Admin Tester',
+    });
+    assert(status === 200 || status === 201, `Expected 200/201, got ${status}`);
+    feedbackId = body.data && body.data.id;
+  });
+
+  await test('GET /admin/feedback lists all feedback', async () => {
+    const { status, body } = await get('/admin/feedback', getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+  });
+
+  await test('PUT /admin/feedback/:id/read marks feedback as read', async () => {
+    if (!feedbackId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await put(`/admin/feedback/${feedbackId}/read`, {}, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+
+  await test('DELETE /admin/feedback/:id deletes feedback', async () => {
+    if (!feedbackId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await del(`/admin/feedback/${feedbackId}`, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+}
+
+async function testAdminWaterStreets() {
+  console.log('\n💧 Admin Water Streets');
+
+  await test('GET /admin/water/streets lists water streets', async () => {
+    const { status, body } = await get('/admin/water/streets', getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+    assert(Array.isArray(body.data), 'Expected data array');
+  });
+}
+
+async function testAdminBusTimingsUpdate() {
+  console.log('\n🚌 Admin Bus Timing Update');
+
+  let routeId = null;
+  let timingId = null;
+
+  // Create a timing to update
+  const { body: corrBody } = await get('/admin/bus/corridors', getAuthHeaders());
+  if (corrBody.data && corrBody.data.length > 0) {
+    const corridorId = corrBody.data[0].id;
+    const { body: routeBody } = await post('/admin/bus/routes', {
+      corridor_id: corridorId,
+      direction: 'outbound',
+      origin_tamil: 'பண்ணைப்புரம்',
+      dest_tamil: 'பண்ணைப்புரம்',
+    }, getAuthHeaders());
+    routeId = routeBody.data && routeBody.data.id;
+
+    if (routeId) {
+      const { body: timBody } = await post('/admin/bus/timings', {
+        route_id: routeId,
+        departs_at: '07:30',
+        bus_type: 'ordinary',
+      }, getAuthHeaders());
+      timingId = timBody.data && timBody.data.id;
+    }
+  }
+
+  await test('PUT /admin/bus/timings/:id updates a timing', async () => {
+    if (!timingId) { assert(true, 'Skipped (no timing to update)'); return; }
+    const { status, body } = await put(`/admin/bus/timings/${timingId}`, {
+      departs_at: '08:00',
+      bus_type: 'express',
+    }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.success === true, 'Expected success: true');
+  });
+
+  // Cleanup
+  if (timingId) {
+    await del(`/admin/bus/timings/${timingId}`, getAuthHeaders());
+  }
+}
