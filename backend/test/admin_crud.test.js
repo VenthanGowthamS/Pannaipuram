@@ -1108,7 +1108,7 @@ async function testPublicEmergencyAPI() {
     const { status, body } = await get('/api/emergency/contacts');
     assert(status === 200, `Expected 200, got ${status}`);
     assert(body.success === true, 'Expected success: true');
-    assert(Array.isArray(body.data), 'Expected data array');
+    assert(body.data && typeof body.data === 'object', 'Expected data object (grouped by category)');
   });
 }
 
@@ -1136,7 +1136,7 @@ async function testPublicServicesAPI() {
     const { status, body } = await get('/api/services');
     assert(status === 200, `Expected 200, got ${status}`);
     assert(body.success === true, 'Expected success: true');
-    assert(Array.isArray(body.data), 'Expected data array');
+    assert(body.data && typeof body.data === 'object', 'Expected data object (grouped by category)');
   });
 
   await test('GET /api/services/:category returns filtered services', async () => {
@@ -1208,7 +1208,7 @@ async function testPublicDevicesAPI() {
 
   await test('POST /api/devices/register registers a device', async () => {
     const { status, body } = await post('/api/devices/register', {
-      fcm_token: `test_token_${Date.now()}`,
+      fcmToken: `test_token_${Date.now()}`,
     });
     assert(status === 200 || status === 201, `Expected 200/201, got ${status}`);
     assert(body.success === true, 'Expected success: true');
