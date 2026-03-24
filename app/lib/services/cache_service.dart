@@ -64,3 +64,31 @@ class CacheService {
     }
   }
 }
+
+  // ── Local Services Cache ──────────────────────────────────────────────
+  static Future<void> cacheLocalServices(Map<String, List<Map<String, dynamic>>> services) async {
+    final prefs = await _getPrefs();
+    final map = <String, dynamic>{};
+    services.forEach((key, value) {
+      map[key] = value;
+    });
+    await prefs.setString('cache_services', json.encode(map));
+    await prefs.setInt('cache_services_ts', DateTime.now().millisecondsSinceEpoch);
+  }
+
+  static Future<Map<String, List<Map<String, dynamic>>>?> getCachedLocalServices() async {
+    final prefs = await _getPrefs();
+    final raw = prefs.getString('cache_services');
+    if (raw == null) return null;
+    try {
+      final decoded = json.decode(raw) as Map<String, dynamic>;
+      final map = <String, List<Map<String, dynamic>>>{};
+      decoded.forEach((key, value) {
+        map[key] = (value as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      });
+      return map;
+    } catch (_) {
+      return null;
+    }
+  }
+}

@@ -183,7 +183,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           children: [
                             const Text(
                               'உங்கள் தெருவை தேர்வு செய்யுங்கள்',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 20, fontWeight: FontWeight.bold),
                               textAlign: TextAlign.center,
                             ),
                             const Text(

@@ -319,7 +319,7 @@ class AboutScreen extends StatelessWidget {
 
           // ── Village for villagers footer ───────────────────────────
           Container(
-            margin: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+            margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: _green.withOpacity(0.06),
@@ -344,6 +344,20 @@ class AboutScreen extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+
+          // ── Version ───────────────────────────────────────────────
+          const Padding(
+            padding: EdgeInsets.only(bottom: 24),
+            child: Text(
+              'v1.0.0',
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: 11,
+                color: Color(0xFF9E9E9E),
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
         ],

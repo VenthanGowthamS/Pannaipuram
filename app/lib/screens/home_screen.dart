@@ -41,10 +41,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final hour = DateTime.now().hour;
     final greeting = hour < 12
-        ? 'காலை வணக்கம் 🌅'
+        ? 'காலை நேரம் சார் 🌅'
         : hour < 17
-            ? 'மதிய வணக்கம் 🌤️'
-            : 'மாலை வணக்கம் 🌙';
+            ? 'மதியம் சார் 🌤️'
+            : 'மாலை சார் 🌙';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF2F6F2),
@@ -124,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _ModuleTile(
                     icon: Icons.storefront_rounded, emoji: '🛍',
                     gradientColors: const [Color(0xFF00695C), Color(0xFF00897B)],
-                    label: 'ஊர் சேவை — பால் விற்பனையாளர், குழாய் சரி செய்பவர்', sublabel: 'Milk, Plumber & Daily Services',
+                    label: 'ஊர்ல யாரை அழைக்கணும்?', sublabel: 'Local Services — Milk, Plumber & more',
                     onTap: () => _navigate(context, const ServicesScreen()),
                   ),
                   const SizedBox(height: 20),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
+import '../services/cache_service.dart';
 
 // ── Category metadata class ───────────────────────────────────────────────────
 class _CategoryMeta {
@@ -40,6 +41,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   Map<String, List<Map<String, dynamic>>> _services = {};
   bool _loading = true;
   bool _error = false;
+  bool _offline = false;
 
   // Admin contact for adding new services
   String _contactPhone = '';
@@ -60,14 +62,28 @@ class _ServicesScreenState extends State<ServicesScreen> {
       if (!mounted) return;
       final data = results[0] as Map<String, List<Map<String, dynamic>>>;
       final contact = results[1] as Map<String, String>;
+      // Cache for offline use
+      await CacheService.cacheLocalServices(data);
       setState(() {
         _services = data;
         _contactPhone = contact['phone'] ?? '';
         _loading = false;
+        _offline = false;
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() { _loading = false; _error = true; });
+      // Try loading from cache
+      final cached = await CacheService.getCachedLocalServices();
+      if (!mounted) return;
+      if (cached != null && cached.values.any((l) => l.isNotEmpty)) {
+        setState(() {
+          _services = cached;
+          _loading = false;
+          _offline = true;
+        });
+      } else {
+        setState(() { _loading = false; _error = true; });
+      }
     }
   }
 
