@@ -331,13 +331,16 @@ class AboutScreen extends StatelessWidget {
               children: [
                 Text('🌿', style: TextStyle(fontSize: 20)),
                 SizedBox(width: 10),
-                Text(
-                  'பண்ணைப்புரம் மக்களால், மக்களுக்காக',
-                  style: TextStyle(
-                    fontFamily: 'NotoSansTamil',
-                    fontSize: 13,
-                    color: Color(0xFF1B5E20),
-                    fontWeight: FontWeight.w600,
+                Flexible(
+                  child: Text(
+                    'பண்ணைப்புரம் மக்களால், மக்களுக்காக',
+                    style: TextStyle(
+                      fontFamily: 'NotoSansTamil',
+                      fontSize: 13,
+                      color: Color(0xFF1B5E20),
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ],
@@ -448,7 +451,7 @@ class _InfoCard extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF1B5E20),
                         ),
-                        textAlign: TextAlign.right,
+                        textAlign: TextAlign.start,
                       ),
                     ),
                   ],
