@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'home_screen.dart';
 import 'emergency_screen.dart';
 import 'about_screen.dart';
@@ -35,8 +36,8 @@ class _MainShellState extends State<MainShell> {
           _homeNavKey.currentState!.pop();
           return;
         }
-        // Otherwise let system handle (exit app)
-        Navigator.of(context).pop();
+        // Properly exit the app (no black screen)
+        SystemNavigator.pop();
       },
       child: Scaffold(
         body: IndexedStack(
