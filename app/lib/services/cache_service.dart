@@ -63,7 +63,6 @@ class CacheService {
       return null;
     }
   }
-}
 
   // ── Local Services Cache ──────────────────────────────────────────────
   static Future<void> cacheLocalServices(Map<String, List<Map<String, dynamic>>> services) async {
