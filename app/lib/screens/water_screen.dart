@@ -293,7 +293,7 @@ class _WaterScreenState extends State<WaterScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFFE3F2FD),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF42A5F5).withOpacity(0.5)),
+            border: Border.all(color: const Color(0xFF42A5F5).withValues(alpha: 0.5)),
           ),
           child: Row(
             children: const [
@@ -335,7 +335,7 @@ class _WaterScreenState extends State<WaterScreen> {
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(22),
-            boxShadow: [BoxShadow(color: AppColors.waterBlue.withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 6))],
+            boxShadow: [BoxShadow(color: AppColors.waterBlue.withValues(alpha: 0.35), blurRadius: 14, offset: const Offset(0, 6))],
           ),
           child: Column(
             children: [
@@ -351,7 +351,7 @@ class _WaterScreenState extends State<WaterScreen> {
               const SizedBox(height: 14),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.22), borderRadius: BorderRadius.circular(20)),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.22), borderRadius: BorderRadius.circular(20)),
                 child: Text(
                   '$statusEmoji $statusText',
                   style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 16, color: Colors.white, fontWeight: FontWeight.w500),
@@ -371,9 +371,9 @@ class _WaterScreenState extends State<WaterScreen> {
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.waterBlue.withOpacity(0.08),
+              color: AppColors.waterBlue.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.waterBlue.withOpacity(0.35)),
+              border: Border.all(color: AppColors.waterBlue.withValues(alpha: 0.35)),
             ),
             child: Row(
               children: [
@@ -390,7 +390,7 @@ class _WaterScreenState extends State<WaterScreen> {
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(color: AppColors.waterBlue.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+                  decoration: BoxDecoration(color: AppColors.waterBlue.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
                   child: const Row(
                     children: [
                       Icon(Icons.swap_vert, color: AppColors.waterBlue, size: 16),
@@ -422,13 +422,13 @@ class _WaterScreenState extends State<WaterScreen> {
                   ),
                   const Divider(height: 20),
                   if (_schedule!.nextSupplyDate != null)
-                    Text(_formatDate(_schedule!.nextSupplyDate!), style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.waterBlue)),
+                    Text(_formatDate(_schedule!.nextSupplyDate!), style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.waterBlue), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       const Icon(Icons.access_time, color: AppColors.waterBlue, size: 18),
                       const SizedBox(width: 6),
-                      Text(_formatTime(_schedule!.supplyTime), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      Expanded(child: Text(_formatTime(_schedule!.supplyTime), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis)),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -518,7 +518,7 @@ class _WaterScreenState extends State<WaterScreen> {
                 children: [
                   Container(
                     width: 44, height: 44,
-                    decoration: BoxDecoration(color: AppColors.waterBlue.withOpacity(0.1), borderRadius: BorderRadius.circular(22)),
+                    decoration: BoxDecoration(color: AppColors.waterBlue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(22)),
                     child: const Icon(Icons.water_drop, color: AppColors.waterBlue, size: 24),
                   ),
                   const SizedBox(width: 12),
@@ -552,9 +552,9 @@ class _WaterScreenState extends State<WaterScreen> {
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.waterBlue.withOpacity(0.06),
+            color: AppColors.waterBlue.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.waterBlue.withOpacity(0.25)),
+            border: Border.all(color: AppColors.waterBlue.withValues(alpha: 0.25)),
           ),
           child: Column(
             children: [

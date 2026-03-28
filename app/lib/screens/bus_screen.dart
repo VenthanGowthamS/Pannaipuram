@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import 'bus_route_screen.dart';
@@ -28,13 +27,13 @@ class _CorridorMeta {
 const _corridorMeta = <String, _CorridorMeta>{
   'theni': _CorridorMeta(
     emoji: '🏙️',
-    routeDesc: 'பண்ணைப்புரம் → சங்கரபுரம் → தேவாரம் → தேனி',
+    routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → தேனி',
     isFrequent: true,
     isLocal: true,
   ),
   'bodi': _CorridorMeta(
     emoji: '🌄',
-    routeDesc: 'பண்ணைப்புரம் → சங்கரபுரம் → தேவாரம் → போடி',
+    routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → போடி',
     isFrequent: true,
     isLocal: true,
   ),
@@ -134,6 +133,7 @@ class _BusScreenState extends State<BusScreen> {
   List<_BusRoute>? _apiLongDistance;
   String? _dataSource; // 'api' or null (fallback)
   Timer? _countdownTimer;
+  Timer? _refreshTimer;
 
   List<_BusRoute> get _local => _apiLocal ?? _fallbackLocal;
   List<_BusRoute> get _longDistance => _apiLongDistance ?? _fallbackLongDistance;
@@ -146,11 +146,16 @@ class _BusScreenState extends State<BusScreen> {
     _countdownTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (mounted) setState(() {});
     });
+    // Auto-refresh data from API every 5 minutes
+    _refreshTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+      if (mounted) _fetchFromApi();
+    });
   }
 
   @override
   void dispose() {
     _countdownTimer?.cancel();
+    _refreshTimer?.cancel();
     super.dispose();
   }
 
@@ -285,7 +290,7 @@ class _BusScreenState extends State<BusScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.12),
+                            color: Colors.white.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Row(
@@ -401,7 +406,7 @@ class _BusScreenState extends State<BusScreen> {
       nameEnglish: 'Theni',
       emoji: '🏙️',
       color: const Color(0xFF1565C0),
-      routeDesc: 'பண்ணைப்புரம் → சங்கரபுரம் → தேவாரம் → தேனி',
+      routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → தேனி',
       isFrequent: true,
     ),
     _BusRoute(
@@ -409,7 +414,7 @@ class _BusScreenState extends State<BusScreen> {
       nameEnglish: 'Bodi',
       emoji: '🌄',
       color: const Color(0xFF0288D1),
-      routeDesc: 'பண்ணைப்புரம் → சங்கரபுரம் → தேவாரம் → போடி',
+      routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → போடி',
       isFrequent: true,
     ),
     _BusRoute(
@@ -547,7 +552,7 @@ class _SectionChip extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFF1A237E).withOpacity(0.08),
+              color: const Color(0xFF1A237E).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -641,7 +646,7 @@ class _RouteCard extends StatelessWidget {
                       color: (noMoreBuses
                               ? Colors.grey
                               : route.color)
-                          .withOpacity(0.1),
+                          .withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -662,6 +667,8 @@ class _RouteCard extends StatelessWidget {
                         children: [
                           Text(
                             route.nameTamil,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontFamily: 'NotoSansTamil',
                               fontSize: 18,
@@ -705,7 +712,7 @@ class _RouteCard extends StatelessWidget {
                   // ── Next bus / status ─────────────────────────
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 14),
+                        horizontal: 8, vertical: 14),
                     child: route.isFrequent
                         ? _FrequentBadge(color: route.color)
                         : noMoreBuses
@@ -752,7 +759,7 @@ class _FrequentBadge extends StatelessWidget {
           style: TextStyle(
               fontFamily: 'NotoSansTamil',
               fontSize: 10,
-              color: color.withOpacity(0.7)),
+              color: color.withValues(alpha: 0.7)),
         ),
       ],
     );
@@ -905,7 +912,7 @@ class _AutoCard extends StatelessWidget {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: const Center(

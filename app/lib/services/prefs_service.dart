@@ -5,12 +5,18 @@ class PrefsService {
   static const _keyStreetName = 'selected_street_name';
   static const _keyOnboarded = 'onboarding_done';
   static const _keyDeviceId = 'device_id';
+  static const _keyAgreementAccepted = 'agreement_accepted';
 
   static late SharedPreferences _prefs;
 
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
   }
+
+  static bool get isAgreementAccepted => _prefs.getBool(_keyAgreementAccepted) ?? false;
+
+  static Future<void> setAgreementAccepted() =>
+      _prefs.setBool(_keyAgreementAccepted, true);
 
   static bool get isOnboarded => _prefs.getBool(_keyOnboarded) ?? false;
 

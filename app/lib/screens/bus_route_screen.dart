@@ -77,14 +77,14 @@ class BusRouteScreen extends StatelessWidget {
                 const EdgeInsets.symmetric(vertical: 22, horizontal: 20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [color.withOpacity(0.85), color],
+                colors: [color.withValues(alpha: 0.85), color],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: color.withOpacity(0.35),
+                  color: color.withValues(alpha: 0.35),
                   blurRadius: 12,
                   offset: const Offset(0, 5),
                 ),
@@ -125,7 +125,7 @@ class BusRouteScreen extends StatelessWidget {
             Card(
               margin:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              color: color.withOpacity(0.07),
+              color: color.withValues(alpha: 0.07),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                     vertical: 24, horizontal: 20),
@@ -158,7 +158,7 @@ class BusRouteScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
+                        color: color.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(
@@ -181,7 +181,7 @@ class BusRouteScreen extends StatelessWidget {
               Card(
                 margin: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 4),
-                color: color.withOpacity(0.08),
+                color: color.withValues(alpha: 0.08),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(
@@ -411,7 +411,7 @@ class _TimingCard extends StatelessWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(Icons.directions_bus_rounded,
@@ -484,7 +484,7 @@ class _GapWarning extends StatelessWidget {
         color: const Color(0xFFFFF3E0),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-            color: const Color(0xFFFF6F00).withOpacity(0.45), width: 1),
+            color: const Color(0xFFFF6F00).withValues(alpha: 0.45), width: 1),
       ),
       child: Row(
         children: [

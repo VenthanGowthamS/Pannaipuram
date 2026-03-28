@@ -4,7 +4,69 @@ import 'home_screen.dart';
 import 'emergency_screen.dart';
 import 'about_screen.dart';
 import 'feedback_screen.dart';
-import '../theme/app_theme.dart';
+
+// ── Custom bottom nav item — large tap target, clear label ─────────────────
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final IconData? activeIcon;
+  final String label;
+  final bool selected;
+  final Color selectedColor;
+  final VoidCallback onTap;
+
+  const _NavItem({
+    required this.icon,
+    this.activeIcon,
+    required this.label,
+    required this.selected,
+    this.selectedColor = const Color(0xFF1B5E20),
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Pill highlight behind active icon
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: selected ? 52 : 32,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: selected ? selectedColor.withValues(alpha: 0.12) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(17),
+                ),
+                child: Icon(
+                  selected ? (activeIcon ?? icon) : icon,
+                  size: 28,
+                  color: selected ? selectedColor : const Color(0xFF9E9E9E),
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'NotoSansTamil',
+                  fontSize: 12,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+                  color: selected ? selectedColor : const Color(0xFF9E9E9E),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 /// Persistent bottom navigation shell.
 /// Home tab uses a nested Navigator so sub-screens (Bus, Power, etc.)
@@ -58,46 +120,44 @@ class _MainShellState extends State<MainShell> {
             const FeedbackScreen(),
           ],
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (i) {
-            if (i == 0 && _currentIndex == 0) {
-              // Double-tap home = pop to root
-              _homeNavKey.currentState?.popUntil((route) => route.isFirst);
-            }
-            setState(() => _currentIndex = i);
-          },
-          selectedItemColor: const Color(0xFF1B5E20),
-          unselectedItemColor: const Color(0xFF9E9E9E),
-          backgroundColor: Colors.white,
-          type: BottomNavigationBarType.fixed,
-          selectedLabelStyle: const TextStyle(
-            fontFamily: 'NotoSansTamil', fontSize: 11, fontWeight: FontWeight.w600,
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.10), blurRadius: 16, offset: const Offset(0, -3)),
+            ],
           ),
-          unselectedLabelStyle: const TextStyle(
-            fontFamily: 'NotoSansTamil', fontSize: 11,
+          child: SafeArea(
+            top: false,
+            child: SizedBox(
+              height: 70,
+              child: Row(
+                children: [
+                  _NavItem(icon: Icons.home_rounded, label: 'முகப்பு', selected: _currentIndex == 0,
+                    onTap: () {
+                      if (_currentIndex == 0) _homeNavKey.currentState?.popUntil((r) => r.isFirst);
+                      setState(() => _currentIndex = 0);
+                    }),
+                  _NavItem(
+                    icon: Icons.emergency_rounded,
+                    label: 'அவசரம்',
+                    selected: _currentIndex == 1,
+                    selectedColor: const Color(0xFFB71C1C),
+                    onTap: () => setState(() => _currentIndex = 1),
+                  ),
+                  _NavItem(icon: Icons.info_outline_rounded, label: 'பற்றி', selected: _currentIndex == 2,
+                    onTap: () => setState(() => _currentIndex = 2)),
+                  _NavItem(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    activeIcon: Icons.chat_bubble_rounded,
+                    label: 'கருத்து',
+                    selected: _currentIndex == 3,
+                    onTap: () => setState(() => _currentIndex = 3),
+                  ),
+                ],
+              ),
+            ),
           ),
-          elevation: 12,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded),
-              label: 'முகப்பு',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.emergency_rounded),
-              activeIcon: Icon(Icons.emergency_rounded, color: Color(0xFFB71C1C)),
-              label: 'அவசரம்',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.info_outline_rounded),
-              label: 'பற்றி',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_outline_rounded),
-              activeIcon: Icon(Icons.chat_bubble_rounded, color: AppColors.primary),
-              label: 'கருத்து',
-            ),
-          ],
         ),
       ),
     );

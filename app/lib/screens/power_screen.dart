@@ -191,7 +191,7 @@ class _PowerScreenState extends State<PowerScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFFFFFDE7),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFFFD600).withOpacity(0.6)),
+            border: Border.all(color: const Color(0xFFFFD600).withValues(alpha: 0.6)),
           ),
           child: Row(
             children: const [
@@ -229,7 +229,7 @@ class _PowerScreenState extends State<PowerScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(colors: heroColors, begin: Alignment.topLeft, end: Alignment.bottomRight),
             borderRadius: BorderRadius.circular(22),
-            boxShadow: [BoxShadow(color: heroColors[0].withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 6))],
+            boxShadow: [BoxShadow(color: heroColors[0].withValues(alpha: 0.35), blurRadius: 14, offset: const Offset(0, 6))],
           ),
           child: Column(
             children: [
@@ -245,7 +245,7 @@ class _PowerScreenState extends State<PowerScreen> {
               const SizedBox(height: 14),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.22), borderRadius: BorderRadius.circular(20)),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.22), borderRadius: BorderRadius.circular(20)),
                 child: Text(
                   heroStatus,
                   style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 18, color: Colors.white, fontWeight: FontWeight.w600),
@@ -446,9 +446,9 @@ class _PowerScreenState extends State<PowerScreen> {
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.powerYellow.withOpacity(0.08),
+            color: AppColors.powerYellow.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.powerYellow.withOpacity(0.3)),
+            border: Border.all(color: AppColors.powerYellow.withValues(alpha: 0.3)),
           ),
           child: Column(
             children: [
@@ -537,18 +537,21 @@ class _PowerScreenState extends State<PowerScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 90,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(labelTamil, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                Text(labelEnglish, style: const TextStyle(fontFamily: 'Roboto', fontSize: 10, color: AppColors.textSecondary)),
-              ],
+          Flexible(
+            flex: 0,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 70, maxWidth: 100),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(labelTamil, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(labelEnglish, style: const TextStyle(fontFamily: 'Roboto', fontSize: 10, color: AppColors.textSecondary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                ],
+              ),
             ),
           ),
           const Text(' : ', style: TextStyle(fontSize: 14)),
-          Expanded(child: Text(value, style: const TextStyle(fontSize: 15))),
+          Expanded(child: Text(value, style: const TextStyle(fontSize: 15), maxLines: 2, overflow: TextOverflow.ellipsis)),
         ],
       ),
     );

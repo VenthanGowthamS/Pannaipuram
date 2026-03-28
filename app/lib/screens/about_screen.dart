@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
   static const Color _green = Color(0xFF1B5E20);
-
-  Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +32,7 @@ class AboutScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                  color: _green.withOpacity(0.3),
+                  color: _green.withValues(alpha: 0.3),
                   blurRadius: 14,
                   offset: const Offset(0, 6),
                 ),
@@ -71,7 +65,7 @@ class AboutScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
@@ -124,7 +118,7 @@ class AboutScreen extends StatelessWidget {
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2)),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2)),
               ],
             ),
             child: Row(
@@ -180,7 +174,7 @@ class AboutScreen extends StatelessWidget {
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2)),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2)),
               ],
             ),
             child: Column(
@@ -221,6 +215,8 @@ class AboutScreen extends StatelessWidget {
                                 color: Color(0xFF1B5E20),
                                 fontWeight: FontWeight.w600,
                               ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             Text(item.$3,
                               style: const TextStyle(
@@ -228,6 +224,8 @@ class AboutScreen extends StatelessWidget {
                                 fontSize: 11,
                                 color: Color(0xFF757575),
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
@@ -248,7 +246,7 @@ class AboutScreen extends StatelessWidget {
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2)),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2)),
               ],
             ),
             child: Column(
@@ -296,6 +294,8 @@ class AboutScreen extends StatelessWidget {
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF1B5E20),
                               ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 3),
                             Text(
@@ -306,6 +306,8 @@ class AboutScreen extends StatelessWidget {
                                 color: Color(0xFF444444),
                                 height: 1.5,
                               ),
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
@@ -322,9 +324,9 @@ class AboutScreen extends StatelessWidget {
             margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: _green.withOpacity(0.06),
+              color: _green.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: _green.withOpacity(0.18)),
+              border: Border.all(color: _green.withValues(alpha: 0.18)),
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -415,7 +417,7 @@ class _InfoCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2)),
         ],
       ),
       child: Column(

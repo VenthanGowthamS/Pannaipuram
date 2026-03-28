@@ -1,10 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../services/cache_service.dart';
-import '../theme/app_theme.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  Hospital Landing — shows hospitals as cards, tap to see doctors inside
@@ -146,7 +146,7 @@ class HospitalScreen extends StatelessWidget {
                       color: Colors.red[50],
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                          color: Colors.red.withOpacity(0.2), width: 1),
+                          color: Colors.red.withValues(alpha: 0.2), width: 1),
                     ),
                     child: Row(
                       children: [
@@ -154,7 +154,7 @@ class HospitalScreen extends StatelessWidget {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
+                            color: Colors.red.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(22),
                           ),
                           child: const Icon(Icons.emergency_rounded,
@@ -245,7 +245,7 @@ class _HospitalCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: gradientColors[0].withOpacity(0.35),
+              color: gradientColors[0].withValues(alpha: 0.35),
               blurRadius: 12,
               offset: const Offset(0, 5),
             )
@@ -257,7 +257,7 @@ class _HospitalCard extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(28),
               ),
               child: Icon(icon, color: Colors.white, size: 30),
@@ -275,6 +275,8 @@ class _HospitalCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -284,6 +286,8 @@ class _HospitalCard extends StatelessWidget {
                       fontSize: 12,
                       color: Colors.white70,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -293,6 +297,8 @@ class _HospitalCard extends StatelessWidget {
                       fontSize: 12,
                       color: Colors.white60,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -367,6 +373,7 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
   List<Doctor>? _apiDoctors;
   bool _loading = true;
   bool _offline = false;
+  Timer? _refreshTimer;
 
   static const _daysTamil = [
     'ஞாயிறு', 'திங்கள்', 'செவ்வாய்',
@@ -380,6 +387,15 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
   void initState() {
     super.initState();
     _fetchDoctors();
+    _refreshTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+      if (mounted) _fetchDoctors();
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _fetchDoctors() async {
@@ -450,7 +466,7 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [widget.accentColor, widget.accentColor.withOpacity(0.7)],
+                      colors: [widget.accentColor, widget.accentColor.withValues(alpha: 0.7)],
                     ),
                   ),
                   child: SafeArea(
@@ -574,7 +590,7 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, 3)),
         ],
@@ -589,7 +605,7 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: widget.accentColor.withOpacity(0.08),
+                  color: widget.accentColor.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(25),
                 ),
                 child: Icon(Icons.person, color: widget.accentColor, size: 28),
@@ -636,7 +652,7 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
                   decoration: BoxDecoration(
                     color: Colors.green[50],
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
                   ),
                   child: const Text(
                     'இன்று ✓',
@@ -777,7 +793,7 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
       decoration: BoxDecoration(
         color: Colors.orange[50],
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
       ),
       child: const Row(
         children: [
@@ -835,9 +851,9 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.06),
+        color: color.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -845,7 +861,7 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(22),
             ),
             child: Icon(icon, color: color, size: 22),

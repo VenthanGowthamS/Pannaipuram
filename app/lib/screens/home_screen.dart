@@ -18,11 +18,21 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> _announcements = [];
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
     _loadAnnouncements();
+    _refreshTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+      if (mounted) _loadAnnouncements();
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadAnnouncements() async {
@@ -62,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 2, bottom: 6),
                       child: Row(children: [
-                        Icon(Icons.campaign_rounded, color: const Color(0xFF1B5E20).withOpacity(0.7), size: 20),
+                        Icon(Icons.campaign_rounded, color: const Color(0xFF1B5E20).withValues(alpha: 0.7), size: 20),
                         const SizedBox(width: 6),
                         const Text('அறிவிப்புகள்',
                           style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF4A6741))),
@@ -75,14 +85,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
 
                   Padding(
-                    padding: const EdgeInsets.only(left: 2, bottom: 4),
+                    padding: const EdgeInsets.only(left: 2, bottom: 3),
                     child: Text(greeting,
-                      style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 13, color: Color(0xFF7A9A71))),
+                      style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 16, color: Color(0xFF5A8A61))),
                   ),
                   const Padding(
-                    padding: EdgeInsets.only(left: 2, bottom: 12),
+                    padding: EdgeInsets.only(left: 2, bottom: 14),
                     child: Text('சொல்லுங்க, என்ன வேணும்?',
-                      style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 15, color: Color(0xFF4A6741), fontWeight: FontWeight.w700)),
+                      style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 20, color: Color(0xFF2E5C2E), fontWeight: FontWeight.w800)),
                   ),
 
                   // ── Module Tiles ──────────────────────────────────────
@@ -150,31 +160,36 @@ class _HomeScreenState extends State<HomeScreen> {
             colors: [Color(0xFF1A5217), Color(0xFF1B5E20), Color(0xFF2E7D32), Color(0xFF43A047)],
           ),
         ),
-        padding: EdgeInsets.fromLTRB(18, topPad + 14, 18, 36),
+        padding: EdgeInsets.fromLTRB(16, topPad + 14, 16, 36),
         child: Row(children: [
           // Icon with double-ring effect
           Container(
-            width: 52, height: 52,
+            width: 46, height: 46,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.35), width: 2),
-              color: Colors.white.withOpacity(0.15),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 2),
+              color: Colors.white.withValues(alpha: 0.15),
             ),
-            child: const Icon(Icons.cottage_rounded, color: Colors.white, size: 28),
+            child: const Icon(Icons.cottage_rounded, color: Colors.white, size: 24),
           ),
-          const SizedBox(width: 14),
-          // Title + subtitle
+          const SizedBox(width: 12),
+          // Title + subtitle — FittedBox prevents overflow
           Expanded(child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'பண்ணைப்புரம்',
-                style: TextStyle(
-                  fontFamily: 'NotoSansTamil',
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 0.3,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: const Text(
+                  'பண்ணைப்புரம்',
+                  style: TextStyle(
+                    fontFamily: 'NotoSansTamil',
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 0.3,
+                  ),
+                  maxLines: 1,
                 ),
               ),
               const SizedBox(height: 3),
@@ -185,16 +200,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontSize: 12,
                   color: Colors.white70,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           )),
+          const SizedBox(width: 8),
           // Location badge
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
             child: const Row(mainAxisSize: MainAxisSize.min, children: [
               Text('🌿', style: TextStyle(fontSize: 11)),
@@ -293,7 +311,7 @@ class _AnnouncementBannerState extends State<_AnnouncementBanner> {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: style.bg, borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: style.color.withOpacity(0.3)),
+              border: Border.all(color: style.color.withValues(alpha: 0.3)),
             ),
             child: Row(children: [
               Icon(style.icon, color: style.color, size: 28),
@@ -365,35 +383,71 @@ class _ModuleTileState extends State<_ModuleTile> with SingleTickerProviderState
         onTapUp: (_) { _controller.reverse(); HapticFeedback.lightImpact(); widget.onTap(); },
         onTapCancel: () => _controller.reverse(),
         child: Container(
-          constraints: const BoxConstraints(minHeight: 88),
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 18),
+          constraints: const BoxConstraints(minHeight: 108),
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
           decoration: BoxDecoration(
             gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: widget.gradientColors),
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [BoxShadow(color: widget.gradientColors[0].withOpacity(0.35), blurRadius: 10, offset: const Offset(0, 4))],
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(color: widget.gradientColors[0].withValues(alpha: 0.40), blurRadius: 14, offset: const Offset(0, 5)),
+              BoxShadow(color: widget.gradientColors[0].withValues(alpha: 0.15), blurRadius: 4, offset: const Offset(0, 1)),
+            ],
           ),
           child: Stack(children: [
-            Positioned(right: 0, top: -6, bottom: -6, child: Center(
-              child: Text(widget.emoji, style: TextStyle(fontSize: 52, color: Colors.white.withOpacity(0.13))))),
+            // Ghost emoji watermark — warm background texture
+            Positioned(right: -8, top: -10, bottom: -10, child: Center(
+              child: Text(widget.emoji, style: TextStyle(fontSize: 72, color: Colors.white.withValues(alpha: 0.15))))),
+            // Shine highlight — top-left glass effect
+            Positioned(top: 0, left: 0, child: Container(
+              width: 90, height: 40,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft, end: Alignment.bottomRight,
+                  colors: [Colors.white.withValues(alpha: 0.18), Colors.white.withValues(alpha: 0.0)],
+                ),
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(22)),
+              ),
+            )),
             Row(children: [
               Container(
-                width: 50, height: 50,
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(25)),
+                width: 54, height: 54,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.22),
+                  borderRadius: BorderRadius.circular(27),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
+                ),
                 child: widget.secondIcon != null
                   ? Stack(alignment: Alignment.center, children: [
-                      Positioned(top: 8, child: Icon(widget.secondIcon, color: Colors.white, size: 20)),
+                      Positioned(top: 8, child: Icon(widget.secondIcon, color: Colors.white, size: 22)),
                       Positioned(bottom: 6, child: Icon(widget.icon, color: Colors.white70, size: 18)),
                     ])
-                  : Icon(widget.icon, color: Colors.white, size: 26),
+                  : Icon(widget.icon, color: Colors.white, size: 28),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Expanded(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(widget.label, style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white, height: 1.3), maxLines: 2, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 3),
-                Text(widget.sublabel, style: const TextStyle(fontFamily: 'Roboto', fontSize: 12, color: Colors.white70)),
+                Text(widget.label,
+                  style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white, height: 1.35),
+                  maxLines: 2, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(widget.sublabel,
+                    style: const TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Colors.white, letterSpacing: 0.2)),
+                ),
               ])),
-              const SizedBox(width: 8),
-              const Icon(Icons.chevron_right_rounded, color: Colors.white60, size: 26),
+              const SizedBox(width: 6),
+              Container(
+                width: 30, height: 30,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 16),
+              ),
             ]),
           ]),
         ),

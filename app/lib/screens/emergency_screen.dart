@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
@@ -18,6 +19,7 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   bool _loading = true;
   bool _offline = false;
   String _selectedCategory = 'power';
+  Timer? _refreshTimer;
 
   static const _categories = [
     ('power',   'மின்சாரம்', 'Electricity', AppColors.powerYellow),
@@ -58,6 +60,15 @@ class _EmergencyScreenState extends State<EmergencyScreen> {
   void initState() {
     super.initState();
     _load();
+    _refreshTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+      if (mounted) _load();
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _load() async {

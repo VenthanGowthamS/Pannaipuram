@@ -38,7 +38,7 @@ class CallButton extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: (color ?? AppColors.hospitalRed).withOpacity(0.12),
+                  color: (color ?? AppColors.hospitalRed).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Icon(

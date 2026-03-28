@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/models.dart';
@@ -16,6 +17,7 @@ class _AutoScreenState extends State<AutoScreen> {
   List<AutoDriver>? _apiDrivers;
   String? _dataSource;
   bool _loading = true;
+  Timer? _refreshTimer;
 
   // WhatsApp contact (fetched from API, fallback hardcoded)
   String _contactName = 'Admin';
@@ -58,6 +60,15 @@ class _AutoScreenState extends State<AutoScreen> {
   void initState() {
     super.initState();
     _fetchFromApi();
+    _refreshTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+      if (mounted) _fetchFromApi();
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _fetchFromApi() async {
@@ -156,7 +167,7 @@ class _AutoScreenState extends State<AutoScreen> {
             borderRadius: BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
-                color: _purple.withOpacity(0.35),
+                color: _purple.withValues(alpha: 0.35),
                 blurRadius: 14,
                 offset: const Offset(0, 6),
               ),
@@ -166,16 +177,19 @@ class _AutoScreenState extends State<AutoScreen> {
             children: [
               const Text('🚗', style: TextStyle(fontSize: 44)),
               const SizedBox(height: 10),
-              const Text(
-                'சார், ஆட்டோ வேணுமா?',
-                style: TextStyle(
-                  fontFamily: 'NotoSansTamil',
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              const FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'சார், ஆட்டோ வேணுமா?',
+                  style: TextStyle(
+                    fontFamily: 'NotoSansTamil',
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
                 ),
-                textAlign: TextAlign.center,
-                softWrap: true,
               ),
               const SizedBox(height: 10),
               const Text(
@@ -192,7 +206,7 @@ class _AutoScreenState extends State<AutoScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -259,7 +273,7 @@ class _AutoScreenState extends State<AutoScreen> {
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
-                        color: _purple.withOpacity(0.1),
+                        color: _purple.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(26),
                       ),
                       child: Icon(icon, color: _purple, size: 26),
@@ -351,9 +365,9 @@ class _AutoScreenState extends State<AutoScreen> {
           margin: const EdgeInsets.symmetric(horizontal: 16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: _purple.withOpacity(0.06),
+            color: _purple.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: _purple.withOpacity(0.2), width: 1),
+            border: Border.all(color: _purple.withValues(alpha: 0.2), width: 1),
           ),
           child: Column(
             children: [

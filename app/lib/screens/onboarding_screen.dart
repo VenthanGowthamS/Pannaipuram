@@ -147,9 +147,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
+                    color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                   ),
                   child: const Row(children: [
                     Icon(Icons.wifi_off, color: Colors.orange, size: 18),
@@ -169,7 +169,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
+                        color: Colors.black.withValues(alpha: 0.06),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -241,7 +241,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                           decoration: BoxDecoration(
                                             color: isSelected
                                                 ? AppColors.primary
-                                                : AppColors.primary.withOpacity(0.08),
+                                                : AppColors.primary.withValues(alpha: 0.08),
                                             borderRadius: BorderRadius.circular(18),
                                           ),
                                           child: Icon(
@@ -257,6 +257,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                             color: isSelected ? AppColors.primary : AppColors.textPrimary,
                                           ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                         subtitle: street.nameEnglish != null
                                             ? Text(
@@ -269,7 +271,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                               )
                                             : null,
                                         tileColor: isSelected
-                                            ? AppColors.primary.withOpacity(0.05)
+                                            ? AppColors.primary.withValues(alpha: 0.05)
                                             : null,
                                       );
                                     },
@@ -306,6 +308,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     color: AppColors.textSecondary,
                   ),
                   textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

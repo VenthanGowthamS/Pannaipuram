@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -41,15 +42,27 @@ class _ServicesScreenState extends State<ServicesScreen> {
   Map<String, List<Map<String, dynamic>>> _services = {};
   bool _loading = true;
   bool _error = false;
-  bool _offline = false;
+  Timer? _refreshTimer;
 
   // Admin contact for adding new services
+  // 📱 Fallback phone — used when API contact is unavailable.
+  // Set to the admin's real WhatsApp number (10-digit Indian mobile).
+  static const String _kFallbackPhone = '8807660177';
   String _contactPhone = '';
 
   @override
   void initState() {
     super.initState();
     _load();
+    _refreshTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+      if (mounted) _load();
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -68,7 +81,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
         _services = data;
         _contactPhone = contact['phone'] ?? '';
         _loading = false;
-        _offline = false;
       });
     } catch (_) {
       if (!mounted) return;
@@ -79,7 +91,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
         setState(() {
           _services = cached;
           _loading = false;
-          _offline = true;
         });
       } else {
         setState(() { _loading = false; _error = true; });
@@ -103,10 +114,21 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   Future<void> _openWhatsApp(String phone) async {
-    if (phone.isEmpty) return;
-    final cleaned = phone.replaceAll(RegExp(r'\D'), '');
+    // Use API phone if set, otherwise use hardcoded fallback
+    final effectivePhone = phone.isNotEmpty ? phone : _kFallbackPhone;
+    if (effectivePhone.isEmpty) return;
+    final cleaned = effectivePhone.replaceAll(RegExp(r'\D'), '');
     final number = cleaned.startsWith('91') ? cleaned : '91$cleaned';
-    final uri = Uri.parse('https://wa.me/$number?text=${Uri.encodeComponent('வணக்கம், பண்ணைப்புரம் app — சேவை சேர்க்க வேண்டும்')}');
+    // Pre-filled Tamil message template — user fills in their details
+    const message =
+        'வணக்கம் சார் 🙏\n\n'
+        'பண்ணைப்புரம் App-ல என் தகவல் சேர்க்கணும்.\n\n'
+        'என் பெயர்: \n'
+        'தொலைபேசி: \n'
+        'சேவை வகை: (பால் / பூ / குழாய் / மின் / மற்றவை)\n'
+        'பகுதி/தெரு: \n\n'
+        'நன்றி!';
+    final uri = Uri.parse('https://wa.me/$number?text=${Uri.encodeComponent(message)}');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -147,7 +169,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
             gradient: const LinearGradient(colors: [Color(0xFF00695C), Color(0xFF00897B)],
               begin: Alignment.topLeft, end: Alignment.bottomRight),
             borderRadius: BorderRadius.circular(22),
-            boxShadow: [BoxShadow(color: _teal.withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 6))],
+            boxShadow: [BoxShadow(color: _teal.withValues(alpha: 0.35), blurRadius: 14, offset: const Offset(0, 6))],
           ),
           child: const Column(children: [
             Text('🛍', style: TextStyle(fontSize: 44)),
@@ -190,9 +212,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: meta.color.withOpacity(0.07),
+                color: meta.color.withValues(alpha: 0.07),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: meta.color.withOpacity(0.2)),
+                border: Border.all(color: meta.color.withValues(alpha: 0.2)),
               ),
               child: Row(children: [
                 Text(meta.emoji, style: const TextStyle(fontSize: 24)),
@@ -225,7 +247,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
               begin: Alignment.topLeft, end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: const Color(0xFF7B1FA2).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+            boxShadow: [BoxShadow(color: const Color(0xFF7B1FA2).withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
           ),
           child: Column(children: [
             const Text('📝', style: TextStyle(fontSize: 28)),
@@ -323,7 +345,7 @@ class _ServiceCard extends StatelessWidget {
         child: Row(children: [
           Container(
             width: 50, height: 50,
-            decoration: BoxDecoration(color: meta.color.withOpacity(0.1), borderRadius: BorderRadius.circular(25)),
+            decoration: BoxDecoration(color: meta.color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(25)),
             child: Center(child: Text(meta.emoji, style: const TextStyle(fontSize: 22))),
           ),
           const SizedBox(width: 14),

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../services/prefs_service.dart';
+import 'user_agreement_screen.dart';
+import 'onboarding_screen.dart';
 import 'main_shell.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -24,17 +27,21 @@ class _SplashScreenState extends State<SplashScreen>
     _ctrl.forward();
 
     Future.delayed(const Duration(milliseconds: 2600), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const MainShell(),
-            transitionsBuilder: (_, anim, __, child) =>
-                FadeTransition(opacity: anim, child: child),
-            transitionDuration: const Duration(milliseconds: 500),
-          ),
-        );
-      }
+      if (!mounted) return;
+      final Widget next = !PrefsService.isAgreementAccepted
+          ? const UserAgreementScreen()
+          : PrefsService.isOnboarded
+              ? const MainShell()
+              : const OnboardingScreen();
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => next,
+          transitionsBuilder: (_, anim, __, child) =>
+              FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 500),
+        ),
+      );
     });
   }
 
@@ -71,9 +78,9 @@ class _SplashScreenState extends State<SplashScreen>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withOpacity(0.15),
-                  Colors.black.withOpacity(0.45),
-                  Colors.black.withOpacity(0.55),
+                  Colors.black.withValues(alpha: 0.15),
+                  Colors.black.withValues(alpha: 0.45),
+                  Colors.black.withValues(alpha: 0.55),
                 ],
               ),
             ),
