@@ -116,7 +116,7 @@ class _AutoScreenState extends State<AutoScreen> {
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
-  static const String _kFallbackPhone = '8807660177';
+  static const String _kFallbackPhone = '9944129218';
 
   Future<void> _openWhatsApp(String phone) async {
     final effectivePhone = phone.isNotEmpty ? phone : _kFallbackPhone;

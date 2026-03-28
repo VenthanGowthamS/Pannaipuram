@@ -39,7 +39,7 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
   const [contact, setContact] = useState({
     name: 'Admin',
     name_english: 'வணக்கம், பண்ணைப்புரம் app பற்றி கேட்கணும்...',
-    phone: '8888888888',
+    phone: '9944129218',
   });
   const [contactSaving, setContactSaving] = useState(false);
 

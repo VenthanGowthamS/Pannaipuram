@@ -672,25 +672,27 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
                   ],
                 ),
               ),
-              if (availableToday)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-                  ),
-                  child: const Text(
-                    'இன்று ✓',
-                    style: TextStyle(
-                      fontFamily: 'NotoSansTamil',
-                      color: Colors.green,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: availableToday ? Colors.green[50] : Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: availableToday
+                        ? Colors.green.withValues(alpha: 0.3)
+                        : Colors.grey.withValues(alpha: 0.3),
                   ),
                 ),
+                child: Text(
+                  availableToday ? 'இன்று ✓' : 'இன்று இல்லை',
+                  style: TextStyle(
+                    fontFamily: 'NotoSansTamil',
+                    color: availableToday ? Colors.green : Colors.grey[600],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ],
           ),
 
@@ -733,30 +735,35 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
                             ),
                             const SizedBox(width: 10),
                             SizedBox(
-                              width: 70,
-                              child: Text(
-                                _daysTamil[s.dayOfWeek],
-                                style: TextStyle(
-                                  fontFamily: 'NotoSansTamil',
-                                  fontSize: 14,
-                                  fontWeight: s.dayOfWeek == todayDow
-                                      ? FontWeight.w700
-                                      : FontWeight.w400,
-                                  color: s.dayOfWeek == todayDow
-                                      ? widget.accentColor
-                                      : const Color(0xFF424242),
-                                ),
+                              width: 100,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _daysTamil[s.dayOfWeek],
+                                    style: TextStyle(
+                                      fontFamily: 'NotoSansTamil',
+                                      fontSize: 14,
+                                      fontWeight: s.dayOfWeek == todayDow
+                                          ? FontWeight.w700
+                                          : FontWeight.w400,
+                                      color: s.dayOfWeek == todayDow
+                                          ? widget.accentColor
+                                          : const Color(0xFF424242),
+                                    ),
+                                  ),
+                                  Text(
+                                    _daysEnglish[s.dayOfWeek],
+                                    style: const TextStyle(
+                                      fontFamily: 'Roboto',
+                                      fontSize: 11,
+                                      color: Color(0xFF9E9E9E),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            Text(
-                              _daysEnglish[s.dayOfWeek],
-                              style: const TextStyle(
-                                fontFamily: 'Roboto',
-                                fontSize: 11,
-                                color: Color(0xFF9E9E9E),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 s.notesTamil ?? '${s.startTime ?? ''} – ${s.endTime ?? ''}',

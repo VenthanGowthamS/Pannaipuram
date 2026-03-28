@@ -88,7 +88,7 @@ class _PowerScreenState extends State<PowerScreen> {
     return DateFormat('d MMM, h:mm a').format(dt);
   }
 
-  static const String _kFallbackPhone = '8807660177';
+  static const String _kFallbackPhone = '9944129218';
 
   Future<void> _shareViaWhatsApp() async {
     final active = _activeCut;

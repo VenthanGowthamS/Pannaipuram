@@ -196,7 +196,7 @@ class _WaterScreenState extends State<WaterScreen> {
     }
   }
 
-  static const String _kFallbackPhone = '8807660177';
+  static const String _kFallbackPhone = '9944129218';
 
   Future<void> _contactAdmin() async {
     const phone = _kFallbackPhone;

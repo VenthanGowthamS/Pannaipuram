@@ -47,7 +47,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   // Admin contact for adding new services
   // 📱 Fallback phone — used when API contact is unavailable.
   // Set to the admin's real WhatsApp number (10-digit Indian mobile).
-  static const String _kFallbackPhone = '8807660177';
+  static const String _kFallbackPhone = '9944129218';
   String _contactPhone = '';
 
   @override

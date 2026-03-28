@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 
@@ -27,7 +28,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     if (msg.length < 5) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('கொஞ்சம் அதிகமா சொல்லுங்க 😊'),
+          content: Text('கொஞ்சம் சொல்லுங்க — சில வார்த்தைகள் போதும் 😊'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -182,6 +183,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             hintStyle: const TextStyle(fontFamily: 'NotoSansTamil', color: Colors.grey),
             filled: true,
             fillColor: Colors.white,
+            counterText: '',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
@@ -191,6 +193,26 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               borderSide: const BorderSide(color: AppColors.primary, width: 2),
             ),
           ),
+        ),
+        const SizedBox(height: 4),
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: _messageCtrl,
+          builder: (_, value, __) {
+            final count = value.text.length;
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  '$count / 500',
+                  style: TextStyle(
+                    fontFamily: 'Roboto',
+                    fontSize: 12,
+                    color: count >= 5 ? const Color(0xFF4CAF50) : const Color(0xFF9E9E9E),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
 
         const SizedBox(height: 16),
@@ -209,11 +231,19 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         TextField(
           controller: _nameCtrl,
           style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 16),
+          maxLength: 60,
+          inputFormatters: [
+            // Allow Tamil letters, English letters, digits, spaces only
+            FilteringTextInputFormatter.allow(
+              RegExp(r'[\u0B80-\u0BFFa-zA-Z0-9 ]'),
+            ),
+          ],
           decoration: InputDecoration(
             hintText: 'பெயர் சொல்ல விரும்பினா மட்டும்...',
             hintStyle: const TextStyle(fontFamily: 'NotoSansTamil', color: Colors.grey, fontSize: 14),
             filled: true,
             fillColor: Colors.white,
+            counterText: '',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
