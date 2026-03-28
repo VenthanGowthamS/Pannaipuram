@@ -23,7 +23,7 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 ## Environment (Mac)
 
 - **Machine:** M1 MacBook Air (Apple Silicon)
-- **Local path:** `~/Project1/Pannaipuram`
+- **Local path:** `~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram`
 - **Java:** JDK 17 (for Flutter Android builds)
 - **Flutter:** Stable channel, ARM64 native
 - **Node.js:** v18+ (LTS)
@@ -43,7 +43,7 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 - Before installing anything, check if already installed: `which <tool>` or `<tool> --version`
 - **Always use Homebrew** for macOS package installs
 - If a command fails, show the **FULL error** — don't summarize it
-- **Git commands** always start with `cd ~/Project1/Pannaipuram &&` — never bare `git` commands
+- **Git commands** always start with `cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram &&` — never bare `git` commands
 
 ---
 
@@ -51,7 +51,7 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 
 ### 🔽 PULL — Do this first, every time you open a session
 ```bash
-cd ~/Project1/Pannaipuram && git pull origin main
+cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram && git pull origin main
 ```
 **Pull when:**
 - Starting any new session — always, no exceptions
@@ -66,7 +66,7 @@ cd ~/Project1/Pannaipuram && git pull origin main
 ### 🔼 PUSH — Do this after every meaningful change
 
 ```bash
-cd ~/Project1/Pannaipuram && git push origin main
+cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram && git push origin main
 ```
 **Push when:**
 - After every commit that has been tested and verified
@@ -129,8 +129,8 @@ git log --oneline -3
    export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools
    ```
 5. Run `flutter doctor` → fix any issues shown
-6. Run `cd ~/Project1/Pannaipuram/backend && npm install` → install backend deps
-7. Run `cd ~/Project1/Pannaipuram/admin-ui && npm install` → install admin deps
+6. Run `cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/backend && npm install` → install backend deps
+7. Run `cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/admin-ui && npm install` → install admin deps
 8. Report what was installed vs already present
 
 ---
@@ -138,7 +138,7 @@ git log --oneline -3
 ## Skill 2 — Build Flutter APK
 *Use when ready to build the Android APK*
 
-1. Navigate: `cd ~/Project1/Pannaipuram/app`
+1. Navigate: `cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/app`
 2. Get dependencies: `flutter pub get`
 3. Analyze for errors: `flutter analyze` → fix any errors (warnings OK)
 4. Build debug APK (faster): `flutter build apk --debug`
@@ -153,7 +153,7 @@ git log --oneline -3
 ## Skill 3 — Backend Deploy
 *Use when backend changes are ready*
 
-1. Navigate: `cd ~/Project1/Pannaipuram/backend`
+1. Navigate: `cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/backend`
 2. Run syntax check: `node -c src/app.js && echo "✅ app.js OK"`
 3. Run all tests: `node test/admin_crud.test.js`
    - Tests cover: auth, power, bus, doctors, emergency, auto, streets, water, services, announcements, RBAC
@@ -167,7 +167,7 @@ git log --oneline -3
 ## Skill 4 — Admin Panel Build
 *Use when admin UI changes are ready*
 
-1. Navigate: `cd ~/Project1/Pannaipuram/admin-ui`
+1. Navigate: `cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/admin-ui`
 2. Build: `npm run build`
    - Output goes to: `../backend/public/admin-v2/`
    - Must complete with **zero errors**
@@ -180,7 +180,7 @@ git log --oneline -3
 ## Skill 5 — Git Checkpoint
 *Use before any risky change and at end of every session*
 
-1. Run: `cd ~/Project1/Pannaipuram && git status`
+1. Run: `cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram && git status`
 2. Stage only source files (no .DS_Store, build/, .gradle/, *.apk, node_modules/):
    ```bash
    git add app/lib/ backend/src/ admin-ui/src/ docs/ CLAUDE.md
@@ -253,7 +253,7 @@ git checkout .         # discard all uncommitted changes
 ## Session Workflow
 
 ### Every Session Start:
-1. Open Terminal → `cd ~/Project1/Pannaipuram`
+1. Open Terminal → `cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram`
 2. `git pull origin main` — get latest
 3. `git status` — see current state
 4. Tell Claude: *"Read CLAUDE.md and tell me the current project status"*
@@ -388,28 +388,28 @@ Future<void> _fetchDoctors() async {
 
 ### 1. Backend syntax check
 ```bash
-cd ~/Project1/Pannaipuram/backend && node -c src/app.js && echo "✅ OK"
+cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/backend && node -c src/app.js && echo "✅ OK"
 ```
 
 ### 2. All API tests (52 tests) — run from Mac terminal only
 ```bash
-cd ~/Project1/Pannaipuram/backend && node test/admin_crud.test.js
+cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/backend && node test/admin_crud.test.js
 ```
 > Note: Tests target https://pannaipuram-api.onrender.com — cannot run from Cowork VM (outbound proxy blocks Render). Run from your Mac terminal.
 
 ### 3. Admin UI build
 ```bash
-cd ~/Project1/Pannaipuram/admin-ui && npm run build
+cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/admin-ui && npm run build
 ```
 
 ### 4. Flutter analyze (zero errors required)
 ```bash
-cd ~/Project1/Pannaipuram/app && flutter analyze
+cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/app && flutter analyze
 ```
 
 ### 5. Flutter APK build test
 ```bash
-cd ~/Project1/Pannaipuram/app && flutter build apk --debug
+cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/app && flutter build apk --debug
 ```
 
 ---
@@ -458,25 +458,25 @@ cd ~/Project1/Pannaipuram/app && flutter build apk --debug
 
 ```bash
 # Start a session
-cd ~/Project1/Pannaipuram && git pull && git status
+cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram && git pull && git status
 
 # Backend tests (Mac terminal only — VM can't reach Render)
-cd ~/Project1/Pannaipuram/backend && node test/admin_crud.test.js
+cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/backend && node test/admin_crud.test.js
 
 # Admin UI build
-cd ~/Project1/Pannaipuram/admin-ui && npm run build
+cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/admin-ui && npm run build
 
 # Flutter analyze
-cd ~/Project1/Pannaipuram/app && flutter analyze
+cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/app && flutter analyze
 
 # Flutter release APK
-cd ~/Project1/Pannaipuram/app && flutter build apk --release
+cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/app && flutter build apk --release
 
 # Git checkpoint
-cd ~/Project1/Pannaipuram && git add app/lib/ backend/src/ admin-ui/src/ docs/ CLAUDE.md && git commit -m "checkpoint" && git push origin main
+cd ~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram && git add app/lib/ backend/src/ admin-ui/src/ docs/ CLAUDE.md && git commit -m "checkpoint" && git push origin main
 
 # APK output location
-~/Project1/Pannaipuram/app/build/app/outputs/flutter-apk/app-release.apk
+~/Documents/VenthanDocuments/Workspace/Project1/Pannaipuram/app/build/app/outputs/flutter-apk/app-release.apk
 ```
 
 ---
