@@ -201,6 +201,8 @@ class _HospitalScreenState extends State<HospitalScreen> {
                                   fontWeight: FontWeight.w700,
                                   color: Color(0xFFB71C1C),
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               Text(
                                 '108 — Ambulance • 104 — Health Helpline',
@@ -209,6 +211,8 @@ class _HospitalScreenState extends State<HospitalScreen> {
                                   fontSize: 12,
                                   color: Color(0xFF757575),
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),

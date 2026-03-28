@@ -55,9 +55,11 @@ class CallButton extends StatelessWidget {
                     Text(
                       label,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     if (sublabel != null)
                       Text(
@@ -67,6 +69,8 @@ class CallButton extends StatelessWidget {
                           fontSize: 12,
                           color: AppColors.textSecondary,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                   ],
                 ),
