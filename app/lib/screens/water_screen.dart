@@ -563,47 +563,57 @@ class _WaterScreenState extends State<WaterScreen> {
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.waterBlue.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.waterBlue.withValues(alpha: 0.25)),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0D47A1), Color(0xFF1976D2)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: AppColors.waterBlue.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
           ),
-          child: Column(
-            children: [
-              const Text('💧', style: TextStyle(fontSize: 28)),
-              const SizedBox(height: 8),
-              const Text(
-                'உங்க தெரு தண்ணீர் நேரம் தெரியுமா?',
-                style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 14, color: Color(0xFF1565C0), fontWeight: FontWeight.w600),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 2),
-              const Text(
-                'Know your street\'s water timing? Tell us!',
-                style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Color(0xFF757575)),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              GestureDetector(
-                onTap: _contactAdmin,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF25D366),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.chat_rounded, color: Colors.white, size: 18),
-                      SizedBox(width: 8),
-                      Text('Admin-கு WhatsApp செய்யவும்',
-                        style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 13, color: Colors.white, fontWeight: FontWeight.w600)),
-                    ],
-                  ),
+          child: Column(children: [
+            const Text('💧', style: TextStyle(fontSize: 28)),
+            const SizedBox(height: 8),
+            const Text(
+              'உங்க தெரு தண்ணீர் நேரம் தெரியுமா?',
+              style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 2),
+            const Text(
+              'Know your street\'s water timing? Tell us!',
+              style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Colors.white70),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: _contactAdmin,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF25D366),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.chat_rounded, color: Colors.white, size: 20),
+                    SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Admin-கு WhatsApp செய்யவும்',
+                          style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 14, color: Colors.white, fontWeight: FontWeight.w700)),
+                        Text('Message the admin on WhatsApp',
+                          style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Colors.white70)),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ]),
         ),
       ],
     );

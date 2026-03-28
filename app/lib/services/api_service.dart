@@ -13,7 +13,7 @@ class ApiService {
     T Function(dynamic) parser,
   ) async {
     final uri = Uri.parse('$_base$path');
-    final res = await http.get(uri).timeout(const Duration(seconds: 30));
+    final res = await http.get(uri).timeout(const Duration(seconds: 60));
     if (res.statusCode == 200) {
       final decoded = json.decode(res.body);
       // Unwrap { success: true, data: ... } envelope from backend
@@ -112,6 +112,11 @@ class ApiService {
       );
 
   // ─── Hospital ─────────────────────────────────────────────────────────────
+
+  static Future<List<Hospital>> getHospitals() => _get(
+        '/api/hospital/list',
+        (d) => (d as List).map((e) => Hospital.fromJson(e)).toList(),
+      );
 
   static Future<Hospital> getHospitalInfo() => _get(
         '/api/hospital/info',

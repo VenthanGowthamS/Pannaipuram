@@ -92,7 +92,7 @@ class _PowerScreenState extends State<PowerScreen> {
 
   Future<void> _shareViaWhatsApp() async {
     final active = _activeCut;
-    String message = 'பண்ணைப்புரம் மின் தடை தகவல்:\n';
+    String message = 'வணக்கம் சார் 🙏\n\nபண்ணைப்புரம் மின் தடை தகவல்:\n';
     if (active != null) {
       message += '⚡ இப்போது மின் தடை நடக்கிறது!\n';
       message += '🕐 தொடங்கியது: ${_formatDatetime(active.startTime)}\n';
@@ -105,9 +105,8 @@ class _PowerScreenState extends State<PowerScreen> {
     } else if (_hasCutToday) {
       message += '⚠️ இன்று மின் தடை உள்ளது\n';
     }
-    message += '\n— பண்ணைப்புரம் app';
-    // Share to WhatsApp (no specific recipient — user picks contact)
-    final uri = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(message)}');
+    message += '\nநன்றி!';
+    final uri = Uri.parse('https://wa.me/91$_kFallbackPhone?text=${Uri.encodeComponent(message)}');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -457,47 +456,57 @@ class _PowerScreenState extends State<PowerScreen> {
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.powerYellow.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.powerYellow.withValues(alpha: 0.3)),
+            gradient: const LinearGradient(
+              colors: [Color(0xFFE65100), Color(0xFFF57C00)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: AppColors.powerYellow.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
           ),
-          child: Column(
-            children: [
-              const Text('💡', style: TextStyle(fontSize: 28)),
-              const SizedBox(height: 8),
-              const Text(
-                'கரண்ட் கட் தகவல் admin மூலம் update ஆகும்',
-                style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 14, color: Color(0xFF5D4037), fontWeight: FontWeight.w600),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 2),
-              const Text(
-                'Power cut updates are managed by admin',
-                style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Color(0xFF757575)),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              GestureDetector(
-                onTap: _contactAdmin,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF25D366),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.chat_rounded, color: Colors.white, size: 18),
-                      SizedBox(width: 8),
-                      Text('Admin-கு WhatsApp செய்யவும்',
-                        style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 13, color: Colors.white, fontWeight: FontWeight.w600)),
-                    ],
-                  ),
+          child: Column(children: [
+            const Text('💡', style: TextStyle(fontSize: 28)),
+            const SizedBox(height: 8),
+            const Text(
+              'சார், கரண்ட் கட் தகவல் தெரியுமா?',
+              style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 2),
+            const Text(
+              'Know about a power cut? Tell the admin!',
+              style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Colors.white70),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: _contactAdmin,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF25D366),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.chat_rounded, color: Colors.white, size: 20),
+                    SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Admin-கு WhatsApp செய்யவும்',
+                          style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 14, color: Colors.white, fontWeight: FontWeight.w700)),
+                        Text('Message the admin on WhatsApp',
+                          style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Colors.white70)),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ]),
         ),
       ],
     );

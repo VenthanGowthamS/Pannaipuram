@@ -10,8 +10,47 @@ import '../services/cache_service.dart';
 //  Hospital Landing — shows hospitals as cards, tap to see doctors inside
 // ═══════════════════════════════════════════════════════════════════════════
 
-class HospitalScreen extends StatelessWidget {
+class HospitalScreen extends StatefulWidget {
   const HospitalScreen({super.key});
+
+  @override
+  State<HospitalScreen> createState() => _HospitalScreenState();
+}
+
+class _HospitalScreenState extends State<HospitalScreen> {
+  List<Hospital> _hospitals = [];
+  bool _loading = true;
+
+  // Visual styles for hospitals (cycles if more are added)
+  static const _styles = [
+    (colors: [Color(0xFFB71C1C), Color(0xFFE53935)], icon: Icons.local_hospital_rounded),
+    (colors: [Color(0xFFE65100), Color(0xFFF57C00)], icon: Icons.medical_services_rounded),
+    (colors: [Color(0xFF1565C0), Color(0xFF1E88E5)], icon: Icons.local_hospital_rounded),
+    (colors: [Color(0xFF2E7D32), Color(0xFF43A047)], icon: Icons.medical_services_rounded),
+  ];
+
+  // Hardcoded fallback when API is unreachable
+  static const _fallbackHospitals = [
+    Hospital(id: 1, nameTamil: 'PTV பத்மாவதி மருத்துவமனை', nameEnglish: 'PTV Padmavathy Hospital', addressTamil: 'தேவாரம் அருகில்'),
+    Hospital(id: 2, nameTamil: 'S P கிளினிக்', nameEnglish: 'S P Clinic', addressTamil: 'பண்ணைப்புரம்'),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchHospitals();
+  }
+
+  Future<void> _fetchHospitals() async {
+    try {
+      final list = await ApiService.getHospitals();
+      if (!mounted) return;
+      setState(() { _hospitals = list; _loading = false; });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() { _hospitals = _fallbackHospitals; _loading = false; });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +108,7 @@ class HospitalScreen extends StatelessWidget {
             ),
           ),
 
-          // ── Hospital cards ───────────────────────────────────────
+          // ── Hospital cards (dynamic from API) ──────────────────
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             sliver: SliverToBoxAdapter(
@@ -89,55 +128,42 @@ class HospitalScreen extends StatelessWidget {
                     ),
                   ),
 
-                  // ── PTV Padmavathy Hospital ───────────────────────
-                  _HospitalCard(
-                    nameTamil: 'PTV பத்மாவதி மருத்துவமனை',
-                    nameEnglish: 'PTV Padmavathy Hospital',
-                    icon: Icons.local_hospital_rounded,
-                    gradientColors: const [Color(0xFFB71C1C), Color(0xFFE53935)],
-                    tagline: 'தேவாரம் அருகில் • பொது மருத்துவம்',
-                    taglineEnglish: 'Near Thevaram • General Medicine',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const _HospitalDetailScreen(
-                            hospitalId: 1,
-                            hospitalName: 'PTV பத்மாவதி மருத்துவமனை',
-                            accentColor: Color(0xFFB71C1C),
-                            icon: Icons.local_hospital_rounded,
-                            hospitalPhone: '', // add number when available
-                          ),
+                  if (_loading)
+                    const Center(child: Padding(
+                      padding: EdgeInsets.all(24),
+                      child: CircularProgressIndicator(color: Color(0xFFB71C1C)),
+                    ))
+                  else
+                    ..._hospitals.asMap().entries.map((entry) {
+                      final i = entry.key;
+                      final h = entry.value;
+                      final style = _styles[i % _styles.length];
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: i < _hospitals.length - 1 ? 14 : 0),
+                        child: _HospitalCard(
+                          nameTamil: h.nameTamil,
+                          nameEnglish: h.nameEnglish,
+                          icon: style.icon,
+                          gradientColors: style.colors,
+                          tagline: h.addressTamil ?? '',
+                          taglineEnglish: h.nameEnglish,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => _HospitalDetailScreen(
+                                  hospitalId: h.id,
+                                  hospitalName: h.nameTamil,
+                                  accentColor: style.colors[0],
+                                  icon: style.icon,
+                                  hospitalPhone: h.phoneCasualty ?? '',
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       );
-                    },
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  // ── SP Clinic ─────────────────────────────────────
-                  _HospitalCard(
-                    nameTamil: 'S P Clinic',
-                    nameEnglish: 'S P Clinic — Dr. Shanmugapriya',
-                    icon: Icons.medical_services_rounded,
-                    gradientColors: const [Color(0xFFE65100), Color(0xFFF57C00)],
-                    tagline: 'பெண்கள் நலம் • பொது • சர்க்கரை நோய்',
-                    taglineEnglish: "Women's Health • General • Diabetes",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const _HospitalDetailScreen(
-                            hospitalId: 2,
-                            hospitalName: 'S P Clinic',
-                            accentColor: Color(0xFFE65100),
-                            icon: Icons.medical_services_rounded,
-                            hospitalPhone: '', // add number when available
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                    }),
 
                   const SizedBox(height: 20),
 

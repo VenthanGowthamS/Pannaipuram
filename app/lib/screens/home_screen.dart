@@ -113,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _ModuleTile(
                     icon: Icons.local_hospital_rounded, emoji: '🏥',
                     gradientColors: const [Color(0xFFC62828), Color(0xFFD32F2F)],
-                    label: 'சிஸ்டர், டாக்டர் வந்துட்டாரா?', sublabel: 'Hospital & Clinic',
+                    label: 'டாக்டர் இருக்காரா?', sublabel: 'Hospital & Clinic',
                     onTap: () => _navigate(context, const HospitalScreen()),
                   ),
                   const SizedBox(height: 12),

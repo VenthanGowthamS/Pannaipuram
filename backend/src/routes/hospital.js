@@ -2,6 +2,16 @@ const express = require('express');
 const router  = express.Router();
 const { query } = require('../db/pool');
 
+// GET /api/hospital/list — all hospitals (public, no auth needed)
+router.get('/list', async (req, res) => {
+  try {
+    const result = await query('SELECT id, name_tamil, name_english, address_tamil, phone_casualty FROM hospitals ORDER BY id');
+    res.json({ success: true, data: result.rows });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 // GET /api/hospital/info
 router.get('/info', async (req, res) => {
   try {
