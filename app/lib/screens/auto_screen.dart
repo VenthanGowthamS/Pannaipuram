@@ -19,10 +19,10 @@ class _AutoScreenState extends State<AutoScreen> {
   bool _loading = true;
   Timer? _refreshTimer;
 
-  // WhatsApp contact (fetched from API, fallback hardcoded)
+  // WhatsApp contact (fetched from API, fallback to _kFallbackPhone)
   String _contactName = 'Admin';
-  String _contactPhone = '8888888888';
-  String _contactMessage = 'வணக்கம், பண்ணைப்புரம் app — சேவை சேர்க்க வேண்டும்';
+  String _contactPhone = '';
+  String _contactMessage = '';
 
   // ── Fallback contacts (shown when API is unreachable) ──────────────────
   static const List<AutoDriver> _fallbackDrivers = [

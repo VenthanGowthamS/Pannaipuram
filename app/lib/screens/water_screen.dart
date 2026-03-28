@@ -196,9 +196,20 @@ class _WaterScreenState extends State<WaterScreen> {
     }
   }
 
+  static const String _kFallbackPhone = '8807660177';
+
   Future<void> _contactAdmin() async {
-    const message = 'வணக்கம், பண்ணைப்புரம் app — தண்ணீர் நேரம் update செய்யவும்';
-    final uri = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(message)}');
+    const phone = _kFallbackPhone;
+    final cleaned = phone.replaceAll(RegExp(r'\D'), '');
+    final number = cleaned.startsWith('91') ? cleaned : '91$cleaned';
+    final message =
+        'வணக்கம் சார் 🙏\n\n'
+        'பண்ணைப்புரம் App-ல எங்க தெருவுக்கு தண்ணீர் நேரம் சேர்க்கணும்.\n\n'
+        'என் தெரு: $_selectedStreetName\n'
+        'தண்ணீர் வரும் நேரம்: \n'
+        'எத்தனை நாளுக்கு ஒரு முறை: \n\n'
+        'நன்றி!';
+    final uri = Uri.parse('https://wa.me/$number?text=${Uri.encodeComponent(message)}');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -561,13 +572,13 @@ class _WaterScreenState extends State<WaterScreen> {
               const Text('💧', style: TextStyle(fontSize: 28)),
               const SizedBox(height: 8),
               const Text(
-                'தண்ணீர் நேரம் admin மூலம் update ஆகும்',
+                'உங்க தெரு தண்ணீர் நேரம் தெரியுமா?',
                 style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 14, color: Color(0xFF1565C0), fontWeight: FontWeight.w600),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 2),
               const Text(
-                'Water schedule updates are managed by admin',
+                'Know your street\'s water timing? Tell us!',
                 style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Color(0xFF757575)),
                 textAlign: TextAlign.center,
               ),

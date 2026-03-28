@@ -88,6 +88,8 @@ class _PowerScreenState extends State<PowerScreen> {
     return DateFormat('d MMM, h:mm a').format(dt);
   }
 
+  static const String _kFallbackPhone = '8807660177';
+
   Future<void> _shareViaWhatsApp() async {
     final active = _activeCut;
     String message = 'பண்ணைப்புரம் மின் தடை தகவல்:\n';
@@ -104,6 +106,7 @@ class _PowerScreenState extends State<PowerScreen> {
       message += '⚠️ இன்று மின் தடை உள்ளது\n';
     }
     message += '\n— பண்ணைப்புரம் app';
+    // Share to WhatsApp (no specific recipient — user picks contact)
     final uri = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(message)}');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -111,8 +114,16 @@ class _PowerScreenState extends State<PowerScreen> {
   }
 
   Future<void> _contactAdmin() async {
-    const message = 'வணக்கம், பண்ணைப்புரம் app — கரண்ட் கட் தகவல் update செய்யவும்';
-    final uri = Uri.parse('https://wa.me/?text=${Uri.encodeComponent(message)}');
+    const phone = _kFallbackPhone;
+    final number = '91$phone';
+    const message =
+        'வணக்கம் சார் 🙏\n\n'
+        'பண்ணைப்புரம் App-ல கரண்ட் கட் தகவல் சேர்க்கணும்.\n\n'
+        'தேதி: \n'
+        'நேரம்: \n'
+        'காரணம் (தெரிஞ்சா): \n\n'
+        'நன்றி!';
+    final uri = Uri.parse('https://wa.me/$number?text=${Uri.encodeComponent(message)}');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
