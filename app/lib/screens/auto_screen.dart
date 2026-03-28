@@ -116,11 +116,21 @@ class _AutoScreenState extends State<AutoScreen> {
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
+  static const String _kFallbackPhone = '8807660177';
+
   Future<void> _openWhatsApp(String phone) async {
-    if (phone.isEmpty) return;
-    final cleaned = phone.replaceAll(RegExp(r'\D'), '');
+    final effectivePhone = phone.isNotEmpty ? phone : _kFallbackPhone;
+    final cleaned = effectivePhone.replaceAll(RegExp(r'\D'), '');
     final number = cleaned.startsWith('91') ? cleaned : '91$cleaned';
-    final uri = Uri.parse('https://wa.me/$number?text=${Uri.encodeComponent(_contactMessage)}');
+    const message =
+        'வணக்கம் சார் 🙏\n\n'
+        'பண்ணைப்புரம் App-ல என்னை Driver-ஆக சேர்க்கணும்.\n\n'
+        'என் பெயர்: \n'
+        'தொலைபேசி: \n'
+        'வண்டி வகை: (ஆட்டோ / வேன் / கார்)\n'
+        'செல்லும் பகுதி: \n\n'
+        'நன்றி!';
+    final uri = Uri.parse('https://wa.me/$number?text=${Uri.encodeComponent(message)}');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -360,85 +370,59 @@ class _AutoScreenState extends State<AutoScreen> {
 
         const SizedBox(height: 16),
 
-        // ── Register a driver — WhatsApp contact ──────────────────
+        // ── Register as driver — WhatsApp banner ───────────────────
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 28),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: _purple.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: _purple.withValues(alpha: 0.2), width: 1),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF6A1B9A), Color(0xFF8E24AA)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [BoxShadow(color: _purple.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
           ),
-          child: Column(
-            children: [
-              const Text('📋', style: TextStyle(fontSize: 28)),
-              const SizedBox(height: 8),
-              const Text(
-                'ஆட்டோ / வண்டி ஓட்டுனரை சேர்க்கணுமா?',
-                style: TextStyle(
-                  fontFamily: 'NotoSansTamil',
-                  fontSize: 14,
-                  color: _purple,
-                  fontWeight: FontWeight.w600,
+          child: Column(children: [
+            const Text('🚗', style: TextStyle(fontSize: 28)),
+            const SizedBox(height: 8),
+            const Text('சார், உங்கள் வண்டி சேர்க்கணுமா?',
+              style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),
+              textAlign: TextAlign.center),
+            const SizedBox(height: 2),
+            const Text('Register your auto / van / car',
+              style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Colors.white70),
+              textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () => _openWhatsApp(_contactPhone),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF25D366),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Want to register a driver? Message us:',
-                style: TextStyle(
-                  fontFamily: 'Roboto',
-                  fontSize: 12,
-                  color: Color(0xFF757575),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              GestureDetector(
-                onTap: () => _openWhatsApp(_contactPhone),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF25D366),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.chat_rounded, color: Colors.white, size: 20),
-                      SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Admin-கு WhatsApp செய்யவும்',
-                            style: TextStyle(
-                              fontFamily: 'NotoSansTamil',
-                              fontSize: 14,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Text(
-                            'Message the admin on WhatsApp',
-                            style: TextStyle(
-                              fontFamily: 'Roboto',
-                              fontSize: 11,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.chat_rounded, color: Colors.white, size: 20),
+                    SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Admin-கு WhatsApp செய்யவும்',
+                          style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 14, color: Colors.white, fontWeight: FontWeight.w700)),
+                        Text('Message the admin on WhatsApp',
+                          style: TextStyle(fontFamily: 'Roboto', fontSize: 11, color: Colors.white70)),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ]),
         ),
-
-        const SizedBox(height: 28),
       ],
     );
   }

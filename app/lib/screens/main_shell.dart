@@ -120,13 +120,10 @@ class _MainShellState extends State<MainShell> {
             const FeedbackScreen(),
           ],
         ),
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.10), blurRadius: 16, offset: const Offset(0, -3)),
-            ],
-          ),
+        bottomNavigationBar: Material(
+          color: Colors.white,
+          elevation: 12,
+          shadowColor: Colors.black26,
           child: SafeArea(
             top: false,
             child: SizedBox(

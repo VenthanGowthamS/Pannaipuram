@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/prefs_service.dart';
 import 'user_agreement_screen.dart';
-import 'onboarding_screen.dart';
 import 'main_shell.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -28,11 +27,11 @@ class _SplashScreenState extends State<SplashScreen>
 
     Future.delayed(const Duration(milliseconds: 2600), () {
       if (!mounted) return;
+      // If agreement not yet accepted → show terms first
+      // Once accepted → go straight to main app (street selection not mandatory)
       final Widget next = !PrefsService.isAgreementAccepted
           ? const UserAgreementScreen()
-          : PrefsService.isOnboarded
-              ? const MainShell()
-              : const OnboardingScreen();
+          : const MainShell();
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/prefs_service.dart';
-import 'onboarding_screen.dart';
 import 'main_shell.dart';
 
 class UserAgreementScreen extends StatefulWidget {
@@ -18,13 +17,10 @@ class _UserAgreementScreenState extends State<UserAgreementScreen> {
     HapticFeedback.lightImpact();
     await PrefsService.setAgreementAccepted();
     if (!mounted) return;
+    // Go directly to main app — street selection is optional, not required
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (_) => PrefsService.isOnboarded
-            ? const MainShell()
-            : const OnboardingScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const MainShell()),
     );
   }
 
@@ -94,9 +90,9 @@ class _UserAgreementScreenState extends State<UserAgreementScreen> {
                       'இது இலவசமாக வழங்கப்படுகிறது.'),
 
                     _section('🔒', 'தனிப்பட்ட தகவல்', 'Your Privacy',
-                      'நீங்கள் தேர்வு செய்த தெரு மட்டும் உங்கள் தொலைபேசியில் சேமிக்கப்படும். '
-                      'உங்கள் பெயர், எண் அல்லது வேறு எந்த தகவலும் எங்களிடம் சேகரிக்கப்படுவதில்லை. '
-                      'நீங்கள் feedback கொடுத்தால் மட்டும் அது admin-ஐ சென்று சேரும்.'),
+                      'உங்கள் பெயர், எண் அல்லது வேறு எந்த தகவலும் எங்கள் சேவையகத்தில் சேகரிக்கப்படுவதில்லை. '
+                      'நீங்கள் feedback கொடுத்தால் மட்டும் அது admin-ஐ சென்று சேரும். '
+                      'மற்ற எந்த தகவலும் உங்கள் தொலைபேசியை விட்டு வெளியே போவதில்லை.'),
 
                     _section('📡', 'Internet தேவை', 'Internet Usage',
                       'முதல் முறை திறக்கும்போது internet தேவை. '
@@ -104,9 +100,11 @@ class _UserAgreementScreenState extends State<UserAgreementScreen> {
                       'தகவல்கள் புதுப்பிக்கப்பட, mobile data அல்லது Wi-Fi தேவை.'),
 
                     _section('✅', 'தரவு துல்லியம்', 'Data Accuracy',
-                      'இங்குள்ள தகவல்கள் பண்ணைப்புரம் ஊர் நிர்வாகத்தால் '
+                      'இங்குள்ள தகவல்கள் இந்த app-ஐ உருவாக்கியவரால் '
                       'கைமுறையாக update செய்யப்படுகின்றன. '
-                      'அவசர நிலையில் எப்போதும் 112 அழைக்கவும்.'),
+                      'இது ஊர் நிர்வாகத்தின் அதிகாரபூர்வ தகவல் அல்ல — '
+                      'எதிர்காலத்தில் இணைக்க திட்டமிடப்பட்டுள்ளது. '
+                      'தகவல்களில் மாற்றம் இருந்தால் Feedback மூலம் தெரியப்படுத்தவும்.'),
 
                     _section('🔄', 'மாற்றங்கள்', 'Updates',
                       'இந்த app தொடர்ந்து மேம்படுத்தப்படும். '
