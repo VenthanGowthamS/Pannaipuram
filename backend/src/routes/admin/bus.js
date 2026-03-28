@@ -91,4 +91,19 @@ router.delete('/timings/:id', validateIdParam, requireRole('admin', 'super_admin
   }
 });
 
+// DELETE /admin/bus/routes/:id — deletes route (and its timings via CASCADE)
+router.delete('/routes/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
+  try {
+    // Delete child timings first (in case no CASCADE in schema)
+    await query('DELETE FROM bus_timings WHERE route_id = $1', [req.params.id]);
+    const result = await query('DELETE FROM bus_routes WHERE id = $1 RETURNING id', [req.params.id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Route not found' });
+    }
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 module.exports = router;

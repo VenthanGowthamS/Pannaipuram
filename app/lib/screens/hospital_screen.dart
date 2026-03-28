@@ -106,6 +106,7 @@ class HospitalScreen extends StatelessWidget {
                             hospitalName: 'PTV பத்மாவதி மருத்துவமனை',
                             accentColor: Color(0xFFB71C1C),
                             icon: Icons.local_hospital_rounded,
+                            hospitalPhone: '', // add number when available
                           ),
                         ),
                       );
@@ -131,6 +132,7 @@ class HospitalScreen extends StatelessWidget {
                             hospitalName: 'S P Clinic',
                             accentColor: Color(0xFFE65100),
                             icon: Icons.medical_services_rounded,
+                            hospitalPhone: '', // add number when available
                           ),
                         ),
                       );
@@ -357,12 +359,14 @@ class _HospitalDetailScreen extends StatefulWidget {
   final String hospitalName;
   final Color accentColor;
   final IconData icon;
+  final String hospitalPhone; // empty = no number yet
 
   const _HospitalDetailScreen({
     required this.hospitalId,
     required this.hospitalName,
     required this.accentColor,
     required this.icon,
+    this.hospitalPhone = '',
   });
 
   @override
@@ -565,14 +569,37 @@ class _HospitalDetailScreenState extends State<_HospitalDetailScreen> {
       ),
     ));
 
-    // Call button for hospital
+    // Call button — only show when a phone number is available
     widgets.add(const SizedBox(height: 12));
-    widgets.add(_buildContactCard(
-      label: 'மருத்துவமனை அழைக்க',
-      sublabel: 'Call Hospital',
-      icon: Icons.call,
-      color: widget.accentColor,
-    ));
+    if (widget.hospitalPhone.isNotEmpty) {
+      widgets.add(GestureDetector(
+        onTap: () async {
+          final uri = Uri(scheme: 'tel', path: widget.hospitalPhone);
+          if (await canLaunchUrl(uri)) await launchUrl(uri);
+        },
+        child: _buildContactCard(
+          label: 'மருத்துவமனை அழைக்க',
+          sublabel: '${widget.hospitalPhone}  •  Call Hospital',
+          icon: Icons.call,
+          color: widget.accentColor,
+        ),
+      ));
+    } else {
+      widgets.add(Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: const Row(children: [
+          Icon(Icons.phone_disabled_rounded, color: Color(0xFF9E9E9E), size: 20),
+          SizedBox(width: 10),
+          Text('தொலைபேசி எண் விரைவில் சேர்க்கப்படும்',
+            style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 13, color: Color(0xFF9E9E9E))),
+        ]),
+      ));
+    }
 
     return widgets;
   }

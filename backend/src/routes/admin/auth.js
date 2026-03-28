@@ -239,6 +239,33 @@ router.put('/users/:id/role', adminAuth, requireRole('super_admin'), validateIdP
   }
 });
 
+// DELETE /admin/auth/users/:id — permanently delete a user
+// Requires super_admin role — prevents self-deletion
+router.delete('/users/:id', adminAuth, requireRole('super_admin'), validateIdParam, async (req, res) => {
+  const { id } = req.params;
+
+  // Prevent self-deletion
+  if (req.admin.id === parseInt(id)) {
+    return res.status(400).json({ error: 'Cannot delete yourself' });
+  }
+
+  try {
+    const result = await query(
+      'DELETE FROM admin_users WHERE id = $1 RETURNING id, email',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('Delete user error:', err.message);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 // PUT /admin/auth/users/:id/active — toggle user active status
 // Requires super_admin role
 router.put('/users/:id/active', adminAuth, requireRole('super_admin'), validateIdParam, async (req, res) => {
