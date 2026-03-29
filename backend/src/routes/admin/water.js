@@ -28,6 +28,20 @@ router.put('/schedule/:streetId', requireRole('admin', 'super_admin'), async (re
   }
 });
 
+// DELETE /admin/water/schedule/:streetId — remove water schedule for a street
+router.delete('/schedule/:streetId', requireRole('admin', 'super_admin'), async (req, res) => {
+  try {
+    const result = await query(
+      'DELETE FROM water_schedules WHERE street_id = $1 RETURNING id',
+      [req.params.streetId]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'No schedule found for this street' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 // POST /admin/streets — add a new street
 router.post('/streets', requireRole('admin', 'super_admin'), async (req, res) => {
   const { name_tamil, name_english, ward_id } = req.body;

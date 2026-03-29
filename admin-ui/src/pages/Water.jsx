@@ -14,8 +14,12 @@ import {
   Typography,
   Skeleton,
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
-import { Edit as EditIcon, Save as SaveIcon, Close as CloseIcon } from '@mui/icons-material';
+import { Edit as EditIcon, Save as SaveIcon, Close as CloseIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import api from '../api';
 
 const Water = ({ onSnackbar, canEdit }) => {
@@ -27,6 +31,7 @@ const Water = ({ onSnackbar, canEdit }) => {
     supply_time: '',
     notes_tamil: '',
   });
+  const [confirmDelete, setConfirmDelete] = useState({ open: false, streetId: null, streetName: '' });
 
   const loadSchedules = async () => {
     setLoading(true);
@@ -71,11 +76,19 @@ const Water = ({ onSnackbar, canEdit }) => {
 
   const handleCancel = () => {
     setEditingId(null);
-    setEditForm({
-      frequency_days: '',
-      supply_time: '',
-      notes_tamil: '',
-    });
+    setEditForm({ frequency_days: '', supply_time: '', notes_tamil: '' });
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await api.deleteWaterSchedule(confirmDelete.streetId);
+      onSnackbar('Water schedule deleted — street can now be deleted from Streets tab', 'success');
+      setConfirmDelete({ open: false, streetId: null, streetName: '' });
+      loadSchedules();
+    } catch (error) {
+      onSnackbar('Failed to delete water schedule', 'error');
+      setConfirmDelete({ open: false, streetId: null, streetName: '' });
+    }
   };
 
   return (
@@ -199,15 +212,25 @@ const Water = ({ onSnackbar, canEdit }) => {
                       <TableCell>{schedule.supply_time || 'N/A'}</TableCell>
                       <TableCell>{schedule.notes_tamil || ''}</TableCell>
                       <TableCell>
-                        {canEdit && (
-                          <IconButton
-                            size="small"
-                            color="primary"
-                            onClick={() => handleEdit(schedule)}
-                            title="Edit"
-                          >
-                            <EditIcon />
-                          </IconButton>
+                        {canEdit && schedule.frequency_days && (
+                          <>
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => handleEdit(schedule)}
+                              title="Edit"
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => setConfirmDelete({ open: true, streetId: schedule.id, streetName: schedule.name_tamil || 'this street' })}
+                              title="Delete schedule"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </>
                         )}
                       </TableCell>
                     </TableRow>
@@ -218,6 +241,19 @@ const Water = ({ onSnackbar, canEdit }) => {
           )}
         </TableContainer>
       </Card>
+
+      {/* Delete Confirmation */}
+      <Dialog open={confirmDelete.open}>
+        <DialogTitle>Delete Water Schedule</DialogTitle>
+        <DialogContent>
+          Remove water schedule for <strong>{confirmDelete.streetName}</strong>?
+          After this, you can delete the street from the Streets tab.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDelete({ open: false, streetId: null, streetName: '' })}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained">Delete</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

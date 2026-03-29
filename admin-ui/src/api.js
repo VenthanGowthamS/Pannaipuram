@@ -246,6 +246,10 @@ class ApiService {
     return this.request('PUT', `/admin/water/schedule/${streetId}`, data);
   }
 
+  deleteWaterSchedule(streetId) {
+    return this.request('DELETE', `/admin/water/schedule/${streetId}`);
+  }
+
   // Streets
   getStreets() {
     return this.request('GET', '/admin/water/streets');
