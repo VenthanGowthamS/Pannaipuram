@@ -352,11 +352,11 @@ class _ServiceCard extends StatelessWidget {
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(nameTamil, style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 18, fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
             if (nameEnglish.isNotEmpty)
-              Text(nameEnglish, style: const TextStyle(fontFamily: 'Roboto', fontSize: 12, color: Color(0xFF757575))),
+              Text(nameEnglish, style: const TextStyle(fontFamily: 'Roboto', fontSize: 12, color: Color(0xFF757575)), maxLines: 1, overflow: TextOverflow.ellipsis),
             if (areaTamil.isNotEmpty)
-              Text(areaTamil, style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 13, color: meta.color)),
+              Text(areaTamil, style: TextStyle(fontFamily: 'NotoSansTamil', fontSize: 13, color: meta.color), maxLines: 1, overflow: TextOverflow.ellipsis),
             if (notesTamil.isNotEmpty)
-              Text(notesTamil, style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 12, color: Color(0xFF757575))),
+              Text(notesTamil, style: const TextStyle(fontFamily: 'NotoSansTamil', fontSize: 12, color: Color(0xFF757575)), maxLines: 1, overflow: TextOverflow.ellipsis),
           ])),
           GestureDetector(
             onTap: () => onCall(phone),

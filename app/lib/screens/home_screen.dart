@@ -19,6 +19,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> _announcements = [];
   Timer? _refreshTimer;
+  Timer? _retryTimer;
+  int _loadAttempt = 0;
 
   @override
   void initState() {
@@ -32,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    _retryTimer?.cancel();
     super.dispose();
   }
 
@@ -39,11 +42,20 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final data = await ApiService.getAnnouncements();
       if (!mounted) return;
+      _loadAttempt = 0;
+      _retryTimer?.cancel();
       setState(() => _announcements = data);
     } catch (_) {
-      // Announcements are non-critical — silently use empty list
+      // Render cold start can take up to 60s — retry twice before giving up
       if (!mounted) return;
-      setState(() => _announcements = []);
+      if (_loadAttempt < 2) {
+        _loadAttempt++;
+        _retryTimer?.cancel();
+        _retryTimer = Timer(const Duration(seconds: 30), () {
+          if (mounted) _loadAnnouncements();
+        });
+      }
+      // Keep existing _announcements — don't wipe out already-loaded data
     }
   }
 
