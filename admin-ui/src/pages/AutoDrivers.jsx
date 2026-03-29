@@ -35,13 +35,15 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
 
-  // WhatsApp contact state (phone = WA number, name_english = custom message)
-  const [contact, setContact] = useState({
-    name: 'Admin',
-    name_english: 'வணக்கம், பண்ணைப்புரம் app பற்றி கேட்கணும்...',
+  // Per-screen WhatsApp config
+  const [waConfig, setWaConfig] = useState({
     phone: '9944129218',
+    auto_message: '',
+    water_message: '',
+    power_message: '',
+    services_message: '',
   });
-  const [contactSaving, setContactSaving] = useState(false);
+  const [waSaving, setWaSaving] = useState(false);
 
   const vehicleTypes = [
     { id: 'auto', label: '🚙 Auto', emoji: '🚙' },
@@ -61,29 +63,29 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
     }
   };
 
-  const loadContact = async () => {
+  const loadWaConfig = async () => {
     try {
-      const data = await api.getAutoContact();
-      if (data) setContact(data);
+      const data = await api.getWhatsAppConfig();
+      if (data) setWaConfig(prev => ({ ...prev, ...data }));
     } catch (_) { /* keep defaults */ }
   };
 
-  const handleSaveContact = async () => {
-    if (!contact.phone) { onSnackbar('Phone number is required', 'warning'); return; }
-    setContactSaving(true);
+  const handleSaveWaConfig = async () => {
+    if (!waConfig.phone) { onSnackbar('Phone number is required', 'warning'); return; }
+    setWaSaving(true);
     try {
-      await api.updateAutoContact(contact);
-      onSnackbar('Registration contact updated!', 'success');
+      await api.updateWhatsAppConfig(waConfig);
+      onSnackbar('WhatsApp settings saved!', 'success');
     } catch {
-      onSnackbar('Failed to update contact', 'error');
+      onSnackbar('Failed to save WhatsApp settings', 'error');
     } finally {
-      setContactSaving(false);
+      setWaSaving(false);
     }
   };
 
   useEffect(() => {
     loadDrivers();
-    loadContact();
+    loadWaConfig();
   }, []);
 
   const handleAddDriver = async (e) => {
@@ -165,51 +167,62 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
         🚗 Auto/Van Drivers Management
       </Typography>
 
-      {/* WhatsApp Contact */}
+      {/* WhatsApp Settings — per screen */}
       {canEdit && (
         <Card sx={{ p: 3, mb: 3, border: '2px solid #25D36622' }}>
-          <Typography variant="h6" sx={{ mb: 1, color: '#128C7E' }}>
-            📱 WhatsApp Contact (shown in app)
+          <Typography variant="h6" sx={{ mb: 0.5, color: '#128C7E' }}>
+            📱 WhatsApp Settings
           </Typography>
-          <Typography variant="body2" sx={{ mb: 2, color: '#666' }}>
-            Users tap "Admin-கு WhatsApp செய்யவும்" in the app — this is the number and message they get.
+          <Typography variant="body2" sx={{ mb: 2.5, color: '#666' }}>
+            When users tap "Admin-கு WhatsApp செய்யவும்" in any screen, they are sent to this number with the screen's pre-filled message. Edit each message to match what you want users to send you.
           </Typography>
-          <Grid container spacing={2} alignItems="center">
+
+          {/* Phone number — shared across all screens */}
+          <Grid container spacing={2} sx={{ mb: 2 }}>
             <Grid item xs={12} sm={4}>
               <TextField
-                fullWidth
-                label="WhatsApp Number"
-                value={contact.phone}
-                onChange={(e) => setContact({ ...contact, phone: e.target.value })}
-                size="small"
-                placeholder="e.g. 9876543210"
+                fullWidth size="small"
+                label="Admin WhatsApp Number (all screens)"
+                value={waConfig.phone}
+                onChange={(e) => setWaConfig({ ...waConfig, phone: e.target.value })}
+                placeholder="9944129218"
                 inputProps={{ maxLength: 10 }}
-                helperText="10-digit mobile number"
+                helperText="10-digit mobile — same number used in all screens"
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Default WhatsApp Message (Tamil)"
-                value={contact.name_english}
-                onChange={(e) => setContact({ ...contact, name_english: e.target.value })}
-                size="small"
-                placeholder="வணக்கம், பண்ணைப்புரம் app பற்றி..."
-                helperText="Message pre-filled when user taps the button"
-              />
-            </Grid>
-            <Grid item xs={12} sm={2}>
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={handleSaveContact}
-                disabled={contactSaving}
-                sx={{ bgcolor: '#128C7E', '&:hover': { bgcolor: '#075E54' } }}
-              >
-                {contactSaving ? 'Saving...' : 'Save'}
-              </Button>
             </Grid>
           </Grid>
+
+          {/* Per-screen messages */}
+          <Grid container spacing={2}>
+            {[
+              { key: 'auto_message',     label: '🚗 Auto/Van Screen message',    hint: 'User asking for auto/car ride' },
+              { key: 'water_message',    label: '💧 Water Screen message',        hint: 'User asking about water schedule' },
+              { key: 'power_message',    label: '⚡ Power Screen message',        hint: 'User reporting a power cut' },
+              { key: 'services_message', label: '🛍 Services Screen message',     hint: 'User wanting to add their service' },
+            ].map(({ key, label, hint }) => (
+              <Grid item xs={12} sm={6} key={key}>
+                <TextField
+                  fullWidth multiline rows={4} size="small"
+                  label={label}
+                  value={waConfig[key]}
+                  onChange={(e) => setWaConfig({ ...waConfig, [key]: e.target.value })}
+                  helperText={hint}
+                  inputProps={{ style: { fontFamily: 'inherit', fontSize: 13 } }}
+                />
+              </Grid>
+            ))}
+          </Grid>
+
+          <Box sx={{ mt: 2.5 }}>
+            <Button
+              variant="contained"
+              onClick={handleSaveWaConfig}
+              disabled={waSaving}
+              sx={{ bgcolor: '#128C7E', '&:hover': { bgcolor: '#075E54' } }}
+            >
+              {waSaving ? 'Saving...' : '💾 Save WhatsApp Settings'}
+            </Button>
+          </Box>
         </Card>
       )}
 

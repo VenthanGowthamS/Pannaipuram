@@ -26,6 +26,42 @@ router.get('/contact', async (req, res) => {
   }
 });
 
+// GET /admin/auto/whatsapp-config — per-screen WhatsApp messages
+router.get('/whatsapp-config', async (req, res) => {
+  const defaults = {
+    phone: '9944129218',
+    auto_message: 'வணக்கம் சார் 🙏\n\nஆட்டோ / கார் வேணும்.\n\nபெயர்: \nபோகும் இடம்: \nதேவையான நேரம்: \n\nநன்றி!',
+    water_message: 'வணக்கம் சார் 🙏\n\nபண்ணைப்புரம் App-ல தண்ணி ஷெட்யூல் சேர்க்கணும்.\n\nதெரு பெயர்: \n\nநன்றி!',
+    power_message: 'வணக்கம் சார் 🙏\n\nபண்ணைப்புரம் App-ல கரண்ட் கட் தகவல் சேர்க்கணும்.\n\nதேதி: \nநேரம்: \nகாரணம் (தெரிஞ்சா): \n\nநன்றி!',
+    services_message: 'வணக்கம் சார் 🙏\n\nபண்ணைப்புரம் App-ல என் தகவல் சேர்க்கணும்.\n\nபெயர்: \nதொலைபேசி: \nசேவை வகை: \nபகுதி/தெரு: \n\nநன்றி!',
+  };
+  try {
+    const result = await query(`SELECT value FROM app_config WHERE key = 'whatsapp_config'`);
+    if (result.rows.length > 0) {
+      const stored = JSON.parse(result.rows[0].value);
+      return res.json({ success: true, data: { ...defaults, ...stored } });
+    }
+    res.json({ success: true, data: defaults });
+  } catch (_) {
+    res.json({ success: true, data: defaults });
+  }
+});
+
+// PUT /admin/auto/whatsapp-config — save per-screen WhatsApp messages
+router.put('/whatsapp-config', requireRole('admin', 'super_admin'), async (req, res) => {
+  const { phone, auto_message, water_message, power_message, services_message } = req.body;
+  if (!phone) return res.status(400).json({ success: false, error: 'phone required' });
+  if (!isValidPhone(phone)) return res.status(400).json({ success: false, error: 'Phone must be 10-digit Indian mobile' });
+  const val = JSON.stringify({ phone, auto_message, water_message, power_message, services_message });
+  try {
+    await query(`CREATE TABLE IF NOT EXISTS app_config (key TEXT PRIMARY KEY, value TEXT NOT NULL)`);
+    await query(`INSERT INTO app_config (key, value) VALUES ('whatsapp_config', $1) ON CONFLICT (key) DO UPDATE SET value = $1`, [val]);
+    res.json({ success: true, data: JSON.parse(val) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 // PUT /admin/auto/contact — update registration contact
 router.put('/contact', requireRole('admin', 'super_admin'), async (req, res) => {
   const phone        = trimStr(req.body.phone);

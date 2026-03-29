@@ -75,6 +75,10 @@ class ApiService {
     return this.request('PUT', `/admin/auth/users/${id}/active`, { is_active: isActive });
   }
 
+  deleteUser(id) {
+    return this.request('DELETE', `/admin/auth/users/${id}`);
+  }
+
   // Announcements
   getAnnouncements() {
     return this.request('GET', '/admin/announcements');
@@ -219,6 +223,14 @@ class ApiService {
 
   updateAutoContact(data) {
     return this.request('PUT', '/admin/auto/contact', data);
+  }
+
+  getWhatsAppConfig() {
+    return this.request('GET', '/admin/auto/whatsapp-config');
+  }
+
+  updateWhatsAppConfig(data) {
+    return this.request('PUT', '/admin/auto/whatsapp-config', data);
   }
 
   getAutoDrivers() {
