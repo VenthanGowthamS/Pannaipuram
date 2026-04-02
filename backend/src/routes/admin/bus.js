@@ -3,7 +3,7 @@ const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
 const { validateIdParam, requireRole } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
-const { trimStr } = require('../../middleware/validate');
+const { trimStr, isValidTime } = require('../../middleware/validate');
 
 router.use(adminAuth);
 
@@ -48,7 +48,7 @@ router.post('/timings', requireRole('admin', 'super_admin'), async (req, res) =>
   }
   const departs = trimStr(departs_at);
   // Accept HH:MM or HH:MM:SS format (admin UI sends HH:MM:SS)
-  if (!/^\d{2}:\d{2}(:\d{2})?$/.test(departs)) {
+  if (!isValidTime(departs)) {
     return res.status(400).json({ success: false, error: 'departs_at must be in HH:MM or HH:MM:SS format' });
   }
   try {

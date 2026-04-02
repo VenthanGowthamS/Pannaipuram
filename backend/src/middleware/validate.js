@@ -18,9 +18,17 @@ const isValidPhone = (phone) => PHONE_RE.test(String(phone || '').trim());
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const isValidEmail = (email) => EMAIL_RE.test(String(email || '').trim());
 
-/** HH:MM or HH:MM:SS time string */
+/** HH:MM or HH:MM:SS time string with valid ranges */
 const TIME_RE = /^\d{2}:\d{2}(:\d{2})?$/;
-const isValidTime = (t) => TIME_RE.test(String(t || '').trim());
+const isValidTime = (t) => {
+  const s = String(t || '').trim();
+  if (!TIME_RE.test(s)) return false;
+  const parts = s.split(':');
+  const h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  const sec = parts[2] ? parseInt(parts[2], 10) : 0;
+  return h >= 0 && h <= 23 && m >= 0 && m <= 59 && sec >= 0 && sec <= 59;
+};
 
 /**
  * Returns true if start < end (both HH:MM or HH:MM:SS strings).
