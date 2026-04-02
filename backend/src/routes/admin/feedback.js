@@ -2,6 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const { query } = require('../../db/pool');
 const adminAuth = require('../../middleware/auth');
+const { validateIdParam } = require('../../middleware/auth');
 
 router.use(adminAuth);
 
@@ -21,7 +22,7 @@ router.get('/', async (req, res) => {
 });
 
 // PUT /admin/feedback/:id/read — mark as read
-router.put('/:id/read', async (req, res) => {
+router.put('/:id/read', validateIdParam, async (req, res) => {
   try {
     await query(
       'UPDATE user_feedback SET is_read = TRUE WHERE id = $1',
@@ -35,7 +36,7 @@ router.put('/:id/read', async (req, res) => {
 });
 
 // DELETE /admin/feedback/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', validateIdParam, async (req, res) => {
   try {
     await query('DELETE FROM user_feedback WHERE id = $1', [req.params.id]);
     res.json({ success: true });
