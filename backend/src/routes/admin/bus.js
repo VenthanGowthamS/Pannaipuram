@@ -42,7 +42,7 @@ router.post('/routes', requireRole('admin', 'super_admin'), async (req, res) => 
 
 // POST /admin/bus/timings
 router.post('/timings', requireRole('admin', 'super_admin'), async (req, res) => {
-  const { route_id, departs_at, days_of_week, bus_type, is_last_bus } = req.body;
+  const { route_id, departs_at, days_of_week, bus_type, operator_name, is_last_bus } = req.body;
   if (!route_id || !departs_at) {
     return res.status(400).json({ success: false, error: 'route_id and departs_at are required' });
   }
@@ -53,9 +53,9 @@ router.post('/timings', requireRole('admin', 'super_admin'), async (req, res) =>
   }
   try {
     const result = await query(`
-      INSERT INTO bus_timings (route_id, departs_at, days_of_week, bus_type, is_last_bus)
-      VALUES ($1,$2,$3,$4,$5) RETURNING *
-    `, [route_id, departs, days_of_week || 'daily', bus_type || 'ordinary', is_last_bus || false]);
+      INSERT INTO bus_timings (route_id, departs_at, days_of_week, bus_type, operator_name, is_last_bus)
+      VALUES ($1,$2,$3,$4,$5,$6) RETURNING *
+    `, [route_id, departs, days_of_week || 'daily', bus_type || 'ordinary', operator_name || null, is_last_bus || false]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });
@@ -64,17 +64,18 @@ router.post('/timings', requireRole('admin', 'super_admin'), async (req, res) =>
 
 // PUT /admin/bus/timings/:id
 router.put('/timings/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
-  const { departs_at, days_of_week, bus_type, is_last_bus, is_active } = req.body;
+  const { departs_at, days_of_week, bus_type, operator_name, is_last_bus, is_active } = req.body;
   try {
     const result = await query(`
       UPDATE bus_timings
-      SET departs_at   = COALESCE($1, departs_at),
-          days_of_week = COALESCE($2, days_of_week),
-          bus_type     = COALESCE($3, bus_type),
-          is_last_bus  = COALESCE($4, is_last_bus),
-          is_active    = COALESCE($5, is_active)
-      WHERE id = $6 RETURNING *
-    `, [departs_at, days_of_week, bus_type, is_last_bus, is_active, req.params.id]);
+      SET departs_at    = COALESCE($1, departs_at),
+          days_of_week  = COALESCE($2, days_of_week),
+          bus_type      = COALESCE($3, bus_type),
+          operator_name = COALESCE($4, operator_name),
+          is_last_bus   = COALESCE($5, is_last_bus),
+          is_active     = COALESCE($6, is_active)
+      WHERE id = $7 RETURNING *
+    `, [departs_at, days_of_week, bus_type, operator_name, is_last_bus, is_active, req.params.id]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });

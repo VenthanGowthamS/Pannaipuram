@@ -19,11 +19,12 @@ router.get('/timings/:corridorId', async (req, res) => {
   try {
     const result = await query(`
       SELECT bt.id, bt.departs_at, bt.days_of_week, bt.bus_type,
-             bt.is_last_bus, br.direction, br.origin_tamil, br.dest_tamil, br.stops_tamil
+             bt.operator_name, bt.is_last_bus,
+             br.direction, br.origin_tamil, br.dest_tamil, br.stops_tamil
       FROM bus_timings bt
       JOIN bus_routes br ON bt.route_id = br.id
       WHERE br.corridor_id = $1 AND bt.is_active = TRUE
-      ORDER BY br.direction, bt.departs_at ASC
+      ORDER BY bt.departs_at ASC
     `, [req.params.corridorId]);
     res.json({ success: true, data: result.rows });
   } catch (err) {

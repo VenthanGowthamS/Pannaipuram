@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: var(--font-tamil);
+  background: var(--color-bg);
+  color: var(--color-text);
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+a { text-decoration: none; color: inherit; }
+::-webkit-scrollbar { display: none; }
+* { scrollbar-width: none; }
+
+/* Offline banner */
+#offline-banner {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  background: #F57F17;
+  color: white;
+  text-align: center;
+  padding: 6px 16px;
+  font-size: 0.8rem;
+  font-family: var(--font-tamil);
+  z-index: 999;
+  transform: translateY(-100%);
+  transition: transform var(--trans-fast);
+}
+#offline-banner.visible { transform: translateY(0); }
+
+/* Section base */
+.section { display: block; }
+.section[hidden] { display: none; }

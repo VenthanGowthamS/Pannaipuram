@@ -144,6 +144,7 @@ class ApiService {
       departs_at: data.departs_at.includes(':') && data.departs_at.split(':').length === 2 ? data.departs_at + ':00' : data.departs_at,
       days_of_week: data.days_of_week || 'daily',
       bus_type: data.bus_type || 'ordinary',
+      operator_name: data.operator_name || null,
       is_last_bus: data.is_last_bus || false,
     });
   }

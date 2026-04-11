@@ -32,6 +32,7 @@ const BusTimings = ({ onSnackbar, canEdit }) => {
     departs_at: '06:00',
     days_of_week: 'daily',
     bus_type: 'ordinary',
+    operator_name: '',
     is_last_bus: false,
   });
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
@@ -78,6 +79,7 @@ const BusTimings = ({ onSnackbar, canEdit }) => {
       departs_at: '06:00',
       days_of_week: 'daily',
       bus_type: 'ordinary',
+      operator_name: '',
       is_last_bus: false,
     });
   };
@@ -129,6 +131,7 @@ const BusTimings = ({ onSnackbar, canEdit }) => {
       departs_at: time,
       days_of_week: timing.days_of_week || 'daily',
       bus_type: timing.bus_type || 'ordinary',
+      operator_name: timing.operator_name || '',
       is_last_bus: timing.is_last_bus || false,
     });
   };
@@ -218,10 +221,21 @@ const BusTimings = ({ onSnackbar, canEdit }) => {
                   native: true,
                 }}
               >
-                <option value="ordinary">Ordinary</option>
-                <option value="express">Express</option>
-                <option value="setc">SETC</option>
+                <option value="ordinary">Ordinary (TNSTC)</option>
+                <option value="express">Express (TNSTC)</option>
+                <option value="SETC">SETC</option>
+                <option value="private">Private Travels</option>
               </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Operator Name (private buses only)"
+                placeholder="e.g. Subam Travels, Vignesh TAT"
+                value={form.operator_name}
+                onChange={(e) => setForm({ ...form, operator_name: e.target.value })}
+                helperText="Leave blank for TNSTC / government buses"
+              />
             </Grid>
             <Grid item xs={12}>
               <Box sx={{ display: 'flex', gap: 1 }}>
@@ -265,6 +279,7 @@ const BusTimings = ({ onSnackbar, canEdit }) => {
                 <TableRow>
                   <TableCell>Departure Time</TableCell>
                   <TableCell>Bus Type</TableCell>
+                  <TableCell>Operator</TableCell>
                   <TableCell>Days</TableCell>
                   <TableCell>Last Bus</TableCell>
                   <TableCell>Actions</TableCell>
@@ -279,7 +294,11 @@ const BusTimings = ({ onSnackbar, canEdit }) => {
                         label={timing.bus_type}
                         size="small"
                         variant="outlined"
+                        color={timing.bus_type === 'private' ? 'secondary' : 'default'}
                       />
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.8rem', color: '#666' }}>
+                      {timing.operator_name || '—'}
                     </TableCell>
                     <TableCell>{timing.days_of_week}</TableCell>
                     <TableCell>

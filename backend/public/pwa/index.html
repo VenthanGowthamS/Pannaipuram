@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ta" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1B5E20">
+  <meta name="description" content="பண்ணைப்புரம் — பேருந்து நேரம், ஆட்டோ தகவல்">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="பண்ணைப்புரம்">
+  <title>பண்ணைப்புரம்</title>
+
+  <link rel="manifest" href="/pwa/manifest.json">
+  <link rel="apple-touch-icon" href="/pwa/icons/icon-192.png">
+  <link rel="icon" href="/pwa/icons/icon-192.png" type="image/png">
+
+  <link rel="stylesheet" href="/pwa/css/tokens.css">
+  <link rel="stylesheet" href="/pwa/css/base.css">
+  <link rel="stylesheet" href="/pwa/css/logo.css">
+  <link rel="stylesheet" href="/pwa/css/nav.css">
+  <link rel="stylesheet" href="/pwa/css/bus.css">
+  <link rel="stylesheet" href="/pwa/css/auto.css">
+</head>
+<body data-section="bus">
+
+  <!-- Offline banner -->
+  <div id="offline-banner">
+    நீங்கள் offline — கடைசி தகவல் காட்டுகிறோம்
+  </div>
+
+  <!-- ── Header / Morphing Logo ───────────────────────── -->
+  <header id="app-header">
+    <div class="logo-icon-wrap" aria-hidden="true">
+
+      <!-- Bus icon (Material: directions_bus) -->
+      <svg class="icon-bus" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/>
+      </svg>
+
+      <!-- Auto-rickshaw icon (Material: electric_rickshaw) -->
+      <svg class="icon-auto" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 3H5c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h3c0 1.66 1.34 3 3 3s3-1.34 3-3h3v-1h1.5c.83 0 1.5-.67 1.5-1.5v-3c0-.83-.67-1.5-1.5-1.5H20V5c0-1.1-.9-2-2-2zm-8 15c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm6-4H5V5h12v9zm2 0h-1v-3h1v3z"/>
+      </svg>
+
+    </div>
+    <h1 class="app-title">பண்ணைப்புரம்</h1>
+    <p class="app-subtitle">Pannaipuram</p>
+  </header>
+
+  <!-- ── Main Content ─────────────────────────────────── -->
+  <main>
+
+    <!-- BUS SECTION (default) -->
+    <section id="section-bus" class="section">
+
+      <!-- Corridor selector -->
+      <div id="corridor-scroll" class="corridor-scroll" role="list" aria-label="Bus corridors"></div>
+
+      <!-- Hero: next bus countdown -->
+      <div id="next-bus-hero" class="next-bus-hero">
+        <div class="skeleton" style="width:160px;height:56px;border-radius:8px"></div>
+      </div>
+
+      <!-- Timetable (collapsed by default) -->
+      <div class="timetable-wrap">
+        <button class="timetable-toggle" id="timetable-toggle" aria-expanded="false">
+          <span class="toggle-labels">
+            <span class="toggle-ta">அனைத்து நேரங்கள்</span>
+            <span class="toggle-en">All Times</span>
+          </span>
+          <span class="toggle-arrow" aria-hidden="true">▼</span>
+        </button>
+        <div id="timetable-list" class="timetable-list" hidden></div>
+      </div>
+
+    </section>
+
+    <!-- AUTO SECTION -->
+    <section id="section-auto" class="section" hidden>
+
+      <div class="section-head">
+        <span class="section-title-ta">சார், ஆட்டோ வேணுமா?</span>
+        <span class="section-title-en">Auto &amp; Van Transport</span>
+      </div>
+
+      <!-- Driver cards -->
+      <div id="driver-list" class="driver-list">
+        <div class="skeleton-list">
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Register contact -->
+      <div class="register-card">
+        <span class="register-label-ta">இல்லையா? பதிவு செய்ய:</span>
+        <span class="register-label-en">Not listed? Register your vehicle:</span>
+        <a id="contact-link" href="tel:" class="wa-btn">
+          📞 தொடர்பு கொள்ள
+        </a>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ── Bottom Navigation ────────────────────────────── -->
+  <nav id="bottom-nav" aria-label="Main navigation">
+    <button class="nav-tab active" data-section="bus" aria-label="Bus timings">
+      <span class="nav-icon" aria-hidden="true">🚌</span>
+      <span class="nav-label">பேருந்து</span>
+    </button>
+    <button class="nav-tab" data-section="auto" aria-label="Auto and van transport">
+      <span class="nav-icon" aria-hidden="true">🛺</span>
+      <span class="nav-label">ஆட்டோ</span>
+    </button>
+  </nav>
+
+  <script src="/pwa/js/api.js"></script>
+  <script src="/pwa/js/bus.js"></script>
+  <script src="/pwa/js/auto.js"></script>
+  <script src="/pwa/js/app.js"></script>
+</body>
+</html>

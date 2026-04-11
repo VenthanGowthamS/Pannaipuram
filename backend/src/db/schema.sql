@@ -89,14 +89,21 @@ CREATE TABLE IF NOT EXISTS bus_routes (
 );
 
 CREATE TABLE IF NOT EXISTS bus_timings (
-  id            SERIAL PRIMARY KEY,
-  route_id      INTEGER REFERENCES bus_routes(id),
-  departs_at    TIME NOT NULL,
-  days_of_week  VARCHAR(20) DEFAULT 'daily',
-  bus_type      VARCHAR(20) DEFAULT 'ordinary',
-  is_last_bus   BOOLEAN DEFAULT FALSE,
-  is_active     BOOLEAN DEFAULT TRUE
+  id             SERIAL PRIMARY KEY,
+  route_id       INTEGER REFERENCES bus_routes(id),
+  departs_at     TIME NOT NULL,
+  days_of_week   VARCHAR(20) DEFAULT 'daily',
+  bus_type       VARCHAR(20) DEFAULT 'ordinary'
+                 CHECK (bus_type IN ('ordinary','express','SETC','private')),
+  operator_name  VARCHAR(100),
+  is_last_bus    BOOLEAN DEFAULT FALSE,
+  is_active      BOOLEAN DEFAULT TRUE
 );
+-- ⚠️ MIGRATION: Run this in Supabase SQL Editor for existing databases:
+--   ALTER TABLE bus_timings ADD COLUMN IF NOT EXISTS operator_name VARCHAR(100);
+--   ALTER TABLE bus_timings DROP CONSTRAINT IF EXISTS bus_timings_bus_type_check;
+--   ALTER TABLE bus_timings ADD CONSTRAINT bus_timings_bus_type_check
+--     CHECK (bus_type IN ('ordinary','express','SETC','private'));
 
 -- ─────────────────────────────────────
 -- Hospital Module

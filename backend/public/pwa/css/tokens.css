@@ -1,0 +1,51 @@
+:root {
+  /* Brand */
+  --color-primary:       #1B5E20;
+  --color-primary-light: #2E7D32;
+  --color-primary-bg:    #E8F5E9;
+
+  /* Backgrounds */
+  --color-bg:      #FFFFFF;
+  --color-surface: #F5F5F5;
+  --color-border:  #E0E0E0;
+
+  /* Text */
+  --color-text:   #111111;
+  --color-text-2: #555555;
+  --color-muted:  #9E9E9E;
+
+  /* Module accents */
+  --color-bus:     #E65100;
+  --color-private: #880E4F;
+  --color-last:    #C62828;
+
+  /* Fonts */
+  --font-tamil: 'Noto Sans Tamil', sans-serif;
+  --font-latin: 'Roboto', sans-serif;
+
+  /* Type scale */
+  --size-hero:       clamp(3rem, 14vw, 5rem);
+  --size-body-tamil: 1.125rem;   /* 18px */
+  --size-sub:        0.75rem;    /* 12px */
+  --size-pill:       0.875rem;   /* 14px */
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+
+  /* Shape */
+  --radius-pill: 100px;
+  --radius-card: 12px;
+  --radius-sm:   6px;
+
+  /* Layout */
+  --nav-height:    64px;
+  --header-height: min(28vh, 155px);
+
+  /* Transitions */
+  --trans-fast: 150ms ease;
+  --trans-logo: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}

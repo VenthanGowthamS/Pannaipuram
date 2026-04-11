@@ -52,6 +52,10 @@ app.use('/admin/v2', express.static(path.join(__dirname, '../public/admin-v2')))
 app.get('/admin/panel', (req, res) => res.redirect('/admin/v2/'));
 app.get('/admin', (req, res) => res.redirect('/admin/v2/'));
 
+// ── Serve PWA (static) ──────────────────────────────────────
+app.use('/pwa', express.static(path.join(__dirname, '../public/pwa')));
+app.get('/', (req, res) => res.redirect('/pwa/'));
+
 // CORS — restrict origins in production
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
