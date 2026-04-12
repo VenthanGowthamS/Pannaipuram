@@ -1,12 +1,11 @@
 // ── Pannaipuram PWA — Service Worker ─────────────────────
-var CACHE = 'pannai-pwa-v1';
+var CACHE = 'pannai-pwa-v2';
 
 var SHELL = [
   '/pwa/',
   '/pwa/index.html',
   '/pwa/css/tokens.css',
   '/pwa/css/base.css',
-  '/pwa/css/logo.css',
   '/pwa/css/nav.css',
   '/pwa/css/bus.css',
   '/pwa/css/auto.css',
