@@ -110,7 +110,7 @@ var Bus = (function() {
       '</div>' +
       renderBadge(meta, timings, c.id) +
     '</div>' +
-    '<div class="route-timetable" id="tt-' + c.id + '" hidden></div>';
+    '<div class="route-timetable" id="tt-' + c.id + '"' + (expandedId === c.id ? '' : ' hidden') + '></div>';
   }
 
   // ── Full list render ───────────────────────────────────────────
@@ -192,6 +192,7 @@ var Bus = (function() {
   function renderTimetable(id) {
     var el = document.getElementById('tt-' + id);
     if (!el) return;
+    el.hidden = false;
     var timings = timingsCache[id] || [];
     if (!timings.length) {
       el.innerHTML = '<p class="tt-empty">இந்த வழியில் தகவல் விரைவில் சேர்க்கப்படும்</p>';
