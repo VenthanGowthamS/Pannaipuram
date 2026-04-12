@@ -53,25 +53,18 @@
     <!-- BUS SECTION (default) -->
     <section id="section-bus" class="section">
 
-      <!-- Corridor selector -->
-      <div id="corridor-scroll" class="corridor-scroll" role="list" aria-label="Bus corridors"></div>
-
-      <!-- Hero: next bus countdown -->
-      <div id="next-bus-hero" class="next-bus-hero">
-        <div class="skeleton" style="width:160px;height:56px;border-radius:8px"></div>
+      <!-- Navy header -->
+      <div class="bus-header">
+        <p class="bus-header-ta">எங்கிட்டு போகணும்?</p>
+        <p class="bus-header-en">Where do you want to go?</p>
+        <div class="bus-header-stop">
+          <span>📍</span>
+          <span>பண்ணைப்புரம் நிறுத்தம்</span>
+        </div>
       </div>
 
-      <!-- Timetable (collapsed by default) -->
-      <div class="timetable-wrap">
-        <button class="timetable-toggle" id="timetable-toggle" aria-expanded="false">
-          <span class="toggle-labels">
-            <span class="toggle-ta">அனைத்து நேரங்கள்</span>
-            <span class="toggle-en">All Times</span>
-          </span>
-          <span class="toggle-arrow" aria-hidden="true">▼</span>
-        </button>
-        <div id="timetable-list" class="timetable-list" hidden></div>
-      </div>
+      <!-- Route cards (rendered by bus.js) -->
+      <div id="bus-route-list"></div>
 
     </section>
 
