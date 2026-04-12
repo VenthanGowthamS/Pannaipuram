@@ -1,37 +1,58 @@
 // ── Auto/Van Section Controller ──────────────────────────────
 var Auto = (function() {
 
+  var FALLBACK_PHONE = '9944129218';
+
+  var WA_MESSAGE = encodeURIComponent(
+    'வணக்கம் சார் 🙏\n\n' +
+    'பண்ணைப்புரம் App-ல என்னை Driver-ஆக சேர்க்கணும்.\n\n' +
+    'என் பெயர்: \n' +
+    'தொலைபேசி: \n' +
+    'வண்டி வகை: (ஆட்டோ / வேன் / கார்)\n' +
+    'செல்லும் பகுதி: \n\n' +
+    'நன்றி!'
+  );
+
   function vehicleIcon(type) {
     var map = { auto: '🛺', van: '🚐', car: '🚕', taxi: '🚕' };
     return map[type] || '🚗';
   }
 
   function renderCard(driver) {
-    var hasPhone = driver.phone && driver.phone.replace(/\D/g,'').length >= 10;
+    var icon = vehicleIcon(driver.vehicle_type);
+    var hasPhone = driver.phone && driver.phone.replace(/\D/g, '').length >= 10;
     var callEl = hasPhone
-      ? '<a href="tel:' + driver.phone + '" class="call-btn">அழைக்க</a>'
+      ? '<a href="tel:' + driver.phone + '" class="call-btn">📞 அழைக்க</a>'
       : '<span class="call-btn call-btn-pending">விரைவில்</span>';
 
-    var meta = vehicleIcon(driver.vehicle_type);
-    if (driver.coverage_tamil) meta += ' · ' + driver.coverage_tamil;
+    var coverage = driver.coverage_tamil || driver.schedule_tamil || '';
 
     return '<div class="driver-card">' +
+      '<div class="driver-icon">' + icon + '</div>' +
       '<div class="driver-info">' +
         '<span class="driver-name-ta">' + driver.name_tamil + '</span>' +
         (driver.name_english ? '<span class="driver-name-en">' + driver.name_english + '</span>' : '') +
-        '<span class="driver-meta">' + meta + '</span>' +
-        (driver.schedule_tamil ? '<span class="driver-meta">' + driver.schedule_tamil + '</span>' : '') +
+        (coverage ? '<span class="driver-meta">' + coverage + '</span>' : '') +
       '</div>' +
       callEl +
     '</div>';
   }
 
+  function setContactLink(phone) {
+    var contactLink = document.getElementById('contact-link');
+    if (!contactLink) return;
+    var cleaned = (phone || FALLBACK_PHONE).replace(/\D/g, '').slice(-10);
+    contactLink.href = 'https://wa.me/91' + cleaned + '?text=' + WA_MESSAGE;
+  }
+
   async function init() {
     var list = document.getElementById('driver-list');
-    var contactLink = document.getElementById('contact-link');
 
     // Skeleton while loading
     list.innerHTML = '<div class="skeleton-list"><div class="skeleton"></div><div class="skeleton"></div></div>';
+
+    // Set fallback WhatsApp link immediately
+    setContactLink(FALLBACK_PHONE);
 
     try {
       var drivers = await PannaiAPI.getAutoDrivers();
@@ -46,11 +67,10 @@ var Auto = (function() {
     try {
       var contact = await PannaiAPI.getAutoContact();
       if (contact && contact.phone) {
-        contactLink.href = 'https://wa.me/91' + contact.phone.replace(/\D/g,'').slice(-10);
-        contactLink.textContent = (contact.name_tamil || contact.name || '') + ': ' + contact.phone;
+        setContactLink(contact.phone);
       }
     } catch(e) {
-      // no-op — contact link stays hidden
+      // fallback link already set
     }
   }
 

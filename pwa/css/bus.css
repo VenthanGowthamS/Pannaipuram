@@ -29,17 +29,21 @@
 }
 
 .corridor-pill.active {
-  background: var(--color-primary);
+  background: var(--color-bus);
   color: #ffffff;
-  border-color: var(--color-primary);
+  border-color: var(--color-bus);
   font-weight: 700;
 }
 
-/* Hero next bus */
+/* Hero next bus — card style */
 .next-bus-hero {
-  padding: var(--space-xl) var(--space-md) var(--space-lg);
+  margin: 0 var(--space-md) var(--space-md);
+  padding: 28px var(--space-md) 24px;
+  background: linear-gradient(135deg, var(--color-bus-bg) 0%, #FFFDF7 100%);
+  border-radius: 20px;
+  border: 1.5px solid var(--color-bus-border);
   text-align: center;
-  min-height: 185px;
+  min-height: 180px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -64,7 +68,7 @@
 .hero-countdown {
   font-size: var(--size-hero);
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-bus);
   line-height: 1;
   font-family: var(--font-latin);
   font-variant-numeric: tabular-nums;
@@ -83,7 +87,7 @@
   color: var(--color-text);
   line-height: 1.6;
 }
-.hero-time { font-weight: 700; color: var(--color-primary); }
+.hero-time { font-weight: 700; color: var(--color-bus); }
 .hero-operator {
   display: block;
   font-family: var(--font-latin);
@@ -172,7 +176,7 @@
 .timing-row.passed { opacity: 0.32; }
 
 .timing-row.is-next {
-  background: var(--color-primary-bg);
+  background: var(--color-bus-bg);
   margin: 0 calc(-1 * var(--space-md));
   padding: 11px var(--space-md);
   border-radius: var(--radius-sm);
@@ -187,7 +191,7 @@
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
 }
-.timing-row.is-next .timing-time { color: var(--color-primary); }
+.timing-row.is-next .timing-time { color: var(--color-bus); }
 
 .timing-badge {
   padding: 2px 7px;

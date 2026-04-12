@@ -15,9 +15,13 @@
   --color-muted:  #9E9E9E;
 
   /* Module accents */
-  --color-bus:     #E65100;
-  --color-private: #880E4F;
-  --color-last:    #C62828;
+  --color-bus:        #E65100;
+  --color-bus-bg:     #FFF3E0;
+  --color-bus-border: #FFCC80;
+  --color-auto:       #6A1B9A;
+  --color-auto-light: #8E24AA;
+  --color-private:    #880E4F;
+  --color-last:       #C62828;
 
   /* Fonts */
   --font-tamil: 'Noto Sans Tamil', sans-serif;

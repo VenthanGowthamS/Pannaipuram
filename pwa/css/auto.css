@@ -4,42 +4,77 @@
   padding-bottom: calc(var(--nav-height) + var(--space-lg));
 }
 
-.section-head {
+/* Hero card — purple gradient */
+.auto-hero {
+  background: linear-gradient(135deg, var(--color-auto) 0%, var(--color-auto-light) 100%);
+  border-radius: 22px;
+  padding: 28px 20px 24px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(106, 27, 154, 0.30);
   margin-bottom: var(--space-lg);
 }
-.section-title-ta {
-  font-family: var(--font-tamil);
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--color-text);
-  display: block;
+
+.auto-hero-emoji {
+  font-size: 44px;
+  line-height: 1;
+  margin-bottom: 10px;
 }
-.section-title-en {
+
+.auto-hero-ta {
+  font-family: var(--font-tamil);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 2px;
+}
+
+.auto-hero-en {
   font-family: var(--font-latin);
   font-size: var(--size-sub);
-  color: var(--color-muted);
+  color: rgba(255,255,255,0.7);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  display: block;
-  margin-top: 2px;
+  margin: 0 0 10px;
+}
+
+.auto-hero-sub {
+  font-family: var(--font-tamil);
+  font-size: 0.875rem;
+  color: rgba(255,255,255,0.8);
+  margin: 0;
+  line-height: 1.5;
 }
 
 /* Driver cards */
 .driver-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: 10px;
+  margin-bottom: var(--space-lg);
 }
 
 .driver-card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-md);
-  background: var(--color-surface);
-  border-radius: var(--radius-card);
-  padding: var(--space-md);
-  border: 1px solid var(--color-border);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  border: 1px solid #F3E5F5;
+}
+
+/* Circle icon on the left */
+.driver-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 26px;
+  background: rgba(106, 27, 154, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
 }
 
 .driver-info { flex: 1; min-width: 0; }
@@ -49,6 +84,7 @@
   font-size: var(--size-body-tamil);
   font-weight: 700;
   display: block;
+  color: var(--color-text);
 }
 .driver-name-en {
   font-family: var(--font-latin);
@@ -59,8 +95,8 @@
 }
 .driver-meta {
   font-family: var(--font-tamil);
-  font-size: 0.85rem;
-  color: var(--color-text-2);
+  font-size: 0.825rem;
+  color: var(--color-auto);
   display: block;
   margin-top: 4px;
   overflow: hidden;
@@ -68,25 +104,26 @@
   white-space: nowrap;
 }
 
+/* Call button — purple */
 .call-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 10px 18px;
-  background: var(--color-primary);
+  background: var(--color-auto);
   color: #ffffff;
   border-radius: var(--radius-pill);
   font-family: var(--font-tamil);
   font-size: 0.9rem;
   font-weight: 700;
-  min-width: 76px;
+  min-width: 80px;
   min-height: 44px;
   white-space: nowrap;
   flex-shrink: 0;
   transition: background var(--trans-fast), transform var(--trans-fast);
 }
 .call-btn:active {
-  background: var(--color-primary-light);
+  background: var(--color-auto-light);
   transform: scale(0.96);
 }
 .call-btn-pending {
@@ -96,55 +133,76 @@
   pointer-events: none;
 }
 
-/* Divider */
-.section-divider {
-  height: 1px;
-  background: var(--color-border);
-  margin: var(--space-lg) 0;
+/* WhatsApp register card — purple gradient */
+.register-card {
+  background: linear-gradient(135deg, var(--color-auto) 0%, var(--color-auto-light) 100%);
+  border-radius: 18px;
+  padding: var(--space-md) var(--space-md) 20px;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(106, 27, 154, 0.25);
 }
 
-/* Register section */
-.register-card {
-  background: var(--color-surface);
-  border-radius: var(--radius-card);
-  padding: var(--space-md);
-  border: 1px solid var(--color-border);
+.register-emoji {
+  font-size: 28px;
+  margin-bottom: 8px;
 }
+
 .register-label-ta {
   font-family: var(--font-tamil);
-  font-size: var(--size-body-tamil);
+  font-size: 1rem;
   font-weight: 600;
+  color: #ffffff;
   display: block;
+  margin-bottom: 2px;
 }
 .register-label-en {
   font-family: var(--font-latin);
   font-size: var(--size-sub);
-  color: var(--color-muted);
+  color: rgba(255,255,255,0.65);
   display: block;
   margin-bottom: var(--space-md);
 }
+
+/* WhatsApp button — green */
 .wa-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: 10px 16px;
+  gap: 10px;
+  padding: 12px 20px;
   background: #25D366;
   color: #ffffff;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-card);
+  min-height: 52px;
+  transition: transform var(--trans-fast);
+}
+.wa-btn:active { transform: scale(0.97); }
+
+.wa-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.wa-main {
   font-family: var(--font-tamil);
   font-size: 0.9rem;
-  font-weight: 600;
-  min-height: 44px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.wa-sub {
+  font-family: var(--font-latin);
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.3;
 }
 
 /* Loading skeleton */
-.skeleton-list { display: flex; flex-direction: column; gap: var(--space-md); }
+.skeleton-list { display: flex; flex-direction: column; gap: 10px; }
 .skeleton {
   height: 78px;
   background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
-  border-radius: var(--radius-card);
+  border-radius: 16px;
 }
 @keyframes shimmer {
   0%   { background-position: 200% 0; }
