@@ -43,6 +43,11 @@ a { text-decoration: none; color: inherit; }
 }
 #offline-banner.visible { transform: translateY(0); }
 
+/* Safe area for iPhone notch / Dynamic Island */
+main {
+  padding-top: env(safe-area-inset-top);
+}
+
 /* Section base */
 .section { display: block; }
 .section[hidden] { display: none; }
