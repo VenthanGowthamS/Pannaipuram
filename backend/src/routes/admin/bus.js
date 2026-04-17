@@ -17,6 +17,30 @@ router.get('/corridors', async (req, res) => {
   }
 });
 
+// POST /admin/bus/corridors — create new corridor (idempotent on name_english)
+router.post('/corridors', requireRole('admin', 'super_admin'), async (req, res) => {
+  const { name_tamil, name_english, color_hex } = req.body;
+  if (!name_tamil || !name_english) {
+    return res.status(400).json({ success: false, error: 'name_tamil and name_english are required' });
+  }
+  try {
+    const existing = await query(
+      'SELECT * FROM bus_corridors WHERE name_english = $1 LIMIT 1',
+      [name_english]
+    );
+    if (existing.rows.length > 0) {
+      return res.json({ success: true, data: existing.rows[0] });
+    }
+    const result = await query(
+      'INSERT INTO bus_corridors (name_tamil, name_english, color_hex) VALUES ($1,$2,$3) RETURNING *',
+      [name_tamil, name_english, color_hex || '#607D8B']
+    );
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error: ' + err.message });
+  }
+});
+
 // POST /admin/bus/routes — find or create
 router.post('/routes', requireRole('admin', 'super_admin'), async (req, res) => {
   const { corridor_id, direction, origin_tamil, dest_tamil, stops_tamil, notes_tamil } = req.body;
