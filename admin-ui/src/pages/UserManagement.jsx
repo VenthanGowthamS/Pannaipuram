@@ -21,7 +21,14 @@ import {
   InputLabel,
   Alert,
   CircularProgress,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
+import { Delete as DeleteIcon } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -38,6 +45,7 @@ const UserManagement = ({ onSnackbar }) => {
   });
   const [signupLoading, setSignupLoading] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({ open: false, type: null, userId: null });
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, userId: null, userName: '' });
 
   const loadUsers = async () => {
     setLoading(true);
@@ -99,7 +107,19 @@ const UserManagement = ({ onSnackbar }) => {
       onSnackbar(currentActive ? 'User deactivated' : 'User activated', 'success');
       loadUsers();
     } catch (error) {
-      onSnackbar('Failed to toggle user status', 'error');
+      onSnackbar(error.message || 'Failed to toggle user status', 'error');
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    try {
+      await api.deleteUser(deleteDialog.userId);
+      onSnackbar(`User "${deleteDialog.userName}" deleted`, 'success');
+      setDeleteDialog({ open: false, userId: null, userName: '' });
+      loadUsers();
+    } catch (error) {
+      onSnackbar(error.message || 'Failed to delete user', 'error');
+      setDeleteDialog({ open: false, userId: null, userName: '' });
     }
   };
 
@@ -210,22 +230,31 @@ const UserManagement = ({ onSnackbar }) => {
               </TableHead>
 
               <TableBody>
-                {users.map((u) => (
-                  <TableRow key={u.id} hover>
-                    <TableCell>{u.name || '—'}</TableCell>
+                {users.map((u) => {
+                  const isSelf = u.id === user?.id;
+                  return (
+                  <TableRow key={u.id} hover sx={isSelf ? { bgcolor: '#f9fbe7' } : {}}>
+                    <TableCell>
+                      {u.name || '—'}
+                      {isSelf && <Chip label="You" size="small" sx={{ ml: 1, fontSize: 10 }} color="primary" variant="outlined" />}
+                    </TableCell>
                     <TableCell>{u.email}</TableCell>
 
                     <TableCell>
-                      <FormControl size="small">
-                        <Select
-                          value={u.role || 'viewer'}
-                          onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                        >
-                          <MenuItem value="viewer">Viewer</MenuItem>
-                          <MenuItem value="admin">Admin</MenuItem>
-                          <MenuItem value="super_admin">Super Admin</MenuItem>
-                        </Select>
-                      </FormControl>
+                      <Tooltip title={isSelf ? 'Cannot change your own role' : ''}>
+                        <span>
+                          <FormControl size="small" disabled={isSelf}>
+                            <Select
+                              value={u.role || 'viewer'}
+                              onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                            >
+                              <MenuItem value="viewer">Viewer</MenuItem>
+                              <MenuItem value="admin">Admin</MenuItem>
+                              <MenuItem value="super_admin">Super Admin</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </span>
+                      </Tooltip>
                     </TableCell>
 
                     <TableCell>
@@ -241,14 +270,34 @@ const UserManagement = ({ onSnackbar }) => {
                     </TableCell>
 
                     <TableCell align="center">
-                      <Switch
-                        checked={u.is_active}
-                        onChange={() => handleToggleActive(u.id, u.is_active)}
-                        size="small"
-                      />
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                        <Tooltip title={isSelf ? 'Cannot deactivate yourself' : u.is_active ? 'Deactivate' : 'Activate'}>
+                          <span>
+                            <Switch
+                              checked={u.is_active}
+                              onChange={() => handleToggleActive(u.id, u.is_active)}
+                              size="small"
+                              disabled={isSelf}
+                            />
+                          </span>
+                        </Tooltip>
+                        <Tooltip title={isSelf ? 'Cannot delete yourself' : 'Delete user'}>
+                          <span>
+                            <IconButton
+                              size="small"
+                              color="error"
+                              disabled={isSelf}
+                              onClick={() => setDeleteDialog({ open: true, userId: u.id, userName: u.name || u.email })}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </Box>
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
 
@@ -268,6 +317,27 @@ const UserManagement = ({ onSnackbar }) => {
         onConfirm={() => setConfirmDialog({ open: false, type: null, userId: null })}
         onCancel={() => setConfirmDialog({ open: false, type: null, userId: null })}
       />
+
+      {/* Delete User Confirmation */}
+      <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, userId: null, userName: '' })}>
+        <DialogTitle sx={{ color: 'error.main' }}>🗑️ Delete User</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Permanently delete <strong>{deleteDialog.userName}</strong>?
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            This cannot be undone. The user will lose all access immediately.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialog({ open: false, userId: null, userName: '' })}>
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteUser} color="error" variant="contained">
+            Delete Permanently
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

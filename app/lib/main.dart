@@ -54,6 +54,20 @@ class _PannaipuramAppState extends State<PannaipuramApp>
       theme: AppTheme.theme,
       debugShowCheckedModeBanner: false,
       home: const SplashScreen(),
+      // Clamp system font scaling — prevents text overflow on phones
+      // with large accessibility font settings
+      builder: (context, child) {
+        final mq = MediaQuery.of(context);
+        return MediaQuery(
+          data: mq.copyWith(
+            textScaler: mq.textScaler.clamp(
+              minScaleFactor: 0.85,
+              maxScaleFactor: 1.15,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
   }
 }
