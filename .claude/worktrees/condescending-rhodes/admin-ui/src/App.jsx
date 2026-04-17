@@ -1,0 +1,107 @@
+import React, { useState } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline, Box, CircularProgress } from '@mui/material';
+import { HashRouter as Router } from 'react-router-dom';
+import theme from './theme';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Login from './components/Login';
+import Layout from './components/Layout';
+import PowerCuts from './pages/PowerCuts';
+import BusTimings from './pages/BusTimings';
+import Doctors from './pages/Doctors';
+import Emergency from './pages/Emergency';
+import AutoDrivers from './pages/AutoDrivers';
+import Water from './pages/Water';
+import Streets from './pages/Streets';
+import LocalServices from './pages/LocalServices';
+import UserManagement from './pages/UserManagement';
+import Announcements from './pages/Announcements';
+import Feedback from './pages/Feedback';
+
+const AppContent = () => {
+  const { user, loading } = useAuth();
+  const [currentTab, setCurrentTab] = useState('power');
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
+
+  const handleShowSnackbar = (message, severity = 'info') => {
+    setSnackbar({
+      open: true,
+      message,
+      severity,
+    });
+  };
+
+  if (loading && !user) {
+    return (
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'linear-gradient(135deg, #1B5E20 0%, #388E3C 100%)' }}>
+        <CircularProgress sx={{ color: '#fff' }} size={48} />
+      </Box>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
+  }
+
+  const renderTab = () => {
+    const canEdit = user?.role === 'admin' || user?.role === 'super_admin';
+    const props = { onSnackbar: handleShowSnackbar, canEdit };
+    switch (currentTab) {
+      case 'power':
+        return <PowerCuts {...props} />;
+      case 'bus':
+        return <BusTimings {...props} />;
+      case 'doctors':
+        return <Doctors {...props} />;
+      case 'emergency':
+        return <Emergency {...props} />;
+      case 'auto':
+        return <AutoDrivers {...props} />;
+      case 'water':
+        return <Water {...props} />;
+      case 'streets':
+        return <Streets {...props} />;
+      case 'services':
+        return <LocalServices {...props} />;
+      case 'users':
+        return <UserManagement {...props} />;
+      case 'announcements':
+        return <Announcements {...props} />;
+      case 'feedback':
+        return <Feedback {...props} />;
+      default:
+        return <PowerCuts {...props} />;
+    }
+  };
+
+  return (
+    <Layout
+      currentTab={currentTab}
+      onTabChange={setCurrentTab}
+      snackbar={snackbar}
+      setSnackbar={setSnackbar}
+    >
+      {renderTab()}
+    </Layout>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </ThemeProvider>
+    </Router>
+  );
+}
+
+export default App;

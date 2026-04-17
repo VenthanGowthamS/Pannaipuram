@@ -3,10 +3,16 @@
   "configurations": [
     {
       "name": "backend",
-      "runtimeExecutable": "node",
+      "runtimeExecutable": "/opt/homebrew/bin/node",
       "runtimeArgs": ["src/app.js"],
       "port": 3000,
       "cwd": "backend"
+    },
+    {
+      "name": "pwa-static",
+      "runtimeExecutable": "/opt/homebrew/bin/node",
+      "runtimeArgs": ["pwa/serve.js"],
+      "port": 8080
     }
   ]
 }

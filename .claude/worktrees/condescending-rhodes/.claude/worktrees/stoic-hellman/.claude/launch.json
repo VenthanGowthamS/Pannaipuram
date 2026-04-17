@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "admin-static",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-e", "const e=require('express'),p=require('path'),a=e();a.use('/admin/v2',e.static(p.join(__dirname,'public/admin-v2')));a.listen(4444,()=>console.log('OK 4444'))"],
+      "port": 4444,
+      "cwd": "backend"
+    }
+  ]
+}
