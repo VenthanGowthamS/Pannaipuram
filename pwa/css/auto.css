@@ -1,7 +1,7 @@
 /* ── Auto/Van Section ────────────────────────────────────── */
 #section-auto {
   padding: var(--space-md);
-  padding-bottom: calc(var(--nav-height) + var(--space-lg));
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + var(--space-lg));
 }
 
 /* Hero card — purple gradient */

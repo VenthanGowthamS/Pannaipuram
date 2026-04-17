@@ -3,20 +3,20 @@ var Bus = (function() {
 
   // Per-corridor metadata — colours + emoji match the Flutter APK exactly
   var CORRIDOR_META = {
-    'theni':              { emoji: '🏙️', color: '#1565C0', isLocal: true,  isFrequent: true  },
-    'bodi':               { emoji: '🌄', color: '#0288D1', isLocal: true,  isFrequent: true  },
-    'cumbum':             { emoji: '🍇', color: '#388E3C', isLocal: true,  isFrequent: true  },
-    'chinnamanur':        { emoji: '🛕', color: '#FF6F00', isLocal: true,  isFrequent: false },
-    'gudalur (koodalur)': { emoji: '🌲', color: '#33691E', isLocal: true,  isFrequent: false },
-    'mettupalayam':       { emoji: '🏘️', color: '#F57C00', isLocal: true,  isFrequent: false },
-    'suruli theertham':   { emoji: '💧', color: '#0277BD', isLocal: true,  isFrequent: false },
-    'thevaram':           { emoji: '🛤️', color: '#546E7A', isLocal: true,  isFrequent: false },
-    'madurai':            { emoji: '🏛️', color: '#6A1B9A', isLocal: false, isFrequent: false },
-    'coimbatore':         { emoji: '🏭', color: '#00695C', isLocal: false, isFrequent: false },
-    'trichy':             { emoji: '🗼', color: '#C62828', isLocal: false, isFrequent: false },
-    'palani':             { emoji: '🙏', color: '#E65100', isLocal: false, isFrequent: false },
-    'kumily':             { emoji: '🌿', color: '#2E7D32', isLocal: false, isFrequent: false },
-    'dindigul':           { emoji: '🏰', color: '#4E342E', isLocal: false, isFrequent: false },
+    'theni':              { emoji: '🏙️', color: '#1565C0', isLocal: true,  isFrequent: true,  routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → தேனி' },
+    'bodi':               { emoji: '🌄', color: '#0288D1', isLocal: true,  isFrequent: true,  routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → போடி' },
+    'cumbum':             { emoji: '🍇', color: '#388E3C', isLocal: true,  isFrequent: true,  routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கம்பம்' },
+    'chinnamanur':        { emoji: '🛕', color: '#FF6F00', isLocal: true,  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → பல்லவராயன்பட்டி → சின்னமனூர்' },
+    'gudalur (koodalur)': { emoji: '🌲', color: '#33691E', isLocal: true,  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → கம்பம் → கூடலூர்' },
+    'mettupalayam':       { emoji: '🏘️', color: '#F57C00', isLocal: true,  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → மேட்டுப்பாளையம்' },
+    'suruli theertham':   { emoji: '💧', color: '#0277BD', isLocal: true,  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → சுருளி தீர்த்தம்' },
+    'thevaram':           { emoji: '🛤️', color: '#546E7A', isLocal: true,  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம்' },
+    'madurai':            { emoji: '🏛️', color: '#6A1B9A', isLocal: false, isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → மதுரை' },
+    'coimbatore':         { emoji: '🏭', color: '#00695C', isLocal: false, isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கோயம்புத்தூர்' },
+    'trichy':             { emoji: '🗼', color: '#C62828', isLocal: false, isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல் → திருச்சி' },
+    'palani':             { emoji: '🙏', color: '#E65100', isLocal: false, isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → பழனி' },
+    'kumily':             { emoji: '🌿', color: '#2E7D32', isLocal: false, isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → போடி → குமுளி' },
+    'dindigul':           { emoji: '🏰', color: '#4E342E', isLocal: false, isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல்' },
   };
 
   var corridors = [];
@@ -61,6 +61,16 @@ var Bus = (function() {
   }
 
   // ── Badge (right side of each card) ───────────────────────────
+  function pillColor(mins) {
+    return mins <= 10 ? '#D32F2F' : mins <= 40 ? '#2E7D32' : '#757575';
+  }
+
+  function minsLabel(mins) {
+    return mins >= 60
+      ? Math.floor(mins / 60) + 'மணி ' + (mins % 60) + 'நிமி'
+      : mins + ' நிமிடம்';
+  }
+
   function renderBadge(meta, timings, corridorId) {
     if (meta.isFrequent) {
       return '<div class="route-badge badge-frequent" style="color:' + meta.color + '">' +
@@ -70,20 +80,19 @@ var Bus = (function() {
       '</div>';
     }
     if (!timings) {
-      // Timings not loaded yet — show loading dots
       return '<div class="route-badge badge-loading" data-badge-id="' + corridorId + '">…</div>';
     }
     if (!timings.length) {
-      return '<div class="route-badge badge-nodata">—</div>';
+      return '<div class="route-badge badge-nodata">🕐<span>விரைவில்</span></div>';
     }
     var next = computeNextBus(timings);
     if (!next) {
-      return '<div class="route-badge badge-done">✓<span>Done</span></div>';
+      return '<div class="route-badge badge-done">🌙<span>இன்று</span><span>முடிந்தது</span></div>';
     }
     var mins = next.totalMins - nowMins();
     return '<div class="route-badge badge-next" style="color:' + meta.color + '" data-badge-id="' + corridorId + '">' +
-      '<span class="badge-next-mins">' + mins + '</span>' +
-      '<span class="badge-next-unit">நிமிடம்</span>' +
+      '<span class="badge-next-time">' + fmtPeriod(next.departs_at) + '</span>' +
+      '<span class="badge-next-pill" style="background:' + pillColor(mins) + '">' + minsLabel(mins) + '</span>' +
     '</div>';
   }
 
@@ -106,6 +115,7 @@ var Bus = (function() {
       '<div class="route-info">' +
         '<span class="' + nameClass + '">' + c.name_tamil + '</span>' +
         '<span class="route-name-en">' + c.name_english + '</span>' +
+        (meta.routeDesc ? '<span class="route-desc">' + meta.routeDesc + '</span>' : '') +
         (busCount ? '<span class="route-buses">🚌 ' + busCount + '</span>' : '') +
       '</div>' +
       renderBadge(meta, timings, c.id) +
@@ -236,11 +246,14 @@ var Bus = (function() {
       if (!timings) return;
       var next = computeNextBus(timings);
       if (!next) {
-        el.outerHTML = '<div class="route-badge badge-done">✓<span>Done</span></div>';
+        el.outerHTML = '<div class="route-badge badge-done">🌙<span>இன்று</span><span>முடிந்தது</span></div>';
         return;
       }
       var mins = next.totalMins - nowMins();
-      el.querySelector('.badge-next-mins').textContent = mins;
+      var timeEl = el.querySelector('.badge-next-time');
+      var pillEl = el.querySelector('.badge-next-pill');
+      if (timeEl) timeEl.textContent = fmtPeriod(next.departs_at);
+      if (pillEl) { pillEl.textContent = minsLabel(mins); pillEl.style.background = pillColor(mins); }
     });
   }
 

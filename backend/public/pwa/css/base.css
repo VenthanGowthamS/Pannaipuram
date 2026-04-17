@@ -11,7 +11,7 @@ html { font-size: 16px; }
 
 body {
   font-family: var(--font-tamil);
-  background: var(--color-bg);
+  background: #F2F3F7;
   color: var(--color-text);
   max-width: 480px;
   margin: 0 auto;

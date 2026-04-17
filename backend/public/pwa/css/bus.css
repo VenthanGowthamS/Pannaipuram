@@ -1,6 +1,6 @@
 /* ── Bus Section ─────────────────────────────────────────── */
 #section-bus {
-  padding-bottom: calc(var(--nav-height) + var(--space-lg));
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + var(--space-lg));
 }
 
 /* Navy header card */
@@ -130,12 +130,23 @@
   margin-top: 1px;
 }
 
+.route-desc {
+  display: block;
+  font-family: var(--font-tamil);
+  font-size: 0.7rem;
+  color: var(--color-muted);
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .route-buses {
   display: block;
   font-family: var(--font-latin);
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: #BDBDBD;
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 /* Right-side badges */
@@ -160,23 +171,46 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
+  gap: 5px;
 }
-.badge-next-mins { font-family: var(--font-latin); font-size: 1.4rem; font-weight: 700; line-height: 1; }
-.badge-next-unit { font-family: var(--font-tamil); font-size: 0.65rem; opacity: 0.75; }
+.badge-next-time {
+  font-family: var(--font-tamil);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+.badge-next-pill {
+  font-family: var(--font-tamil);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #ffffff;
+  padding: 3px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
 
 .badge-done {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-family: var(--font-latin);
-  font-size: 0.7rem;
+  font-family: var(--font-tamil);
+  font-size: 0.72rem;
   color: var(--color-muted);
-  gap: 2px;
+  gap: 1px;
+  line-height: 1.4;
 }
-.badge-done span { font-size: 0.6rem; }
 
-.badge-nodata { color: var(--color-muted); font-size: 1.2rem; }
+.badge-nodata {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-tamil);
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  gap: 3px;
+}
+
 .badge-loading { color: var(--color-muted); font-size: 1.1rem; letter-spacing: 2px; }
 
 /* Expanded timetable */
