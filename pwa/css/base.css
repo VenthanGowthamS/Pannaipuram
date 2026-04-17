@@ -7,7 +7,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-html { font-size: 16px; }
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
 
 body {
   font-family: var(--font-tamil);
@@ -18,6 +21,7 @@ body {
   min-height: 100dvh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 button { font-family: inherit; cursor: pointer; border: none; background: none; }
@@ -25,23 +29,70 @@ a { text-decoration: none; color: inherit; }
 ::-webkit-scrollbar { display: none; }
 * { scrollbar-width: none; }
 
+/* Keyboard focus ring — visible only when using keyboard */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid #1A237E;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 /* Offline banner */
 #offline-banner {
   position: fixed;
   top: 0; left: 0; right: 0;
   max-width: 480px;
   margin: 0 auto;
-  background: #F57F17;
+  background: linear-gradient(135deg, #F57F17, #EF6C00);
   color: white;
   text-align: center;
-  padding: 6px 16px;
+  padding: 8px 16px calc(8px + env(safe-area-inset-top));
   font-size: 0.8rem;
   font-family: var(--font-tamil);
+  font-weight: 600;
   z-index: 999;
   transform: translateY(-100%);
-  transition: transform var(--trans-fast);
+  transition: transform 220ms ease-out;
+  box-shadow: 0 2px 8px rgba(245, 127, 23, 0.3);
 }
 #offline-banner.visible { transform: translateY(0); }
+
+/* Retry button + error states (shared by bus + auto) */
+.load-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 20px;
+  text-align: center;
+}
+.load-error-icon { font-size: 44px; margin-bottom: 6px; }
+.load-error-ta {
+  font-family: var(--font-tamil);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.load-error-en {
+  font-family: var(--font-latin);
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  max-width: 280px;
+  line-height: 1.45;
+}
+.retry-btn {
+  margin-top: 10px;
+  padding: 11px 22px;
+  background: #1A237E;
+  color: #ffffff;
+  border-radius: 24px;
+  font-family: var(--font-tamil);
+  font-size: 0.9rem;
+  font-weight: 700;
+  min-height: 44px;
+  transition: transform var(--trans-fast), background var(--trans-fast);
+}
+.retry-btn:active { transform: scale(0.96); background: #283593; }
 
 /* Safe area for iPhone notch / Dynamic Island */
 main {

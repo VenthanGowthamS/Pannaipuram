@@ -195,6 +195,28 @@
   line-height: 1.3;
 }
 
+/* Empty state */
+.auto-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 36px 16px;
+  text-align: center;
+}
+.auto-empty-icon { font-size: 40px; margin-bottom: 8px; opacity: 0.7; }
+.auto-empty-ta {
+  font-family: var(--font-tamil);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-2);
+}
+.auto-empty-en {
+  font-family: var(--font-latin);
+  font-size: 0.78rem;
+  color: var(--color-muted);
+}
+
 /* Loading skeleton */
 .skeleton-list { display: flex; flex-direction: column; gap: 10px; }
 .skeleton {

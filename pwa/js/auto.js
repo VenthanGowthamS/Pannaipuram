@@ -4,7 +4,7 @@ var Auto = (function() {
   var FALLBACK_PHONE = '9944129218';
 
   var WA_MESSAGE = encodeURIComponent(
-    'வணக்கம் சார் 🙏\n\n' +
+    'சார் 🙏\n\n' +
     'பண்ணைப்புரம் App-ல என்னை Driver-ஆக சேர்க்கணும்.\n\n' +
     'என் பெயர்: \n' +
     'தொலைபேசி: \n' +
@@ -45,33 +45,44 @@ var Auto = (function() {
     contactLink.href = 'https://wa.me/91' + cleaned + '?text=' + WA_MESSAGE;
   }
 
-  async function init() {
+  async function loadDrivers() {
     var list = document.getElementById('driver-list');
-
-    // Skeleton while loading
     list.innerHTML = '<div class="skeleton-list"><div class="skeleton"></div><div class="skeleton"></div></div>';
-
-    // Set fallback WhatsApp link immediately
-    setContactLink(FALLBACK_PHONE);
 
     try {
       var drivers = await PannaiAPI.getAutoDrivers();
       var active = drivers.filter(function(d) { return d.is_active !== false; });
-      list.innerHTML = active.length
-        ? active.map(renderCard).join('')
-        : '<p style="padding:16px 0;color:var(--color-muted);font-family:var(--font-tamil)">ஆட்டோ தகவல் விரைவில் சேர்க்கப்படும்</p>';
+      if (active.length) {
+        list.innerHTML = active.map(renderCard).join('');
+      } else {
+        list.innerHTML =
+          '<div class="auto-empty">' +
+          '<div class="auto-empty-icon">🚗</div>' +
+          '<p class="auto-empty-ta">ஆட்டோ தகவல் விரைவில் சேர்க்கப்படும்</p>' +
+          '<p class="auto-empty-en">Driver info coming soon</p>' +
+          '</div>';
+      }
     } catch(e) {
-      list.innerHTML = '<p style="padding:16px 0;color:var(--color-muted);font-family:var(--font-tamil)">தகவல் கிடைக்கவில்லை</p>';
+      list.innerHTML =
+        '<div class="load-error">' +
+        '<div class="load-error-icon">📡</div>' +
+        '<p class="load-error-ta">தகவல் கிடைக்கவில்லை</p>' +
+        '<p class="load-error-en">Could not load drivers. Please check your connection.</p>' +
+        '<button class="retry-btn" id="auto-retry-btn">மீண்டும் முயற்சிக்க</button>' +
+        '</div>';
+      var btn = document.getElementById('auto-retry-btn');
+      if (btn) btn.addEventListener('click', loadDrivers);
     }
+  }
+
+  async function init() {
+    setContactLink(FALLBACK_PHONE);
+    await loadDrivers();
 
     try {
       var contact = await PannaiAPI.getAutoContact();
-      if (contact && contact.phone) {
-        setContactLink(contact.phone);
-      }
-    } catch(e) {
-      // fallback link already set
-    }
+      if (contact && contact.phone) setContactLink(contact.phone);
+    } catch(e) { /* fallback already set */ }
   }
 
   return { init: init };

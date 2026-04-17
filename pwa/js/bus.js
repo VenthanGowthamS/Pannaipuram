@@ -34,18 +34,24 @@ var Bus = (function() {
     return d.getHours() * 60 + d.getMinutes();
   }
 
-  function fmt(t) {
-    var p = t.split(':');
-    return parseInt(p[0]) + ':' + p[1];
+  // 24h "18:05" → 12h "6:05" with leading-zero minutes
+  function fmt12(t) {
+    var p = t.split(':').map(Number);
+    var h = p[0], m = p[1];
+    var h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    return h12 + ':' + (m < 10 ? '0' + m : m);
   }
 
+  // "6:05 மாலை" (12h + Tamil period)
   function fmtPeriod(t) {
     var h = parseInt(t.split(':')[0]);
-    if (h < 5)  return fmt(t) + ' இரவு';
-    if (h < 12) return fmt(t) + ' காலை';
-    if (h < 17) return fmt(t) + ' பகல்';
-    if (h < 20) return fmt(t) + ' மாலை';
-    return fmt(t) + ' இரவு';
+    var period;
+    if (h < 5)       period = 'இரவு';
+    else if (h < 12) period = 'காலை';
+    else if (h < 17) period = 'பகல்';
+    else if (h < 20) period = 'மாலை';
+    else             period = 'இரவு';
+    return fmt12(t) + ' ' + period;
   }
 
   function computeNextBus(timings) {
@@ -66,9 +72,10 @@ var Bus = (function() {
   }
 
   function minsLabel(mins) {
-    return mins >= 60
-      ? Math.floor(mins / 60) + 'மணி ' + (mins % 60) + 'நிமி'
-      : mins + ' நிமிடம்';
+    if (mins < 60) return mins + ' நிமிடம்';
+    var h = Math.floor(mins / 60);
+    var m = mins % 60;
+    return m === 0 ? h + ' மணி' : h + 'மணி ' + m + 'நிமி';
   }
 
   function renderBadge(meta, timings, corridorId) {
@@ -167,24 +174,41 @@ var Bus = (function() {
     });
   }
 
+  // Scroll the expanded card into comfortable view
+  function scrollCardIntoView(id) {
+    var card = document.querySelector('.route-card[data-id="' + id + '"]');
+    if (!card) return;
+    var rect = card.getBoundingClientRect();
+    var desired = 100; // px from top
+    if (rect.top < desired || rect.top > window.innerHeight * 0.5) {
+      window.scrollBy({ top: rect.top - desired, behavior: 'smooth' });
+    }
+  }
+
   // ── Timetable expand ──────────────────────────────────────────
   async function handleCardTap(id) {
     if (expandedId === id) {
       expandedId = null;
       var el = document.getElementById('tt-' + id);
       if (el) el.hidden = true;
+      var prevCard = document.querySelector('.route-card[data-id="' + id + '"]');
+      if (prevCard) prevCard.classList.remove('expanded');
       return;
     }
     // Close previous
     if (expandedId !== null) {
       var prev = document.getElementById('tt-' + expandedId);
       if (prev) prev.hidden = true;
+      var oldCard = document.querySelector('.route-card[data-id="' + expandedId + '"]');
+      if (oldCard) oldCard.classList.remove('expanded');
     }
     expandedId = id;
 
     var ttEl = document.getElementById('tt-' + id);
     if (!ttEl) return;
     ttEl.hidden = false;
+    var card = document.querySelector('.route-card[data-id="' + id + '"]');
+    if (card) card.classList.add('expanded');
 
     if (timingsCache[id] === undefined) {
       ttEl.innerHTML = '<div class="tt-loading"><div class="skeleton" style="height:48px;margin:8px 16px;border-radius:8px"></div></div>';
@@ -193,10 +217,13 @@ var Bus = (function() {
       } catch(e) {
         timingsCache[id] = [];
       }
-      renderList(); // re-render badges with loaded data
+      renderList();
+      var reCard = document.querySelector('.route-card[data-id="' + id + '"]');
+      if (reCard) reCard.classList.add('expanded');
     } else {
       renderTimetable(id);
     }
+    setTimeout(function() { scrollCardIntoView(id); }, 60);
   }
 
   function renderTimetable(id) {
@@ -258,20 +285,40 @@ var Bus = (function() {
   }
 
   // ── Init ───────────────────────────────────────────────────────
-  async function init() {
+  var loadFailed = false;
+
+  async function loadCorridors() {
     var container = document.getElementById('bus-route-list');
     container.innerHTML =
       '<div class="skeleton-list">' +
-      '<div class="skeleton" style="height:74px;border-radius:16px;margin:0 16px 10px"></div>' +
-      '<div class="skeleton" style="height:74px;border-radius:16px;margin:0 16px 10px"></div>' +
-      '<div class="skeleton" style="height:74px;border-radius:16px;margin:0 16px 10px"></div>' +
+      '<div class="skeleton" style="height:92px;border-radius:16px;margin:0 16px 10px"></div>' +
+      '<div class="skeleton" style="height:92px;border-radius:16px;margin:0 16px 10px"></div>' +
+      '<div class="skeleton" style="height:92px;border-radius:16px;margin:0 16px 10px"></div>' +
       '</div>';
     try {
       corridors = await PannaiAPI.getBusCorridors();
+      loadFailed = false;
     } catch(e) {
       corridors = [];
+      loadFailed = true;
+    }
+    if (loadFailed && !corridors.length) {
+      container.innerHTML =
+        '<div class="load-error">' +
+        '<div class="load-error-icon">📡</div>' +
+        '<p class="load-error-ta">தகவல் கிடைக்கவில்லை</p>' +
+        '<p class="load-error-en">Could not load bus routes. Please check your connection.</p>' +
+        '<button class="retry-btn" id="bus-retry-btn">மீண்டும் முயற்சிக்க</button>' +
+        '</div>';
+      var btn = document.getElementById('bus-retry-btn');
+      if (btn) btn.addEventListener('click', loadCorridors);
+      return;
     }
     renderList();
+  }
+
+  async function init() {
+    await loadCorridors();
     clearInterval(badgeTimer);
     badgeTimer = setInterval(updateBadges, 60000);
   }

@@ -6,13 +6,18 @@
   <meta name="theme-color" content="#1A237E">
   <meta name="description" content="பண்ணைப்புரம் — பேருந்து நேரம், ஆட்டோ தகவல்">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="பண்ணைப்புரம்">
-  <title>பண்ணைப்புரம்</title>
+  <meta name="format-detection" content="telephone=yes">
+  <title>பண்ணைப்புரம் — பேருந்து & ஆட்டோ</title>
 
   <link rel="manifest" href="/pwa/manifest.json">
   <link rel="apple-touch-icon" href="/pwa/icons/icon-192.png">
   <link rel="icon" href="/pwa/icons/icon-192.png" type="image/png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <link rel="stylesheet" href="/pwa/css/tokens.css">
   <link rel="stylesheet" href="/pwa/css/base.css">
@@ -86,12 +91,12 @@
   </main>
 
   <!-- ── Bottom Navigation ────────────────────────────── -->
-  <nav id="bottom-nav" aria-label="Main navigation">
-    <button class="nav-tab active" data-section="bus" aria-label="Bus timings">
+  <nav id="bottom-nav" role="tablist" aria-label="Main navigation">
+    <button class="nav-tab active" role="tab" data-section="bus" aria-selected="true" aria-label="Bus timings">
       <span class="nav-icon" aria-hidden="true">🚌</span>
       <span class="nav-label">பேருந்து</span>
     </button>
-    <button class="nav-tab" data-section="auto" aria-label="Auto and van transport">
+    <button class="nav-tab" role="tab" data-section="auto" aria-selected="false" aria-label="Auto and van transport">
       <span class="nav-icon" aria-hidden="true">🛺</span>
       <span class="nav-label">ஆட்டோ</span>
     </button>
