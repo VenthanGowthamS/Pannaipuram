@@ -4,16 +4,16 @@ var Bus = (function() {
   // Per-corridor metadata — colours + emoji match the Flutter APK exactly.
   // group: 'local' | 'long' | 'night'
   var CORRIDOR_META = {
-    'theni':              { emoji: '🏙️', color: '#1565C0', group: 'local', isFrequent: true,  routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → தேனி' },
-    'bodi':               { emoji: '🌄', color: '#0288D1', group: 'local', isFrequent: true,  routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → போடி' },
-    'cumbum':             { emoji: '🍇', color: '#388E3C', group: 'local', isFrequent: true,  routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கம்பம்' },
+    'theni':              { emoji: '🏙️', color: '#1565C0', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → தேனி' },
+    'bodi':               { emoji: '🌄', color: '#0288D1', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → போடி' },
+    'cumbum':             { emoji: '🍇', color: '#388E3C', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கம்பம்' },
     'chinnamanur':        { emoji: '🛕', color: '#FF6F00', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → பல்லவராயன்பட்டி → சின்னமனூர்' },
     'gudalur (koodalur)': { emoji: '🌲', color: '#33691E', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → கம்பம் → கூடலூர்' },
     'mettupalayam':       { emoji: '🏘️', color: '#F57C00', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → மேட்டுப்பாளையம்' },
     'suruli theertham':   { emoji: '💧', color: '#0277BD', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → சுருளி தீர்த்தம்' },
     'thevaram':           { emoji: '🛤️', color: '#546E7A', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம்' },
     'periyakulam':        { emoji: '🌾', color: '#558B2F', group: 'local', isFrequent: false, nameTamil: 'பெரியகுளம்', routeDesc: 'பண்ணைப்புரம் → தேனி → பெரியகுளம்' },
-    'uthamapalayam':      { emoji: '🏪', color: '#AD1457', group: 'local', isFrequent: true,  routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம்' },
+    'uthamapalayam':      { emoji: '🏪', color: '#AD1457', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம்' },
     'madurai':            { emoji: '🏛️', color: '#6A1B9A', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → மதுரை' },
     'coimbatore':         { emoji: '🏭', color: '#00695C', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கோயம்புத்தூர்' },
     'trichy':             { emoji: '🗼', color: '#C62828', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல் → திருச்சி' },
@@ -145,9 +145,7 @@ var Bus = (function() {
     var count = items.length;
     var frequent = items.filter(function(c){ return getMeta(c.name_english).isFrequent; }).length;
     var isOpen = !!openGroups[group.key];
-    var countLabel = frequent
-      ? count + ' routes • ' + frequent + ' frequent'
-      : count + ' routes';
+    var countLabel = count + ' routes';
 
     var html = '<div class="group-card" data-group="' + group.key + '">' +
       '<div class="group-header" data-toggle-group="' + group.key + '" role="button">' +

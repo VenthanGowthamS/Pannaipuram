@@ -28,19 +28,16 @@ const _corridorMeta = <String, _CorridorMeta>{
   'theni': _CorridorMeta(
     emoji: '🏙️',
     routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → தேனி',
-    isFrequent: true,
     isLocal: true,
   ),
   'bodi': _CorridorMeta(
     emoji: '🌄',
     routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → போடி',
-    isFrequent: true,
     isLocal: true,
   ),
   'cumbum': _CorridorMeta(
     emoji: '🍇',
     routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கம்பம்',
-    isFrequent: true,
     isLocal: true,
   ),
   'chinnamanur': _CorridorMeta(
