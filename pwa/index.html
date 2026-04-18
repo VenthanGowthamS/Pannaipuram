@@ -72,18 +72,38 @@
         </div>
       </div>
 
-      <!-- Register as driver — WhatsApp -->
+      <!-- Register as driver — contact form (no personal numbers exposed) -->
       <div class="register-card">
         <div class="register-emoji">🚗</div>
         <span class="register-label-ta">சார், உங்கள் வண்டி சேர்க்கணுமா?</span>
         <span class="register-label-en">Register your auto / van / car</span>
-        <a id="contact-link" href="#" class="wa-btn">
-          <span style="font-size:20px">💬</span>
-          <span class="wa-text">
-            <span class="wa-main">Admin-கு WhatsApp செய்யவும்</span>
-            <span class="wa-sub">Message the admin on WhatsApp</span>
-          </span>
-        </a>
+
+        <form id="auto-contact-form" class="auto-form" novalidate>
+          <div class="auto-form-field">
+            <label class="auto-form-label" for="acf-name">உங்கள் பெயர் <span class="auto-form-label-en">Your name</span></label>
+            <input id="acf-name" class="auto-form-input" type="text" placeholder="பெயர் / Name" required maxlength="80" autocomplete="name">
+          </div>
+          <div class="auto-form-field">
+            <label class="auto-form-label" for="acf-vehicle">வண்டி வகை <span class="auto-form-label-en">Vehicle type</span></label>
+            <select id="acf-vehicle" class="auto-form-input auto-form-select">
+              <option value="ஆட்டோ">🛺 ஆட்டோ (Auto)</option>
+              <option value="வேன்">🚐 வேன் (Van)</option>
+              <option value="கார்">🚕 கார் (Car)</option>
+            </select>
+          </div>
+          <div class="auto-form-field">
+            <label class="auto-form-label" for="acf-area">செல்லும் பகுதி <span class="auto-form-label-en">Coverage area</span></label>
+            <input id="acf-area" class="auto-form-input" type="text" placeholder="எ.கா: தேவாரம், தேனி" maxlength="120">
+          </div>
+          <div class="auto-form-field">
+            <label class="auto-form-label" for="acf-msg">கூடுதல் தகவல் <span class="auto-form-label-en">Additional info (optional)</span></label>
+            <textarea id="acf-msg" class="auto-form-input auto-form-textarea" placeholder="உங்கள் அனுபவம், நேரம், கட்டணம்..." rows="3" maxlength="400"></textarea>
+          </div>
+          <button type="submit" class="auto-form-submit" id="auto-form-btn">
+            <span id="auto-form-btn-text">📩 Admin-கு அனுப்பவும்</span>
+          </button>
+          <p id="auto-form-result" class="auto-form-result" hidden></p>
+        </form>
       </div>
 
     </section>

@@ -22,6 +22,21 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Pannaipuram village watermark behind all content */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  background: url('/pwa/icons/splash_bg.png') center top / cover no-repeat;
+  opacity: 0.10;
+  pointer-events: none;
+  z-index: -1;
 }
 
 button { font-family: inherit; cursor: pointer; border: none; background: none; }

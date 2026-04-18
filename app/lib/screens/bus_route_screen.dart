@@ -221,35 +221,44 @@ class BusRouteScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              '${next.minutesFromNow()}',
-                              style: const TextStyle(
-                                fontFamily: 'Roboto',
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
+                      Builder(builder: (_) {
+                        final mins = next.minutesFromNow();
+                        final h = mins ~/ 60;
+                        final m = mins % 60;
+                        final big = h > 0 ? '$h' : '$m';
+                        final unit = h > 0
+                            ? (m > 0 ? 'மணி $m நிமி' : 'மணி')
+                            : 'நிமிடம்';
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                big,
+                                style: const TextStyle(
+                                  fontFamily: 'Roboto',
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            const Text(
-                              'நிமிடம்',
-                              style: TextStyle(
-                                fontFamily: 'NotoSansTamil',
-                                color: Colors.white,
-                                fontSize: 10,
+                              Text(
+                                unit,
+                                style: const TextStyle(
+                                  fontFamily: 'NotoSansTamil',
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
+                            ],
+                          ),
+                        );
+                      }),
                     ],
                   ),
                 ),

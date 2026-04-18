@@ -1,5 +1,5 @@
 // ── Pannaipuram PWA — Service Worker ─────────────────────
-var CACHE = 'pannai-pwa-v4';
+var CACHE = 'pannai-pwa-v6';
 
 var SHELL = [
   '/pwa/',
@@ -16,6 +16,7 @@ var SHELL = [
   '/pwa/manifest.json',
   '/pwa/icons/icon-192.png',
   '/pwa/icons/icon-512.png',
+  '/pwa/icons/splash_bg.png',
 ];
 
 // Install: pre-cache app shell

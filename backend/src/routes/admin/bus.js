@@ -41,6 +41,25 @@ router.post('/corridors', requireRole('admin', 'super_admin'), async (req, res) 
   }
 });
 
+// PUT /admin/bus/corridors/:id — update name/colour
+router.put('/corridors/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
+  const { name_tamil, name_english, color_hex } = req.body;
+  try {
+    const result = await query(
+      `UPDATE bus_corridors
+       SET name_tamil   = COALESCE($1, name_tamil),
+           name_english = COALESCE($2, name_english),
+           color_hex    = COALESCE($3, color_hex)
+       WHERE id = $4 RETURNING *`,
+      [name_tamil || null, name_english || null, color_hex || null, req.params.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ success: false, error: 'Corridor not found' });
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error: ' + err.message });
+  }
+});
+
 // POST /admin/bus/routes — find or create
 router.post('/routes', requireRole('admin', 'super_admin'), async (req, res) => {
   const { corridor_id, direction, origin_tamil, dest_tamil, stops_tamil, notes_tamil } = req.body;

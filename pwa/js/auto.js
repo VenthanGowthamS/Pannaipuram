@@ -1,21 +1,9 @@
 // ── Auto/Van Section Controller ──────────────────────────────
 var Auto = (function() {
 
-  var FALLBACK_PHONE = '9944129218';
-
-  var WA_MESSAGE = encodeURIComponent(
-    'சார் 🙏\n\n' +
-    'பண்ணைப்புரம் App-ல என்னை Driver-ஆக சேர்க்கணும்.\n\n' +
-    'என் பெயர்: \n' +
-    'தொலைபேசி: \n' +
-    'வண்டி வகை: (ஆட்டோ / வேன் / கார்)\n' +
-    'செல்லும் பகுதி: \n\n' +
-    'நன்றி!'
-  );
-
   function vehicleIcon(type) {
     var map = { auto: '🛺', van: '🚐', car: '🚕', taxi: '🚕' };
-    return map[type] || '🚗';
+    return map[(type || '').toLowerCase()] || '🚗';
   }
 
   function renderCard(driver) {
@@ -36,13 +24,6 @@ var Auto = (function() {
       '</div>' +
       callEl +
     '</div>';
-  }
-
-  function setContactLink(phone) {
-    var contactLink = document.getElementById('contact-link');
-    if (!contactLink) return;
-    var cleaned = (phone || FALLBACK_PHONE).replace(/\D/g, '').slice(-10);
-    contactLink.href = 'https://wa.me/91' + cleaned + '?text=' + WA_MESSAGE;
   }
 
   async function loadDrivers() {
@@ -75,14 +56,68 @@ var Auto = (function() {
     }
   }
 
-  async function init() {
-    setContactLink(FALLBACK_PHONE);
-    await loadDrivers();
+  // ── Registration contact form ──────────────────────────────
+  function initContactForm() {
+    var form   = document.getElementById('auto-contact-form');
+    var btn    = document.getElementById('auto-form-btn');
+    var btnTxt = document.getElementById('auto-form-btn-text');
+    var result = document.getElementById('auto-form-result');
+    if (!form) return;
 
-    try {
-      var contact = await PannaiAPI.getAutoContact();
-      if (contact && contact.phone) setContactLink(contact.phone);
-    } catch(e) { /* fallback already set */ }
+    form.addEventListener('submit', async function(ev) {
+      ev.preventDefault();
+      var name    = (document.getElementById('acf-name').value || '').trim();
+      var vehicle = (document.getElementById('acf-vehicle').value || '').trim();
+      var area    = (document.getElementById('acf-area').value || '').trim();
+      var extra   = (document.getElementById('acf-msg').value || '').trim();
+
+      if (!name) {
+        showResult('❌ பெயர் கொடுங்க சார்', false);
+        return;
+      }
+
+      var message =
+        '[ஆட்டோ பதிவு — Auto Register]\n' +
+        'பெயர்: ' + name + '\n' +
+        'வண்டி: ' + vehicle + '\n' +
+        (area  ? 'பகுதி: ' + area + '\n'  : '') +
+        (extra ? 'குறிப்பு: ' + extra     : '');
+
+      btn.disabled = true;
+      btnTxt.textContent = '⏳ அனுப்புகிறோம்...';
+      result.hidden = true;
+
+      try {
+        var resp = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: message, name_or_contact: name }),
+        });
+        var json = await resp.json();
+        if (json.success) {
+          showResult('✅ Admin-கு சேர்ந்துவிட்டது! விரைவில் தொடர்பு கொள்வோம்.', true);
+          form.reset();
+        } else {
+          showResult('❌ Error: ' + (json.error || 'Try again'), false);
+        }
+      } catch(e) {
+        showResult('❌ Network error — check your connection and retry', false);
+      } finally {
+        btn.disabled = false;
+        btnTxt.textContent = '📩 Admin-கு அனுப்பவும்';
+      }
+    });
+
+    function showResult(msg, ok) {
+      result.textContent = msg;
+      result.className   = 'auto-form-result ' + (ok ? 'result-ok' : 'result-err');
+      result.hidden      = false;
+    }
+  }
+
+  async function init() {
+    await loadDrivers();
+    initContactForm();
   }
 
   return { init: init };

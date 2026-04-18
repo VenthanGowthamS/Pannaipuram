@@ -65,6 +65,91 @@
   color: var(--color-muted);
 }
 
+/* Group card — collapsible landing section */
+.group-card {
+  margin: 0 var(--space-md) 14px;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #EEEEEE;
+  padding: 14px 16px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  transition: transform var(--trans-fast), box-shadow var(--trans-fast);
+}
+.group-header:hover  { box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+.group-header:active { transform: scale(0.99); }
+
+.group-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #1A237E 0%, #3949AB 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.group-text { flex: 1; min-width: 0; }
+.group-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.group-ta {
+  font-family: var(--font-tamil);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1A237E;
+}
+.group-en {
+  font-family: var(--font-latin);
+  font-size: 0.7rem;
+  color: #9E9E9E;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.group-hint {
+  font-family: var(--font-tamil);
+  font-size: 0.72rem;
+  color: #616161;
+  margin-top: 4px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.group-count {
+  font-family: var(--font-tamil);
+  font-size: 0.7rem;
+  color: #9E9E9E;
+  margin-top: 4px;
+}
+
+.group-caret {
+  font-size: 22px;
+  color: #9E9E9E;
+  transition: transform 200ms ease;
+  flex-shrink: 0;
+}
+.group-caret.open { transform: rotate(90deg); color: #1A237E; }
+
+.group-body {
+  padding-top: 10px;
+  animation: group-open 220ms ease-out;
+}
+@keyframes group-open {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* Route card */
 .route-card {
   display: flex;
@@ -142,12 +227,12 @@
 .route-desc {
   display: block;
   font-family: var(--font-tamil);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
   color: var(--color-muted);
   margin-top: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .route-buses {
@@ -240,31 +325,217 @@
 
 .tt-list { padding: var(--space-sm) 0; }
 
+/* APK-style "அடுத்த பேருந்து" header card */
+.tt-next-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 12px;
+  padding: 14px 16px;
+  background: #F5F5F5;
+  border: 1px solid #E0E0E0;
+  border-radius: 14px;
+}
+.tt-next-header.tt-next-done {
+  background: #F5F5F5;
+  border-color: #E0E0E0;
+}
+.tt-next-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.tt-next-body { flex: 1; min-width: 0; }
+.tt-next-title {
+  font-family: var(--font-tamil);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #212121;
+}
+.tt-next-sub {
+  font-family: var(--font-latin);
+  font-size: 0.65rem;
+  color: #9E9E9E;
+  margin-top: 2px;
+}
+.tt-next-time {
+  font-family: var(--font-tamil);
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.tt-next-pill {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 20px;
+  color: #fff;
+  text-align: center;
+  min-width: 70px;
+}
+.tt-next-mins {
+  font-family: var(--font-tamil);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Summary stats above timetable */
+.tt-stats {
+  font-family: var(--font-tamil);
+  font-size: 0.74rem;
+  color: #616161;
+  padding: 8px 16px 6px;
+  border-bottom: 1px solid #F0F0F0;
+  background: #FFFFFF;
+}
+
+/* "View all / show less" toggle */
+.tt-toggle {
+  width: 100%;
+  padding: 12px var(--space-md);
+  background: #ffffff;
+  border: none;
+  border-top: 1px solid #F0F0F0;
+  font-family: var(--font-tamil);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background var(--trans-fast);
+}
+.tt-toggle:hover { background: #F5F5F5; }
+.tt-toggle:active { background: #EEEEEE; }
+
+/* No-go gap band */
+.tt-gap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 12px;
+  padding: 12px 14px;
+  background: linear-gradient(90deg, #FFF8E1 0%, #FFECB3 100%);
+  border-left: 4px solid #F9A825;
+  border-radius: 10px;
+}
+.tt-gap-icon { font-size: 20px; }
+.tt-gap-text { display: flex; flex-direction: column; }
+.tt-gap-ta {
+  font-family: var(--font-tamil);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #E65100;
+}
+.tt-gap-en {
+  font-family: var(--font-latin);
+  font-size: 0.68rem;
+  color: #BF360C;
+  margin-top: 2px;
+}
+
+/* Summary stats above timetable */
+.tt-stats {
+  font-family: var(--font-tamil);
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  padding: 10px var(--space-md) 4px;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+/* "View all / show less" toggle */
+.tt-toggle {
+  width: 100%;
+  padding: 12px var(--space-md);
+  background: #ffffff;
+  border: none;
+  border-top: 1px solid #F0F0F0;
+  font-family: var(--font-tamil);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background var(--trans-fast);
+}
+.tt-toggle:hover { background: #F5F5F5; }
+.tt-toggle:active { background: #EEEEEE; }
+
+/* No-go gap band */
+.tt-gap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px var(--space-md);
+  padding: 10px 12px;
+  background: linear-gradient(90deg, #FFF8E1 0%, #FFECB3 100%);
+  border-left: 3px solid #F9A825;
+  border-radius: 8px;
+}
+.tt-gap-icon { font-size: 18px; }
+.tt-gap-text { display: flex; flex-direction: column; }
+.tt-gap-ta {
+  font-family: var(--font-tamil);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #E65100;
+}
+.tt-gap-en {
+  font-family: var(--font-latin);
+  font-size: 0.66rem;
+  color: #BF360C;
+  margin-top: 1px;
+}
+
+/* Bus-type row accents */
+.tt-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.tt-ordinary { }
+.tt-express  { }
+.tt-private  { }
+
 .tt-row {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: 11px var(--space-md);
+  gap: 12px;
+  padding: 10px var(--space-md);
   border-bottom: 1px solid #F0F0F0;
   transition: opacity var(--trans-fast);
+  background: #FFFFFF;
 }
 .tt-row:last-child { border-bottom: none; }
-.tt-row.passed { opacity: 0.35; }
+.tt-row.passed { opacity: 0.45; background: #FAFAFA; }
 .tt-row.is-next {
   background: #ffffff;
-  border-left: 3px solid;
-  padding-left: calc(var(--space-md) - 3px);
-  font-weight: 700;
+  border-left: 4px solid;
+  padding-left: calc(var(--space-md) - 4px);
 }
+
+.tt-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: #EEEEEE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.tt-row.tt-ordinary .tt-icon { background: #E3F2FD; }
+.tt-row.tt-express  .tt-icon { background: #FFF3E0; }
+.tt-row.tt-private  .tt-icon { background: #FCE4EC; }
+.tt-row.passed .tt-icon { background: #F0F0F0; filter: grayscale(0.8); }
+
+.tt-row-main { flex: 1; min-width: 0; }
+.tt-time-line { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 
 .tt-time {
   font-family: var(--font-tamil);
-  font-size: 0.9rem;
-  font-weight: 600;
-  min-width: 96px;
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
 }
+.tt-row.passed .tt-time { text-decoration: line-through; color: #9E9E9E; }
 
 .tt-badge {
   padding: 2px 6px;
@@ -281,6 +552,17 @@
 .badge-SETC     { background: #F3E5F5; color: #6A1B9A; }
 .badge-private  { background: #FCE4EC; color: #880E4F; }
 .badge-last     { background: #FFEBEE; color: #C62828; }
+.badge-passed   { background: #E0E0E0; color: #616161; }
+.tt-badge-sub   { opacity: 0.75; font-size: 0.6rem; }
+
+.tt-badge {
+  font-family: var(--font-tamil);
+  font-size: 0.65rem;
+  text-transform: none;
+  letter-spacing: 0;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
 
 .tt-dest {
   font-family: var(--font-tamil);

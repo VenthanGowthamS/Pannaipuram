@@ -68,6 +68,7 @@ const _corridorMeta = <String, _CorridorMeta>{
   'kumily': _CorridorMeta(
     emoji: '🌿',
     routeDesc: 'பண்ணைப்புரம் → தேவாரம் → போடி → குமுளி',
+    isLocal: true,
   ),
   'dindigul': _CorridorMeta(
     emoji: '🏰',
@@ -81,7 +82,7 @@ const _corridorMeta = <String, _CorridorMeta>{
   'mettupalayam': _CorridorMeta(
     emoji: '🏘️',
     routeDesc: 'பண்ணைப்புரம் → மேட்டுப்பாளையம்',
-    isLocal: true,
+    isLocal: false,
   ),
   'suruli theertham': _CorridorMeta(
     emoji: '💧',
