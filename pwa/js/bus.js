@@ -185,13 +185,19 @@ var Bus = (function() {
       renderTimetable(expandedId);
     }
 
-    // Group toggle
+    // Group toggle — accordion: only one group open at a time
     container.querySelectorAll('[data-toggle-group]').forEach(function(h) {
       h.addEventListener('click', function() {
         var key = h.dataset.toggleGroup;
-        openGroups[key] = !openGroups[key];
+        var wasOpen = openGroups[key];
+        // Close all groups
+        Object.keys(openGroups).forEach(function(k) { openGroups[k] = false; });
+        // Also collapse any expanded timetable in other groups
+        if (!wasOpen) {
+          expandedId = null;
+          openGroups[key] = true;
+        }
         renderList();
-        // Prefetch timings when first opened so badges populate
         if (openGroups[key]) prefetchGroupTimings(key);
       });
     });
@@ -277,7 +283,8 @@ var Bus = (function() {
     if (t.bus_type === 'private' || opLower.indexOf('private') !== -1) {
       // Clean trailing "Private Bus" or "Private" from operator name
       var cleaned = op.replace(/\s*(Private\s*Bus|Private)$/i, '').trim();
-      return { cls: 'private', icon: '🚍', label: cleaned || 'தனியார்', sub: '' };
+      // Show operator name + Tamil 'தனியார்' sub so Tamil readers recognise the category
+      return { cls: 'private', icon: '🚍', label: cleaned || 'தனியார்', sub: cleaned ? 'தனியார்' : '' };
     }
     if (t.bus_type === 'express')  return { cls: 'express',  icon: '🚌', label: 'மொஃபசல்', sub: 'Mofussil' };
     if (t.bus_type === 'ordinary') return { cls: 'ordinary', icon: '🚐', label: 'டவுன் பஸ்', sub: 'Town Bus' };
@@ -299,7 +306,6 @@ var Bus = (function() {
     ],
     'bodi': [
       { key: 'theni',   ta: 'தேனி பஸ் → தேவாரம்ல இறங்கி போடி பஸ் பிடிக்கலாம்', en: 'Take Theni bus → alight Thevaram, catch Bodi bus' },
-      { key: 'kumily',  ta: 'குமுளி பஸ் → போடி வரை போகலாம்',                   en: 'Kumily bus passes through Bodi' },
     ],
     'kumily': [
       { key: 'cumbum',  ta: 'கம்பம் பஸ் → கம்பம்ல இறங்கி குமுளி பஸ் பிடிக்கலாம்', en: 'Take Kambam bus → connect at Kambam' },

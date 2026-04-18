@@ -114,6 +114,83 @@ main {
   padding-top: env(safe-area-inset-top);
 }
 
+/* ── Install-to-home-screen banner ─────────────────────────── */
+#install-banner {
+  position: relative;
+  margin: calc(12px + env(safe-area-inset-top)) 12px 4px;
+  padding: 14px 40px 14px 14px;
+  background: linear-gradient(135deg, #1A237E 0%, #283593 100%);
+  color: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(26, 35, 126, 0.25);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  animation: slideInDown 320ms ease-out;
+}
+#install-banner[hidden] { display: none !important; }
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.install-icon { font-size: 28px; line-height: 1; flex-shrink: 0; padding-top: 2px; }
+.install-body { flex: 1; min-width: 0; }
+.install-title-ta {
+  font-family: var(--font-tamil);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 2px;
+}
+.install-title-en {
+  font-family: var(--font-latin);
+  font-size: 0.72rem;
+  opacity: 0.82;
+  margin-bottom: 10px;
+}
+.install-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  font-family: var(--font-tamil);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+.install-steps li {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  padding: 2px 0;
+}
+.install-steps li::before {
+  content: counter(step) ".";
+  counter-increment: step;
+  font-weight: 700;
+  opacity: 0.9;
+  min-width: 16px;
+}
+.install-steps { counter-reset: step; }
+.install-why {
+  font-family: var(--font-tamil);
+  font-size: 0.72rem;
+  opacity: 0.88;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+.install-close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 32px;
+  height: 32px;
+  font-size: 24px;
+  color: #ffffff;
+  opacity: 0.7;
+  line-height: 1;
+  border-radius: 50%;
+}
+.install-close:active { opacity: 1; background: rgba(255,255,255,0.15); }
+
 /* Section base */
 .section { display: block; }
 .section[hidden] { display: none; }
