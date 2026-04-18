@@ -53,8 +53,13 @@ app.get('/admin/panel', (req, res) => res.redirect('/admin/v2/'));
 app.get('/admin', (req, res) => res.redirect('/admin/v2/'));
 
 // ── Serve PWA (static) ──────────────────────────────────────
-app.use('/pwa', express.static(path.join(__dirname, '../../pwa')));
+// Path resolves to repo-root/pwa/ regardless of whether Render
+// deploys with rootDir=. or rootDir=backend (full repo is always cloned).
+const PWA_DIR = path.resolve(__dirname, '../../pwa');
+app.use('/pwa', express.static(PWA_DIR));
 app.get('/', (req, res) => res.redirect('/pwa/'));
+// Diagnostic: log PWA path on startup (remove after first successful deploy)
+console.log('[PWA] Serving from:', PWA_DIR);
 
 // CORS — restrict origins in production
 const allowedOrigins = process.env.ALLOWED_ORIGINS

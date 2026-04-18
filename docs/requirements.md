@@ -1,10 +1,10 @@
 # பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 3.1 (Hospital Admin Redo, Schedule Replace, Full CRUD)
-> **Date:** March 2026
+> **Version:** 4.0 (PWA launched, Steve Jobs Phase planned)
+> **Date:** April 2026
 > **Author:** Venthan (Senior Software Engineer)
-> **Status:** Phase 5 In Progress — 8 Modules Live, Data Entry Underway, Hospital Admin Complete
+> **Status:** Phase 5 Complete — PWA Live with Bus + Auto. Phase 9 (PWA UX) planned next.
 > **Tagline:** உங்கள் ஊரின் தகவல் மையம் *(Your Village's Information Centre)*
 
 ---
@@ -59,8 +59,11 @@ This app is not for the internet. It is for Pannaipuram.
 
 **App Name:** பண்ணைப்புரம் (Pannaipuram)
 **Tagline:** உங்கள் ஊரின் தகவல் மையம்
-**Platform:** Android (APK — no Play Store required)
-**Distribution:** QR Code → WhatsApp share
+**Platforms:**
+- Android APK (Flutter — no Play Store required)
+- PWA / Web App (Bus + Auto — works on iPhone Safari, Android Chrome, Mac)
+**PWA URL:** https://pannaipuram-api.onrender.com/pwa/
+**Distribution:** QR Code → WhatsApp share (both APK link and PWA URL)
 **Language:** Tamil primary, small English label below every element
 **Target Users:** All 1,719 households across 57 streets of Pannaipuram
 **Estimated Download Target:** 500 users (29% household penetration in Year 1)
@@ -585,6 +588,28 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 - Share QR code via WhatsApp
 - Print and post at panchayat, bus stand, hospital, TNEB office
 - Collect feedback from first users
+
+### Phase 9 — PWA Steve Jobs UX Improvements 🔜 PLANNED (April 2026)
+
+Steve Jobs critique identified these as the highest-impact improvements:
+
+**Critical (removes the 2-tap problem):**
+- [ ] **"Now departing" smart strip** — show next 2–3 buses across ALL routes at top of page. No taps, no groups. One glance answers "what's leaving soon?"
+- [ ] **Auto-open group by time of day** — 6–9am and 4–7pm (peak travel): auto-open Local Routes. Off-peak: show all collapsed (existing behaviour).
+- [ ] **Search / filter** — since header asks "எங்கிட்டு போகணும்?" add a text input below it. Type "தே" → shows Theni, Thevaram.
+
+**High value:**
+- [ ] **Data freshness indicator** — "5 நிமிடம் முன்பு புதுப்பிக்கப்பட்டது" below bus header. Massive trust signal.
+- [ ] **Remember last-opened group** in localStorage — feels smart by 3rd visit.
+- [ ] **WhatsApp share per timing row** — long-press or share icon on each time entry. Prefilled message: "5:30 காலை — தேனி பேருந்து | பண்ணைப்புரம் App"
+
+**Polish:**
+- [ ] **Fix duplicate CSS in bus.css** — tt-stats, tt-toggle, tt-gap each defined twice. Browser uses last definition; first is dead code.
+- [ ] **Fix "coming soon" dead state** — after 2 weeks without data "விரைவில்" destroys trust. Show: "தகவல் இல்லை — Venthan: 98xxx"
+- [ ] **Night bus boarding point** — Chennai overnight buses need "ஏறும் இடம்: தேனி பேருந்து நிலையம்" so villagers know where to board.
+- [ ] **Install banner polish** — reduce size so it doesn't compete with the navy bus header.
+
+---
 
 ### Phase 8 — RBAC & New Features ✅ COMPLETE (March 2026)
 
