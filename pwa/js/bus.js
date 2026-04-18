@@ -268,19 +268,78 @@ var Bus = (function() {
   }
 
   // ── Bus type meta ─────────────────────────────────────────────
-  // Returns { cls, icon, label } — label can include operator name for private.
+  // Returns { cls, icon, label, sub }
+  // For private: show operator name only — the 🚍 icon communicates "private".
+  // For Town/Mofussil: bilingual label.
   function busTypeMeta(t) {
     var op = (t.operator_name || '').trim();
     var opLower = op.toLowerCase();
     if (t.bus_type === 'private' || opLower.indexOf('private') !== -1) {
-      // Operator name as label, Tamil type as sub
-      var cleaned = op.replace(/\s*Private(\s+Bus)?$/i, '').trim();
-      var mainLabel = cleaned || 'தனியார் பஸ்';
-      return { cls: 'private', icon: '🚍', label: mainLabel, sub: 'தனியார் · Private' };
+      // Clean trailing "Private Bus" or "Private" from operator name
+      var cleaned = op.replace(/\s*(Private\s*Bus|Private)$/i, '').trim();
+      return { cls: 'private', icon: '🚍', label: cleaned || 'தனியார்', sub: '' };
     }
-    if (t.bus_type === 'express')  return { cls: 'express',  icon: '🚌', label: 'மொஃபசல் · Mofussil',   sub: '' };
-    if (t.bus_type === 'ordinary') return { cls: 'ordinary', icon: '🚐', label: 'டவுன் பஸ் · Town Bus', sub: '' };
+    if (t.bus_type === 'express')  return { cls: 'express',  icon: '🚌', label: 'மொஃபசல்', sub: 'Mofussil' };
+    if (t.bus_type === 'ordinary') return { cls: 'ordinary', icon: '🚐', label: 'டவுன் பஸ்', sub: 'Town Bus' };
     return { cls: 'ordinary', icon: '🚌', label: '', sub: '' };
+  }
+
+  // ── Route connection suggestions ───────────────────────────────
+  // When user faces a long gap, suggest connecting routes.
+  // Based on: Route 1 (Thevaram/Sankarapuram): Theni, Bodi, Periyakulam
+  //           Route 2 (Kombai/Palayam): Kambam, Kumily, Theni-via-Palayam
+  var ROUTE_ALTS = {
+    'theni': [
+      { key: 'cumbum',  ta: 'கம்பம் பஸ் → பாலையம்ல இறங்கி தேனி பஸ் பிடிக்கலாம்',  en: 'Take Kambam bus → alight at Palayam junction' },
+      { key: 'kumily',  ta: 'குமுளி பஸ் → பாலையம்ல இறங்கி தேனி பஸ் பிடிக்கலாம்', en: 'Take Kumily bus → alight at Palayam junction' },
+    ],
+    'periyakulam': [
+      { key: 'theni',   ta: 'தேனி பஸ் → தேனியில் இறங்கி பெரியகுளம் பஸ் பிடிக்கலாம்', en: 'Take Theni bus → connect at Theni' },
+      { key: 'cumbum',  ta: 'கம்பம் பஸ் → பாலையம்ல இறங்கி தேனி திசையில் போகலாம்',   en: 'Take Kambam bus → Palayam towards Theni/Periyakulam' },
+    ],
+    'bodi': [
+      { key: 'theni',   ta: 'தேனி பஸ் → தேவாரம்ல இறங்கி போடி பஸ் பிடிக்கலாம்', en: 'Take Theni bus → alight Thevaram, catch Bodi bus' },
+      { key: 'kumily',  ta: 'குமுளி பஸ் → போடி வரை போகலாம்',                   en: 'Kumily bus passes through Bodi' },
+    ],
+    'kumily': [
+      { key: 'cumbum',  ta: 'கம்பம் பஸ் → கம்பம்ல இறங்கி குமுளி பஸ் பிடிக்கலாம்', en: 'Take Kambam bus → connect at Kambam' },
+      { key: 'bodi',    ta: 'போடி பஸ் → போடியில் இறங்கி குமுளி பஸ் பிடிக்கலாம்',   en: 'Take Bodi bus → connect at Bodi' },
+    ],
+    'cumbum': [
+      { key: 'kumily',  ta: 'குமுளி பஸ் → கம்பம் வரை போகலாம்', en: 'Kumily bus also goes to Kambam' },
+    ],
+    'gudalur (koodalur)': [
+      { key: 'cumbum',  ta: 'கம்பம் பஸ் → கம்பம்ல இறங்கி கூடலூர் பஸ் பிடிக்கலாம்', en: 'Take Kambam bus → connect at Kambam for Gudalur' },
+    ],
+  };
+
+  // Get suggestions when there's a gap — only for alts that have a bus within the gap
+  function getAltSuggestions(corridorKey, gapEndsAtMin) {
+    var alts = ROUTE_ALTS[corridorKey] || [];
+    return alts.filter(function(alt) {
+      // Look up the alt corridor by name_english key
+      var altCorridor = corridors.find(function(c) { return (c.name_english || '').toLowerCase() === alt.key; });
+      if (!altCorridor) return false;
+      var altTimings = timingsCache[altCorridor.id];
+      if (!altTimings || !altTimings.length) return true; // show anyway if not loaded yet
+      // Check if alt has a bus between now and gap end
+      var cur = nowMins();
+      return altTimings.some(function(t) {
+        var p = t.departs_at.split(':').map(Number);
+        var m = p[0] * 60 + p[1];
+        return m > cur && m < gapEndsAtMin;
+      });
+    });
+  }
+
+  function altSuggestionHtml(alt) {
+    return '<div class="tt-alt">' +
+      '<div class="tt-alt-icon">🔀</div>' +
+      '<div class="tt-alt-body">' +
+        '<div class="tt-alt-ta">' + alt.ta + '</div>' +
+        '<div class="tt-alt-en">' + alt.en + '</div>' +
+      '</div>' +
+    '</div>';
   }
 
   // Hide dest if it matches / contains the corridor name (redundant)
@@ -302,7 +361,8 @@ var Bus = (function() {
     var tags = '';
     if (bt.label) {
       var badgeTxt = bt.icon + ' ' + bt.label;
-      if (bt.sub) badgeTxt += '<span class="tt-badge-sub"> · ' + bt.sub + '</span>';
+      // Only add English sub if there's one AND the label isn't already bilingual
+      if (bt.sub) badgeTxt += ' <span class="tt-badge-sub">· ' + bt.sub + '</span>';
       tags += '<span class="tt-badge badge-' + bt.cls + '">' + badgeTxt + '</span>';
     }
     if (isPassed) tags += '<span class="tt-badge badge-passed">கடந்தது</span>';
@@ -410,13 +470,19 @@ var Bus = (function() {
     if (mofCount)  stats.push('🚌 ' + mofCount  + ' மொஃபசல்');
     if (privCount) stats.push('🚍 ' + privCount + ' தனியார்');
 
-    // Rows with gap bands
+    // Rows with gap bands + alternative suggestions
+    var corridorKey = c ? (c.name_english || '').toLowerCase() : '';
     var rowsHtml = '';
     var prevMin = cur;
     focused.forEach(function(t) {
       if (t.totalMins > cur) {
         var gap = t.totalMins - prevMin;
-        if (gap >= GAP_THRESHOLD) rowsHtml += gapBandHtml(gap);
+        if (gap >= GAP_THRESHOLD) {
+          rowsHtml += gapBandHtml(gap);
+          // Append alt route suggestions during the gap
+          var alts = getAltSuggestions(corridorKey, t.totalMins);
+          alts.forEach(function(alt) { rowsHtml += altSuggestionHtml(alt); });
+        }
         prevMin = t.totalMins;
       }
       rowsHtml += ttRowHtml(t, cur, nextId, meta, corridorNameTa);
