@@ -53,7 +53,7 @@ app.get('/admin/panel', (req, res) => res.redirect('/admin/v2/'));
 app.get('/admin', (req, res) => res.redirect('/admin/v2/'));
 
 // ── Serve PWA (static) ──────────────────────────────────────
-app.use('/pwa', express.static(path.join(__dirname, '../public/pwa')));
+app.use('/pwa', express.static(path.join(__dirname, '../../pwa')));
 app.get('/', (req, res) => res.redirect('/pwa/'));
 
 // CORS — restrict origins in production
