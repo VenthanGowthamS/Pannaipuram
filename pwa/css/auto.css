@@ -7,10 +7,10 @@
 /* Hero card — deep purple gradient */
 .auto-hero {
   background: linear-gradient(145deg, #4A148C 0%, #6A1B9A 50%, #7B1FA2 100%);
-  border-radius: 24px;
-  padding: 28px 20px 22px;
+  border-radius: 20px;
+  padding: 18px 16px 16px;
   text-align: center;
-  box-shadow: 0 8px 28px rgba(74, 20, 140, 0.40);
+  box-shadow: 0 6px 20px rgba(74, 20, 140, 0.35);
   margin-bottom: var(--space-lg);
   position: relative;
   overflow: hidden;
@@ -40,33 +40,33 @@
   pointer-events: none;
 }
 
-/* Big emoji in glowing white ring */
+/* Emoji in glowing white ring — compact */
 .auto-hero-icon-ring {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   background: rgba(255,255,255,0.18);
-  border: 2.5px solid rgba(255,255,255,0.35);
+  border: 2px solid rgba(255,255,255,0.35);
   border-radius: 50%;
-  margin: 0 auto 14px;
+  margin: 0 auto 10px;
   position: relative;
   z-index: 1;
-  box-shadow: 0 0 20px rgba(255,255,255,0.15);
+  box-shadow: 0 0 14px rgba(255,255,255,0.12);
 }
 
 .auto-hero-emoji {
-  font-size: 40px;
+  font-size: 30px;
   line-height: 1;
 }
 
 .auto-hero-ta {
   font-family: var(--font-tamil);
-  font-size: 1.45rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: #ffffff;
-  margin: 0 0 3px;
+  margin: 0 0 2px;
   position: relative;
   z-index: 1;
 }
@@ -76,27 +76,27 @@
   font-size: var(--size-sub);
   color: rgba(255,255,255,0.65);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin: 0 0 12px;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px;
   position: relative;
   z-index: 1;
 }
 
 .auto-hero-sub {
   font-family: var(--font-tamil);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: rgba(255,255,255,0.85);
-  margin: 0 0 16px;
-  line-height: 1.5;
+  margin: 0 0 10px;
+  line-height: 1.4;
   position: relative;
   z-index: 1;
 }
 
-/* Vehicle type badges row */
+/* Vehicle type badges row — compact */
 .auto-hero-badges {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
   position: relative;
   z-index: 1;
@@ -104,13 +104,13 @@
 
 .auto-hero-badge {
   font-family: var(--font-tamil);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: rgba(255,255,255,0.95);
   background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.28);
   border-radius: 20px;
-  padding: 4px 12px;
+  padding: 3px 10px;
   white-space: nowrap;
 }
 

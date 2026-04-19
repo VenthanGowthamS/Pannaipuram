@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // User dismissed before? (remember for 14 days)
     var DISMISS_KEY = 'pannai:install-dismissed';
     var dismissed = localStorage.getItem(DISMISS_KEY);
-    if (dismissed && (Date.now() - parseInt(dismissed, 10)) < 14 * 24 * 60 * 60 * 1000) return;
+    if (dismissed && (Date.now() - parseInt(dismissed, 10)) < 3 * 24 * 60 * 60 * 1000) return;
 
     // Detect platform for appropriate instructions
     var ua = navigator.userAgent || '';

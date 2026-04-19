@@ -20,7 +20,7 @@ var Bus = (function() {
     'palani':             { emoji: '🙏', color: '#E65100', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → பழனி' },
     'kumily':             { emoji: '🌿', color: '#2E7D32', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → போடி → குமுளி' },
     'dindigul':           { emoji: '🏰', color: '#4E342E', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல்' },
-    'chennai':            { emoji: '🌃', color: '#E64A19', group: 'night', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → மதுரை → சென்னை', boardingNote: 'தேனி பஸ் stand-ல ஏறுங்க · Board at Theni bus stand' },
+    'chennai':            { emoji: '🌃', color: '#E64A19', group: 'night', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → தேனி → திண்டுக்கல் → திருச்சி → சென்னை', boardingNote: 'தேனி பஸ் stand-ல ஏறுங்க · Board at Theni bus stand' },
   };
 
   var GROUPS = [
@@ -813,6 +813,13 @@ var Bus = (function() {
     function applySearch(val) {
       searchQuery = (val || '').trim().toLowerCase();
       clearBtn.hidden = !searchQuery;
+      // When clearing search, restore accordion to saved/time-of-day state
+      if (!searchQuery) {
+        openGroups.local = false;
+        openGroups.long  = false;
+        openGroups.night = false;
+        initDefaultGroup();
+      }
       renderList();
     }
 
