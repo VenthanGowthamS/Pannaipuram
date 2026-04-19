@@ -7,6 +7,15 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* WCAG 2.4.7 — visible focus indicator for keyboard/switch users */
+:focus { outline: none; }
+:focus-visible {
+  outline: 3px solid #FFC107;
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+.bus-search-input:focus-visible { outline-offset: 0; }
+
 html {
   font-size: 16px;
   scroll-behavior: smooth;

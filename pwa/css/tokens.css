@@ -12,7 +12,7 @@
   /* Text */
   --color-text:   #111111;
   --color-text-2: #555555;
-  --color-muted:  #9E9E9E;
+  --color-muted:  #616161;  /* darkened from #9E9E9E for WCAG AA on body text */
 
   /* Module accents */
   --color-bus:        #E65100;

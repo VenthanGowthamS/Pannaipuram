@@ -47,12 +47,13 @@
 }
 .bus-search-input {
   width: 100%;
-  padding: 13px 42px 13px 42px;
+  min-height: 48px;
+  padding: 13px 48px 13px 42px;
   border: 1px solid #E0E0E0;
   border-radius: 26px;
   background: #FFFFFF;
   font-family: var(--font-tamil);
-  font-size: 0.95rem;
+  font-size: 16px; /* prevents iOS zoom-on-focus + readable for older users */
   color: #1A1A1A;
   box-shadow: 0 4px 14px rgba(0,0,0,0.10);
   outline: none;
@@ -80,11 +81,11 @@
 }
 .bus-search-clear {
   position: absolute;
-  right: 8px;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   color: #757575;
   font-size: 22px;
@@ -99,8 +100,8 @@
 /* ── Freshness indicator ───────────────────────────────────── */
 .bus-freshness {
   font-family: var(--font-tamil);
-  font-size: 0.72rem;
-  color: #757575;
+  font-size: 0.82rem;
+  color: #616161;
   padding: 0 18px 10px;
   display: flex;
   align-items: center;
@@ -141,8 +142,8 @@
 }
 .strip-title-en {
   font-family: var(--font-latin);
-  font-size: 0.62rem;
-  color: #5C6BC0;
+  font-size: 0.68rem;
+  color: #3949AB; /* AA contrast on #E8EAF6 */
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-left: auto;
@@ -177,8 +178,8 @@
 }
 .strip-card-time {
   font-family: var(--font-tamil);
-  font-size: 0.72rem;
-  color: #616161;
+  font-size: 0.82rem;
+  color: #424242;
   margin-top: 2px;
   font-variant-numeric: tabular-nums;
 }
@@ -208,8 +209,8 @@
 .search-empty-en {
   display: block;
   font-family: var(--font-latin);
-  font-size: 0.75rem;
-  color: #BDBDBD;
+  font-size: 0.78rem;
+  color: #616161;
   margin-top: 4px;
 }
 
@@ -294,16 +295,16 @@
 }
 .group-hint {
   font-family: var(--font-tamil);
-  font-size: 0.72rem;
-  color: #616161;
+  font-size: 0.82rem;
+  color: #424242;
   margin-top: 4px;
   line-height: 1.4;
   word-break: break-word;
 }
 .group-count {
   font-family: var(--font-tamil);
-  font-size: 0.7rem;
-  color: #9E9E9E;
+  font-size: 0.78rem;
+  color: #616161;
   margin-top: 4px;
 }
 
@@ -401,9 +402,9 @@
 .route-desc {
   display: block;
   font-family: var(--font-tamil);
-  font-size: 0.72rem;
-  line-height: 1.35;
-  color: var(--color-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: #616161;
   margin-top: 3px;
   word-break: break-word;
   white-space: normal;
@@ -412,8 +413,8 @@
 .route-buses {
   display: block;
   font-family: var(--font-latin);
-  font-size: 0.65rem;
-  color: #BDBDBD;
+  font-size: 0.72rem;
+  color: #616161; /* was #BDBDBD — failed contrast */
   margin-top: 3px;
 }
 
@@ -568,7 +569,8 @@
 /* "View all / show less" toggle */
 .tt-toggle {
   width: 100%;
-  padding: 12px var(--space-md);
+  min-height: 48px;
+  padding: 16px var(--space-md);
   background: #ffffff;
   border: none;
   border-top: 1px solid #F0F0F0;
@@ -606,58 +608,6 @@
   font-size: 0.68rem;
   color: #BF360C;
   margin-top: 2px;
-}
-
-/* Summary stats above timetable */
-.tt-stats {
-  font-family: var(--font-tamil);
-  font-size: 0.72rem;
-  color: var(--color-muted);
-  padding: 10px var(--space-md) 4px;
-  border-bottom: 1px solid #F0F0F0;
-}
-
-/* "View all / show less" toggle */
-.tt-toggle {
-  width: 100%;
-  padding: 12px var(--space-md);
-  background: #ffffff;
-  border: none;
-  border-top: 1px solid #F0F0F0;
-  font-family: var(--font-tamil);
-  font-size: 0.82rem;
-  font-weight: 700;
-  cursor: pointer;
-  letter-spacing: 0.02em;
-  transition: background var(--trans-fast);
-}
-.tt-toggle:hover { background: #F5F5F5; }
-.tt-toggle:active { background: #EEEEEE; }
-
-/* No-go gap band */
-.tt-gap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 6px var(--space-md);
-  padding: 10px 12px;
-  background: linear-gradient(90deg, #FFF8E1 0%, #FFECB3 100%);
-  border-left: 3px solid #F9A825;
-  border-radius: 8px;
-}
-.tt-gap-icon { font-size: 18px; }
-.tt-gap-text { display: flex; flex-direction: column; }
-.tt-gap-ta {
-  font-family: var(--font-tamil);
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #E65100;
-}
-.tt-gap-en {
-  font-family: var(--font-latin);
-  font-size: 0.66rem;
-  color: #BF360C;
-  margin-top: 1px;
 }
 
 /* Bus-type row accents */
