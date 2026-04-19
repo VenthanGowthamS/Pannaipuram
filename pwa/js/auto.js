@@ -38,7 +38,7 @@ var Auto = (function() {
       } else {
         list.innerHTML =
           '<div class="auto-empty">' +
-          '<div class="auto-empty-icon">🚗</div>' +
+          '<div class="auto-empty-icon">🛺</div>' +
           '<p class="auto-empty-ta">ஆட்டோ தகவல் விரைவில் சேர்க்கப்படும்</p>' +
           '<p class="auto-empty-en">Driver info coming soon</p>' +
           '</div>';
