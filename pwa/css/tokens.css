@@ -33,6 +33,19 @@
   --size-sub:        0.75rem;    /* 12px */
   --size-pill:       0.875rem;   /* 14px */
 
+  /* Tamil type scale — 6-step system */
+  --ta-xs:  12px;  /* footnotes, super-sub */
+  --ta-sm:  14px;  /* captions, badges */
+  --ta-md:  16px;  /* body, inputs */
+  --ta-lg:  18px;  /* primary body (CLAUDE.md minimum) */
+  --ta-xl:  22px;  /* section headers */
+  --ta-xxl: 28px;  /* hero / countdown */
+
+  /* Radius scale — 3-step system */
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+
   /* Spacing */
   --space-xs: 4px;
   --space-sm: 8px;

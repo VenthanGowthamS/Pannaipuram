@@ -20,7 +20,7 @@ var Bus = (function() {
     'palani':             { emoji: '🙏', color: '#E65100', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → பழனி' },
     'kumily':             { emoji: '🌿', color: '#2E7D32', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → போடி → குமுளி' },
     'dindigul':           { emoji: '🏰', color: '#4E342E', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல்' },
-    'chennai':            { emoji: '🌃', color: '#E64A19', group: 'night', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → மதுரை → சென்னை' },
+    'chennai':            { emoji: '🌃', color: '#E64A19', group: 'night', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → மதுரை → சென்னை', boardingNote: 'தேனி பஸ் stand-ல ஏறுங்க · Board at Theni bus stand' },
   };
 
   var GROUPS = [
@@ -141,7 +141,7 @@ var Bus = (function() {
       return '<div class="route-badge badge-loading" data-badge-id="' + corridorId + '">…</div>';
     }
     if (!timings.length) {
-      return '<div class="route-badge badge-nodata">🕐<span>விரைவில்</span></div>';
+      return '<div class="route-badge badge-nodata">🕐<span>சேர்க்கப்படும்</span></div>';
     }
     var next = computeNextBus(timings);
     if (!next) {
@@ -196,7 +196,7 @@ var Bus = (function() {
           '<div class="group-hint">' + group.hint + '</div>' +
           '<div class="group-count">📍 ' + countLabel + '</div>' +
         '</div>' +
-        '<div class="group-caret ' + (isOpen ? 'open' : '') + '">▸</div>' +
+        '<div class="group-caret ' + (isOpen ? 'open' : '') + '">' + (isOpen ? '▾' : '▸') + '</div>' +
       '</div>' +
       '<div class="group-body" ' + (isOpen ? '' : 'hidden') + '>' +
         items.map(renderCardHtml).join('') +
@@ -228,9 +228,12 @@ var Bus = (function() {
     var top = upcoming.slice(0, 3);
 
     if (!top.length) { strip.hidden = true; strip.innerHTML = ''; return; }
+    var isUrgent = top[0].mins < 5;
     strip.hidden = false;
+    strip.classList.toggle('urgent', isUrgent);
     strip.innerHTML =
       '<div class="strip-title">' +
+        '<span class="strip-urgency-dot"></span>' +
         '<span class="strip-title-icon">⏱</span>' +
         '<span class="strip-title-ta">அடுத்த பேருந்துகள்</span>' +
         '<span class="strip-title-en">Leaving soon</span>' +
@@ -536,7 +539,7 @@ var Bus = (function() {
       ? '<span class="tt-dest">→ ' + t.dest_tamil + '</span>'
       : '';
 
-    return '<div class="' + cls + '"' + style + '>' +
+    return '<div class="' + cls + '"' + style + ' data-departs="' + t.departs_at + '">' +
       '<div class="tt-icon"><span>' + bt.icon + '</span></div>' +
       '<div class="tt-row-main">' +
         '<div class="tt-time-line">' +
@@ -581,13 +584,53 @@ var Bus = (function() {
       '<div class="tt-next-icon" style="color:' + meta.color + '">⏱</div>' +
       '<div class="tt-next-body">' +
         '<div class="tt-next-title">அடுத்த பேருந்து</div>' +
-        '<div class="tt-next-sub">Next bus · Pannaipuram stop</div>' +
+        '<div class="tt-next-sub">' + (meta.boardingNote || 'Next bus · Pannaipuram stop') + '</div>' +
         '<div class="tt-next-time" style="color:' + meta.color + '">' + fmtPeriod(next.departs_at) + '</div>' +
       '</div>' +
       '<div class="tt-next-pill" style="background:' + meta.color + '">' +
         '<div class="tt-next-mins">' + minsLabel(mins) + '</div>' +
       '</div>' +
     '</div>';
+  }
+
+  // ── Phase 9 #6: WhatsApp share a timing row ───────────────────
+  function shareTimingRow(c, departs) {
+    var meta = getMeta(c.name_english);
+    var dest = meta.nameTamil || c.name_tamil;
+    var time = fmtPeriod(departs);
+    var text = '🚌 பண்ணைப்புரம் நிறுத்தம் → ' + dest + '\n🕐 ' + time + ' கிளம்பும்\n📱 App: https://pannaipuram-api.onrender.com/pwa/';
+    if (navigator.share) {
+      navigator.share({ text: text }).catch(function() {});
+    } else {
+      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+    }
+  }
+
+  function showShareToast() {
+    var existing = document.querySelector('.tt-row-share-hint');
+    if (existing) existing.remove();
+    var hint = document.createElement('div');
+    hint.className = 'tt-row-share-hint';
+    hint.textContent = '📲 WhatsApp-ல் பகிர்கிறது…';
+    document.body.appendChild(hint);
+    setTimeout(function() { if (hint.parentNode) hint.remove(); }, 2000);
+  }
+
+  function addLongPressShare(ttEl, c) {
+    ttEl.querySelectorAll('.tt-row[data-departs]:not(.passed)').forEach(function(rowEl) {
+      var departs = rowEl.dataset.departs;
+      if (!departs) return;
+      var pressTimer = null;
+      rowEl.addEventListener('touchstart', function() {
+        pressTimer = setTimeout(function() {
+          pressTimer = null;
+          showShareToast();
+          shareTimingRow(c, departs);
+        }, 600);
+      }, { passive: true });
+      rowEl.addEventListener('touchend',  function() { clearTimeout(pressTimer); });
+      rowEl.addEventListener('touchmove', function() { clearTimeout(pressTimer); });
+    });
   }
 
   var GAP_THRESHOLD = 90; // minutes
@@ -598,7 +641,16 @@ var Bus = (function() {
     el.hidden = false;
     var timings = timingsCache[id] || [];
     if (!timings.length) {
-      el.innerHTML = '<p class="tt-empty">இந்த வழியில் தகவல் விரைவில் சேர்க்கப்படும்</p>';
+      var waLink = 'https://wa.me/?text=' + encodeURIComponent(
+        'பண்ணைப்புரம் App: ' + (c ? c.name_english : 'this route') + ' பஸ் நேரம் சேர்க்க வேண்டும்'
+      );
+      el.innerHTML =
+        '<div class="tt-nodata">' +
+          '<span class="tt-nodata-icon">🚌</span>' +
+          '<p class="tt-nodata-ta">இந்த வழியில் நேரக்கோவை விரைவில் சேர்க்கப்படும்</p>' +
+          '<p class="tt-nodata-en">Timings being added · Check back soon</p>' +
+          '<a class="tt-nodata-contact" href="' + waLink + '" target="_blank">📲 WhatsApp-ல் தெரிவிக்க</a>' +
+        '</div>';
       return;
     }
     var cur = nowMins();
@@ -670,6 +722,9 @@ var Bus = (function() {
         renderTimetable(id);
       });
     }
+
+    // Phase 9 #6: long-press any upcoming row to WhatsApp-share that timing
+    if (c) addLongPressShare(el, c);
   }
 
   // ── Live badge update (every 60s) ──────────────────────────────
