@@ -465,12 +465,12 @@ Before development begins, the following must be collected in person:
 | கூடலூர் / Gudalur (#11) | 9 | Handwritten image | ✅ In SQL |
 | மேட்டுப்பாளையம் / Mettupalayam (#12) | 1 | Typed by Venthan | ✅ In SQL |
 | சுருளி தீர்த்தம் / Suruli Theertham (#13) | 1 | Typed by Venthan | ✅ In SQL |
-| தேவாரம் / Thevaram (#14) | ⏳ | Pending | ⏳ Needs timings |
+| தேவாரம் / Thevaram (#14) | 23 | Collected Apr 2026 | ✅ In DB |
 | திண்டுக்கல் / Dindigul (#10) | ⏳ | Pending | ⏳ Needs timings |
-| தேனி / Theni (#1) | — | Frequent service, no fixed times | ⏳ TBC |
-| கோயம்புத்தூர் / Coimbatore (#6) | ⏳ | Pending | ⏳ Needs timings |
-| திருச்சி / Trichy (#7) | ⏳ | Pending | ⏳ Needs timings |
-| பழனி / Palani (#8) | ⏳ | Pending | ⏳ Needs timings |
+| தேனி / Theni (#1) | 2 | Collected — frequent service, few fixed departures | ✅ In DB |
+| கோயம்புத்தூர் / Coimbatore (#6) | 3 | Collected Apr 2026 | ✅ In DB |
+| திருச்சி / Trichy (#7) | 3 | Collected Apr 2026 | ✅ In DB |
+| பழனி / Palani (#8) | 6 | Collected Apr 2026 | ✅ In DB |
 
 **ℹ️ Note:** Pannaipuram is a bus stop, not a terminus. There is no "inbound/outbound" distinction — every timing recorded is simply when a bus departs from the Pannaipuram stop heading toward the corridor destination. One set of timings per corridor is all that's needed.
 

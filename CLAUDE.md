@@ -487,7 +487,7 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 ### 🔜 Next Up (In Priority Order)
 
 **Data Entry (Venthan's task — via Admin Panel)**
-- ⏳ Bus timings for pending corridors: Thevaram, Theni, Coimbatore, Trichy, Palani, Dindigul
+- ⏳ Bus timings — only **Dindigul** still pending (Thevaram ✅23, Theni ✅2, Coimbatore ✅3, Trichy ✅3, Palani ✅6, Bodi/Cumbum/Chinnamanur/Madurai/Kumily/Gudalur/Mettupalayam/Suruli ✅ all in DB)
 - ⏳ Auto driver phone numbers (all registered drivers)
 - ⏳ All 57 street names in Streets tab
 - ⏳ Water schedules (only வள்ளுவர் தெரு done so far)
