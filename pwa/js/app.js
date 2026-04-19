@@ -62,6 +62,10 @@ document.addEventListener('DOMContentLoaded', function() {
       window.navigator.standalone === true;
     if (isStandalone) return;
 
+    // Permanently installed via appinstalled event in a past session?
+    var INSTALLED_KEY = 'pannai:app-installed';
+    if (localStorage.getItem(INSTALLED_KEY) === 'true') return;
+
     // User dismissed before? (remember for 14 days)
     var DISMISS_KEY = 'pannai:install-dismissed';
     var dismissed = localStorage.getItem(DISMISS_KEY);
@@ -104,10 +108,13 @@ document.addEventListener('DOMContentLoaded', function() {
       try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch(_) {}
     });
 
-    // If browser fires 'appinstalled', hide immediately
+    // If browser fires 'appinstalled' — hide permanently (no expiry)
     window.addEventListener('appinstalled', function() {
       banner.hidden = true;
-      try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch(_) {}
+      try {
+        localStorage.setItem(INSTALLED_KEY, 'true'); // permanent — never show again
+        localStorage.removeItem(DISMISS_KEY);         // clear any old dismiss timer
+      } catch(_) {}
     });
   })();
 

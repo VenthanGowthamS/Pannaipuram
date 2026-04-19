@@ -24,9 +24,9 @@ var Bus = (function() {
   };
 
   var GROUPS = [
-    { key: 'local', emoji: '🏠', ta: 'உள்ளூர் பயணம்',  en: 'Local Routes',         hint: 'தேனி, போடி, கம்பம், உத்தமபாளையம், தேவாரம், சின்னமனூர், பெரியகுளம், சுருளி, குமுளி, கூடலூர்' },
-    { key: 'long',  emoji: '🗺️', ta: 'தூர பயணம்',     en: 'Long Distance',        hint: 'மதுரை, கோயம்புத்தூர், திருச்சி, பழனி, திண்டுக்கல், மேட்டுப்பாளையம்' },
-    { key: 'night', emoji: '🌃', ta: 'சென்னை இரவு சேவை', en: 'Chennai Overnight',   hint: 'இரவு பஸ் சேவை — Subam, Geetham, KPN' },
+    { key: 'local', emoji: '🏠', ta: 'உள்ளூர் பயணம்',       en: 'Local Routes',      hint: 'தேனி, போடி, கம்பம், உத்தமபாளையம், தேவாரம், சின்னமனூர், பெரியகுளம், சுருளி, குமுளி, கூடலூர்' },
+    { key: 'long',  emoji: '🗺️', ta: 'தொலைதூர பயணம்',     en: 'Long Distance',     hint: 'மதுரை, கோயம்புத்தூர், திருச்சி, பழனி, திண்டுக்கல், மேட்டுப்பாளையம்' },
+    { key: 'night', emoji: '🌃', ta: 'சென்னை இரவு பேருந்து', en: 'Chennai Overnight', hint: 'இரவு பஸ் சேவை — Subam, Geetham, KPN' },
   ];
 
   var corridors = [];
@@ -36,7 +36,9 @@ var Bus = (function() {
   var openGroups = { local: false, long: false, night: false };
   var badgeTimer = null;
   var freshnessTimer = null;
+  var dataRefreshTimer = null;
   var fetchedAt = 0;        // timestamp when last corridor/timings fetch completed
+  var DATA_REFRESH_MS = 10 * 60 * 1000; // re-fetch all timings every 10 minutes
   var searchQuery = '';     // current search filter (lowercased)
   var LAST_GROUP_KEY = 'pannai:last-group-v1';  // localStorage key
   var initialRender = true; // only auto-open-by-time on the very first render
@@ -295,6 +297,13 @@ var Bus = (function() {
     renderNowDeparting();
     renderFreshness();
     renderList();
+  }
+
+  // ── Auto-refresh: clear cache + re-fetch every 10 minutes ─────
+  async function refreshAllData() {
+    // Clear in-memory timings cache so prefetchAllTimings re-fetches from network
+    timingsCache = {};
+    await prefetchAllTimings();
   }
 
   // ── Full list render ───────────────────────────────────────────
@@ -829,6 +838,10 @@ var Bus = (function() {
     // Phase 9: freshness ticker — update "X minutes ago" every 30s
     clearInterval(freshnessTimer);
     freshnessTimer = setInterval(renderFreshness, 30000);
+
+    // Auto-refresh: re-fetch all data every 10 minutes so timings stay current
+    clearInterval(dataRefreshTimer);
+    dataRefreshTimer = setInterval(refreshAllData, DATA_REFRESH_MS);
   }
 
   return { init: init };
