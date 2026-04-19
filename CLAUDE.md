@@ -441,20 +441,35 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 | 📢 Announcements | home_screen.dart (banner) | /api/announcements | Announcements.jsx |
 | 💬 Feedback | feedback_screen.dart | /api/feedback | Feedback.jsx |
 
-### ✅ Live & Complete — PWA (Bus + Auto)
+**Flutter APK bus group names (bus_screen.dart):**
+- Line 328: `உள்ளூர் பயணம்` — Local Routes ✅
+- Line 344: `தொலைதூர பயணம்` — Long Distance ✅ (updated April 2026)
+- No night/Chennai section in Flutter APK (PWA-only feature)
+
+### ✅ Live & Complete — PWA (Bus + Auto) — Phase 9 UX v14
 
 | Feature | File | Status |
 |---|---|---|
 | Bus section — grouped routes (Local / Long / Night) | pwa/js/bus.js | ✅ Live |
+| Tamil group names: உள்ளூர்/தொலைதூர/சென்னை இரவு | pwa/js/bus.js | ✅ Live |
 | Accordion groups — one open at a time | pwa/js/bus.js | ✅ Live |
+| "Now departing" smart strip — top 3 imminent buses with urgency colour | pwa/js/bus.js | ✅ Live |
+| Tamil search bar — 16px input, 48px target, live filter | pwa/js/bus.js | ✅ Live |
+| Data freshness indicator + 10-minute auto-refresh | pwa/js/bus.js | ✅ Live |
 | Next-bus badge with time + countdown pill | pwa/js/bus.js | ✅ Live |
 | Timetable expand with "Next Bus" header card | pwa/js/bus.js | ✅ Live |
-| Gap warnings + alternate route suggestions | pwa/js/bus.js | ✅ Live |
+| Gap warnings + ROUTE_ALTS (verified geography) | pwa/js/bus.js | ✅ Live |
+| WhatsApp long-press share on every timing row | pwa/js/bus.js | ✅ Live |
+| Chennai overnight boarding note (Theni bus stand) | pwa/js/bus.js | ✅ Live |
 | Auto section — driver list + registration form | pwa/js/auto.js | ✅ Live |
 | Offline 3-tier cache (SW + memory + localStorage) | pwa/sw.js + api.js | ✅ Live |
 | Tamil install-to-home-screen banner (iOS/Android) | pwa/js/app.js | ✅ Live |
+| Permanent install banner dismiss (appinstalled event) | pwa/js/app.js | ✅ Live |
+| Google Translate disabled (translate=no + notranslate meta) | pwa/index.html | ✅ Live |
+| Design token scale (--ta-xs through --ta-xxl) | pwa/css/tokens.css | ✅ Live |
+| Focus ring a11y (gold 3px :focus-visible) | pwa/css/base.css | ✅ Live |
 | New bus icon (navy + bus silhouette + route dots) | pwa/icons/ | ✅ Live |
-| SW cache v10 / localStorage key pannai-v10 | pwa/sw.js + api.js | ✅ Live |
+| SW cache v14 / localStorage key pannai-v14 | pwa/sw.js + api.js | ✅ Live |
 
 ### ✅ Infrastructure
 - JWT auth + RBAC (super_admin, admin, viewer)
@@ -467,19 +482,9 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 - About screen with 7-step how-to-use guide in Tamil
 - "விரைவில்" banners for live power/water alerts
 - `render.yaml` at repo root — controls Render deployment (rootDir: .)
+- `/health` endpoint returns `env: { jwt_secret_set, database_url_set }` for test diagnostics
 
 ### 🔜 Next Up (In Priority Order)
-
-**Phase 9 — PWA Steve Jobs UX Improvements (PLANNED)**
-These improvements eliminate the 2-tap problem and make the app feel smart:
-1. **"Now departing" smart strip** — surface next 2–3 buses across ALL routes instantly at top (no taps needed)
-2. **Auto-open group by time of day** — peak hours (6–9am, 4–7pm) auto-open Local Routes
-3. **Remember last-opened group** — localStorage persists user's preference
-4. **Data freshness indicator** — "5 நிமிடம் முன்பு புதுப்பிக்கப்பட்டது" below header
-5. **WhatsApp share per timing row** — long-press → share this bus time
-6. **Fix "coming soon"** — show a contact fallback instead of "விரைவில்" forever
-7. **Fix duplicate CSS** in bus.css (tt-stats, tt-toggle, tt-gap defined twice)
-8. **Night bus boarding point** — show "Theni bus stand" or departure context
 
 **Data Entry (Venthan's task — via Admin Panel)**
 - ⏳ Bus timings for pending corridors: Thevaram, Theni, Coimbatore, Trichy, Palani, Dindigul
@@ -489,12 +494,17 @@ These improvements eliminate the 2-tap problem and make the app feel smart:
 - ⏳ Panchayat office contact + water board numbers in Emergency tab
 
 **Other Pending**
-- ⏳ APK rebuild — release APK with all recent changes
+- ⏳ APK rebuild — release APK with all recent changes (run `flutter build apk --release`)
 - ⏳ QR code for WhatsApp APK distribution
 - ⏳ Email notifications for feedback (Nodemailer + Gmail App Password)
 - ⏳ Push notifications — Phase 7+ (FCM, device table exists)
 - ⏳ Live TNEB power cuts — Phase 7+ (needs TNEB feed)
 - ⏳ iOS build — not planned yet
+
+**ROUTE_ALTS Geography Notes (verified April 2026):**
+- Thevaram → Bodi → Theni (Bodi is between Thevaram and Theni on the same route)
+- Kumily is via Kambam direction — NOT the same direction as Bodi
+- Do NOT suggest Bodi bus for Kumily passengers (opposite direction)
 
 ---
 

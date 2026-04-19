@@ -110,6 +110,10 @@ app.use('/admin/feedback',      adminFeedbackRoutes);
 // ── Health Check ────────────────────────────────────────
 const { query: dbQuery } = require('./db/pool');
 app.get('/health', async (req, res) => {
+  const env = {
+    jwt_secret_set:   !!process.env.JWT_SECRET,
+    database_url_set: !!process.env.DATABASE_URL,
+  };
   try {
     const result = await dbQuery('SELECT NOW() as time, current_database() as db');
     res.json({
@@ -118,12 +122,14 @@ app.get('/health', async (req, res) => {
       version: '1.0.0',
       db: 'connected',
       db_time: result.rows[0].time,
+      env,
     });
   } catch (err) {
     res.status(500).json({
       status: 'error',
       app: 'பண்ணைப்புரம்',
       db: 'disconnected',
+      env,
     });
   }
 });

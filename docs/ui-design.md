@@ -1,9 +1,9 @@
 # பண்ணைப்புரம் App — UI Design
 ### Phase 3 of 7
 
-> **Version:** 1.1 — IMPLEMENTED
-> **Date:** March 2026
-> **Status:** Phase 3 — UI Design COMPLETE & BUILT
+> **Version:** 1.2 — Phase 9 PWA UX complete
+> **Date:** April 2026
+> **Status:** Phase 9 COMPLETE — PWA Bus section fully overhauled, design tokens updated
 
 ---
 
@@ -404,16 +404,69 @@ Power and water show last cached data with timestamp.
 
 ---
 
-## 9. Next Step — Phase 5: Deployment & Testing
+## 9. PWA Bus Section — Phase 9 Design (April 2026) ✅ LIVE
 
-✅ UI design complete and fully implemented in Flutter app.
+**URL:** https://pannaipuram-api.onrender.com/pwa/
 
-Current work:
-1. Deploy backend to Render (Node.js) + Supabase PostgreSQL
-2. Seed real data (hospital, bus times, streets, emergency contacts)
-3. Test FCM push notifications
-4. Full end-to-end testing on actual Android devices
-5. Launch QR code + WhatsApp sharing
+### Bus Group Names (Tamil + English)
+| Group Key | Tamil Label | English Sublabel |
+|---|---|---|
+| local | உள்ளூர் பயணம் | Local Routes |
+| long | தொலைதூர பயணம் | Long Distance |
+| night | சென்னை இரவு பேருந்து | Chennai Overnight |
+
+*(Flutter APK also updated: `bus_screen.dart` line 344 changed from `தூர பயணம்` → `தொலைதூர பயணம்`)*
+
+### Design Token Scale (`pwa/css/tokens.css`)
+| Token | Value | Use |
+|---|---|---|
+| `--ta-xs` | 12px | English sub-labels |
+| `--ta-sm` | 14px | Secondary Tamil |
+| `--ta-md` | 16px | Body Tamil |
+| `--ta-lg` | 18px | Card headings |
+| `--ta-xl` | 22px | Section headers |
+| `--ta-xxl` | 28px | Hero / hero number |
+| `--color-muted` | #616161 | Muted text (WCAG AA) |
+
+### PWA Bus Features (Phase 9)
+- **"Now departing" strip** — top 3 imminent buses across all corridors; urgency colour rails (red ≤5 min, amber ≤15 min, green >15 min)
+- **Search box** — Tamil/English search below navy header; 16px input (no iOS zoom), 48px touch target
+- **Freshness indicator** — "X நிமிடம் முன்பு புதுப்பிக்கப்பட்டது" with auto-refresh every 10 minutes
+- **Accordion groups** — one open at a time; auto-opens peak-hour group (6–9am, 4–7pm); persists preference in localStorage
+- **Route cards** — next-bus badge + countdown pill; ▸/▾ caret on open/close
+- **Expandable timetable** — "Next Bus" header card, gap warnings, alternate route suggestions (ROUTE_ALTS)
+- **WhatsApp long-press share** — any timing row; prefilled Tamil message with time + route
+- **Install banner** — platform-aware (iOS Safari Share / Android Add-to-Homescreen steps); permanently dismissed after `appinstalled` event
+- **Offline banner** — shown when navigator.onLine = false
+- **Google Translate disabled** — `translate="no"` on html/body, `notranslate` CSS class, meta notranslate tag
+
+### ROUTE_ALTS Geography (verified April 2026)
+Route: Thevaram → Bodi → Theni (Bodi is between Thevaram and Theni on this route)
+
+| Corridor | Alternate suggestion |
+|---|---|
+| theni | Take Bodi bus → alight at Bodi, catch Theni bus |
+| theni | Take Kambam bus → alight at Uthamapalayam, catch Theni bus |
+| bodi | Take any Theni bus — get off at Bodi (same bus, no change) |
+| kumily | Take Kambam bus → alight at Kambam, catch Kumily bus |
+| cumbum | Kumily bus (via Kambam route) stops at Kambam |
+| gudalur | Take Kambam bus → alight at Kambam, catch Gudalur bus |
+| periyakulam | Take Theni bus → change at Theni for Periyakulam |
+
+**Removed (wrong geography):** Bodi↔Kumily alts (opposite directions). Kumily and Bodi are on different routes — Kumily is via Kambam direction, Bodi is via Thevaram direction.
+
+---
+
+## 10. Next Step — Phase 6: Testing & Launch
+
+✅ Phase 9 PWA UX complete. Cache v14 deployed.
+
+Remaining:
+1. Test on physical Android device (Tamil rendering, install banner, WhatsApp share)
+2. Collect remaining bus timings: Thevaram, Theni, Coimbatore, Trichy, Palani, Dindigul
+3. Fill auto driver phone numbers via Admin Panel
+4. Enter all 57 streets in Streets tab
+5. QR code generation for WhatsApp APK sharing
 
 ---
 

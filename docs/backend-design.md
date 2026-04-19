@@ -470,6 +470,7 @@ NODE_ENV=production
    - Connect GitHub repo or push code directly
    - Render detects `package.json`, builds and deploys automatically
    - Verify API at: https://pannaipuram-api.onrender.com/health
+   - Health response includes `env: { jwt_secret_set: bool, database_url_set: bool }` for diagnostics
 
 4. **Test endpoints** with production API URL
    - Update Flutter `ApiService._base` to point to https://pannaipuram-api.onrender.com

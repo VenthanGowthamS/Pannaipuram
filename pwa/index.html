@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ta" dir="ltr">
+<html lang="ta" dir="ltr" translate="no">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -10,6 +10,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="பண்ணைப்புரம்">
   <meta name="format-detection" content="telephone=yes">
+  <!-- Prevent Chrome's auto-translate from converting Tamil to English -->
+  <meta name="google" content="notranslate">
+  <meta http-equiv="Content-Language" content="ta">
   <title>பண்ணைப்புரம் — பேருந்து & ஆட்டோ</title>
 
   <link rel="manifest" href="/pwa/manifest.json">
@@ -25,7 +28,7 @@
   <link rel="stylesheet" href="/pwa/css/bus.css">
   <link rel="stylesheet" href="/pwa/css/auto.css">
 </head>
-<body data-section="bus">
+<body data-section="bus" class="notranslate" translate="no">
 
   <!-- Offline banner -->
   <div id="offline-banner">

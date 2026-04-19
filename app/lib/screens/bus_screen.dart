@@ -341,7 +341,7 @@ class _BusScreenState extends State<BusScreen> {
                 // ── Long distance section ──────────────────────────
                 _SectionChip(
                     icon: Icons.map_rounded,
-                    label: 'தூர பயணம்',
+                    label: 'தொலைதூர பயணம்',
                     sublabel: 'Long Distance'),
                 const SizedBox(height: 8),
                 ..._longDistance.map((r) => _RouteCard(

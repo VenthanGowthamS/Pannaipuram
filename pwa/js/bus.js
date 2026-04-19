@@ -462,30 +462,41 @@ var Bus = (function() {
   }
 
   // ── Route connection suggestions ───────────────────────────────
-  // When user faces a long gap, suggest connecting routes.
-  // Based on: Route 1 (Thevaram/Sankarapuram): Theni, Bodi, Periyakulam
-  //           Route 2 (Kombai/Palayam): Kambam, Kumily, Theni-via-Palayam
+  // Geography (verified from TNSTC routes + maps):
+  //   North-West axis: Pannaipuram → Sankarapuram → Thevaram → Bodi → Theni
+  //   South-West axis: Pannaipuram → Uthamapalayam (Palayam) → Kambam → Gudalur → Kumily
+  //   Note: Kumily reachable EITHER via Kambam (plains) OR via Bodi (ghat road) — two different buses.
+  //         Bodi and Kumily-via-Kambam are OPPOSITE directions.
+  //         Theni buses pass THROUGH Bodi (Thevaram→Bodi→Theni) so no bus-change needed to reach Bodi.
   var ROUTE_ALTS = {
     'theni': [
-      { key: 'cumbum',  ta: 'கம்பம் பஸ் → பாலையம்ல இறங்கி தேனி பஸ் பிடிக்கலாம்',  en: 'Take Kambam bus → alight at Palayam junction' },
-      { key: 'kumily',  ta: 'குமுளி பஸ் → பாலையம்ல இறங்கி தேனி பஸ் பிடிக்கலாம்', en: 'Take Kumily bus → alight at Palayam junction' },
+      { key: 'bodi',    ta: 'போடி பஸ் → போடியில் இறங்கி தேனி பஸ் பிடிக்கலாம்',
+                        en: 'Take Bodi bus → alight at Bodi, catch Theni bus' },
+      { key: 'cumbum',  ta: 'கம்பம் பஸ் → உத்தமபாளையம்ல இறங்கி தேனி பஸ் பிடிக்கலாம்',
+                        en: 'Take Kambam bus → alight at Uthamapalayam, catch Theni bus' },
     ],
     'periyakulam': [
-      { key: 'theni',   ta: 'தேனி பஸ் → தேனியில் இறங்கி பெரியகுளம் பஸ் பிடிக்கலாம்', en: 'Take Theni bus → connect at Theni' },
-      { key: 'cumbum',  ta: 'கம்பம் பஸ் → பாலையம்ல இறங்கி தேனி திசையில் போகலாம்',   en: 'Take Kambam bus → Palayam towards Theni/Periyakulam' },
+      { key: 'theni',   ta: 'தேனி பஸ் → தேனியில் இறங்கி பெரியகுளம் பஸ் பிடிக்கலாம்',
+                        en: 'Take Theni bus → change at Theni for Periyakulam' },
     ],
     'bodi': [
-      { key: 'theni',   ta: 'தேனி பஸ் → தேவாரம்ல இறங்கி போடி பஸ் பிடிக்கலாம்', en: 'Take Theni bus → alight Thevaram, catch Bodi bus' },
+      // Theni bus passes THROUGH Bodi (Thevaram→Bodi→Theni) — no change needed!
+      { key: 'theni',   ta: 'தேனி பஸ் எடுத்து போடியில் இறங்குங்க — ஒரே பஸ், மாற வேண்டாம்',
+                        en: 'Take any Theni bus — get off at Bodi (same bus, no change)' },
     ],
     'kumily': [
-      { key: 'cumbum',  ta: 'கம்பம் பஸ் → கம்பம்ல இறங்கி குமுளி பஸ் பிடிக்கலாம்', en: 'Take Kambam bus → connect at Kambam' },
-      { key: 'bodi',    ta: 'போடி பஸ் → போடியில் இறங்கி குமுளி பஸ் பிடிக்கலாம்',   en: 'Take Bodi bus → connect at Bodi' },
+      // Via Kambam route — primary alternative (plains route)
+      { key: 'cumbum',  ta: 'கம்பம் பஸ் → கம்பம்ல இறங்கி குமுளி பஸ் பிடிக்கலாம்',
+                        en: 'Take Kambam bus → alight at Kambam, catch Kumily bus' },
     ],
     'cumbum': [
-      { key: 'kumily',  ta: 'குமுளி பஸ் → கம்பம் வரை போகலாம்', en: 'Kumily bus also goes to Kambam' },
+      // Kumily-via-Kambam bus route passes through Kambam
+      { key: 'kumily',  ta: 'கம்பம் வழியா போற குமுளி பஸ் கம்பம் வரை போகும்',
+                        en: 'Kumily bus (via Kambam route) stops at Kambam' },
     ],
     'gudalur (koodalur)': [
-      { key: 'cumbum',  ta: 'கம்பம் பஸ் → கம்பம்ல இறங்கி கூடலூர் பஸ் பிடிக்கலாம்', en: 'Take Kambam bus → connect at Kambam for Gudalur' },
+      { key: 'cumbum',  ta: 'கம்பம் பஸ் → கம்பம்ல இறங்கி கூடலூர் பஸ் பிடிக்கலாம்',
+                        en: 'Take Kambam bus → alight at Kambam, catch Gudalur bus' },
     ],
   };
 

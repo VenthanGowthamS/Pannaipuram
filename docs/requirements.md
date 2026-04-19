@@ -1,10 +1,10 @@
 # பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 4.0 (PWA launched, Steve Jobs Phase planned)
+> **Version:** 4.1 (Phase 9 PWA UX complete)
 > **Date:** April 2026
 > **Author:** Venthan (Senior Software Engineer)
-> **Status:** Phase 5 Complete — PWA Live with Bus + Auto. Phase 9 (PWA UX) planned next.
+> **Status:** Phase 9 Complete — PWA UX overhaul live. Flutter APK aligned. Cache v14.
 > **Tagline:** உங்கள் ஊரின் தகவல் மையம் *(Your Village's Information Centre)*
 
 ---
@@ -589,25 +589,34 @@ Tamil wireframes for all screens, icon design, home screen with full-width tiles
 - Print and post at panchayat, bus stand, hospital, TNEB office
 - Collect feedback from first users
 
-### Phase 9 — PWA Steve Jobs UX Improvements 🔜 PLANNED (April 2026)
+### Phase 9 — PWA Steve Jobs UX Improvements ✅ COMPLETE (April 2026)
 
 Steve Jobs critique identified these as the highest-impact improvements:
 
 **Critical (removes the 2-tap problem):**
-- [ ] **"Now departing" smart strip** — show next 2–3 buses across ALL routes at top of page. No taps, no groups. One glance answers "what's leaving soon?"
-- [ ] **Auto-open group by time of day** — 6–9am and 4–7pm (peak travel): auto-open Local Routes. Off-peak: show all collapsed (existing behaviour).
-- [ ] **Search / filter** — since header asks "எங்கிட்டு போகணும்?" add a text input below it. Type "தே" → shows Theni, Thevaram.
+- [x] **"Now departing" smart strip** — top 3 imminent buses across ALL routes shown at page top. Color-coded urgency rails (red ≤5 min, amber ≤15 min, green >15 min). No taps needed.
+- [x] **Auto-open group by time of day** — 6–9am and 4–7pm (peak travel): auto-opens Local Routes. Off-peak: shows all collapsed or remembers last open.
+- [x] **Search / filter** — Tamil search box below header. Type "தே" → shows Theni, Thevaram. Clear (×) button, 16px font (no iOS zoom), 48px touch target.
 
 **High value:**
-- [ ] **Data freshness indicator** — "5 நிமிடம் முன்பு புதுப்பிக்கப்பட்டது" below bus header. Massive trust signal.
-- [ ] **Remember last-opened group** in localStorage — feels smart by 3rd visit.
-- [ ] **WhatsApp share per timing row** — long-press or share icon on each time entry. Prefilled message: "5:30 காலை — தேனி பேருந்து | பண்ணைப்புரம் App"
+- [x] **Data freshness indicator** — "X நிமிடம் முன்பு புதுப்பிக்கப்பட்டது" below bus header. 10-minute auto-refresh via setInterval.
+- [x] **Remember last-opened group** in localStorage — persists user's accordion preference across sessions.
+- [x] **WhatsApp share per timing row** — long-press on any bus time → prefilled WhatsApp share message in Tamil with bus time and route.
 
 **Polish:**
-- [ ] **Fix duplicate CSS in bus.css** — tt-stats, tt-toggle, tt-gap each defined twice. Browser uses last definition; first is dead code.
-- [ ] **Fix "coming soon" dead state** — after 2 weeks without data "விரைவில்" destroys trust. Show: "தகவல் இல்லை — Venthan: 98xxx"
-- [ ] **Night bus boarding point** — Chennai overnight buses need "ஏறும் இடம்: தேனி பேருந்து நிலையம்" so villagers know where to board.
-- [ ] **Install banner polish** — reduce size so it doesn't compete with the navy bus header.
+- [x] **Fix duplicate CSS in bus.css** — deduplicated tt-stats, tt-toggle, tt-gap definitions.
+- [x] **Fix "coming soon" dead state** — shows "தகவல் இல்லை — admin-ஐ தொடர்பு கொள்ளுங்கள்" when API returns empty.
+- [x] **Night bus boarding point** — Chennai overnight buses show "ஏறும் இடம்: தேனி பேருந்து நிலையம்" boarding note.
+- [x] **Install banner polish** — reduced size with clear close button; permanently dismissed after user installs via `appinstalled` event.
+
+**Bonus (design critique fixes):**
+- [x] **Google Translate disable** — `translate="no"` on `<html>` and `<body>`, `notranslate` class, `<meta name="google" content="notranslate">`. Stops Android Chrome auto-translate of Tamil.
+- [x] **Design token scale** — `tokens.css` updated with `--ta-xs` through `--ta-xxl`, darkened `--color-muted` for WCAG AA contrast.
+- [x] **Focus ring** — gold 3px `:focus-visible` ring in `base.css` for keyboard/a11y.
+- [x] **Tamil group names aligned** — Bus groups: `உள்ளூர் பயணம்` / `தொலைதூர பயணம்` / `சென்னை இரவு பேருந்து`. Flutter APK updated to match.
+- [x] **Route alts verified** — ROUTE_ALTS corrected with actual TNSTC geography (Thevaram→Bodi→Theni sequence confirmed; Kumily↔Bodi alts removed as opposite direction).
+
+**Cache:** SW and localStorage bumped to **v14** (`pannai-pwa-v14` / `pannai-v14`).
 
 ---
 
