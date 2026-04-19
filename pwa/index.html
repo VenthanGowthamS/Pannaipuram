@@ -60,6 +60,19 @@
         </div>
       </div>
 
+      <!-- Search bar -->
+      <div class="bus-search-wrap">
+        <span class="bus-search-icon">🔍</span>
+        <input id="bus-search" class="bus-search-input" type="search" placeholder="தேனி, போடி, கம்பம்... தேடுங்க" aria-label="பேருந்து வழி தேடு" autocomplete="off">
+        <button id="bus-search-clear" class="bus-search-clear" aria-label="அழி" hidden>×</button>
+      </div>
+
+      <!-- Freshness indicator (when data last fetched) -->
+      <div id="bus-freshness" class="bus-freshness"></div>
+
+      <!-- "Now departing" smart strip — next 3 buses across all routes -->
+      <div id="bus-now-strip" class="bus-now-strip" hidden></div>
+
       <!-- Route cards (rendered by bus.js) -->
       <div id="bus-route-list"></div>
 

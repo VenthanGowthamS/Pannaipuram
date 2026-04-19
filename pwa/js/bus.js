@@ -35,10 +35,51 @@ var Bus = (function() {
   var expandedFull = {};    // id → true when "View all" clicked
   var openGroups = { local: false, long: false, night: false };
   var badgeTimer = null;
+  var freshnessTimer = null;
+  var fetchedAt = 0;        // timestamp when last corridor/timings fetch completed
+  var searchQuery = '';     // current search filter (lowercased)
+  var LAST_GROUP_KEY = 'pannai:last-group-v1';  // localStorage key
+  var initialRender = true; // only auto-open-by-time on the very first render
 
   function getMeta(nameEnglish) {
     return CORRIDOR_META[(nameEnglish || '').toLowerCase()] ||
       { emoji: '🚌', color: '#E65100', group: 'long', isFrequent: false };
+  }
+
+  // ── Phase 9: Group persistence + time-of-day auto-open ────────
+  function saveLastGroup(key) {
+    try { localStorage.setItem(LAST_GROUP_KEY, key); } catch (_) {}
+  }
+  function loadLastGroup() {
+    try { return localStorage.getItem(LAST_GROUP_KEY); } catch (_) { return null; }
+  }
+  function initDefaultGroup() {
+    // Priority 1: restore user's last-opened group
+    var saved = loadLastGroup();
+    if (saved === 'local' || saved === 'long' || saved === 'night') {
+      openGroups[saved] = true;
+      return;
+    }
+    // Priority 2: time-of-day — peak travel hours auto-open local routes
+    var h = new Date().getHours();
+    if ((h >= 6 && h < 10) || (h >= 16 && h < 20)) {
+      openGroups.local = true;
+    }
+    // Otherwise all collapsed (existing default)
+  }
+
+  // ── Phase 9: Search matching ──────────────────────────────────
+  function matchesSearch(c) {
+    if (!searchQuery) return true;
+    var ta = (c.name_tamil || '').toLowerCase();
+    var en = (c.name_english || '').toLowerCase();
+    var meta = getMeta(c.name_english);
+    var altTa = (meta.nameTamil || '').toLowerCase();
+    var desc = (meta.routeDesc || '').toLowerCase();
+    return ta.indexOf(searchQuery) !== -1 ||
+           en.indexOf(searchQuery) !== -1 ||
+           altTa.indexOf(searchQuery) !== -1 ||
+           desc.indexOf(searchQuery) !== -1;
   }
 
   function nowMins() {
@@ -164,6 +205,95 @@ var Bus = (function() {
     return html;
   }
 
+  // ── Phase 9: "Now departing" smart strip ─────────────────────
+  // Shows next 3 buses across ALL routes — answers "what's leaving soon?"
+  // in one glance without any taps.
+  function renderNowDeparting() {
+    var strip = document.getElementById('bus-now-strip');
+    if (!strip) return;
+    if (searchQuery) { strip.hidden = true; return; }
+
+    var cur = nowMins();
+    var upcoming = [];
+    corridors.forEach(function(c) {
+      var timings = timingsCache[c.id];
+      if (!timings || !timings.length) return;
+      var next = computeNextBus(timings);
+      if (!next) return;
+      var mins = next.totalMins - cur;
+      if (mins > 180) return; // next 3 hours only — further out is noise
+      upcoming.push({ corridor: c, next: next, mins: mins });
+    });
+    upcoming.sort(function(a, b) { return a.mins - b.mins; });
+    var top = upcoming.slice(0, 3);
+
+    if (!top.length) { strip.hidden = true; strip.innerHTML = ''; return; }
+    strip.hidden = false;
+    strip.innerHTML =
+      '<div class="strip-title">' +
+        '<span class="strip-title-icon">⏱</span>' +
+        '<span class="strip-title-ta">அடுத்த பேருந்துகள்</span>' +
+        '<span class="strip-title-en">Leaving soon</span>' +
+      '</div>' +
+      '<div class="strip-list">' + top.map(function(item) {
+        var meta = getMeta(item.corridor.name_english);
+        var displayName = meta.nameTamil || item.corridor.name_tamil;
+        return '<div class="strip-card" data-corridor-id="' + item.corridor.id + '" role="button" style="border-left-color:' + meta.color + '">' +
+          '<div class="strip-card-icon">' + meta.emoji + '</div>' +
+          '<div class="strip-card-body">' +
+            '<div class="strip-card-name">' + displayName + '</div>' +
+            '<div class="strip-card-time">' + fmtPeriod(item.next.departs_at) + '</div>' +
+          '</div>' +
+          '<div class="strip-card-mins" style="background:' + pillColor(item.mins) + '">' + minsLabel(item.mins) + '</div>' +
+        '</div>';
+      }).join('') + '</div>';
+
+    // Clicking a strip card opens its group + expands its route
+    strip.querySelectorAll('.strip-card').forEach(function(card) {
+      card.addEventListener('click', function() {
+        var id = parseInt(card.dataset.corridorId);
+        var c = corridors.find(function(c) { return c.id === id; });
+        if (!c) return;
+        var groupKey = getMeta(c.name_english).group;
+        Object.keys(openGroups).forEach(function(k) { openGroups[k] = false; });
+        openGroups[groupKey] = true;
+        saveLastGroup(groupKey);
+        expandedId = id;
+        renderList();
+        setTimeout(function() { scrollCardIntoView(id); }, 120);
+      });
+    });
+  }
+
+  // ── Phase 9: Data freshness indicator ─────────────────────────
+  function renderFreshness() {
+    var el = document.getElementById('bus-freshness');
+    if (!el) return;
+    if (!fetchedAt) { el.textContent = ''; return; }
+    var secs = Math.floor((Date.now() - fetchedAt) / 1000);
+    var label;
+    if (secs < 30)        label = 'இப்போ புதுப்பிக்கப்பட்டது';
+    else if (secs < 60)   label = secs + ' விநாடி முன்பு புதுப்பிக்கப்பட்டது';
+    else if (secs < 3600) label = Math.floor(secs / 60) + ' நிமிடம் முன்பு புதுப்பிக்கப்பட்டது';
+    else                  label = Math.floor(secs / 3600) + ' மணி நேரம் முன்பு புதுப்பிக்கப்பட்டது';
+    el.innerHTML = '<span class="freshness-icon">🔄</span>' + label;
+    el.classList.toggle('stale', secs > 1800); // orange after 30 min
+  }
+
+  // ── Phase 9: Prefetch timings for ALL corridors (for strip + search) ──
+  async function prefetchAllTimings() {
+    await Promise.all(corridors.map(function(c) {
+      if (timingsCache[c.id] !== undefined) return Promise.resolve();
+      return PannaiAPI.getBusTimings(c.id)
+        .then(function(t) { timingsCache[c.id] = t || []; })
+        .catch(function() { timingsCache[c.id] = []; });
+    }));
+    fetchedAt = Date.now();
+    renderNowDeparting();
+    renderFreshness();
+    renderList();
+  }
+
   // ── Full list render ───────────────────────────────────────────
   function renderList() {
     var container = document.getElementById('bus-route-list');
@@ -172,11 +302,38 @@ var Bus = (function() {
       return;
     }
 
+    // Hide now-departing strip whenever user is searching
+    var strip = document.getElementById('bus-now-strip');
+    if (strip && searchQuery) strip.hidden = true;
+    else if (strip && !searchQuery && fetchedAt) renderNowDeparting();
+
+    // Apply search filter — when searching, force all groups open so matches show
+    var filterActive = !!searchQuery;
+    if (filterActive) {
+      openGroups.local = true;
+      openGroups.long  = true;
+      openGroups.night = true;
+    }
+
+    var anyMatch = false;
     var html = GROUPS.map(function(g) {
-      var items = corridors.filter(function(c) { return getMeta(c.name_english).group === g.key; });
+      var items = corridors
+        .filter(function(c) { return getMeta(c.name_english).group === g.key; })
+        .filter(matchesSearch);
       if (!items.length) return '';
+      anyMatch = true;
       return renderGroupHtml(g, items);
     }).join('');
+
+    if (filterActive && !anyMatch) {
+      container.innerHTML =
+        '<div class="search-empty">' +
+          '<span class="search-empty-icon">🔍</span>' +
+          'இந்த வழியில் எதுவும் இல்லை' +
+          '<span class="search-empty-en">No routes match your search</span>' +
+        '</div>';
+      return;
+    }
 
     container.innerHTML = html;
 
@@ -196,6 +353,7 @@ var Bus = (function() {
         if (!wasOpen) {
           expandedId = null;
           openGroups[key] = true;
+          saveLastGroup(key);  // Phase 9: remember user's preference
         }
         renderList();
         if (openGroups[key]) prefetchGroupTimings(key);
@@ -571,10 +729,51 @@ var Bus = (function() {
     renderList();
   }
 
+  // ── Phase 9: Wire up search bar ───────────────────────────────
+  function initSearch() {
+    var input = document.getElementById('bus-search');
+    var clearBtn = document.getElementById('bus-search-clear');
+    if (!input || !clearBtn) return;
+
+    function applySearch(val) {
+      searchQuery = (val || '').trim().toLowerCase();
+      clearBtn.hidden = !searchQuery;
+      renderList();
+    }
+
+    // Debounce lightly so typing feels snappy but doesn't thrash renderList
+    var debounceTimer = null;
+    input.addEventListener('input', function() {
+      clearTimeout(debounceTimer);
+      var v = input.value;
+      debounceTimer = setTimeout(function() { applySearch(v); }, 120);
+    });
+    clearBtn.addEventListener('click', function() {
+      input.value = '';
+      applySearch('');
+      input.focus();
+    });
+  }
+
   async function init() {
+    // Phase 9: restore last-opened group / time-of-day default BEFORE first render
+    initDefaultGroup();
+    initSearch();
+
     await loadCorridors();
+
+    // Phase 9: prefetch ALL timings so the "now departing" strip + search can work
+    if (corridors.length) prefetchAllTimings();
+
     clearInterval(badgeTimer);
-    badgeTimer = setInterval(updateBadges, 60000);
+    badgeTimer = setInterval(function() {
+      updateBadges();
+      renderNowDeparting();  // keep strip current every minute
+    }, 60000);
+
+    // Phase 9: freshness ticker — update "X minutes ago" every 30s
+    clearInterval(freshnessTimer);
+    freshnessTimer = setInterval(renderFreshness, 30000);
   }
 
   return { init: init };
