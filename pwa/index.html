@@ -83,7 +83,7 @@
     </nav>
     <footer class="menu-drawer-footer">
       <span>v1.0 · பண்ணைப்புரம் 2026</span>
-      <span>Made with ❤️ by Venthan</span>
+      <span>Made with ❤️ for our village</span>
     </footer>
   </aside>
 
@@ -94,23 +94,44 @@
       <span class="menu-sheet-title">💬 கருத்து சொல்லுங்க</span>
     </header>
     <div class="menu-sheet-body">
-      <p class="sheet-intro">உங்கள் கருத்து, புகார், ஐடியா — எல்லாம் admin-க்கு நேரடியா வரும். நாம் பதில் கொடுக்கிறோம்.</p>
-      <p class="sheet-intro-en">Your feedback reaches the admin directly. We read every message.</p>
+      <!-- Form view (default) -->
+      <div id="feedback-form-view">
+        <!-- Intro card with hints (APK style) -->
+        <div class="fb-intro-card">
+          <div class="fb-intro-header">
+            <span class="fb-intro-emoji">📝</span>
+            <span class="fb-intro-title">என்னன்னா சொல்லலாம்?</span>
+          </div>
+          <div class="fb-hint"><span class="fb-hint-icon">🐛</span><span>App-ல ஏதாவது சரியில்லன்னா சொல்லுங்க</span></div>
+          <div class="fb-hint"><span class="fb-hint-icon">💡</span><span>புது feature idea இருந்தா share பண்ணுங்க</span></div>
+          <div class="fb-hint"><span class="fb-hint-icon">📢</span><span>ஊர் தகவல் தப்பா இருந்தா தெரியப்படுத்துங்க</span></div>
+          <div class="fb-hint"><span class="fb-hint-icon">👍</span><span>நல்லா இருந்தாலும் சொல்லலாம்!</span></div>
+        </div>
 
-      <form id="feedback-form" class="feedback-form" novalidate>
-        <div class="feedback-field">
-          <label class="feedback-label" for="fb-name">உங்கள் பெயர் / Number <span class="feedback-optional">(optional)</span></label>
-          <input id="fb-name" class="feedback-input" type="text" placeholder="பெயர் அல்லது phone" maxlength="80" autocomplete="name">
-        </div>
-        <div class="feedback-field">
-          <label class="feedback-label" for="fb-msg">என்ன சொல்ல விரும்புகிறீங்க? <span class="feedback-required">*</span></label>
-          <textarea id="fb-msg" class="feedback-input feedback-textarea" placeholder="உங்கள் கருத்து, புகார், அல்லது புதிய ஐடியா..." rows="5" maxlength="1000" required></textarea>
-        </div>
-        <button type="submit" class="feedback-submit" id="feedback-submit-btn">
-          <span id="feedback-submit-text">📩 அனுப்பு · Send</span>
-        </button>
-        <p id="feedback-result" class="feedback-result" hidden></p>
-      </form>
+        <form id="feedback-form" class="feedback-form" novalidate>
+          <label class="fb-field-label" for="fb-msg">உங்கள் கருத்து / தகவல்</label>
+          <textarea id="fb-msg" class="fb-textarea" placeholder="இங்க type பண்ணுங்க..." rows="5" maxlength="500" required></textarea>
+          <div class="fb-counter"><span id="fb-counter-val">0</span> / 500</div>
+
+          <label class="fb-field-label" for="fb-name" style="margin-top:16px;">பெயர் / தொலைபேசி <span class="feedback-optional">(optional)</span></label>
+          <input id="fb-name" class="fb-input" type="text" placeholder="பெயர் சொல்ல விரும்பினா மட்டும்..." maxlength="60" autocomplete="name">
+          <p class="fb-anon-note">பெயர் சொல்ல வேண்டாம் — anonymous ஆகவும் அனுப்பலாம்</p>
+
+          <button type="submit" class="fb-submit" id="feedback-submit-btn">
+            <span id="feedback-submit-text">அனுப்புங்க &nbsp;📨</span>
+          </button>
+          <p id="feedback-result" class="feedback-result" hidden></p>
+        </form>
+      </div>
+
+      <!-- Success view (shown after submit) -->
+      <div id="feedback-success-view" class="fb-success" hidden>
+        <div class="fb-success-emoji">🙏</div>
+        <div class="fb-success-title">நன்றி சார்!</div>
+        <div class="fb-success-msg">உங்கள் கருத்து கிடைச்சது.<br>விரைவில் பார்க்கிறோம்.</div>
+        <div class="fb-success-msg-en">Thank you — we'll review it soon.</div>
+        <button type="button" class="fb-success-again" id="feedback-again-btn">மீண்டும் அனுப்பு · Send another</button>
+      </div>
     </div>
   </div>
 
@@ -136,9 +157,8 @@
         <p>A Tamil-first village information app for Pannaipuram, Theni District. Bus timings, auto contacts, and essential local info — all in one place, works offline.</p>
       </section>
       <section class="about-section">
-        <h4>யார் செய்தது?</h4>
-        <p>வெந்தன் (Venthan) — நம்ம ஊர் பையன். ஊர்ப் பிரச்சனை தீர்க்கணும்னு உருவாக்கப்பட்டது.</p>
-        <p class="about-contact">📧 venthan89@gmail.com</p>
+        <h4>ஏன் செய்தது?</h4>
+        <p>ஊர்ப் பிரச்சனைகள் தீர்க்கணும், எல்லாத் தகவல்களும் ஒரே இடத்துல கிடைக்கணும் — அதுக்காக நம்ம ஊர்க்காரங்களுக்காகவே உருவாக்கப்பட்டது.</p>
       </section>
       <section class="about-section">
         <h4>முக்கிய features</h4>

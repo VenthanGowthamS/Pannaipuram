@@ -217,27 +217,53 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   })();
 
-  // ── Feedback form submit ────────────────────────────────
+  // ── Feedback form submit (APK style with success view) ──
   (function initFeedback() {
-    var form   = document.getElementById('feedback-form');
-    var btn    = document.getElementById('feedback-submit-btn');
-    var btnTxt = document.getElementById('feedback-submit-text');
-    var result = document.getElementById('feedback-result');
+    var form       = document.getElementById('feedback-form');
+    var btn        = document.getElementById('feedback-submit-btn');
+    var btnTxt     = document.getElementById('feedback-submit-text');
+    var result     = document.getElementById('feedback-result');
+    var msgField   = document.getElementById('fb-msg');
+    var counter    = document.getElementById('fb-counter-val');
+    var counterEl  = counter && counter.parentElement;
+    var formView   = document.getElementById('feedback-form-view');
+    var successView= document.getElementById('feedback-success-view');
+    var againBtn   = document.getElementById('feedback-again-btn');
     if (!form) return;
+
+    // Live character counter
+    if (msgField && counter) {
+      msgField.addEventListener('input', function() {
+        var n = msgField.value.length;
+        counter.textContent = n;
+        if (counterEl) counterEl.classList.toggle('fb-counter-ok', n >= 5);
+      });
+    }
+
+    // "Send another" button resets to form view
+    if (againBtn) {
+      againBtn.addEventListener('click', function() {
+        form.reset();
+        if (counter) counter.textContent = '0';
+        if (counterEl) counterEl.classList.remove('fb-counter-ok');
+        if (successView) successView.hidden = true;
+        if (formView) formView.hidden = false;
+      });
+    }
 
     form.addEventListener('submit', async function(ev) {
       ev.preventDefault();
       var name = (document.getElementById('fb-name').value || '').trim();
-      var msg  = (document.getElementById('fb-msg').value  || '').trim();
+      var msg  = (msgField.value || '').trim();
 
-      if (!msg || msg.length < 3) {
-        showRes('❌ கருத்து type பண்ணுங்க சார் · Please write a message', false);
+      if (!msg || msg.length < 5) {
+        showRes('கொஞ்சம் சொல்லுங்க — சில வார்த்தைகள் போதும் 😊', false);
         return;
       }
 
       btn.disabled = true;
       btnTxt.textContent = '⏳ அனுப்புகிறோம்...';
-      result.hidden = true;
+      if (result) result.hidden = true;
 
       try {
         var resp = await fetch('/api/feedback', {
@@ -247,20 +273,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         var json = await resp.json();
         if (json.success) {
-          showRes('✅ நன்றி! உங்கள் கருத்து admin-க்கு சேர்ந்தது.', true);
-          form.reset();
+          // Show APK-style success view
+          if (formView) formView.hidden = true;
+          if (successView) successView.hidden = false;
         } else {
-          showRes('❌ Error: ' + (json.error || 'Try again'), false);
+          showRes('அனுப்ப முடியலை — ' + (json.error || 'try again'), false);
         }
       } catch (e) {
-        showRes('❌ Network error — connection check பண்ணுங்க', false);
+        showRes('அனுப்ப முடியலை — கொஞ்சம் கழிச்சு try பண்ணுங்க', false);
       } finally {
         btn.disabled = false;
-        btnTxt.textContent = '📩 அனுப்பு · Send';
+        btnTxt.innerHTML = 'அனுப்புங்க &nbsp;📨';
       }
     });
 
     function showRes(msg, ok) {
+      if (!result) return;
       result.textContent = msg;
       result.className   = 'feedback-result ' + (ok ? 'ok' : 'err');
       result.hidden      = false;

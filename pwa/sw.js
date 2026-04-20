@@ -1,5 +1,5 @@
 // ── Pannaipuram PWA — Service Worker ─────────────────────
-var CACHE = 'pannai-pwa-v21';
+var CACHE = 'pannai-pwa-v22';
 
 var SHELL = [
   '/pwa/',
@@ -65,7 +65,30 @@ self.addEventListener('fetch', function(e) {
     return;
   }
 
-  // Google Fonts + all other static — cache-first
+  // PWA app shell (HTML / CSS / JS) — NETWORK-FIRST
+  // This is the PERMANENT cache fix: users always get the latest HTML/CSS/JS when online,
+  // with cached fallback only when offline. No more "hard refresh to see changes".
+  if (url.pathname.startsWith('/pwa/') &&
+      (url.pathname.endsWith('.html') ||
+       url.pathname.endsWith('.css') ||
+       url.pathname.endsWith('.js') ||
+       url.pathname === '/pwa/' ||
+       url.pathname === '/pwa')) {
+    e.respondWith(
+      fetch(e.request).then(function(resp) {
+        if (resp && resp.status === 200) {
+          var clone = resp.clone();
+          caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
+        }
+        return resp;
+      }).catch(function() {
+        return caches.match(e.request);
+      })
+    );
+    return;
+  }
+
+  // Google Fonts + icons + images — cache-first (rarely change, big files)
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       if (cached) return cached;
