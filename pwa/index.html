@@ -108,12 +108,12 @@
         <div class="fb-intro-card">
           <div class="fb-intro-header">
             <span class="fb-intro-emoji">📝</span>
-            <span class="fb-intro-title">என்னன்னா சொல்லலாம்?</span>
+            <span class="fb-intro-title">எதை வேண்டுமானாலும் சொல்லலாம்</span>
           </div>
-          <div class="fb-hint"><span class="fb-hint-icon">🐛</span><span>App-ல ஏதாவது சரியில்லன்னா சொல்லுங்க</span></div>
-          <div class="fb-hint"><span class="fb-hint-icon">💡</span><span>புது feature idea இருந்தா share பண்ணுங்க</span></div>
+          <div class="fb-hint"><span class="fb-hint-icon">🐛</span><span>செயலியில் ஏதாவது சரியில்லன்னா சொல்லுங்க</span></div>
+          <div class="fb-hint"><span class="fb-hint-icon">💡</span><span>புது வசதி யோசனை இருந்தா பகிருங்க</span></div>
           <div class="fb-hint"><span class="fb-hint-icon">📢</span><span>ஊர் தகவல் தப்பா இருந்தா தெரியப்படுத்துங்க</span></div>
-          <div class="fb-hint"><span class="fb-hint-icon">👍</span><span>நல்லா இருந்தாலும் சொல்லலாம்!</span></div>
+          <div class="fb-hint"><span class="fb-hint-icon">👍</span><span>பிடிச்சிருந்தாலும் சொல்லலாம்!</span></div>
         </div>
 
         <form id="feedback-form" class="feedback-form" novalidate>
@@ -121,12 +121,12 @@
           <textarea id="fb-msg" class="fb-textarea" placeholder="இங்க type பண்ணுங்க..." rows="5" maxlength="500" required></textarea>
           <div class="fb-counter"><span id="fb-counter-val">0</span> / 500</div>
 
-          <label class="fb-field-label" for="fb-name" style="margin-top:16px;">பெயர் / தொலைபேசி <span class="feedback-optional">(optional)</span></label>
+          <label class="fb-field-label" for="fb-name" style="margin-top:16px;">பெயர் / தொலைபேசி எண் <span class="feedback-optional">(விருப்பம்)</span></label>
           <input id="fb-name" class="fb-input" type="text" placeholder="பெயர் சொல்ல விரும்பினா மட்டும்..." maxlength="60" autocomplete="name">
-          <p class="fb-anon-note">பெயர் சொல்ல வேண்டாம் — anonymous ஆகவும் அனுப்பலாம்</p>
+          <p class="fb-anon-note">பெயர் சொல்லாமலுமே அனுப்பலாம்</p>
 
           <button type="submit" class="fb-submit" id="feedback-submit-btn">
-            <span id="feedback-submit-text">அனுப்புங்க &nbsp;📨</span>
+            <span id="feedback-submit-text">அனுப்புங்க 📨</span>
           </button>
           <p id="feedback-result" class="feedback-result" hidden></p>
         </form>
@@ -153,29 +153,30 @@
       <div class="about-hero">
         <div class="about-emoji">🏡</div>
         <h3 class="about-title">பண்ணைப்புரம்</h3>
-        <p class="about-sub">உங்கள் ஊரின் தகவல் மையம்</p>
+        <p class="about-sub">நம்ம ஊரின் தகவல் மையம்</p>
         <p class="about-sub-en">Your village info hub</p>
       </div>
       <section class="about-section">
-        <h4>என்ன இது?</h4>
-        <p>பண்ணைப்புரம் — தேனி மாவட்டத்தில் உள்ள நம்ம ஊர். இந்த app-ல பேருந்து நேரம், ஆட்டோ தொடர்பு, மற்றும் ஊர் சார்ந்த தகவல்கள் எல்லாம் ஒரே இடத்தில் கிடைக்கும்.</p>
+        <h4>இது என்ன?</h4>
+        <p>தேனி மாவட்டத்தில் உள்ள பண்ணைப்புரத்துக்கான தகவல் செயலி இது. பேருந்து நேரங்கள், ஆட்டோ தொடர்புகள், மற்றும் ஊர் தொடர்பான முக்கிய தகவல்கள் அனைத்தும் ஒரே இடத்தில் கிடைக்கும்.</p>
       </section>
       <section class="about-section">
         <h4>What is this?</h4>
         <p>A Tamil-first village information app for Pannaipuram, Theni District. Bus timings, auto contacts, and essential local info — all in one place, works offline.</p>
       </section>
       <section class="about-section">
-        <h4>ஏன் செய்தது?</h4>
-        <p>ஊர்ப் பிரச்சனைகள் தீர்க்கணும், எல்லாத் தகவல்களும் ஒரே இடத்துல கிடைக்கணும் — அதுக்காக நம்ம ஊர்க்காரங்களுக்காகவே உருவாக்கப்பட்டது.</p>
+        <h4>ஏன் உருவாக்கப்பட்டது?</h4>
+        <p>ஊருக்குத் தேவையான தகவல்கள் எளிதாக ஒரே இடத்தில் கிடைக்க வேண்டும் என்பதற்காக இந்த செயலி உருவாக்கப்பட்டது.</p>
       </section>
       <section class="about-section">
-        <h4>முக்கிய features</h4>
+        <h4>முக்கிய அம்சங்கள்</h4>
         <ul class="about-list">
-          <li>🚌 எல்லா பேருந்து நேரமும் — next bus countdown</li>
-          <li>🛺 ஊர் ஆட்டோ டிரைவர் தொடர்பு</li>
-          <li>📴 Offline-ல வேலை செய்யும்</li>
-          <li>🔄 Auto-refresh (every 10 min)</li>
-          <li>💬 Feedback admin-க்கு நேரடியா</li>
+          <li>🚌 அனைத்து பேருந்து நேரங்களும்</li>
+          <li>⏳ அடுத்த பேருந்து வரும் நேரக் கணிப்பு</li>
+          <li>🛺 ஊர் ஆட்டோ ஓட்டுநர்களின் தொடர்பு விவரங்கள்</li>
+          <li>📴 இணையம் இல்லாமலும் பயன்படுத்தலாம்</li>
+          <li>🔄 10 நிமிடத்திற்கு ஒருமுறை தானாகப் புதுப்பிக்கும்</li>
+          <li>💬 உங்கள் கருத்துகளை நேரடியாக பகிரலாம்</li>
         </ul>
       </section>
     </div>
@@ -193,49 +194,49 @@
           <div class="howto-num">1</div>
           <div class="howto-text">
             <h4>🚌 பேருந்து நேரம் பார்க்க</h4>
-            <p>கீழ இருக்கும் <b>பேருந்து</b> tab-ஐ அழுத்துங்க. எல்லா routes-ம் வரும் — அடுத்த பஸ் எத்தன நிமிடத்தில என்று clearly தெரியும்.</p>
+            <p>கீழே இருக்கும் <b>பேருந்து</b> tab-ஐ அழுத்துங்கள். எல்லா ரூட்டுகளும் தெரியும். அடுத்த பேருந்து எத்தனை நிமிடத்தில் வரும் என்பதும் உடனே தெரியும்.</p>
           </div>
         </li>
         <li class="howto-step">
           <div class="howto-num">2</div>
           <div class="howto-text">
-            <h4>🔍 குறிப்பிட்ட இடம் தேட</h4>
-            <p>மேல உள்ள search box-ல "தேனி", "போடி", "கம்பம்" என்று type பண்ணுங்க. உடனே filter ஆகும்.</p>
+            <h4>🔍 இடம் தேட</h4>
+            <p>மேலே இருக்கும் search box-ல் "தேனி", "போடி", "கம்பம்" என்று type பண்ணுங்கள். நீங்கள் type பண்ணும்போதே list filter ஆகும்.</p>
           </div>
         </li>
         <li class="howto-step">
           <div class="howto-num">3</div>
           <div class="howto-text">
-            <h4>📋 முழு timetable பார்க்க</h4>
-            <p>எந்த route card-ஐயும் அழுத்துங்க — அன்றைய எல்லா பேருந்து நேரமும் expand ஆகும். நீண்ட gap இருந்தா warning-ம் வரும்.</p>
+            <h4>📋 முழு நேர அட்டவணை பார்க்க</h4>
+            <p>எந்த route card-ஐயும் அழுத்துங்கள். அந்த route-க்கு உள்ள எல்லா பேருந்து நேரங்களும் விரிவாகத் தெரியும். நீண்ட இடைவெளி இருந்தால் எச்சரிக்கையும் வரும்.</p>
           </div>
         </li>
         <li class="howto-step">
           <div class="howto-num">4</div>
           <div class="howto-text">
-            <h4>🛺 ஆட்டோ/வேன் அழைக்க</h4>
-            <p>கீழ <b>ஆட்டோ</b> tab-ஐ அழுத்துங்க. ஒவ்வொரு driver-க்கும் பக்கத்தில <b>📞 அழைக்க</b> button — ஒரே tap-ல call போகும்.</p>
+            <h4>🛺 ஆட்டோ / வேன் அழைக்க</h4>
+            <p>கீழே இருக்கும் <b>ஆட்டோ</b> tab-ஐ அழுத்துங்கள். ஒவ்வொரு ஓட்டுநரின் பக்கத்திலும் <b>📞 அழைக்க</b> button இருக்கும். ஒரே tap-ல் call செய்யலாம்.</p>
           </div>
         </li>
         <li class="howto-step">
           <div class="howto-num">5</div>
           <div class="howto-text">
             <h4>🔄 புதுப்பிக்க</h4>
-            <p>ஆட்டோ tab-ல மேல-வலது ↻ icon அழுத்தினா புதுசா update ஆகும். Bus timings-ம் ஒவ்வொரு 10 நிமிடத்துக்கும் auto-refresh ஆகும்.</p>
+            <p>ஆட்டோ tab-ல் மேலே வலது பக்கம் இருக்கும் ↻ icon-ஐ அழுத்தினால் புதிய தகவல் வரும். பேருந்து நேரங்களும் ஒவ்வொரு 10 நிமிடத்துக்கும் தானாகப் புதுப்பிக்கும்.</p>
           </div>
         </li>
         <li class="howto-step">
           <div class="howto-num">6</div>
           <div class="howto-text">
-            <h4>📱 Home screen-ல install பண்ண</h4>
-            <p>Browser menu-ல "Add to Home Screen" அல்லது "Install app" select பண்ணுங்க. அடுத்தமுறை icon tap பண்ணினா app-ஆ திறக்கும் — வேகமா, offline-ம்.</p>
+            <h4>📱 மொபைலில் install செய்ய</h4>
+            <p>Browser menu-ல் "Add to Home Screen" அல்லது "Install app" என்பதைத் தேர்வு செய்யுங்கள். அடுத்த முறை icon-ஐ அழுத்தினால் app நேராகத் திறக்கும். வேகமாகவும், offline-லும் பயன்படுத்தலாம்.</p>
           </div>
         </li>
         <li class="howto-step">
           <div class="howto-num">7</div>
           <div class="howto-text">
-            <h4>💬 பிரச்சனை வந்தா</h4>
-            <p>மேல-இடது ☰ menu → <b>கருத்து சொல்லுங்க</b> → உங்க பிரச்சனை type பண்ணுங்க. நேரடியா admin-க்கு வரும்.</p>
+            <h4>💬 பிரச்சனை இருந்தால்</h4>
+            <p>மேலே இடது பக்கம் இருக்கும் ☰ menu-க்கு போங்கள். <b>கருத்து சொல்லுங்கள்</b> என்பதைத் திறந்து உங்கள் பிரச்சனையை எழுதுங்கள். அது நேராக எங்களிடம் வந்து சேரும்.</p>
           </div>
         </li>
       </ol>
