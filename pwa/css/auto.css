@@ -1,59 +1,79 @@
 /* ── Auto/Van Section ────────────────────────────────────── */
+/*
+  Palette — Tamil Nadu auto identity, refined:
+  • Charcoal  #1C1C1E  — warm dark (not dead black)
+  • Amber     #F59E0B  — warm gold (replaces harsh neon yellow)
+  • Amber-dk  #D97706  — hover / border accent
+  • Amber-bg  #FEF3C7  — light tint for icon circles
+  • Call-grn  #16A34A  — universal phone/call green
+  Purple is removed entirely from this section.
+*/
+
+/* ── Auto section tokens ──────────────────────────────────── */
 #section-auto {
+  --auto-dark:    #1C1C1E;
+  --auto-dark2:   #252528;
+  --auto-amber:   #F59E0B;
+  --auto-amb-dk:  #D97706;
+  --auto-amb-bg:  #FEF3C7;
+  --auto-amber-20: rgba(245,158,11,0.20);
+  --auto-amber-12: rgba(245,158,11,0.12);
+  --auto-call:    #16A34A;
+  --auto-call-dk: #15803D;
   padding: var(--space-md);
   padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + var(--space-lg));
 }
 
-/* Hero card — Tamil Nadu auto: black body, yellow ring + accents */
+/* ── Hero card ─────────────────────────────────────────────── */
 .auto-hero {
-  background: linear-gradient(160deg, #1A1A1A 0%, #222222 60%, #1A1A1A 100%);
+  background: linear-gradient(160deg, var(--auto-dark) 0%, var(--auto-dark2) 55%, var(--auto-dark) 100%);
   border-radius: 20px;
   padding: 20px 16px 16px;
   text-align: center;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+  box-shadow: 0 6px 28px rgba(0,0,0,0.30), 0 0 0 1.5px rgba(245,158,11,0.30);
   margin-bottom: var(--space-lg);
   position: relative;
   overflow: hidden;
-  border: 2px solid #FFD600;
+  border: none;
 }
 
-/* Yellow stripe at top — auto canopy accent */
+/* Amber canopy stripe at top */
 .auto-hero::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, #FFD600, #FFC107, #FFD600);
+  height: 5px;
+  background: linear-gradient(90deg, #D97706, #F59E0B 40%, #FBBF24 60%, #F59E0B 80%, #D97706);
   pointer-events: none;
 }
 
-/* Subtle yellow glow from below */
+/* Soft amber glow from centre */
 .auto-hero::after {
   content: '';
   position: absolute;
-  bottom: -40px; left: 50%;
+  top: 30px; left: 50%;
   transform: translateX(-50%);
-  width: 200px; height: 80px;
-  background: radial-gradient(ellipse, rgba(255,214,0,0.15), transparent 70%);
+  width: 220px; height: 90px;
+  background: radial-gradient(ellipse, rgba(245,158,11,0.12), transparent 70%);
   pointer-events: none;
 }
 
-/* Yellow ring with black border — pops on dark background */
+/* Icon ring — amber on dark */
 .auto-hero-icon-ring {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 64px;
   height: 64px;
-  background: #FFD600;
-  border: 3px solid #1A1A1A;
-  outline: 2px solid #FFD600;
+  background: var(--auto-amber);
+  border: 2.5px solid var(--auto-dark);
+  outline: 2px solid rgba(245,158,11,0.45);
   outline-offset: 3px;
   border-radius: 50%;
   margin: 0 auto 12px;
   position: relative;
   z-index: 1;
-  box-shadow: 0 4px 16px rgba(255,214,0,0.35);
+  box-shadow: 0 4px 18px rgba(245,158,11,0.30);
 }
 
 .auto-hero-emoji {
@@ -65,19 +85,19 @@
   font-family: var(--font-tamil);
   font-size: 1.25rem;
   font-weight: 800;
-  color: #FFD600;
+  color: var(--auto-amber);
   margin: 0 0 2px;
   position: relative;
   z-index: 1;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.5);
 }
 
 .auto-hero-en {
   font-family: var(--font-latin);
   font-size: var(--size-sub);
-  color: rgba(255,255,255,0.50);
+  color: rgba(255,255,255,0.45);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   margin: 0 0 8px;
   position: relative;
   z-index: 1;
@@ -85,15 +105,15 @@
 
 .auto-hero-sub {
   font-family: var(--font-tamil);
-  font-size: 0.85rem;
-  color: rgba(255,255,255,0.82);
-  margin: 0 0 12px;
-  line-height: 1.4;
+  font-size: 0.875rem;
+  color: rgba(255,255,255,0.78);
+  margin: 0 0 14px;
+  line-height: 1.45;
   position: relative;
   z-index: 1;
 }
 
-/* Vehicle type badges — yellow pills on dark bg */
+/* Vehicle type badges — amber on dark */
 .auto-hero-badges {
   display: flex;
   justify-content: center;
@@ -107,15 +127,15 @@
   font-family: var(--font-tamil);
   font-size: 0.72rem;
   font-weight: 700;
-  color: #1A1A1A;
-  background: #FFD600;
-  border: 1px solid #E6C200;
+  color: var(--auto-dark);
+  background: var(--auto-amber);
+  border: 1px solid var(--auto-amb-dk);
   border-radius: 20px;
   padding: 4px 11px;
   white-space: nowrap;
 }
 
-/* Driver list header with refresh button */
+/* ── Driver list header ────────────────────────────────────── */
 .driver-list-header {
   display: flex;
   justify-content: space-between;
@@ -139,15 +159,15 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(106, 27, 154, 0.1);
-  color: var(--color-auto);
+  background: var(--auto-amber-12);
+  color: var(--auto-amb-dk);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: background var(--trans-fast), transform var(--trans-fast);
 }
 .auto-refresh-btn:active {
-  background: rgba(106, 27, 154, 0.22);
+  background: var(--auto-amber-20);
   transform: scale(0.94);
 }
 .auto-refresh-btn:disabled {
@@ -168,20 +188,20 @@
   to   { transform: rotate(360deg); }
 }
 
-/* Ephemeral toast — fades in/out for refresh status */
+/* ── Toast ─────────────────────────────────────────────────── */
 .auto-toast {
   position: fixed;
   left: 50%;
   bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 16px);
   transform: translateX(-50%) translateY(10px);
   padding: 10px 18px;
-  background: rgba(26, 26, 26, 0.92);
+  background: rgba(28, 28, 30, 0.93);
   color: #ffffff;
   font-family: var(--font-tamil);
   font-size: 0.88rem;
   font-weight: 600;
   border-radius: 22px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
   opacity: 0;
   transition: opacity 180ms ease-out, transform 180ms ease-out;
   z-index: 1000;
@@ -194,7 +214,7 @@
   transform: translateX(-50%) translateY(0);
 }
 
-/* Driver cards */
+/* ── Driver cards ──────────────────────────────────────────── */
 .driver-list {
   display: flex;
   flex-direction: column;
@@ -209,16 +229,16 @@
   background: #ffffff;
   border-radius: 16px;
   padding: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-  border: 1px solid #F3E5F5;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  border: 1px solid #F5E6C3;
 }
 
-/* Circle icon on the left */
+/* Amber-tinted icon circle */
 .driver-icon {
   width: 52px;
   height: 52px;
   border-radius: 26px;
-  background: rgba(106, 27, 154, 0.1);
+  background: var(--auto-amb-bg, #FEF3C7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -245,7 +265,7 @@
 .driver-meta {
   font-family: var(--font-tamil);
   font-size: 0.825rem;
-  color: var(--color-auto);
+  color: var(--auto-amb-dk, #D97706);
   display: block;
   margin-top: 4px;
   overflow: hidden;
@@ -253,26 +273,27 @@
   white-space: nowrap;
 }
 
-/* Call button — purple */
+/* Call button — green (universal phone colour) */
 .call-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 18px;
-  background: var(--color-auto);
+  padding: 10px 16px;
+  background: var(--auto-call, #16A34A);
   color: #ffffff;
   border-radius: var(--radius-pill);
   font-family: var(--font-tamil);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 700;
   min-width: 80px;
   min-height: 44px;
   white-space: nowrap;
   flex-shrink: 0;
   transition: background var(--trans-fast), transform var(--trans-fast);
+  box-shadow: 0 2px 8px rgba(22,163,74,0.25);
 }
 .call-btn:active {
-  background: var(--color-auto-light);
+  background: var(--auto-call-dk, #15803D);
   transform: scale(0.96);
 }
 .call-btn-pending {
@@ -280,15 +301,17 @@
   color: var(--color-muted);
   cursor: default;
   pointer-events: none;
+  box-shadow: none;
 }
 
-/* WhatsApp register card — purple gradient */
+/* ── Register / contact form card ─────────────────────────── */
+/* Matches the hero — dark charcoal + amber, cohesive section */
 .register-card {
-  background: linear-gradient(135deg, var(--color-auto) 0%, var(--color-auto-light) 100%);
+  background: linear-gradient(160deg, var(--auto-dark, #1C1C1E) 0%, var(--auto-dark2, #252528) 100%);
   border-radius: 18px;
   padding: var(--space-md) var(--space-md) 20px;
   text-align: center;
-  box-shadow: 0 4px 14px rgba(106, 27, 154, 0.25);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.20), 0 0 0 1.5px rgba(245,158,11,0.22);
 }
 
 .register-emoji {
@@ -299,20 +322,20 @@
 .register-label-ta {
   font-family: var(--font-tamil);
   font-size: 1rem;
-  font-weight: 600;
-  color: #ffffff;
+  font-weight: 700;
+  color: var(--auto-amber, #F59E0B);
   display: block;
   margin-bottom: 2px;
 }
 .register-label-en {
   font-family: var(--font-latin);
   font-size: var(--size-sub);
-  color: rgba(255,255,255,0.65);
+  color: rgba(255,255,255,0.50);
   display: block;
   margin-bottom: var(--space-md);
 }
 
-/* Contact registration form */
+/* Contact form */
 .auto-form {
   width: 100%;
   display: flex;
@@ -330,55 +353,58 @@
 
 .auto-form-label {
   font-family: var(--font-tamil);
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 700;
-  color: rgba(255,255,255,0.9);
+  color: rgba(255,255,255,0.85);
 }
 .auto-form-label-en {
   font-family: var(--font-latin);
   font-size: 0.68rem;
   font-weight: 400;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.50);
   margin-left: 4px;
 }
 
 .auto-form-input {
   width: 100%;
-  padding: 12px 14px;
+  padding: 13px 14px;
   border-radius: 12px;
-  border: 1.5px solid rgba(255,255,255,0.25);
-  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.09);
   color: #ffffff;
   font-family: var(--font-tamil);
   font-size: 0.95rem;
   outline: none;
   transition: border-color var(--trans-fast), background var(--trans-fast);
 }
-.auto-form-input::placeholder { color: rgba(255,255,255,0.45); }
+.auto-form-input::placeholder { color: rgba(255,255,255,0.38); }
 .auto-form-input:focus {
-  border-color: rgba(255,255,255,0.7);
-  background: rgba(255,255,255,0.2);
+  border-color: rgba(245,158,11,0.70);
+  background: rgba(255,255,255,0.13);
+  box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
 }
 .auto-form-select option { color: #1A1A1A; background: #ffffff; }
 
 .auto-form-textarea { resize: none; min-height: 72px; }
 
+/* Submit button — amber on dark (matches section identity) */
 .auto-form-submit {
   width: 100%;
   padding: 14px;
-  background: rgba(255,255,255,0.95);
-  color: var(--color-auto);
+  background: var(--auto-amber, #F59E0B);
+  color: var(--auto-dark, #1C1C1E);
   border-radius: 14px;
   font-family: var(--font-tamil);
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 800;
   min-height: 50px;
-  transition: transform var(--trans-fast), background var(--trans-fast);
+  transition: transform var(--trans-fast), background var(--trans-fast), box-shadow var(--trans-fast);
   margin-top: 4px;
+  box-shadow: 0 3px 12px rgba(245,158,11,0.30);
 }
-.auto-form-submit:hover   { background: #ffffff; }
-.auto-form-submit:active  { transform: scale(0.97); }
-.auto-form-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+.auto-form-submit:hover   { background: #FBBF24; }
+.auto-form-submit:active  { transform: scale(0.97); box-shadow: none; }
+.auto-form-submit:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .auto-form-result {
   font-family: var(--font-tamil);
@@ -388,10 +414,10 @@
   border-radius: 10px;
   margin-top: 4px;
 }
-.result-ok  { background: rgba(255,255,255,0.2); color: #ffffff; }
-.result-err { background: rgba(255,100,100,0.2); color: #FFCDD2; }
+.result-ok  { background: rgba(22,163,74,0.18);  color: #86EFAC; }
+.result-err { background: rgba(239,68,68,0.18);  color: #FCA5A5; }
 
-/* Empty state */
+/* ── Empty state ────────────────────────────────────────────── */
 .auto-empty {
   display: flex;
   flex-direction: column;
@@ -413,7 +439,7 @@
   color: var(--color-muted);
 }
 
-/* Loading skeleton */
+/* ── Loading skeleton ────────────────────────────────────────  */
 .skeleton-list { display: flex; flex-direction: column; gap: 10px; }
 .skeleton {
   height: 78px;
@@ -427,17 +453,50 @@
   100% { background-position: -200% 0; }
 }
 
-/* Phone field validation */
-.auto-form-required { color: #c62828; margin-left: 2px; }
-.auto-form-optional { color: #9E9E9E; font-size: 0.85em; }
+/* ── Phone field validation ────────────────────────────────── */
+.auto-form-required { color: #FCA5A5; margin-left: 2px; }
+.auto-form-optional { color: rgba(255,255,255,0.45); font-size: 0.85em; }
 .auto-form-field-err {
-  color: #c62828;
+  color: #FCA5A5;
   font-family: var(--font-tamil, "Noto Sans Tamil", sans-serif);
   font-size: 13px;
   margin: 4px 0 0;
   padding: 0;
 }
 .auto-form-input-err {
-  border-color: #c62828 !important;
-  box-shadow: 0 0 0 2px rgba(198,40,40,0.15) !important;
+  border-color: rgba(239,68,68,0.70) !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.15) !important;
+}
+
+/* ── Load error ─────────────────────────────────────────────── */
+.load-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 32px 16px;
+  text-align: center;
+}
+.load-error-icon { font-size: 36px; opacity: 0.7; margin-bottom: 6px; }
+.load-error-ta {
+  font-family: var(--font-tamil);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-2);
+}
+.load-error-en {
+  font-family: var(--font-latin);
+  font-size: 0.78rem;
+  color: var(--color-muted);
+  margin-bottom: 12px;
+}
+.retry-btn {
+  padding: 10px 22px;
+  background: var(--auto-amber, #F59E0B);
+  color: #1C1C1E;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-tamil);
+  font-size: 0.9rem;
+  font-weight: 700;
+  min-height: 44px;
 }
