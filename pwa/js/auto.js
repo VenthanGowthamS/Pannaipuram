@@ -26,12 +26,21 @@ var Auto = (function() {
     '</div>';
   }
 
-  async function loadDrivers() {
+  async function loadDrivers(force) {
     var list = document.getElementById('driver-list');
-    list.innerHTML = '<div class="skeleton-list"><div class="skeleton"></div><div class="skeleton"></div></div>';
+    var refreshBtn = document.getElementById('auto-refresh-btn');
+
+    // On first load: show skeletons. On refresh: don't blank out — just spin the icon.
+    if (!force) {
+      list.innerHTML = '<div class="skeleton-list"><div class="skeleton"></div><div class="skeleton"></div></div>';
+    }
+    if (refreshBtn) {
+      refreshBtn.classList.add('spinning');
+      refreshBtn.disabled = true;
+    }
 
     try {
-      var drivers = await PannaiAPI.getAutoDrivers();
+      var drivers = await PannaiAPI.getAutoDrivers(!!force);
       var active = drivers.filter(function(d) { return d.is_active !== false; });
       if (active.length) {
         list.innerHTML = active.map(renderCard).join('');
@@ -43,17 +52,48 @@ var Auto = (function() {
           '<p class="auto-empty-en">Driver info coming soon</p>' +
           '</div>';
       }
+      if (force) showToast('✅ புதுப்பிக்கப்பட்டது · Updated');
     } catch(e) {
-      list.innerHTML =
-        '<div class="load-error">' +
-        '<div class="load-error-icon">📡</div>' +
-        '<p class="load-error-ta">தகவல் கிடைக்கவில்லை</p>' +
-        '<p class="load-error-en">Could not load drivers. Please check your connection.</p>' +
-        '<button class="retry-btn" id="auto-retry-btn">மீண்டும் முயற்சிக்க</button>' +
-        '</div>';
-      var btn = document.getElementById('auto-retry-btn');
-      if (btn) btn.addEventListener('click', loadDrivers);
+      if (force) {
+        // Refresh failed — keep existing list, just toast the error
+        showToast('❌ Connection issue — try again');
+      } else {
+        list.innerHTML =
+          '<div class="load-error">' +
+          '<div class="load-error-icon">📡</div>' +
+          '<p class="load-error-ta">தகவல் கிடைக்கவில்லை</p>' +
+          '<p class="load-error-en">Could not load drivers. Please check your connection.</p>' +
+          '<button class="retry-btn" id="auto-retry-btn">மீண்டும் முயற்சிக்க</button>' +
+          '</div>';
+        var btn = document.getElementById('auto-retry-btn');
+        if (btn) btn.addEventListener('click', function(){ loadDrivers(false); });
+      }
+    } finally {
+      if (refreshBtn) {
+        // Let one full rotation complete before unlocking
+        setTimeout(function() {
+          refreshBtn.classList.remove('spinning');
+          refreshBtn.disabled = false;
+        }, 500);
+      }
     }
+  }
+
+  // Small ephemeral toast pinned below the header
+  function showToast(msg) {
+    var existing = document.getElementById('auto-toast');
+    if (existing) existing.remove();
+    var el = document.createElement('div');
+    el.id = 'auto-toast';
+    el.className = 'auto-toast';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    // Trigger enter animation
+    requestAnimationFrame(function() { el.classList.add('visible'); });
+    setTimeout(function() {
+      el.classList.remove('visible');
+      setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 220);
+    }, 1800);
   }
 
   // ── Registration contact form ──────────────────────────────
@@ -116,8 +156,14 @@ var Auto = (function() {
   }
 
   async function init() {
-    await loadDrivers();
+    await loadDrivers(false);
     initContactForm();
+
+    // Wire refresh button — forces cache bypass
+    var refreshBtn = document.getElementById('auto-refresh-btn');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', function() { loadDrivers(true); });
+    }
   }
 
   return { init: init };

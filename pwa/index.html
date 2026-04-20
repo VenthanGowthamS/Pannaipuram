@@ -37,6 +37,183 @@
     நீங்கள் offline — கடைசி தகவல் காட்டுகிறோம்
   </div>
 
+  <!-- ── Hamburger menu button (top-left, always visible) ── -->
+  <button id="menu-btn" class="menu-btn" aria-label="Menu · பட்டியல்" aria-controls="menu-drawer" aria-expanded="false" type="button">
+    <span class="menu-btn-bar"></span>
+    <span class="menu-btn-bar"></span>
+    <span class="menu-btn-bar"></span>
+  </button>
+
+  <!-- Drawer backdrop + drawer itself -->
+  <div id="menu-backdrop" class="menu-backdrop" hidden></div>
+
+  <aside id="menu-drawer" class="menu-drawer" aria-hidden="true" aria-label="Main menu">
+    <header class="menu-drawer-header">
+      <div class="menu-drawer-title">
+        <span class="menu-drawer-title-ta">பண்ணைப்புரம்</span>
+        <span class="menu-drawer-title-en">Village Info</span>
+      </div>
+      <button id="menu-close" class="menu-close" aria-label="மூடு · Close" type="button">×</button>
+    </header>
+    <nav class="menu-drawer-nav">
+      <button class="menu-item" data-sheet="feedback" type="button">
+        <span class="menu-item-icon">💬</span>
+        <span class="menu-item-text">
+          <span class="menu-item-ta">கருத்து சொல்லுங்க</span>
+          <span class="menu-item-en">Feedback</span>
+        </span>
+        <span class="menu-item-caret">›</span>
+      </button>
+      <button class="menu-item" data-sheet="about" type="button">
+        <span class="menu-item-icon">ℹ️</span>
+        <span class="menu-item-text">
+          <span class="menu-item-ta">எங்களைப் பத்தி</span>
+          <span class="menu-item-en">About</span>
+        </span>
+        <span class="menu-item-caret">›</span>
+      </button>
+      <button class="menu-item" data-sheet="howto" type="button">
+        <span class="menu-item-icon">📖</span>
+        <span class="menu-item-text">
+          <span class="menu-item-ta">எப்படி பயன்படுத்துவது</span>
+          <span class="menu-item-en">How to use</span>
+        </span>
+        <span class="menu-item-caret">›</span>
+      </button>
+    </nav>
+    <footer class="menu-drawer-footer">
+      <span>v1.0 · பண்ணைப்புரம் 2026</span>
+      <span>Made with ❤️ by Venthan</span>
+    </footer>
+  </aside>
+
+  <!-- ── Feedback sheet ─────────────────────────────────── -->
+  <div id="sheet-feedback" class="menu-sheet" hidden>
+    <header class="menu-sheet-header">
+      <button class="menu-sheet-back" data-close-sheet="feedback" aria-label="பின்னால் · Back" type="button">‹</button>
+      <span class="menu-sheet-title">💬 கருத்து சொல்லுங்க</span>
+    </header>
+    <div class="menu-sheet-body">
+      <p class="sheet-intro">உங்கள் கருத்து, புகார், ஐடியா — எல்லாம் admin-க்கு நேரடியா வரும். நாம் பதில் கொடுக்கிறோம்.</p>
+      <p class="sheet-intro-en">Your feedback reaches the admin directly. We read every message.</p>
+
+      <form id="feedback-form" class="feedback-form" novalidate>
+        <div class="feedback-field">
+          <label class="feedback-label" for="fb-name">உங்கள் பெயர் / Number <span class="feedback-optional">(optional)</span></label>
+          <input id="fb-name" class="feedback-input" type="text" placeholder="பெயர் அல்லது phone" maxlength="80" autocomplete="name">
+        </div>
+        <div class="feedback-field">
+          <label class="feedback-label" for="fb-msg">என்ன சொல்ல விரும்புகிறீங்க? <span class="feedback-required">*</span></label>
+          <textarea id="fb-msg" class="feedback-input feedback-textarea" placeholder="உங்கள் கருத்து, புகார், அல்லது புதிய ஐடியா..." rows="5" maxlength="1000" required></textarea>
+        </div>
+        <button type="submit" class="feedback-submit" id="feedback-submit-btn">
+          <span id="feedback-submit-text">📩 அனுப்பு · Send</span>
+        </button>
+        <p id="feedback-result" class="feedback-result" hidden></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── About sheet ────────────────────────────────────── -->
+  <div id="sheet-about" class="menu-sheet" hidden>
+    <header class="menu-sheet-header">
+      <button class="menu-sheet-back" data-close-sheet="about" aria-label="பின்னால் · Back" type="button">‹</button>
+      <span class="menu-sheet-title">ℹ️ எங்களைப் பத்தி</span>
+    </header>
+    <div class="menu-sheet-body">
+      <div class="about-hero">
+        <div class="about-emoji">🏡</div>
+        <h3 class="about-title">பண்ணைப்புரம்</h3>
+        <p class="about-sub">உங்கள் ஊரின் தகவல் மையம்</p>
+        <p class="about-sub-en">Your village info hub</p>
+      </div>
+      <section class="about-section">
+        <h4>என்ன இது?</h4>
+        <p>பண்ணைப்புரம் — தேனி மாவட்டத்தில் உள்ள நம்ம ஊர். இந்த app-ல பேருந்து நேரம், ஆட்டோ தொடர்பு, மற்றும் ஊர் சார்ந்த தகவல்கள் எல்லாம் ஒரே இடத்தில் கிடைக்கும்.</p>
+      </section>
+      <section class="about-section">
+        <h4>What is this?</h4>
+        <p>A Tamil-first village information app for Pannaipuram, Theni District. Bus timings, auto contacts, and essential local info — all in one place, works offline.</p>
+      </section>
+      <section class="about-section">
+        <h4>யார் செய்தது?</h4>
+        <p>வெந்தன் (Venthan) — நம்ம ஊர் பையன். ஊர்ப் பிரச்சனை தீர்க்கணும்னு உருவாக்கப்பட்டது.</p>
+        <p class="about-contact">📧 venthan89@gmail.com</p>
+      </section>
+      <section class="about-section">
+        <h4>முக்கிய features</h4>
+        <ul class="about-list">
+          <li>🚌 எல்லா பேருந்து நேரமும் — next bus countdown</li>
+          <li>🛺 ஊர் ஆட்டோ டிரைவர் தொடர்பு</li>
+          <li>📴 Offline-ல வேலை செய்யும்</li>
+          <li>🔄 Auto-refresh (every 10 min)</li>
+          <li>💬 Feedback admin-க்கு நேரடியா</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+
+  <!-- ── How to use sheet ───────────────────────────────── -->
+  <div id="sheet-howto" class="menu-sheet" hidden>
+    <header class="menu-sheet-header">
+      <button class="menu-sheet-back" data-close-sheet="howto" aria-label="பின்னால் · Back" type="button">‹</button>
+      <span class="menu-sheet-title">📖 எப்படி பயன்படுத்துவது</span>
+    </header>
+    <div class="menu-sheet-body">
+      <ol class="howto-steps">
+        <li class="howto-step">
+          <div class="howto-num">1</div>
+          <div class="howto-text">
+            <h4>🚌 பேருந்து நேரம் பார்க்க</h4>
+            <p>கீழ இருக்கும் <b>பேருந்து</b> tab-ஐ அழுத்துங்க. எல்லா routes-ம் வரும் — அடுத்த பஸ் எத்தன நிமிடத்தில என்று clearly தெரியும்.</p>
+          </div>
+        </li>
+        <li class="howto-step">
+          <div class="howto-num">2</div>
+          <div class="howto-text">
+            <h4>🔍 குறிப்பிட்ட இடம் தேட</h4>
+            <p>மேல உள்ள search box-ல "தேனி", "போடி", "கம்பம்" என்று type பண்ணுங்க. உடனே filter ஆகும்.</p>
+          </div>
+        </li>
+        <li class="howto-step">
+          <div class="howto-num">3</div>
+          <div class="howto-text">
+            <h4>📋 முழு timetable பார்க்க</h4>
+            <p>எந்த route card-ஐயும் அழுத்துங்க — அன்றைய எல்லா பேருந்து நேரமும் expand ஆகும். நீண்ட gap இருந்தா warning-ம் வரும்.</p>
+          </div>
+        </li>
+        <li class="howto-step">
+          <div class="howto-num">4</div>
+          <div class="howto-text">
+            <h4>🛺 ஆட்டோ/வேன் அழைக்க</h4>
+            <p>கீழ <b>ஆட்டோ</b> tab-ஐ அழுத்துங்க. ஒவ்வொரு driver-க்கும் பக்கத்தில <b>📞 அழைக்க</b> button — ஒரே tap-ல call போகும்.</p>
+          </div>
+        </li>
+        <li class="howto-step">
+          <div class="howto-num">5</div>
+          <div class="howto-text">
+            <h4>🔄 புதுப்பிக்க</h4>
+            <p>ஆட்டோ tab-ல மேல-வலது ↻ icon அழுத்தினா புதுசா update ஆகும். Bus timings-ம் ஒவ்வொரு 10 நிமிடத்துக்கும் auto-refresh ஆகும்.</p>
+          </div>
+        </li>
+        <li class="howto-step">
+          <div class="howto-num">6</div>
+          <div class="howto-text">
+            <h4>📱 Home screen-ல install பண்ண</h4>
+            <p>Browser menu-ல "Add to Home Screen" அல்லது "Install app" select பண்ணுங்க. அடுத்தமுறை icon tap பண்ணினா app-ஆ திறக்கும் — வேகமா, offline-ம்.</p>
+          </div>
+        </li>
+        <li class="howto-step">
+          <div class="howto-num">7</div>
+          <div class="howto-text">
+            <h4>💬 பிரச்சனை வந்தா</h4>
+            <p>மேல-இடது ☰ menu → <b>கருத்து சொல்லுங்க</b> → உங்க பிரச்சனை type பண்ணுங்க. நேரடியா admin-க்கு வரும்.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
   <!-- Install-to-home-screen prompt (shown only on browsers, not when installed) -->
   <div id="install-banner" hidden>
     <button class="install-close" id="install-close" aria-label="மூடு">×</button>
@@ -99,6 +276,14 @@
           <span class="auto-hero-badge">🚐 வேன்</span>
           <span class="auto-hero-badge">🚕 கார்</span>
         </div>
+      </div>
+
+      <!-- Driver list header with refresh -->
+      <div class="driver-list-header">
+        <span class="driver-list-title">ஓட்டுநர்கள் <span class="driver-list-title-en">· Drivers</span></span>
+        <button id="auto-refresh-btn" class="auto-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">
+          <span class="auto-refresh-icon">↻</span>
+        </button>
       </div>
 
       <!-- Driver cards -->
