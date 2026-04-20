@@ -4,60 +4,60 @@
   padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + var(--space-lg));
 }
 
-/* Hero card — deep purple gradient */
+/* Hero card — Tamil Nadu auto: black body, yellow ring + accents */
 .auto-hero {
-  background: linear-gradient(145deg, #4A148C 0%, #6A1B9A 50%, #7B1FA2 100%);
+  background: linear-gradient(160deg, #1A1A1A 0%, #222222 60%, #1A1A1A 100%);
   border-radius: 20px;
-  padding: 18px 16px 16px;
+  padding: 20px 16px 16px;
   text-align: center;
-  box-shadow: 0 6px 20px rgba(74, 20, 140, 0.35);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.35);
   margin-bottom: var(--space-lg);
   position: relative;
   overflow: hidden;
+  border: 2px solid #FFD600;
 }
 
-/* Decorative circles in background */
+/* Yellow stripe at top — auto canopy accent */
 .auto-hero::before {
   content: '';
   position: absolute;
-  top: -30px;
-  right: -30px;
-  width: 120px;
-  height: 120px;
-  background: rgba(255,255,255,0.07);
-  border-radius: 50%;
-  pointer-events: none;
-}
-.auto-hero::after {
-  content: '';
-  position: absolute;
-  bottom: -20px;
-  left: -20px;
-  width: 90px;
-  height: 90px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 50%;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #FFD600, #FFC107, #FFD600);
   pointer-events: none;
 }
 
-/* Emoji in glowing white ring — compact */
+/* Subtle yellow glow from below */
+.auto-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: 50%;
+  transform: translateX(-50%);
+  width: 200px; height: 80px;
+  background: radial-gradient(ellipse, rgba(255,214,0,0.15), transparent 70%);
+  pointer-events: none;
+}
+
+/* Yellow ring with black border — pops on dark background */
 .auto-hero-icon-ring {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 60px;
-  height: 60px;
-  background: rgba(255,255,255,0.18);
-  border: 2px solid rgba(255,255,255,0.35);
+  width: 64px;
+  height: 64px;
+  background: #FFD600;
+  border: 3px solid #1A1A1A;
+  outline: 2px solid #FFD600;
+  outline-offset: 3px;
   border-radius: 50%;
-  margin: 0 auto 10px;
+  margin: 0 auto 12px;
   position: relative;
   z-index: 1;
-  box-shadow: 0 0 14px rgba(255,255,255,0.12);
+  box-shadow: 0 4px 16px rgba(255,214,0,0.35);
 }
 
 .auto-hero-emoji {
-  font-size: 30px;
+  font-size: 32px;
   line-height: 1;
 }
 
@@ -65,16 +65,17 @@
   font-family: var(--font-tamil);
   font-size: 1.25rem;
   font-weight: 800;
-  color: #ffffff;
+  color: #FFD600;
   margin: 0 0 2px;
   position: relative;
   z-index: 1;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
 
 .auto-hero-en {
   font-family: var(--font-latin);
   font-size: var(--size-sub);
-  color: rgba(255,255,255,0.65);
+  color: rgba(255,255,255,0.50);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin: 0 0 8px;
@@ -85,14 +86,14 @@
 .auto-hero-sub {
   font-family: var(--font-tamil);
   font-size: 0.85rem;
-  color: rgba(255,255,255,0.85);
-  margin: 0 0 10px;
+  color: rgba(255,255,255,0.82);
+  margin: 0 0 12px;
   line-height: 1.4;
   position: relative;
   z-index: 1;
 }
 
-/* Vehicle type badges row — compact */
+/* Vehicle type badges — yellow pills on dark bg */
 .auto-hero-badges {
   display: flex;
   justify-content: center;
@@ -105,13 +106,92 @@
 .auto-hero-badge {
   font-family: var(--font-tamil);
   font-size: 0.72rem;
-  font-weight: 600;
-  color: rgba(255,255,255,0.95);
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.28);
+  font-weight: 700;
+  color: #1A1A1A;
+  background: #FFD600;
+  border: 1px solid #E6C200;
   border-radius: 20px;
-  padding: 3px 10px;
+  padding: 4px 11px;
   white-space: nowrap;
+}
+
+/* Driver list header with refresh button */
+.driver-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+.driver-list-title {
+  font-family: var(--font-tamil);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.driver-list-title-en {
+  font-family: var(--font-latin);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+.auto-refresh-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(106, 27, 154, 0.1);
+  color: var(--color-auto);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--trans-fast), transform var(--trans-fast);
+}
+.auto-refresh-btn:active {
+  background: rgba(106, 27, 154, 0.22);
+  transform: scale(0.94);
+}
+.auto-refresh-btn:disabled {
+  opacity: 0.75;
+  cursor: default;
+}
+.auto-refresh-icon {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-block;
+}
+.auto-refresh-btn.spinning .auto-refresh-icon {
+  animation: autoRefreshSpin 0.7s linear;
+}
+@keyframes autoRefreshSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Ephemeral toast — fades in/out for refresh status */
+.auto-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 16px);
+  transform: translateX(-50%) translateY(10px);
+  padding: 10px 18px;
+  background: rgba(26, 26, 26, 0.92);
+  color: #ffffff;
+  font-family: var(--font-tamil);
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 22px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  transition: opacity 180ms ease-out, transform 180ms ease-out;
+  z-index: 1000;
+  pointer-events: none;
+  max-width: calc(100% - 32px);
+  text-align: center;
+}
+.auto-toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* Driver cards */

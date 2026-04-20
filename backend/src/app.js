@@ -15,6 +15,7 @@ const deviceRoutes    = require('./routes/devices');
 const servicesRoutes       = require('./routes/services');
 const announcementsRoutes  = require('./routes/announcements');
 const feedbackRoutes       = require('./routes/feedback');
+const pwaRoutes            = require('./routes/pwa');
 
 // Routes — Admin API
 const adminAuthRoutes     = require('./routes/admin/auth');
@@ -28,6 +29,7 @@ const adminAutoRoutes     = require('./routes/admin/auto');
 const adminServicesRoutes       = require('./routes/admin/services');
 const adminAnnouncementsRoutes  = require('./routes/admin/announcements');
 const adminFeedbackRoutes       = require('./routes/admin/feedback');
+const adminPwaRoutes            = require('./routes/admin/pwa');
 
 // Services
 const { startWaterScheduler } = require('./services/waterScheduler');
@@ -93,6 +95,7 @@ app.use('/api/devices',   deviceRoutes);
 app.use('/api/services',       servicesRoutes);
 app.use('/api/announcements',  announcementsRoutes);
 app.use('/api/feedback',       feedbackRoutes);
+app.use('/api/pwa',            pwaRoutes);
 
 // ── Admin API Routes ────────────────────────────────────
 app.use('/admin/auth',     adminAuthRoutes);
@@ -106,6 +109,7 @@ app.use('/admin/auto',     adminAutoRoutes);
 app.use('/admin/services',      adminServicesRoutes);
 app.use('/admin/announcements', adminAnnouncementsRoutes);
 app.use('/admin/feedback',      adminFeedbackRoutes);
+app.use('/admin/pwa',           adminPwaRoutes);
 
 // ── Health Check ────────────────────────────────────────
 const { query: dbQuery } = require('./db/pool');

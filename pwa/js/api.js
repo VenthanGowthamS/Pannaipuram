@@ -2,7 +2,7 @@
 // Three-tier cache: in-memory → localStorage → network.
 // localStorage survives reloads, making the app usable offline after first load.
 var _mem = {};
-var CACHE_VERSION = 'pannai-v16';
+var CACHE_VERSION = 'pannai-v21';
 
 function lsGet(key) {
   try { var v = localStorage.getItem(CACHE_VERSION + ':' + key); return v ? JSON.parse(v) : null; }
@@ -13,10 +13,15 @@ function lsSet(key, val) {
   try { localStorage.setItem(CACHE_VERSION + ':' + key, JSON.stringify(val)); } catch (_) { /* quota / private mode */ }
 }
 
-async function apiFetch(path) {
+async function apiFetch(path, opts) {
+  opts = opts || {};
   var key = 'pannai:' + path;
+  // Force-refresh: cache-bust URL (bypasses SW cache match) + browser cache: reload
+  var url = opts.force
+    ? path + (path.indexOf('?') >= 0 ? '&' : '?') + '_t=' + Date.now()
+    : path;
   try {
-    var resp = await fetch(path);
+    var resp = await fetch(url, opts.force ? { cache: 'reload' } : undefined);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     var json = await resp.json();
     if (!json.success) throw new Error(json.error || 'API error');
@@ -32,9 +37,9 @@ async function apiFetch(path) {
 }
 
 var PannaiAPI = {
-  getBusCorridors: function() { return apiFetch('/api/bus/corridors'); },
-  getBusTimings:   function(id) { return apiFetch('/api/bus/timings/' + id); },
+  getBusCorridors: function(force) { return apiFetch('/api/bus/corridors', { force: force }); },
+  getBusTimings:   function(id, force) { return apiFetch('/api/bus/timings/' + id, { force: force }); },
   getBusNext:      function() { return apiFetch('/api/bus/next'); },
-  getAutoDrivers:  function() { return apiFetch('/api/auto/drivers'); },
+  getAutoDrivers:  function(force) { return apiFetch('/api/auto/drivers', { force: force }); },
   getAutoContact:  function() { return apiFetch('/api/auto/contact'); },
 };

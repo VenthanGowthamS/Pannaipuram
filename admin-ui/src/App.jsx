@@ -17,6 +17,7 @@ import LocalServices from './pages/LocalServices';
 import UserManagement from './pages/UserManagement';
 import Announcements from './pages/Announcements';
 import Feedback from './pages/Feedback';
+import PwaStats from './pages/PwaStats';
 
 const AppContent = () => {
   const { user, loading } = useAuth();
@@ -74,6 +75,8 @@ const AppContent = () => {
         return <Announcements {...props} />;
       case 'feedback':
         return <Feedback {...props} />;
+      case 'pwa':
+        return <PwaStats {...props} />;
       default:
         return <PowerCuts {...props} />;
     }

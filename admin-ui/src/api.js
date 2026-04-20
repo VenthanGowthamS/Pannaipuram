@@ -309,6 +309,11 @@ class ApiService {
   deleteFeedback(id) {
     return this.request('DELETE', `/admin/feedback/${id}`);
   }
+
+  // PWA Analytics
+  getPwaStats() {
+    return this.request('GET', '/admin/pwa/stats');
+  }
 }
 
 export default new ApiService();

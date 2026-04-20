@@ -57,6 +57,7 @@ const Layout = ({ children, currentTab, onTabChange, snackbar, setSnackbar }) =>
     { id: 'announcements', label: 'Announce',     icon: '📢', MuiIcon: AnnounceIcon },
     { id: 'feedback',      label: 'Feedback',     icon: '💬', MuiIcon: FeedbackIcon },
     { id: 'users',         label: 'Users',        icon: '👥', MuiIcon: UsersIcon, role: 'super_admin' },
+    { id: 'pwa',           label: 'PWA Stats',    icon: '📊', MuiIcon: UsersIcon },
   ];
 
   const visibleTabs = tabs.filter(t => !t.role || user?.role === t.role);
