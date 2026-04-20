@@ -1,10 +1,29 @@
 # பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 4.1 (Phase 9 PWA UX complete)
+> **Version:** 4.6 (PWA v26 — auto-update, analytics, install fixes)
 > **Date:** April 2026
-> **Author:** Venthan (Senior Software Engineer)
-> **Status:** Phase 9 Complete — PWA UX overhaul live. Flutter APK aligned. Cache v14.
+> **Status:** PWA v26 live. Auto-update for installed PWAs. Visitor analytics. Cache v26.
+
+### PWA Recent Changes (v14 → v26, April 2026)
+| Feature | Status |
+|---|---|
+| Hamburger menu (Feedback / About / How-to-use / Install) | ✅ v21 |
+| Auto section refresh button ↻ | ✅ v21 |
+| Bus section refresh button ↻ (top-right of header) | ✅ v23 |
+| Bus title centered (no hamburger overlap) | ✅ v23 |
+| PWA visitor analytics (pwa_visits table + admin stats tab) | ✅ v21 |
+| Admin PWA Stats tab (unique users, daily, recent 20) | ✅ v21 |
+| Auto-hero redesign — black body + yellow ring (TN auto style) | ✅ v21 |
+| APK-style feedback form (intro card, hints, success 🙏) | ✅ v22 |
+| Permanent cache fix — network-first for HTML/CSS/JS | ✅ v22 |
+| Auto-update installed PWAs (SKIP_WAITING + controllerchange reload) | ✅ v23 |
+| Android install banner — beforeinstallprompt captured pre-DOM | ✅ v25 |
+| Android install 2s fallback for Samsung/Firefox browsers | ✅ v25 |
+| Install sheet in hamburger with native button + iOS steps | ✅ v24 |
+| Manifest: separate any + maskable icon entries (Chrome requirement) | ✅ v25 |
+| Fix install banner after PWA uninstall (clear stale localStorage) | ✅ v26 |
+| Remove developer name from About section | ✅ v22 |
 > **Tagline:** உங்கள் ஊரின் தகவல் மையம் *(Your Village's Information Centre)*
 
 ---
