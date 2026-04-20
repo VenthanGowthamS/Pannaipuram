@@ -1,3 +1,17 @@
+// ── Capture beforeinstallprompt BEFORE DOMContentLoaded ────
+// Chrome fires this early — if we wait for DOMContentLoaded we miss it.
+// Store on window._dip so the install logic inside DOMContentLoaded can use it.
+window._dip = null; // deferred install prompt
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();          // stop Chrome's own mini-infobar
+  window._dip = e;
+  // If DOM is already ready, show banner immediately
+  if (document.readyState !== 'loading') {
+    window._showInstallBanner && window._showInstallBanner();
+    window._updateInstallSheet && window._updateInstallSheet();
+  }
+});
+
 // ── App Shell ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
 
@@ -106,20 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('offline', updateOnline);
   updateOnline();
 
-  // ── Install prompt — capture beforeinstallprompt ASAP ──
-  // Must capture at top level (before DOMContentLoaded in some browsers).
-  // We store it on window so any code can use it later.
-  // Android Chrome fires this; iOS Safari does not.
-  var _deferredInstallPrompt = null;
-  window.addEventListener('beforeinstallprompt', function(e) {
-    e.preventDefault(); // stop Chrome's default mini-infobar
-    _deferredInstallPrompt = e;
-    // Show our banner if it's ready + user hasn't dismissed/installed
-    _showInstallBannerIfReady();
-    // Also update the install sheet native button if sheet is open
-    _updateInstallSheet();
-  });
-
+  // ── Install helpers (use window._dip set above DOMContentLoaded) ──
   var INSTALLED_KEY = 'pannai:app-installed';
   var DISMISS_KEY   = 'pannai:install-dismissed';
 
@@ -128,159 +129,149 @@ document.addEventListener('DOMContentLoaded', function() {
            window.navigator.standalone === true ||
            localStorage.getItem(INSTALLED_KEY) === 'true';
   }
-
   function _isDismissedRecently() {
     var d = localStorage.getItem(DISMISS_KEY);
-    return d && (Date.now() - parseInt(d, 10)) < 3 * 24 * 60 * 60 * 1000; // 3 days
+    return d && (Date.now() - parseInt(d, 10)) < 3 * 24 * 60 * 60 * 1000;
   }
 
-  function _showInstallBannerIfReady() {
-    var banner  = document.getElementById('install-banner');
-    var steps   = document.getElementById('install-steps');
+  var _bannerClickBound = false;
+
+  function _showInstallBanner() {
+    var banner = document.getElementById('install-banner');
+    var steps  = document.getElementById('install-steps');
     if (!banner || !steps) return;
     if (_isInstalled() || _isDismissedRecently()) return;
+    if (!banner.hidden) return; // already visible
 
     var ua = navigator.userAgent || '';
     var isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
     var isAndroid = /Android/.test(ua);
-
     var instructions;
+
     if (isIOS) {
       instructions = [
         'கீழ உள்ள <b>Share ⬆️</b> button-ஐ அழுத்துங்க',
         '<b>"Add to Home Screen"</b> தேர்ந்தெடுங்க',
         'வலதுபக்க <b>"Add"</b> button-ஐ அழுத்துங்க'
       ];
-    } else if (isAndroid && _deferredInstallPrompt) {
-      // Native prompt available — banner shows "tap to install" instead of steps
-      instructions = ['👇 கீழே உள்ள button-ஐ அழுத்தி install பண்ணுங்க'];
-    } else if (isAndroid) {
+    } else if (isAndroid && window._dip) {
+      instructions = ['👇 இந்த banner-ஐ tap பண்ணுங்க — ஒரே click-ல install ஆகும்!'];
+    } else {
+      // Android without native prompt OR desktop — show manual steps
       instructions = [
         'மேல வலதுபக்க <b>⋮ Menu</b>-வ அழுத்துங்க',
         '<b>"Install app"</b> அல்லது <b>"Add to Home screen"</b> தேர்ந்தெடுங்க',
         '<b>"Install"</b> button-ஐ அழுத்துங்க'
-      ];
-    } else {
-      instructions = [
-        'Browser menu-வ திறங்க (⋮ அல்லது ⬆️)',
-        '<b>"Install"</b> அல்லது <b>"Add to Home Screen"</b> தேர்வு செய்யுங்க',
-        'உறுதிப்படுத்துங்க — App-ஆ install ஆகும்!'
       ];
     }
 
     steps.innerHTML = instructions.map(function(s) { return '<li>' + s + '</li>'; }).join('');
     banner.hidden = false;
 
-    // Make banner clickable on Android to fire native prompt
-    if (isAndroid && _deferredInstallPrompt) {
+    // Tap-to-install on Android when native prompt available
+    if (isAndroid && window._dip && !_bannerClickBound) {
+      _bannerClickBound = true;
       banner.style.cursor = 'pointer';
-      banner.addEventListener('click', function onBannerClick(e) {
-        if (e.target.closest('#install-close')) return; // don't trigger on X
+      banner.addEventListener('click', function(e) {
+        if (e.target.id === 'install-close' || e.target.closest('#install-close')) return;
         _triggerNativeInstall();
       });
     }
   }
+  // Expose for the top-level beforeinstallprompt handler
+  window._showInstallBanner = _showInstallBanner;
 
   function _triggerNativeInstall() {
-    if (!_deferredInstallPrompt) return;
-    _deferredInstallPrompt.prompt();
-    _deferredInstallPrompt.userChoice.then(function(result) {
-      _deferredInstallPrompt = null;
-      if (result.outcome === 'accepted') {
-        _markInstalled();
-      }
+    if (!window._dip) return;
+    window._dip.prompt();
+    window._dip.userChoice.then(function(r) {
+      window._dip = null;
+      if (r.outcome === 'accepted') _markInstalled();
     }).catch(function() {});
   }
 
   function _markInstalled() {
     var banner = document.getElementById('install-banner');
     if (banner) banner.hidden = true;
-    try {
-      localStorage.setItem(INSTALLED_KEY, 'true');
-      localStorage.removeItem(DISMISS_KEY);
-    } catch(_) {}
-    // Update hamburger install sheet to show "done" state
+    try { localStorage.setItem(INSTALLED_KEY, 'true'); localStorage.removeItem(DISMISS_KEY); } catch(_) {}
     _updateInstallSheet();
-    // Hide the install menu item
-    var installMenuItem = document.getElementById('menu-install-btn');
-    if (installMenuItem) installMenuItem.hidden = true;
+    var m = document.getElementById('menu-install-btn');
+    if (m) m.hidden = true;
   }
 
-  // ── Install-to-home-screen banner ──────────────────────
+  function _updateInstallSheet() {
+    var ua = navigator.userAgent || '';
+    var isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    var isAndroid = /Android/.test(ua);
+    var elDone = document.getElementById('install-sheet-done');
+    var elNative = document.getElementById('install-sheet-android');
+    var elManual = document.getElementById('install-sheet-android-manual');
+    var elIOS  = document.getElementById('install-sheet-ios');
+    if (!elDone) return;
+    [elDone, elNative, elManual, elIOS].forEach(function(el) { if (el) el.hidden = true; });
+    if (_isInstalled()) {
+      elDone.hidden = false;
+      var m = document.getElementById('menu-install-btn'); if (m) m.hidden = true;
+    } else if (isAndroid && window._dip) {
+      elNative.hidden = false;
+    } else if (isAndroid) {
+      elManual.hidden = false;
+    } else if (isIOS) {
+      elIOS.hidden = false;
+    } else {
+      elManual.hidden = false;
+    }
+  }
+  window._updateInstallSheet = _updateInstallSheet;
+
+  // ── Install banner init ─────────────────────────────────
   (function initInstallBanner() {
-    var banner  = document.getElementById('install-banner');
+    var banner   = document.getElementById('install-banner');
     var closeBtn = document.getElementById('install-close');
     if (!banner || !closeBtn) return;
 
-    // If already installed, never show
-    if (_isInstalled()) {
-      banner.hidden = true;
-      return;
-    }
+    if (_isInstalled()) { banner.hidden = true; return; }
 
-    // Show on iOS immediately (no beforeinstallprompt on iOS)
-    var ua = navigator.userAgent || '';
+    var ua    = navigator.userAgent || '';
     var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-    if (isIOS) _showInstallBannerIfReady();
-    // Android: banner will show when beforeinstallprompt fires (above)
+    var isAndroid = /Android/.test(ua);
+
+    // iOS: show immediately (no beforeinstallprompt on iOS)
+    if (isIOS) { _showInstallBanner(); }
+
+    // Android: show immediately if prompt already captured (Chrome fired early),
+    // OR fall back to manual steps after 2 seconds if prompt never fires.
+    if (isAndroid) {
+      if (window._dip) {
+        _showInstallBanner();
+      } else {
+        // Fallback: show manual-steps banner after 2s if beforeinstallprompt still hasn't fired.
+        // This covers Samsung Browser, Firefox, and Chrome before engagement threshold.
+        setTimeout(function() {
+          if (!banner.hidden) return;           // already shown (prompt fired)
+          if (_isInstalled() || _isDismissedRecently()) return;
+          _showInstallBanner();                 // shows manual ⋮ steps
+        }, 2000);
+      }
+    }
 
     closeBtn.addEventListener('click', function() {
       banner.hidden = true;
       try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch(_) {}
     });
-
     window.addEventListener('appinstalled', _markInstalled);
   })();
 
-  // ── Install sheet (hamburger → "App install பண்ணுங்க") ─
-  function _updateInstallSheet() {
-    var ua = navigator.userAgent || '';
-    var isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-    var isAndroid = /Android/.test(ua);
-
-    var elDone          = document.getElementById('install-sheet-done');
-    var elAndroidNative = document.getElementById('install-sheet-android');
-    var elAndroidManual = document.getElementById('install-sheet-android-manual');
-    var elIOS           = document.getElementById('install-sheet-ios');
-    if (!elDone) return;
-
-    // Hide all, then show the right one
-    [elDone, elAndroidNative, elAndroidManual, elIOS].forEach(function(el) {
-      if (el) el.hidden = true;
-    });
-
-    if (_isInstalled()) {
-      elDone.hidden = false;
-      var installMenuItem = document.getElementById('menu-install-btn');
-      if (installMenuItem) installMenuItem.hidden = true;
-    } else if (isAndroid && _deferredInstallPrompt) {
-      elAndroidNative.hidden = false;
-    } else if (isAndroid) {
-      elAndroidManual.hidden = false;
-    } else if (isIOS) {
-      elIOS.hidden = false;
-    } else {
-      elAndroidManual.hidden = false; // desktop fallback
-    }
-  }
-
-  // Wire up native install button inside the sheet
+  // ── Install sheet in hamburger ──────────────────────────
   (function initInstallSheet() {
     var nativeBtn = document.getElementById('install-sheet-native-btn');
-    if (nativeBtn) {
-      nativeBtn.addEventListener('click', function() {
-        _triggerNativeInstall();
-      });
-    }
-    // Set initial state when sheet opens
+    if (nativeBtn) nativeBtn.addEventListener('click', _triggerNativeInstall);
+
     var installMenuItem = document.getElementById('menu-install-btn');
     if (installMenuItem) {
-      installMenuItem.addEventListener('click', function() {
-        _updateInstallSheet();
-      });
+      installMenuItem.addEventListener('click', _updateInstallSheet);
+      if (_isInstalled()) installMenuItem.hidden = true;
     }
-    // Hide menu item if already installed
-    if (_isInstalled() && installMenuItem) installMenuItem.hidden = true;
   })();
 
   // ── Hamburger drawer + sheets ──────────────────────────
