@@ -106,32 +106,42 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('offline', updateOnline);
   updateOnline();
 
-  // ── Install-to-home-screen banner ──────────────────────
-  // Show Tamil instructions on browsers. Hide if already installed or dismissed.
-  (function() {
-    var banner = document.getElementById('install-banner');
-    var steps = document.getElementById('install-steps');
-    var closeBtn = document.getElementById('install-close');
-    if (!banner || !steps || !closeBtn) return;
+  // ── Install prompt — capture beforeinstallprompt ASAP ──
+  // Must capture at top level (before DOMContentLoaded in some browsers).
+  // We store it on window so any code can use it later.
+  // Android Chrome fires this; iOS Safari does not.
+  var _deferredInstallPrompt = null;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault(); // stop Chrome's default mini-infobar
+    _deferredInstallPrompt = e;
+    // Show our banner if it's ready + user hasn't dismissed/installed
+    _showInstallBannerIfReady();
+    // Also update the install sheet native button if sheet is open
+    _updateInstallSheet();
+  });
 
-    // Already installed? (standalone display-mode or iOS home-screen PWA)
-    var isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      window.navigator.standalone === true;
-    if (isStandalone) return;
+  var INSTALLED_KEY = 'pannai:app-installed';
+  var DISMISS_KEY   = 'pannai:install-dismissed';
 
-    // Permanently installed via appinstalled event in a past session?
-    var INSTALLED_KEY = 'pannai:app-installed';
-    if (localStorage.getItem(INSTALLED_KEY) === 'true') return;
+  function _isInstalled() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.navigator.standalone === true ||
+           localStorage.getItem(INSTALLED_KEY) === 'true';
+  }
 
-    // User dismissed before? (remember for 14 days)
-    var DISMISS_KEY = 'pannai:install-dismissed';
-    var dismissed = localStorage.getItem(DISMISS_KEY);
-    if (dismissed && (Date.now() - parseInt(dismissed, 10)) < 3 * 24 * 60 * 60 * 1000) return;
+  function _isDismissedRecently() {
+    var d = localStorage.getItem(DISMISS_KEY);
+    return d && (Date.now() - parseInt(d, 10)) < 3 * 24 * 60 * 60 * 1000; // 3 days
+  }
 
-    // Detect platform for appropriate instructions
+  function _showInstallBannerIfReady() {
+    var banner  = document.getElementById('install-banner');
+    var steps   = document.getElementById('install-steps');
+    if (!banner || !steps) return;
+    if (_isInstalled() || _isDismissedRecently()) return;
+
     var ua = navigator.userAgent || '';
-    var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    var isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
     var isAndroid = /Android/.test(ua);
 
     var instructions;
@@ -141,6 +151,9 @@ document.addEventListener('DOMContentLoaded', function() {
         '<b>"Add to Home Screen"</b> தேர்ந்தெடுங்க',
         'வலதுபக்க <b>"Add"</b> button-ஐ அழுத்துங்க'
       ];
+    } else if (isAndroid && _deferredInstallPrompt) {
+      // Native prompt available — banner shows "tap to install" instead of steps
+      instructions = ['👇 கீழே உள்ள button-ஐ அழுத்தி install பண்ணுங்க'];
     } else if (isAndroid) {
       instructions = [
         'மேல வலதுபக்க <b>⋮ Menu</b>-வ அழுத்துங்க',
@@ -148,7 +161,6 @@ document.addEventListener('DOMContentLoaded', function() {
         '<b>"Install"</b> button-ஐ அழுத்துங்க'
       ];
     } else {
-      // Desktop / unknown — show both
       instructions = [
         'Browser menu-வ திறங்க (⋮ அல்லது ⬆️)',
         '<b>"Install"</b> அல்லது <b>"Add to Home Screen"</b> தேர்வு செய்யுங்க',
@@ -156,24 +168,119 @@ document.addEventListener('DOMContentLoaded', function() {
       ];
     }
 
-    steps.innerHTML = instructions.map(function(s) {
-      return '<li>' + s + '</li>';
-    }).join('');
+    steps.innerHTML = instructions.map(function(s) { return '<li>' + s + '</li>'; }).join('');
     banner.hidden = false;
+
+    // Make banner clickable on Android to fire native prompt
+    if (isAndroid && _deferredInstallPrompt) {
+      banner.style.cursor = 'pointer';
+      banner.addEventListener('click', function onBannerClick(e) {
+        if (e.target.closest('#install-close')) return; // don't trigger on X
+        _triggerNativeInstall();
+      });
+    }
+  }
+
+  function _triggerNativeInstall() {
+    if (!_deferredInstallPrompt) return;
+    _deferredInstallPrompt.prompt();
+    _deferredInstallPrompt.userChoice.then(function(result) {
+      _deferredInstallPrompt = null;
+      if (result.outcome === 'accepted') {
+        _markInstalled();
+      }
+    }).catch(function() {});
+  }
+
+  function _markInstalled() {
+    var banner = document.getElementById('install-banner');
+    if (banner) banner.hidden = true;
+    try {
+      localStorage.setItem(INSTALLED_KEY, 'true');
+      localStorage.removeItem(DISMISS_KEY);
+    } catch(_) {}
+    // Update hamburger install sheet to show "done" state
+    _updateInstallSheet();
+    // Hide the install menu item
+    var installMenuItem = document.getElementById('menu-install-btn');
+    if (installMenuItem) installMenuItem.hidden = true;
+  }
+
+  // ── Install-to-home-screen banner ──────────────────────
+  (function initInstallBanner() {
+    var banner  = document.getElementById('install-banner');
+    var closeBtn = document.getElementById('install-close');
+    if (!banner || !closeBtn) return;
+
+    // If already installed, never show
+    if (_isInstalled()) {
+      banner.hidden = true;
+      return;
+    }
+
+    // Show on iOS immediately (no beforeinstallprompt on iOS)
+    var ua = navigator.userAgent || '';
+    var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    if (isIOS) _showInstallBannerIfReady();
+    // Android: banner will show when beforeinstallprompt fires (above)
 
     closeBtn.addEventListener('click', function() {
       banner.hidden = true;
       try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch(_) {}
     });
 
-    // If browser fires 'appinstalled' — hide permanently (no expiry)
-    window.addEventListener('appinstalled', function() {
-      banner.hidden = true;
-      try {
-        localStorage.setItem(INSTALLED_KEY, 'true'); // permanent — never show again
-        localStorage.removeItem(DISMISS_KEY);         // clear any old dismiss timer
-      } catch(_) {}
+    window.addEventListener('appinstalled', _markInstalled);
+  })();
+
+  // ── Install sheet (hamburger → "App install பண்ணுங்க") ─
+  function _updateInstallSheet() {
+    var ua = navigator.userAgent || '';
+    var isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    var isAndroid = /Android/.test(ua);
+
+    var elDone          = document.getElementById('install-sheet-done');
+    var elAndroidNative = document.getElementById('install-sheet-android');
+    var elAndroidManual = document.getElementById('install-sheet-android-manual');
+    var elIOS           = document.getElementById('install-sheet-ios');
+    if (!elDone) return;
+
+    // Hide all, then show the right one
+    [elDone, elAndroidNative, elAndroidManual, elIOS].forEach(function(el) {
+      if (el) el.hidden = true;
     });
+
+    if (_isInstalled()) {
+      elDone.hidden = false;
+      var installMenuItem = document.getElementById('menu-install-btn');
+      if (installMenuItem) installMenuItem.hidden = true;
+    } else if (isAndroid && _deferredInstallPrompt) {
+      elAndroidNative.hidden = false;
+    } else if (isAndroid) {
+      elAndroidManual.hidden = false;
+    } else if (isIOS) {
+      elIOS.hidden = false;
+    } else {
+      elAndroidManual.hidden = false; // desktop fallback
+    }
+  }
+
+  // Wire up native install button inside the sheet
+  (function initInstallSheet() {
+    var nativeBtn = document.getElementById('install-sheet-native-btn');
+    if (nativeBtn) {
+      nativeBtn.addEventListener('click', function() {
+        _triggerNativeInstall();
+      });
+    }
+    // Set initial state when sheet opens
+    var installMenuItem = document.getElementById('menu-install-btn');
+    if (installMenuItem) {
+      installMenuItem.addEventListener('click', function() {
+        _updateInstallSheet();
+      });
+    }
+    // Hide menu item if already installed
+    if (_isInstalled() && installMenuItem) installMenuItem.hidden = true;
   })();
 
   // ── Hamburger drawer + sheets ──────────────────────────

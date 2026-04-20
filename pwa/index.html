@@ -80,6 +80,14 @@
         </span>
         <span class="menu-item-caret">›</span>
       </button>
+      <button class="menu-item" id="menu-install-btn" data-sheet="install" type="button">
+        <span class="menu-item-icon">📲</span>
+        <span class="menu-item-text">
+          <span class="menu-item-ta">App install பண்ணுங்க</span>
+          <span class="menu-item-en">Install App</span>
+        </span>
+        <span class="menu-item-caret">›</span>
+      </button>
     </nav>
     <footer class="menu-drawer-footer">
       <span>v1.0 · பண்ணைப்புரம் 2026</span>
@@ -231,6 +239,61 @@
           </div>
         </li>
       </ol>
+    </div>
+  </div>
+
+  <!-- ── Install sheet ─────────────────────────────────── -->
+  <div id="sheet-install" class="menu-sheet" hidden>
+    <header class="menu-sheet-header">
+      <button class="menu-sheet-back" data-close-sheet="install" aria-label="பின்னால் · Back" type="button">‹</button>
+      <span class="menu-sheet-title">📲 App install பண்ணுங்க</span>
+    </header>
+    <div class="menu-sheet-body">
+
+      <!-- Benefits card -->
+      <div class="install-benefits-card">
+        <div class="install-benefit"><span>🏠</span><span>Home screen-ல icon வரும்</span></div>
+        <div class="install-benefit"><span>📴</span><span>Offline-ல வேலை செய்யும்</span></div>
+        <div class="install-benefit"><span>⚡</span><span>வேகமா திறக்கும் (browser இல்லாம)</span></div>
+        <div class="install-benefit"><span>🔔</span><span>Browser header இல்லாம full screen</span></div>
+      </div>
+
+      <!-- Android: native install button (shown when Chrome fires beforeinstallprompt) -->
+      <div id="install-sheet-android" hidden>
+        <p class="install-sheet-note">Android-ல Chrome-ஐ பயன்படுத்துகிறீர்கள் — ஒரே click-ல install ஆகும்!</p>
+        <button id="install-sheet-native-btn" class="install-sheet-btn" type="button">
+          📲 &nbsp;Install பண்ணுங்க
+        </button>
+      </div>
+
+      <!-- iOS: step-by-step -->
+      <div id="install-sheet-ios" hidden>
+        <p class="install-sheet-note">iPhone/iPad-ல இந்த steps follow பண்ணுங்க:</p>
+        <ol class="install-sheet-steps">
+          <li>கீழ உள்ள <b>Share ⬆️</b> button-ஐ அழுத்துங்க</li>
+          <li>மேலே scroll பண்ணி <b>"Add to Home Screen"</b> தேர்ந்தெடுங்க</li>
+          <li>வலதுபக்க <b>"Add"</b> button-ஐ அழுத்துங்க</li>
+          <li>Home screen-ல பண்ணைப்புரம் icon வருகிறது ✅</li>
+        </ol>
+        <div class="install-sheet-tip">💡 Safari browser-ல மட்டும் "Add to Home Screen" வரும். Chrome-ல வராது.</div>
+      </div>
+
+      <!-- Android manual fallback (when no beforeinstallprompt) -->
+      <div id="install-sheet-android-manual" hidden>
+        <p class="install-sheet-note">Chrome-ல இந்த steps follow பண்ணுங்க:</p>
+        <ol class="install-sheet-steps">
+          <li>மேல வலதுபக்க <b>⋮ Menu</b>-வ அழுத்துங்க</li>
+          <li><b>"Install app"</b> அல்லது <b>"Add to Home screen"</b> தேர்ந்தெடுங்க</li>
+          <li><b>"Install"</b> button-ஐ அழுத்துங்க</li>
+          <li>Home screen-ல பண்ணைப்புரம் icon வருகிறது ✅</li>
+        </ol>
+      </div>
+
+      <!-- Already installed -->
+      <div id="install-sheet-done" hidden>
+        <div class="install-sheet-done-icon">✅</div>
+        <div class="install-sheet-done-msg">Already installed சார்! Home screen-ல பண்ணைப்புரம் icon இருக்கும்.</div>
+      </div>
     </div>
   </div>
 

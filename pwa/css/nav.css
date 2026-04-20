@@ -587,3 +587,75 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+/* ── Install sheet ────────────────────────────────────────── */
+.install-benefits-card {
+  background: #E8F5E9;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.install-benefit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  font-family: "Noto Sans Tamil", sans-serif;
+  font-size: 14px;
+  color: #1B5E20;
+  font-weight: 600;
+}
+.install-benefit span:first-child { font-size: 18px; }
+.install-sheet-note {
+  font-family: "Noto Sans Tamil", sans-serif;
+  font-size: 14px;
+  color: #424242;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+.install-sheet-btn {
+  width: 100%;
+  height: 54px;
+  background: #1B5E20;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-family: "Noto Sans Tamil", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(27,94,32,0.3);
+  margin-bottom: 16px;
+}
+.install-sheet-steps {
+  padding-left: 20px;
+  margin: 0 0 16px;
+}
+.install-sheet-steps li {
+  font-family: "Noto Sans Tamil", sans-serif;
+  font-size: 14px;
+  color: #424242;
+  line-height: 1.6;
+  padding: 6px 0;
+}
+.install-sheet-tip {
+  font-family: "Noto Sans Tamil", sans-serif;
+  font-size: 12px;
+  color: #FF8F00;
+  background: #FFF8E1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 8px;
+}
+.install-sheet-done-icon {
+  font-size: 56px;
+  text-align: center;
+  padding: 24px 0 12px;
+}
+.install-sheet-done-msg {
+  font-family: "Noto Sans Tamil", sans-serif;
+  font-size: 15px;
+  color: #1B5E20;
+  text-align: center;
+  line-height: 1.6;
+}
