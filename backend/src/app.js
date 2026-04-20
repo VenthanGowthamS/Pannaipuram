@@ -49,7 +49,17 @@ for (const envVar of requiredEnvVars) {
 app.use(helmet({ contentSecurityPolicy: false })); // CSP off so admin HTML loads
 
 // ── Serve Admin Panel (static — before CORS so module scripts load) ──
-app.use('/admin/v2', express.static(path.join(__dirname, '../public/admin-v2')));
+// index.html = no-cache so admins always get latest bundle references.
+// Hashed JS/CSS assets = long cache (filename changes on each build = auto-invalidation).
+app.use('/admin/v2', express.static(path.join(__dirname, '../public/admin-v2'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('index.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    } else if (filePath.includes('/assets/')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  },
+}));
 // Redirect old v1 URL and /admin shortcut to v2
 app.get('/admin/panel', (req, res) => res.redirect('/admin/v2/'));
 app.get('/admin', (req, res) => res.redirect('/admin/v2/'));

@@ -76,7 +76,7 @@ const Layout = ({ children, currentTab, onTabChange, snackbar, setSnackbar }) =>
           பண்ணைப்புரம் 🏡
         </Typography>
         <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, mt: 0.3 }}>
-          Admin Panel
+          Admin Panel · v2.1
         </Typography>
         {user?.role && (
           <Chip
