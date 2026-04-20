@@ -860,6 +860,26 @@ var Bus = (function() {
     // Auto-refresh: re-fetch all data every 10 minutes so timings stay current
     clearInterval(dataRefreshTimer);
     dataRefreshTimer = setInterval(refreshAllData, DATA_REFRESH_MS);
+
+    // Manual refresh button (top-right of bus header)
+    var refreshBtn = document.getElementById('bus-refresh-btn');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', async function() {
+        if (refreshBtn.classList.contains('is-spinning')) return;
+        refreshBtn.classList.add('is-spinning');
+        try {
+          // Force-bypass cache: re-fetch corridors + clear timings cache
+          corridors = await PannaiAPI.getBusCorridors(true);
+          timingsCache = {};
+          await prefetchAllTimings();
+          renderList();
+        } catch (_) {
+          // Silent — UI stays as-is
+        } finally {
+          setTimeout(function() { refreshBtn.classList.remove('is-spinning'); }, 600);
+        }
+      });
+    }
   }
 
   return { init: init };

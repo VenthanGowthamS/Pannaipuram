@@ -83,25 +83,34 @@ const PwaStats = ({ onSnackbar }) => {
         </Tooltip>
       </Box>
 
-      {/* Stat cards */}
+      {/* Explanation banner */}
+      <Box sx={{ mb: 2, p: 1.5, bgcolor: '#E3F2FD', borderRadius: 2, border: '1px solid #BBDEFB' }}>
+        <Typography sx={{ fontSize: 12, color: '#0D47A1' }}>
+          ℹ️ <b>Unique Users</b> = distinct devices (deduplicated by visitor_id).
+          Same person opening the app many times = <b>1 user</b>.
+          Visits = total app opens.
+        </Typography>
+      </Box>
+
+      {/* Stat cards — focused on UNIQUE USERS */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={6} sm={3}>
-          <StatCard label="Total Visitors" sub="All time" value={t.total_visitors} loading={loading} color="#1B5E20" />
+          <StatCard label="Unique Users (All time)" sub="Distinct devices ever" value={t.total_visitors} loading={loading} color="#1B5E20" />
         </Grid>
         <Grid item xs={6} sm={3}>
-          <StatCard label="Active (7 days)" sub="Visited this week" value={t.active_7d} loading={loading} color="#1565C0" />
+          <StatCard label="Unique Users (7 days)" sub="This week" value={t.active_7d} loading={loading} color="#1565C0" />
         </Grid>
         <Grid item xs={6} sm={3}>
-          <StatCard label="Active (24 hrs)" sub="Today" value={t.active_24h} loading={loading} color="#E65100" />
+          <StatCard label="Unique Users (24 hrs)" sub="Today" value={t.active_24h} loading={loading} color="#E65100" />
         </Grid>
         <Grid item xs={6} sm={3}>
-          <StatCard label="Installed" sub="Added to home screen" value={t.installed} loading={loading} color="#6A1B9A" />
+          <StatCard label="Installed as App" sub="On home screen" value={t.installed} loading={loading} color="#6A1B9A" />
         </Grid>
         <Grid item xs={6} sm={3}>
-          <StatCard label="Active (1 hr)" sub="Right now" value={t.active_1h} loading={loading} color="#00695C" />
+          <StatCard label="Unique Users (1 hr)" sub="Active right now" value={t.active_1h} loading={loading} color="#00695C" />
         </Grid>
         <Grid item xs={6} sm={3}>
-          <StatCard label="Total Visits" sub="All sessions combined" value={t.total_visits} loading={loading} color="#37474F" />
+          <StatCard label="Total Visits" sub="All app opens combined" value={t.total_visits} loading={loading} color="#37474F" />
         </Grid>
       </Grid>
 
@@ -110,15 +119,15 @@ const PwaStats = ({ onSnackbar }) => {
         <Card sx={{ mb: 3, borderRadius: 3 }}>
           <CardContent>
             <Typography sx={{ fontWeight: 700, mb: 2, fontSize: 15 }}>
-              📅 Daily Visitors — Last 30 days
+              📅 Daily Unique Users — Last 30 days
             </Typography>
             <TableContainer>
               <Table size="small">
                 <TableHead>
                   <TableRow sx={{ '& th': { fontWeight: 700, fontSize: 12, background: '#F5F5F5' } }}>
                     <TableCell>Date</TableCell>
-                    <TableCell align="center">Unique Visitors</TableCell>
-                    <TableCell align="center">Total Visits</TableCell>
+                    <TableCell align="center">Unique Users</TableCell>
+                    <TableCell align="center">Total Opens</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -142,7 +151,7 @@ const PwaStats = ({ onSnackbar }) => {
       <Card sx={{ borderRadius: 3 }}>
         <CardContent>
           <Typography sx={{ fontWeight: 700, mb: 2, fontSize: 15 }}>
-            🕐 Recent Visitors (last 20)
+            🕐 Recent Unique Users (last 20)
           </Typography>
           {loading ? (
             [...Array(5)].map((_, i) => <Skeleton key={i} height={48} sx={{ mb: 0.5 }} />)

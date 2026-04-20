@@ -1,5 +1,5 @@
 // ── Pannaipuram PWA — Service Worker ─────────────────────
-var CACHE = 'pannai-pwa-v22';
+var CACHE = 'pannai-pwa-v23';
 
 var SHELL = [
   '/pwa/',
@@ -24,7 +24,15 @@ self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE).then(function(c) { return c.addAll(SHELL); })
   );
-  self.skipWaiting();
+  // Don't force skipWaiting here — wait for client's SKIP_WAITING message
+  // so the client can coordinate the reload flow
+});
+
+// Message from page: skipWaiting so new SW activates immediately
+self.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Activate: remove old caches

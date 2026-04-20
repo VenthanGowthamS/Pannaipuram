@@ -22,9 +22,46 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (_) { /* localStorage blocked — skip */ }
   })();
 
-  // ── Service Worker ─────────────────────────────────────
+  // ── Service Worker (auto-update on installed PWAs) ─────
+  // Critical: installed iPhone/Android PWAs don't reload on their own.
+  // This flow forces updates without requiring user to reinstall/reopen:
+  //   1. On app load, check for a new SW version
+  //   2. When new SW is installed (waiting), tell it to skipWaiting
+  //   3. When the active worker changes (controllerchange), reload the page
+  //   4. Re-check for updates whenever tab becomes visible (user returns to app)
   if ('serviceWorker' in navigator) {
+    var _didReloadForUpdate = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function() {
+      if (_didReloadForUpdate) return;   // prevent double-reload loop
+      _didReloadForUpdate = true;
+      window.location.reload();
+    });
+
     navigator.serviceWorker.register('/pwa/sw.js', { scope: '/pwa/' })
+      .then(function(reg) {
+        // If a new SW is already waiting when this page loaded, activate it now
+        if (reg.waiting) { reg.waiting.postMessage({ type: 'SKIP_WAITING' }); }
+
+        // Fires whenever a new SW version is found (downloading)
+        reg.addEventListener('updatefound', function() {
+          var newSW = reg.installing;
+          if (!newSW) return;
+          newSW.addEventListener('statechange', function() {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+              // New version ready — tell it to take over, controllerchange -> reload
+              newSW.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        });
+
+        // Re-check for updates each time the app becomes visible
+        // (handles case where user keeps PWA open for days)
+        document.addEventListener('visibilitychange', function() {
+          if (document.visibilityState === 'visible') {
+            reg.update().catch(function() {});
+          }
+        });
+      })
       .catch(function(err) { console.warn('SW registration failed:', err); });
   }
 

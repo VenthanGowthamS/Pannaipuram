@@ -3,19 +3,22 @@
   padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + var(--space-lg));
 }
 
-/* Navy header card */
+/* Navy header card — padded for fixed hamburger (left) + refresh (right) */
 .bus-header {
+  position: relative;
   background: linear-gradient(135deg, #1A237E 0%, #283593 100%);
-  padding: 24px var(--space-md) 20px;
+  padding: calc(18px + env(safe-area-inset-top)) 60px 20px;
   margin-bottom: var(--space-md);
+  text-align: center;
 }
 
 .bus-header-ta {
   font-family: var(--font-tamil);
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: #ffffff;
   margin: 0 0 4px;
+  text-align: center;
 }
 
 .bus-header-en {
@@ -25,6 +28,7 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin: 0 0 10px;
+  text-align: center;
 }
 
 .bus-header-stop {
@@ -37,6 +41,32 @@
   font-family: var(--font-tamil);
   font-size: 0.8rem;
   color: #ffffff;
+}
+
+/* Bus refresh button — top-right of header, matches hamburger style */
+.bus-refresh-btn {
+  position: absolute;
+  top: calc(10px + env(safe-area-inset-top));
+  right: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  border: none;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.3s;
+  -webkit-tap-highlight-color: transparent;
+}
+.bus-refresh-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.92); }
+.bus-refresh-btn.is-spinning { animation: bus-refresh-spin 0.9s linear infinite; }
+@keyframes bus-refresh-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 /* ── Search bar ────────────────────────────────────────────── */
