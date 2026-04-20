@@ -5,6 +5,14 @@ window._dip = null; // deferred install prompt
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();          // stop Chrome's own mini-infobar
   window._dip = e;
+  // Chrome only fires this when the app is NOT installed.
+  // Clear stale flags — user may have uninstalled the PWA
+  // (localStorage survives uninstall, but Chrome re-fires this event
+  //  to signal "installable again").
+  try {
+    localStorage.removeItem('pannai:app-installed');
+    localStorage.removeItem('pannai:install-dismissed'); // show banner fresh
+  } catch(_) {}
   // If DOM is already ready, show banner immediately
   if (document.readyState !== 'loading') {
     window._showInstallBanner && window._showInstallBanner();
