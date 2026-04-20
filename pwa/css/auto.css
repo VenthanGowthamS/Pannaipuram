@@ -246,7 +246,7 @@
   flex-shrink: 0;
 }
 
-.driver-info { flex: 1; min-width: 0; }
+.driver-info { flex: 1; min-width: 0; overflow: hidden; }
 
 .driver-name-ta {
   font-family: var(--font-tamil);
@@ -254,6 +254,9 @@
   font-weight: 700;
   display: block;
   color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .driver-name-en {
   font-family: var(--font-latin);
@@ -261,6 +264,9 @@
   color: var(--color-muted);
   display: block;
   margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .driver-meta {
   font-family: var(--font-tamil);
