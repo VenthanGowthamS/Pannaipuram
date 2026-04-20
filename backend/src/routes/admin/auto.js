@@ -119,7 +119,7 @@ router.post('/drivers', requireRole('admin', 'super_admin'), async (req, res) =>
 
 // PUT /admin/auto/drivers/:id — update driver
 router.put('/drivers/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
-  const { name_tamil, name_english, phone, vehicle_type, coverage_tamil, coverage_english, schedule_tamil, is_active, display_order } = req.body;
+  const { name_tamil, name_english, phone, vehicle_type, coverage_tamil, coverage_english, schedule_tamil, is_active, phone_verified, display_order } = req.body;
   try {
     const result = await query(`
       UPDATE auto_drivers
@@ -131,9 +131,10 @@ router.put('/drivers/:id', validateIdParam, requireRole('admin', 'super_admin'),
           coverage_english= COALESCE($6, coverage_english),
           schedule_tamil  = COALESCE($7, schedule_tamil),
           is_active       = COALESCE($8, is_active),
-          display_order   = COALESCE($9, display_order)
-      WHERE id = $10 RETURNING *
-    `, [name_tamil, name_english, phone, vehicle_type, coverage_tamil, coverage_english, schedule_tamil, is_active, display_order, req.params.id]);
+          phone_verified  = COALESCE($9, phone_verified),
+          display_order   = COALESCE($10, display_order)
+      WHERE id = $11 RETURNING *
+    `, [name_tamil, name_english, phone, vehicle_type, coverage_tamil, coverage_english, schedule_tamil, is_active, phone_verified, display_order, req.params.id]);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });

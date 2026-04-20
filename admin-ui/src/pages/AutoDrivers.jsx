@@ -16,8 +16,11 @@ import {
   Typography,
   Grid,
   Skeleton,
+  Switch,
+  FormControlLabel,
+  Tooltip,
 } from '@mui/material';
-import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon, CheckCircle as CheckCircleIcon, HourglassEmpty as PendingIcon } from '@mui/icons-material';
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
 
@@ -31,6 +34,7 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
     vehicle_type: 'auto',
     coverage_tamil: '',
     schedule_tamil: '',
+    phone_verified: true,
   });
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
@@ -88,15 +92,20 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
     loadWaConfig();
   }, []);
 
+  const emptyForm = {
+    name_tamil: '',
+    name_english: '',
+    phone: '',
+    vehicle_type: 'auto',
+    coverage_tamil: '',
+    schedule_tamil: '',
+    phone_verified: true,
+  };
+
   const handleAddDriver = async (e) => {
     e.preventDefault();
-    if (
-      !form.name_tamil ||
-      !form.name_english ||
-      !form.phone ||
-      !form.vehicle_type
-    ) {
-      onSnackbar('Please fill in all required fields', 'warning');
+    if (!form.name_tamil || !form.phone || !form.vehicle_type) {
+      onSnackbar('Name (Tamil) and phone are required', 'warning');
       return;
     }
 
@@ -109,14 +118,7 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
         await api.addAutoDriver(form);
         onSnackbar('Driver added successfully', 'success');
       }
-      setForm({
-        name_tamil: '',
-        name_english: '',
-        phone: '',
-        vehicle_type: 'auto',
-        coverage_tamil: '',
-        schedule_tamil: '',
-      });
+      setForm(emptyForm);
       loadDrivers();
     } catch (error) {
       onSnackbar(
@@ -126,28 +128,36 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
     }
   };
 
+  // Quick toggle phone_verified without opening edit form
+  const handleToggleVerified = async (driver) => {
+    try {
+      await api.updateAutoDriver(driver.id, { phone_verified: !driver.phone_verified });
+      onSnackbar(
+        driver.phone_verified ? 'Phone marked as pending' : 'Phone marked as verified ✅',
+        'success'
+      );
+      loadDrivers();
+    } catch {
+      onSnackbar('Failed to update phone status', 'error');
+    }
+  };
+
   const handleEdit = (driver) => {
     setEditingId(driver.id);
     setForm({
       name_tamil: driver.name_tamil,
-      name_english: driver.name_english,
+      name_english: driver.name_english || '',
       phone: driver.phone,
       vehicle_type: driver.vehicle_type,
       coverage_tamil: driver.coverage_tamil || '',
       schedule_tamil: driver.schedule_tamil || '',
+      phone_verified: driver.phone_verified !== false,
     });
   };
 
   const handleCancel = () => {
     setEditingId(null);
-    setForm({
-      name_tamil: '',
-      name_english: '',
-      phone: '',
-      vehicle_type: 'auto',
-      coverage_tamil: '',
-      schedule_tamil: '',
-    });
+    setForm(emptyForm);
   };
 
   const handleDelete = async () => {
@@ -309,6 +319,29 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
               />
             </Grid>
             <Grid item xs={12}>
+              <Box sx={{ p: 1.5, border: '1px solid #e0e0e0', borderRadius: 2, bgcolor: form.phone_verified ? '#f1f8e9' : '#fff8e1' }}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={form.phone_verified}
+                      onChange={(e) => setForm({ ...form, phone_verified: e.target.checked })}
+                      color="success"
+                    />
+                  }
+                  label={
+                    <Box>
+                      <Typography variant="body2" fontWeight={600}>
+                        {form.phone_verified ? '✅ Phone Verified — call button enabled in app' : '⏳ Phone Pending — call button disabled in app (shows "விரைவில்")'}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Uncheck if the phone number is a placeholder — driver will appear in list but can't be called until verified
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </Box>
+            </Grid>
+            <Grid item xs={12}>
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button
                   type="submit"
@@ -352,6 +385,7 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
                   <TableCell>Name (Tamil)</TableCell>
                   <TableCell>Name (English)</TableCell>
                   <TableCell>Phone</TableCell>
+                  <TableCell>Call Button</TableCell>
                   <TableCell>Coverage</TableCell>
                   <TableCell>Schedule</TableCell>
                   <TableCell>Actions</TableCell>
@@ -362,8 +396,9 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
                   const typeInfo = vehicleTypes.find(
                     (vt) => vt.id === driver.vehicle_type
                   );
+                  const verified = driver.phone_verified !== false;
                   return (
-                    <TableRow key={driver.id}>
+                    <TableRow key={driver.id} sx={{ opacity: driver.is_active === false ? 0.5 : 1 }}>
                       <TableCell>
                         <Chip
                           label={typeInfo?.label || driver.vehicle_type}
@@ -373,7 +408,28 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
                       </TableCell>
                       <TableCell>{driver.name_tamil}</TableCell>
                       <TableCell>{driver.name_english}</TableCell>
-                      <TableCell>{driver.phone}</TableCell>
+                      <TableCell sx={{ fontFamily: 'monospace' }}>{driver.phone}</TableCell>
+                      <TableCell>
+                        {canEdit ? (
+                          <Tooltip title={verified ? 'Click to mark as Pending (disables call button in app)' : 'Click to mark as Verified (enables call button in app)'}>
+                            <Chip
+                              icon={verified ? <CheckCircleIcon /> : <PendingIcon />}
+                              label={verified ? 'Verified' : 'Pending'}
+                              color={verified ? 'success' : 'warning'}
+                              size="small"
+                              onClick={() => handleToggleVerified(driver)}
+                              sx={{ cursor: 'pointer' }}
+                            />
+                          </Tooltip>
+                        ) : (
+                          <Chip
+                            icon={verified ? <CheckCircleIcon /> : <PendingIcon />}
+                            label={verified ? 'Verified' : 'Pending'}
+                            color={verified ? 'success' : 'warning'}
+                            size="small"
+                          />
+                        )}
+                      </TableCell>
                       <TableCell>{driver.coverage_tamil}</TableCell>
                       <TableCell>{driver.schedule_tamil}</TableCell>
                       <TableCell>

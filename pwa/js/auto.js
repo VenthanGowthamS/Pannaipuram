@@ -9,7 +9,8 @@ var Auto = (function() {
   function renderCard(driver) {
     var icon = vehicleIcon(driver.vehicle_type);
     var hasPhone = driver.phone && driver.phone.replace(/\D/g, '').length >= 10;
-    var callEl = hasPhone
+    var isVerified = driver.phone_verified !== false; // true by default if field absent
+    var callEl = (hasPhone && isVerified)
       ? '<a href="tel:' + driver.phone + '" class="call-btn">📞 அழைக்க</a>'
       : '<span class="call-btn call-btn-pending">விரைவில்</span>';
 

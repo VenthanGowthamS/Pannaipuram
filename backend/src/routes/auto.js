@@ -28,7 +28,7 @@ router.get('/contact', async (req, res) => {
 router.get('/drivers', async (req, res) => {
   try {
     const result = await query(`
-      SELECT id, name_tamil, name_english, phone, vehicle_type,
+      SELECT id, name_tamil, name_english, phone, phone_verified, vehicle_type,
              coverage_tamil, coverage_english, schedule_tamil, is_active
       FROM auto_drivers
       WHERE is_active = TRUE
