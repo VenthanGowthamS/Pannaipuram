@@ -318,8 +318,8 @@
       <!-- Navy header -->
       <div class="bus-header">
         <button id="bus-refresh-btn" class="bus-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
-        <p class="bus-header-ta">எங்கிட்டு போகணும்?</p>
-        <p class="bus-header-en">Where do you want to go?</p>
+        <p class="bus-header-ta">எங்க போறீங்க?</p>
+        <p class="bus-header-en">எங்க போறீங்க? · Where are you going?</p>
         <div class="bus-header-stop">
           <span>📍</span>
           <span>பண்ணைப்புரம் நிறுத்தம்</span>
@@ -352,9 +352,9 @@
         <div class="auto-hero-icon-ring">
           <span class="auto-hero-emoji">🛺</span>
         </div>
-        <p class="auto-hero-ta">சார், ஆட்டோ வேணுமா?</p>
-        <p class="auto-hero-en">Auto &amp; Van Transport</p>
-        <p class="auto-hero-sub">வண்டி வேணும்னா கீழ இருக்காங்க — அழைங்க!</p>
+        <p class="auto-hero-ta">ஆட்டோ / வேன் வேணுமா?</p>
+        <p class="auto-hero-en">ஆட்டோ &amp; வேன் போக்குவரத்து</p>
+        <p class="auto-hero-sub">வண்டி தேவைனா கீழே இருக்கும் நபர்களை தொடர்பு கொள்ளலாம்</p>
         <div class="auto-hero-badges">
           <span class="auto-hero-badge">🛺 ஆட்டோ</span>
           <span class="auto-hero-badge">🚐 வேன்</span>
@@ -378,35 +378,40 @@
         </div>
       </div>
 
-      <!-- Register as driver — contact form (no personal numbers exposed) -->
+      <!-- Register as driver -->
       <div class="register-card">
-        <div class="register-emoji">📋</div>
-        <span class="register-label-ta">சார், உங்கள் வண்டி சேர்க்கணுமா?</span>
-        <span class="register-label-en">Register your auto / van / car</span>
+        <div class="register-emoji">🚗</div>
+        <span class="register-label-ta">உங்க வண்டியையும் சேர்க்கணுமா?</span>
+        <span class="register-label-en">உங்கள் ஆட்டோ / வேன் / கார் விவரங்களை பதிவு செய்யுங்கள்</span>
 
         <form id="auto-contact-form" class="auto-form" novalidate>
           <div class="auto-form-field">
-            <label class="auto-form-label" for="acf-name">உங்கள் பெயர் <span class="auto-form-label-en">Your name</span></label>
-            <input id="acf-name" class="auto-form-input" type="text" placeholder="பெயர் / Name" required maxlength="80" autocomplete="name">
+            <label class="auto-form-label" for="acf-name">உங்கள் பெயர்</label>
+            <input id="acf-name" class="auto-form-input" type="text" placeholder="பெயர்" required maxlength="80" autocomplete="name">
           </div>
           <div class="auto-form-field">
-            <label class="auto-form-label" for="acf-vehicle">வண்டி வகை <span class="auto-form-label-en">Vehicle type</span></label>
+            <label class="auto-form-label" for="acf-phone">தொலைபேசி எண் <span class="auto-form-required">*</span></label>
+            <input id="acf-phone" class="auto-form-input" type="tel" placeholder="உங்கள் மொபைல் எண்ணை உள்ளிடுங்கள்" required maxlength="15" autocomplete="tel" inputmode="tel">
+            <p id="acf-phone-err" class="auto-form-field-err" hidden></p>
+          </div>
+          <div class="auto-form-field">
+            <label class="auto-form-label" for="acf-vehicle">வண்டி வகை</label>
             <select id="acf-vehicle" class="auto-form-input auto-form-select">
-              <option value="ஆட்டோ">🛺 ஆட்டோ (Auto)</option>
-              <option value="வேன்">🚐 வேன் (Van)</option>
-              <option value="கார்">🚕 கார் (Car)</option>
+              <option value="ஆட்டோ">🛺 ஆட்டோ</option>
+              <option value="வேன்">🚐 வேன்</option>
+              <option value="கார்">🚕 கார்</option>
             </select>
           </div>
           <div class="auto-form-field">
-            <label class="auto-form-label" for="acf-area">செல்லும் பகுதி <span class="auto-form-label-en">Coverage area</span></label>
+            <label class="auto-form-label" for="acf-area">செல்லும் பகுதி</label>
             <input id="acf-area" class="auto-form-input" type="text" placeholder="எ.கா: தேவாரம், தேனி" maxlength="120">
           </div>
           <div class="auto-form-field">
-            <label class="auto-form-label" for="acf-msg">கூடுதல் தகவல் <span class="auto-form-label-en">Additional info (optional)</span></label>
-            <textarea id="acf-msg" class="auto-form-input auto-form-textarea" placeholder="உங்கள் அனுபவம், நேரம், கட்டணம்..." rows="3" maxlength="400"></textarea>
+            <label class="auto-form-label" for="acf-msg">கூடுதல் தகவல் <span class="auto-form-optional">(விருப்பம்)</span></label>
+            <textarea id="acf-msg" class="auto-form-input auto-form-textarea" placeholder="நேரம், கட்டணம், அனுபவம்..." rows="3" maxlength="400"></textarea>
           </div>
           <button type="submit" class="auto-form-submit" id="auto-form-btn">
-            <span id="auto-form-btn-text">📩 Admin-கு அனுப்பவும்</span>
+            <span id="auto-form-btn-text">📩 விவரங்களை அனுப்புங்கள்</span>
           </button>
           <p id="auto-form-result" class="auto-form-result" hidden></p>
         </form>

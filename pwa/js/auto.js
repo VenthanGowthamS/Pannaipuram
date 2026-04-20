@@ -98,27 +98,66 @@ var Auto = (function() {
 
   // ── Registration contact form ──────────────────────────────
   function initContactForm() {
-    var form   = document.getElementById('auto-contact-form');
-    var btn    = document.getElementById('auto-form-btn');
-    var btnTxt = document.getElementById('auto-form-btn-text');
-    var result = document.getElementById('auto-form-result');
+    var form     = document.getElementById('auto-contact-form');
+    var btn      = document.getElementById('auto-form-btn');
+    var btnTxt   = document.getElementById('auto-form-btn-text');
+    var result   = document.getElementById('auto-form-result');
+    var phoneErr = document.getElementById('acf-phone-err');
     if (!form) return;
+
+    // Phone validation helper
+    function validatePhone(val) {
+      var digits = val.replace(/\D/g, '');
+      return digits.length >= 10 && /^[6-9]/.test(digits);
+    }
+
+    function clearPhoneErr() {
+      if (phoneErr) { phoneErr.hidden = true; phoneErr.textContent = ''; }
+      var phoneInput = document.getElementById('acf-phone');
+      if (phoneInput) phoneInput.classList.remove('auto-form-input-err');
+    }
+
+    function showPhoneErr(msg) {
+      if (phoneErr) { phoneErr.textContent = msg; phoneErr.hidden = false; }
+      var phoneInput = document.getElementById('acf-phone');
+      if (phoneInput) {
+        phoneInput.classList.add('auto-form-input-err');
+        phoneInput.focus();
+      }
+    }
+
+    // Clear inline error as user types
+    var phoneInput = document.getElementById('acf-phone');
+    if (phoneInput) phoneInput.addEventListener('input', clearPhoneErr);
 
     form.addEventListener('submit', async function(ev) {
       ev.preventDefault();
+      clearPhoneErr();
+
       var name    = (document.getElementById('acf-name').value || '').trim();
+      var phone   = (document.getElementById('acf-phone').value || '').trim();
       var vehicle = (document.getElementById('acf-vehicle').value || '').trim();
       var area    = (document.getElementById('acf-area').value || '').trim();
       var extra   = (document.getElementById('acf-msg').value || '').trim();
 
+      // Phone is required
+      if (!phone) {
+        showPhoneErr('தயவுசெய்து உங்கள் தொலைபேசி எண்ணை உள்ளிடுங்கள்.');
+        return;
+      }
+      if (!validatePhone(phone)) {
+        showPhoneErr('சரியான தொலைபேசி எண்ணை உள்ளிடுங்கள்.');
+        return;
+      }
       if (!name) {
-        showResult('❌ பெயர் கொடுங்க சார்', false);
+        showResult('பெயரை கொடுங்கள்', false);
         return;
       }
 
       var message =
-        '[ஆட்டோ பதிவு — Auto Register]\n' +
+        '[ஆட்டோ பதிவு]\n' +
         'பெயர்: ' + name + '\n' +
+        'தொலைபேசி: ' + phone + '\n' +
         'வண்டி: ' + vehicle + '\n' +
         (area  ? 'பகுதி: ' + area + '\n'  : '') +
         (extra ? 'குறிப்பு: ' + extra     : '');
@@ -131,20 +170,20 @@ var Auto = (function() {
         var resp = await fetch('/api/feedback', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: message, name_or_contact: name }),
+          body: JSON.stringify({ message: message, name_or_contact: name + ' · ' + phone }),
         });
         var json = await resp.json();
         if (json.success) {
-          showResult('✅ Admin-கு சேர்ந்துவிட்டது! விரைவில் தொடர்பு கொள்வோம்.', true);
+          showResult('✅ பதிவு கிடைச்சது! விரைவில் தொடர்பு கொள்வோம்.', true);
           form.reset();
         } else {
-          showResult('❌ Error: ' + (json.error || 'Try again'), false);
+          showResult('அனுப்ப முடியலை — மீண்டும் முயற்சிக்கவும்', false);
         }
       } catch(e) {
-        showResult('❌ Network error — check your connection and retry', false);
+        showResult('இணைப்பு இல்லை — கொஞ்சம் கழிச்சு try பண்ணுங்க', false);
       } finally {
         btn.disabled = false;
-        btnTxt.textContent = '📩 Admin-கு அனுப்பவும்';
+        btnTxt.textContent = '📩 விவரங்களை அனுப்புங்கள்';
       }
     });
 

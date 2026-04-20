@@ -24,9 +24,9 @@ var Bus = (function() {
   };
 
   var GROUPS = [
-    { key: 'local', emoji: '🏠', ta: 'உள்ளூர் பயணம்',       en: 'Local Routes',      hint: 'தேனி, போடி, கம்பம், உத்தமபாளையம், தேவாரம், சின்னமனூர், பெரியகுளம், சுருளி, குமுளி, கூடலூர்' },
-    { key: 'long',  emoji: '🗺️', ta: 'தொலைதூர பயணம்',     en: 'Long Distance',     hint: 'மதுரை, கோயம்புத்தூர், திருச்சி, பழனி, திண்டுக்கல், மேட்டுப்பாளையம்' },
-    { key: 'night', emoji: '🌃', ta: 'சென்னை இரவு பேருந்து', en: 'Chennai Overnight', hint: 'இரவு பஸ் சேவை — Subam, Geetham, KPN' },
+    { key: 'local', emoji: '🏠', ta: 'உள்ளூர் வழித்தடங்கள்',      en: 'Local Routes',      hint: 'தேனி, போடி, கம்பம், உத்தமபாளையம், தேவாரம், சின்னமனூர், பெரியகுளம், சுருளி, குமுளி, கூடலூர்' },
+    { key: 'long',  emoji: '🗺️', ta: 'வெளியூர் வழித்தடங்கள்',    en: 'Long Distance',     hint: 'மதுரை, கோயம்புத்தூர், திருச்சி, பழனி, திண்டுக்கல், மேட்டுப்பாளையம்' },
+    { key: 'night', emoji: '🌃', ta: 'சென்னை நைட் சர்வீஸ்',      en: 'Chennai Night Service', hint: 'சென்னைக்குப் போகும் நைட் பஸ்கள் — Subam, Geetham, KPN' },
   ];
 
   var corridors = [];

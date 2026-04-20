@@ -426,3 +426,18 @@
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* Phone field validation */
+.auto-form-required { color: #c62828; margin-left: 2px; }
+.auto-form-optional { color: #9E9E9E; font-size: 0.85em; }
+.auto-form-field-err {
+  color: #c62828;
+  font-family: var(--font-tamil, "Noto Sans Tamil", sans-serif);
+  font-size: 13px;
+  margin: 4px 0 0;
+  padding: 0;
+}
+.auto-form-input-err {
+  border-color: #c62828 !important;
+  box-shadow: 0 0 0 2px rgba(198,40,40,0.15) !important;
+}
