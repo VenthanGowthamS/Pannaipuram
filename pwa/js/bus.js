@@ -33,6 +33,7 @@ var Bus = (function() {
   var timingsCache = {};    // id → BusTiming[]
   var expandedId = null;
   var expandedFull = {};    // id → true when "View all" clicked
+  var altsOpen = {};        // corridorKey → true when "alt routes" expanded
   var openGroups = { local: false, long: false, night: false };
   var badgeTimer = null;
   var freshnessTimer = null;
@@ -157,16 +158,14 @@ var Bus = (function() {
   }
 
   // ── Single route card HTML ─────────────────────────────────────
+  // Primary info only: destination + next bus time + countdown.
+  // Route chain (via) + bus count moved to expanded view.
   function renderCardHtml(c) {
     var meta = getMeta(c.name_english);
     var timings = timingsCache[c.id] !== undefined ? timingsCache[c.id] : null;
     var noMore = !meta.isFrequent && timings && timings.length > 0 && !computeNextBus(timings);
     var railColor = noMore ? '#E0E0E0' : meta.color;
     var nameClass = noMore ? 'route-name-ta dimmed' : 'route-name-ta';
-
-    var busCount = meta.isFrequent ? 'Frequent service'
-      : timings && timings.length ? timings.length + ' buses/day'
-      : '';
 
     var displayNameTamil = meta.nameTamil || c.name_tamil;
     return '<div class="route-card" data-id="' + c.id + '" role="button">' +
@@ -175,8 +174,6 @@ var Bus = (function() {
       '<div class="route-info">' +
         '<span class="' + nameClass + '">' + displayNameTamil + '</span>' +
         '<span class="route-name-en">' + c.name_english + '</span>' +
-        (meta.routeDesc ? '<span class="route-desc">' + meta.routeDesc + '</span>' : '') +
-        (busCount ? '<span class="route-buses">🚌 ' + busCount + '</span>' : '') +
       '</div>' +
       renderBadge(meta, timings, c.id) +
     '</div>' +
@@ -589,12 +586,16 @@ var Bus = (function() {
 
   // APK-style "⏱ அடுத்த பேருந்து" header card
   function nextBusHeaderHtml(next, meta) {
+    var viaLine = meta.routeDesc
+      ? '<div class="tt-next-via"><span class="tt-next-via-label">வழி:</span> ' + meta.routeDesc + '</div>'
+      : '';
     if (!next) {
       return '<div class="tt-next-header tt-next-done">' +
         '<div class="tt-next-icon">🌙</div>' +
         '<div class="tt-next-body">' +
           '<div class="tt-next-title">இன்று பேருந்து இல்லை</div>' +
           '<div class="tt-next-sub">No more buses today · நாளை காலை வாங்க</div>' +
+          viaLine +
         '</div>' +
       '</div>';
     }
@@ -606,10 +607,31 @@ var Bus = (function() {
         '<div class="tt-next-title">அடுத்த பேருந்து</div>' +
         '<div class="tt-next-sub">' + (meta.boardingNote || 'Next bus · Pannaipuram stop') + '</div>' +
         '<div class="tt-next-time" style="color:' + meta.color + '">' + fmtPeriod(next.departs_at) + '</div>' +
+        viaLine +
       '</div>' +
       '<div class="tt-next-pill" style="background:' + meta.color + '">' +
         '<div class="tt-next-mins">' + minsLabel(mins) + '</div>' +
       '</div>' +
+    '</div>';
+  }
+
+  // Collapsible alt-routes section — hidden by default, shown on tap
+  function renderAltsSectionHtml(corridorKey) {
+    var alts = ROUTE_ALTS[corridorKey] || [];
+    if (!alts.length) return '';
+    var isOpen = !!altsOpen[corridorKey];
+    var bodyHtml = isOpen
+      ? '<div class="tt-alts-body">' + alts.map(altSuggestionHtml).join('') + '</div>'
+      : '';
+    return '<div class="tt-alts ' + (isOpen ? 'is-open' : '') + '">' +
+      '<button class="tt-alts-toggle" data-toggle-alts="' + corridorKey + '" type="button">' +
+        '<span class="tt-alts-icon">🔀</span>' +
+        '<span class="tt-alts-label">' +
+          (isOpen ? 'மாற்று வழி மூடு' : 'வேற பஸ் வழியா போகலாமா? (' + alts.length + ')') +
+        '</span>' +
+        '<span class="tt-alts-caret">' + (isOpen ? '▾' : '▸') + '</span>' +
+      '</button>' +
+      bodyHtml +
     '</div>';
   }
 
@@ -706,7 +728,7 @@ var Bus = (function() {
     if (mofCount)  stats.push('🚌 ' + mofCount  + ' மொஃபசல்');
     if (privCount) stats.push('🚍 ' + privCount + ' தனியார்');
 
-    // Rows with gap bands + alternative suggestions
+    // Rows with gap bands only — alt suggestions moved to collapsible section at bottom
     var corridorKey = c ? (c.name_english || '').toLowerCase() : '';
     var rowsHtml = '';
     var prevMin = cur;
@@ -715,9 +737,6 @@ var Bus = (function() {
         var gap = t.totalMins - prevMin;
         if (gap >= GAP_THRESHOLD) {
           rowsHtml += gapBandHtml(gap);
-          // Append alt route suggestions during the gap
-          var alts = getAltSuggestions(corridorKey, t.totalMins);
-          alts.forEach(function(alt) { rowsHtml += altSuggestionHtml(alt); });
         }
         prevMin = t.totalMins;
       }
@@ -732,13 +751,25 @@ var Bus = (function() {
       nextBusHeaderHtml(next, meta) +
       '<div class="tt-stats">' + stats.join('  ·  ') + '</div>' +
       '<div class="tt-list">' + rowsHtml + '</div>' +
-      '<button class="tt-toggle" data-toggle-id="' + id + '" style="color:' + meta.color + '">' + toggleLabel + '</button>';
+      '<button class="tt-toggle" data-toggle-id="' + id + '" style="color:' + meta.color + '">' + toggleLabel + '</button>' +
+      renderAltsSectionHtml(corridorKey);
 
     var toggleBtn = el.querySelector('.tt-toggle');
     if (toggleBtn) {
       toggleBtn.addEventListener('click', function(ev) {
         ev.stopPropagation();
         expandedFull[id] = !expandedFull[id];
+        renderTimetable(id);
+      });
+    }
+
+    // Alt-routes toggle — progressive disclosure
+    var altsBtn = el.querySelector('.tt-alts-toggle');
+    if (altsBtn) {
+      altsBtn.addEventListener('click', function(ev) {
+        ev.stopPropagation();
+        var key = altsBtn.dataset.toggleAlts;
+        altsOpen[key] = !altsOpen[key];
         renderTimetable(id);
       });
     }

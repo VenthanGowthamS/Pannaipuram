@@ -384,7 +384,7 @@
   overflow: hidden;
   cursor: pointer;
   transition: box-shadow var(--trans-fast), transform var(--trans-fast), border-radius var(--trans-fast), margin-bottom var(--trans-fast);
-  min-height: 74px;
+  min-height: 78px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
@@ -422,18 +422,21 @@
 .route-info {
   flex: 1;
   min-width: 0;
-  padding: 14px 0;
+  padding: 16px 0;
 }
 
+/* Destination name — the PRIMARY info, largest text on the card */
 .route-name-ta {
   display: block;
   font-family: var(--font-tamil);
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.35rem;
+  font-weight: 800;
   color: #1A1A1A;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.01em;
 }
 
 .route-name-ta.dimmed { color: #BDBDBD; }
@@ -441,28 +444,12 @@
 .route-name-en {
   display: block;
   font-family: var(--font-latin);
-  font-size: var(--size-sub);
+  font-size: 0.78rem;
+  font-weight: 500;
   color: var(--color-muted);
-  margin-top: 1px;
-}
-
-.route-desc {
-  display: block;
-  font-family: var(--font-tamil);
-  font-size: 0.82rem;
-  line-height: 1.4;
-  color: #616161;
-  margin-top: 3px;
-  word-break: break-word;
-  white-space: normal;
-}
-
-.route-buses {
-  display: block;
-  font-family: var(--font-latin);
-  font-size: 0.72rem;
-  color: #616161; /* was #BDBDBD — failed contrast */
-  margin-top: 3px;
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 /* Right-side badges */
@@ -486,24 +473,26 @@
 .badge-next {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 5px;
+  align-items: flex-end;
+  gap: 6px;
 }
 .badge-next-time {
   font-family: var(--font-tamil);
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
   line-height: 1;
   white-space: nowrap;
+  letter-spacing: -0.01em;
 }
 .badge-next-pill {
   font-family: var(--font-tamil);
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #ffffff;
-  padding: 3px 7px;
-  border-radius: 10px;
+  padding: 4px 10px;
+  border-radius: 12px;
   white-space: nowrap;
+  letter-spacing: 0;
 }
 
 .badge-done {
@@ -601,6 +590,69 @@
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
+}
+
+/* Via line — compact route chain, subtle, under the time */
+.tt-next-via {
+  font-family: var(--font-tamil);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #555;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(0,0,0,0.10);
+  word-break: break-word;
+  white-space: normal;
+}
+.tt-next-via-label {
+  font-weight: 700;
+  color: #333;
+  margin-right: 4px;
+}
+
+/* Collapsible "alternate routes" section — progressive disclosure */
+.tt-alts {
+  margin: 0 12px 12px;
+  border-top: 1px solid #F0F0F0;
+}
+.tt-alts-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 12px 14px;
+  background: #FAFAFA;
+  border: 1px solid #EEEEEE;
+  border-radius: 12px;
+  font-family: var(--font-tamil);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #333;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--trans-fast);
+}
+.tt-alts-toggle:active { background: #F0F0F0; }
+.tt-alts-icon { font-size: 1.1rem; line-height: 1; }
+.tt-alts-label { flex: 1; }
+.tt-alts-caret {
+  color: #888;
+  font-size: 0.95rem;
+  transition: transform var(--trans-fast);
+}
+.tt-alts.is-open .tt-alts-toggle {
+  border-radius: 12px 12px 0 0;
+  background: #F5F5F5;
+  border-bottom-color: transparent;
+}
+.tt-alts-body {
+  border: 1px solid #EEEEEE;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  padding: 4px 2px 2px;
+  background: #FAFAFA;
+  animation: tt-open 180ms ease-out;
 }
 
 /* Summary stats above timetable */
