@@ -444,18 +444,24 @@ var Bus = (function() {
   // Returns { cls, icon, label, sub }
   // For private: show operator name only — the 🚍 icon communicates "private".
   // For Town/Mofussil: bilingual label.
+  // Clean operator name — remove trailing "Private Bus"/"Private" suffix
+  function cleanOperator(op) {
+    return (op || '').replace(/\s*(Private\s*Bus|Private)$/i, '').trim();
+  }
+
   function busTypeMeta(t) {
-    var op = (t.operator_name || '').trim();
-    var opLower = op.toLowerCase();
+    var op = cleanOperator(t.operator_name);
+    var opLower = (t.operator_name || '').toLowerCase();
     if (t.bus_type === 'private' || opLower.indexOf('private') !== -1) {
-      // Clean trailing "Private Bus" or "Private" from operator name
-      var cleaned = op.replace(/\s*(Private\s*Bus|Private)$/i, '').trim();
-      // Show operator name + Tamil 'தனியார்' sub so Tamil readers recognise the category
-      return { cls: 'private', icon: '🚍', label: cleaned || 'தனியார்', sub: cleaned ? 'தனியார்' : '' };
+      return { cls: 'private', icon: '🚍', label: op || 'தனியார்', sub: op ? 'தனியார் · Private' : 'Private' };
     }
-    if (t.bus_type === 'express')  return { cls: 'express',  icon: '🚌', label: 'மொஃபசல்', sub: 'Mofussil' };
-    if (t.bus_type === 'ordinary') return { cls: 'ordinary', icon: '🚐', label: 'டவுன் பஸ்', sub: 'Town Bus' };
-    return { cls: 'ordinary', icon: '🚌', label: '', sub: '' };
+    if (t.bus_type === 'express') {
+      return { cls: 'express', icon: '🚌', label: op || 'மொஃபசல்', sub: op ? 'மொஃபசல் · Mofussil' : 'Mofussil' };
+    }
+    if (t.bus_type === 'ordinary') {
+      return { cls: 'ordinary', icon: '🚐', label: op || 'டவுன் பஸ்', sub: op ? 'டவுன் பஸ் · Town Bus' : 'Town Bus' };
+    }
+    return { cls: 'ordinary', icon: '🚌', label: op || '', sub: '' };
   }
 
   // ── Route connection suggestions ───────────────────────────────
@@ -732,10 +738,11 @@ var Bus = (function() {
     var corridorKey = c ? (c.name_english || '').toLowerCase() : '';
     var rowsHtml = '';
     var prevMin = cur;
+    var isNight = meta.group === 'night';
     focused.forEach(function(t) {
       if (t.totalMins > cur) {
         var gap = t.totalMins - prevMin;
-        if (gap >= GAP_THRESHOLD) {
+        if (!isNight && gap >= GAP_THRESHOLD) {
           rowsHtml += gapBandHtml(gap);
         }
         prevMin = t.totalMins;
