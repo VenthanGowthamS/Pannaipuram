@@ -1,3 +1,16 @@
+// ── Install wall: show full-screen install UI on ?install=1 ─
+// This is used for the WhatsApp share link. The page loads showing
+// ONLY a giant "Install" button — one tap fires the native prompt.
+// Chrome still needs one user gesture before calling .prompt(), but
+// the wall IS that gesture — user taps the wall button → installed.
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('install') !== '1') return;
+  // Show wall immediately (before DOMContentLoaded) by inlining a style.
+  // Actual element interaction handled after DOMContentLoaded below.
+  window._installWallRequested = true;
+})();
+
 // ── Capture beforeinstallprompt BEFORE DOMContentLoaded ────
 // Chrome fires this early — if we wait for DOMContentLoaded we miss it.
 // Store on window._dip so the install logic inside DOMContentLoaded can use it.
@@ -449,6 +462,66 @@ document.addEventListener('DOMContentLoaded', function() {
       result.className   = 'feedback-result ' + (ok ? 'ok' : 'err');
       result.hidden      = false;
     }
+  })();
+
+  // ── Install wall (Android one-tap install via ?install=1 link) ──
+  (function initInstallWall() {
+    var wall = document.getElementById('install-wall');
+    if (!wall) return;
+    var ua = navigator.userAgent || '';
+    var isAndroid = /Android/.test(ua);
+
+    // Only show on Android + not already installed
+    if (!window._installWallRequested || !isAndroid || _isInstalled()) return;
+
+    wall.hidden = false;
+
+    var installBtn = document.getElementById('iw-install-btn');
+    var skipBtn    = document.getElementById('iw-skip-btn');
+
+    function closeWall() {
+      wall.hidden = true;
+      // Clean URL so sharing from inside the app doesn't re-trigger
+      try { history.replaceState(null, '', '/pwa/'); } catch(_) {}
+    }
+
+    // If prompt already captured (Chrome fired early), wire it immediately
+    function bindInstall() {
+      if (!window._dip) return;
+      installBtn.addEventListener('click', function() {
+        window._dip.prompt();
+        window._dip.userChoice.then(function(r) {
+          window._dip = null;
+          if (r.outcome === 'accepted') _markInstalled();
+          closeWall();
+        }).catch(closeWall);
+      });
+    }
+    bindInstall();
+
+    // If prompt hasn't fired yet, wait for it (Chrome engagement threshold)
+    var _origDip = null;
+    var _dipWatcher = setInterval(function() {
+      if (window._dip && window._dip !== _origDip) {
+        _origDip = window._dip;
+        clearInterval(_dipWatcher);
+        bindInstall();
+      }
+    }, 200);
+
+    // Fallback: if no prompt after 4s (Samsung Browser, Firefox, etc.)
+    // show "tap ⋮ then Install" instructions instead of the button
+    setTimeout(function() {
+      if (!window._dip) {
+        clearInterval(_dipWatcher);
+        if (installBtn) {
+          installBtn.textContent = '⋮ Menu → "Install app"-ஐ அழுத்துங்க';
+          installBtn.style.fontSize = '1rem';
+        }
+      }
+    }, 4000);
+
+    if (skipBtn) skipBtn.addEventListener('click', closeWall);
   })();
 
   // ── Init sections ──────────────────────────────────────

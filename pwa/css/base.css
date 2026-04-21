@@ -234,6 +234,100 @@ main {
 #install-steps:has(.install-native-btn) { list-style: none; padding-left: 0; }
 #install-steps:has(.install-native-btn) li { list-style: none; }
 
+/* ── Install wall overlay ─────────────────────────────────── */
+#install-wall {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: linear-gradient(160deg, #1A237E 0%, #283593 40%, #0D47A1 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+#install-wall[hidden] { display: none !important; }
+
+.iw-card {
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  color: #fff;
+}
+.iw-icon {
+  font-size: 64px;
+  margin-bottom: 12px;
+  line-height: 1;
+}
+.iw-title-ta {
+  font-family: var(--font-tamil);
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+}
+.iw-title-en {
+  font-family: var(--font-tamil);
+  font-size: 0.95rem;
+  opacity: 0.85;
+  margin-bottom: 28px;
+}
+.iw-features {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 36px;
+}
+.iw-features span {
+  font-family: var(--font-tamil);
+  font-size: 1rem;
+  opacity: 0.9;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 10px 16px;
+}
+.iw-install-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 72px;
+  padding: 18px 24px;
+  background: #ffffff;
+  color: #1A237E;
+  font-family: var(--font-tamil);
+  font-size: 1.2rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 18px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  margin-bottom: 16px;
+  gap: 4px;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.iw-install-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.iw-install-sub {
+  font-size: 0.72rem;
+  font-weight: 500;
+  opacity: 0.7;
+  font-family: var(--font-latin);
+}
+.iw-skip-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  font-family: var(--font-tamil);
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 12px 24px;
+  min-height: 48px;
+}
+.iw-skip-btn:active { opacity: 0.8; }
+
 /* Section base */
 .section { display: block; }
 .section[hidden] { display: none; }
