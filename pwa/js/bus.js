@@ -171,7 +171,7 @@ var Bus = (function() {
     var next = timings && computeNextBus(timings);
     var busChip = '';
     if (next) {
-      var bm = busTypeMeta(next);
+      var bm = busTypeMeta(next, meta.group);
       var chipColor = bm.cls === 'private' ? '#880E4F' : bm.cls === 'express' ? '#BF360C' : '#1565C0';
       var chipBg   = bm.cls === 'private' ? '#FCE4EC' : bm.cls === 'express' ? '#FFF3E0' : '#E3F2FD';
       var chipLabel = bm.label || (bm.cls === 'private' ? 'தனியார்' : bm.cls === 'express' ? 'மொஃபசல்' : 'டவுன் பஸ்');
@@ -251,11 +251,16 @@ var Bus = (function() {
       '<div class="strip-list">' + top.map(function(item) {
         var meta = getMeta(item.corridor.name_english);
         var displayName = meta.nameTamil || item.corridor.name_tamil;
+        var bm = busTypeMeta(item.next, meta.group);
+        var chipColor = bm.cls === 'private' ? '#880E4F' : bm.cls === 'express' ? '#BF360C' : '#1565C0';
+        var chipBg   = bm.cls === 'private' ? '#FCE4EC' : bm.cls === 'express' ? '#FFF3E0' : '#E3F2FD';
+        var chipLabel = bm.label || (bm.cls === 'private' ? 'தனியார்' : bm.cls === 'express' ? 'மொஃபசல்' : 'டவுன் பஸ்');
+        var stripChip = '<span class="strip-bus-chip" style="color:' + chipColor + ';background:' + chipBg + '">' + chipLabel + '</span>';
         return '<div class="strip-card" data-corridor-id="' + item.corridor.id + '" role="button" style="border-left-color:' + meta.color + '">' +
           '<div class="strip-card-icon">' + meta.emoji + '</div>' +
           '<div class="strip-card-body">' +
             '<div class="strip-card-name">' + displayName + '</div>' +
-            '<div class="strip-card-time">' + fmtPeriod(item.next.departs_at) + '</div>' +
+            '<div class="strip-card-time">' + fmtPeriod(item.next.departs_at) + '  ' + stripChip + '</div>' +
           '</div>' +
           '<div class="strip-card-mins" style="background:' + pillColor(item.mins) + '">' + minsLabel(item.mins) + '</div>' +
         '</div>';
@@ -460,11 +465,16 @@ var Bus = (function() {
     return (op || '').replace(/\s*(Private\s*Bus|Private)$/i, '').trim();
   }
 
-  function busTypeMeta(t) {
+  function busTypeMeta(t, group) {
     var op = cleanOperator(t.operator_name);
     var opLower = (t.operator_name || '').toLowerCase();
     if (t.bus_type === 'private' || opLower.indexOf('private') !== -1) {
       return { cls: 'private', icon: '🚍', label: op || 'தனியார்', sub: op ? 'தனியார் · Private' : 'Private' };
+    }
+    // Long-distance routes (Trichy, Palani, Coimbatore, Madurai, Dindigul, etc.)
+    // never have "town bus" — anything non-private is mofussil/express/SETC.
+    if (group === 'long' || group === 'night') {
+      return { cls: 'express', icon: '🚌', label: op || 'மொஃபசல்', sub: op ? 'மொஃபசல் · Mofussil' : 'Mofussil' };
     }
     if (t.bus_type === 'express') {
       return { cls: 'express', icon: '🚌', label: op || 'மொஃபசல்', sub: op ? 'மொஃபசல் · Mofussil' : 'Mofussil' };
@@ -555,7 +565,7 @@ var Bus = (function() {
     var totalMins = p[0] * 60 + p[1];
     var isPassed = totalMins <= cur;
     var isNext = nextId && t.id === nextId;
-    var bt = busTypeMeta(t);
+    var bt = busTypeMeta(t, meta && meta.group);
     var cls = 'tt-row tt-' + bt.cls + (isPassed ? ' passed' : '') + (isNext ? ' is-next' : '');
     var style = isNext ? ' style="border-left-color:' + meta.color + '"' : '';
 
@@ -737,9 +747,9 @@ var Bus = (function() {
     }
 
     // Summary stats
-    var townCount = sorted.filter(function(t){ return busTypeMeta(t).cls === 'ordinary'; }).length;
-    var mofCount  = sorted.filter(function(t){ return busTypeMeta(t).cls === 'express';  }).length;
-    var privCount = sorted.filter(function(t){ return busTypeMeta(t).cls === 'private';  }).length;
+    var townCount = sorted.filter(function(t){ return busTypeMeta(t, meta.group).cls === 'ordinary'; }).length;
+    var mofCount  = sorted.filter(function(t){ return busTypeMeta(t, meta.group).cls === 'express';  }).length;
+    var privCount = sorted.filter(function(t){ return busTypeMeta(t, meta.group).cls === 'private';  }).length;
     var stats = [];
     if (townCount) stats.push('🚐 ' + townCount + ' டவுன் பஸ்');
     if (mofCount)  stats.push('🚌 ' + mofCount  + ' மொஃபசல்');

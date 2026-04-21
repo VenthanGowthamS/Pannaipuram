@@ -452,6 +452,19 @@
   letter-spacing: 0.04em;
 }
 
+/* Bus type chip on "Leaving soon" strip */
+.strip-bus-chip {
+  display: inline-block;
+  font-family: var(--font-tamil);
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 7px;
+  vertical-align: middle;
+  margin-left: 4px;
+  line-height: 1.5;
+}
+
 /* Bus type chip on card */
 .card-bus-chip {
   display: inline-block;

@@ -203,6 +203,37 @@ main {
 }
 .install-close:active { opacity: 1; background: rgba(255,255,255,0.25); }
 
+/* One-click native install button (Android only) */
+.install-native-btn {
+  display: block;
+  width: 100%;
+  padding: 14px 18px;
+  margin: 10px 0 6px;
+  background: #ffffff;
+  color: #0D47A1;
+  font-family: var(--font-tamil);
+  font-size: 1.05rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  cursor: pointer;
+  min-height: 52px;
+  letter-spacing: 0.01em;
+}
+.install-native-btn:active { transform: scale(0.97); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+.install-native-hint {
+  display: block;
+  font-family: var(--font-tamil);
+  font-size: 0.72rem;
+  opacity: 0.9;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+/* Remove list bullet when we render the button as a single item */
+#install-steps:has(.install-native-btn) { list-style: none; padding-left: 0; }
+#install-steps:has(.install-native-btn) li { list-style: none; }
+
 /* Section base */
 .section { display: block; }
 .section[hidden] { display: none; }

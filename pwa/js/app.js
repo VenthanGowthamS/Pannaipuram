@@ -163,7 +163,11 @@ document.addEventListener('DOMContentLoaded', function() {
         'வலதுபக்க <b>"Add"</b> button-ஐ அழுத்துங்க'
       ];
     } else if (isAndroid && window._dip) {
-      instructions = ['👇 இந்த banner-ஐ tap பண்ணுங்க — ஒரே click-ல install ஆகும்!'];
+      // One-click native install — prominent button, no manual steps needed
+      instructions = [
+        '<button id="install-native-btn" class="install-native-btn">📲 Install App · Home-க்கு சேர்க்க</button>',
+        '<span class="install-native-hint">ஒரே click-ல install ஆகும் — browser-ல திறக்க வேண்டாம்</span>'
+      ];
     } else {
       // Android without native prompt OR desktop — show manual steps
       instructions = [
@@ -177,13 +181,22 @@ document.addEventListener('DOMContentLoaded', function() {
     banner.hidden = false;
 
     // Tap-to-install on Android when native prompt available
-    if (isAndroid && window._dip && !_bannerClickBound) {
-      _bannerClickBound = true;
-      banner.style.cursor = 'pointer';
-      banner.addEventListener('click', function(e) {
-        if (e.target.id === 'install-close' || e.target.closest('#install-close')) return;
-        _triggerNativeInstall();
-      });
+    if (isAndroid && window._dip) {
+      var nativeBtn = document.getElementById('install-native-btn');
+      if (nativeBtn) {
+        nativeBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          _triggerNativeInstall();
+        });
+      }
+      if (!_bannerClickBound) {
+        _bannerClickBound = true;
+        banner.style.cursor = 'pointer';
+        banner.addEventListener('click', function(e) {
+          if (e.target.id === 'install-close' || e.target.closest('#install-close')) return;
+          _triggerNativeInstall();
+        });
+      }
     }
   }
   // Expose for the top-level beforeinstallprompt handler
