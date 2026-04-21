@@ -167,13 +167,24 @@ var Bus = (function() {
     var railColor = noMore ? '#E0E0E0' : meta.color;
     var nameClass = noMore ? 'route-name-ta dimmed' : 'route-name-ta';
 
+    // Bus type chip from next departure
+    var next = timings && computeNextBus(timings);
+    var busChip = '';
+    if (next) {
+      var bm = busTypeMeta(next);
+      var chipColor = bm.cls === 'private' ? '#880E4F' : bm.cls === 'express' ? '#BF360C' : '#1565C0';
+      var chipBg   = bm.cls === 'private' ? '#FCE4EC' : bm.cls === 'express' ? '#FFF3E0' : '#E3F2FD';
+      var chipLabel = bm.label || (bm.cls === 'private' ? 'தனியார்' : bm.cls === 'express' ? 'மொஃபசல்' : 'டவுன் பஸ்');
+      busChip = '<span class="card-bus-chip" style="color:' + chipColor + ';background:' + chipBg + '">' + chipLabel + '</span>';
+    }
+
     var displayNameTamil = meta.nameTamil || c.name_tamil;
     return '<div class="route-card" data-id="' + c.id + '" role="button">' +
       '<div class="route-rail" style="background:' + railColor + '"></div>' +
       '<div class="route-emoji-circle" style="background:' + meta.color + '1A">' + meta.emoji + '</div>' +
       '<div class="route-info">' +
         '<span class="' + nameClass + '">' + displayNameTamil + '</span>' +
-        '<span class="route-name-en">' + c.name_english + '</span>' +
+        '<span class="route-name-en">' + c.name_english + (busChip ? '  ' + busChip : '') + '</span>' +
       '</div>' +
       renderBadge(meta, timings, c.id) +
     '</div>' +

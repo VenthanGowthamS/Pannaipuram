@@ -2,7 +2,7 @@
 // Three-tier cache: in-memory → localStorage → network.
 // localStorage survives reloads, making the app usable offline after first load.
 var _mem = {};
-var CACHE_VERSION = 'pannai-v32';
+var CACHE_VERSION = 'pannai-v33';
 
 function lsGet(key) {
   try { var v = localStorage.getItem(CACHE_VERSION + ':' + key); return v ? JSON.parse(v) : null; }
