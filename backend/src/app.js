@@ -69,14 +69,31 @@ app.get('/admin', (req, res) => res.redirect('/admin/v2/'));
 // deploys with rootDir=. or rootDir=backend (full repo is always cloned).
 const PWA_DIR = path.resolve(__dirname, '../../pwa');
 app.use('/pwa', express.static(PWA_DIR));
-// Hostname-aware root redirect:
-//   admin.pannaipuram.com/ → /admin/v2/    (admin panel)
-//   api.pannaipuram.com/   → /admin/v2/    (api host root → admin too, no PWA there)
-//   any other host         → /pwa/         (PWA — legacy onrender.com URL)
+// Hostname-aware root handler:
+//   admin.pannaipuram.com/ → /admin/v2/        (admin panel)
+//   api.pannaipuram.com/   → JSON landing      (it's an API host, not a UI)
+//   any other host         → /pwa/             (PWA — legacy onrender.com URL)
 app.get('/', (req, res) => {
   const host = (req.hostname || '').toLowerCase();
-  if (host === 'admin.pannaipuram.com' || host === 'api.pannaipuram.com') {
+  if (host === 'admin.pannaipuram.com') {
     return res.redirect('/admin/v2/');
+  }
+  if (host === 'api.pannaipuram.com') {
+    return res.json({
+      name: 'பண்ணைப்புரம் API',
+      app:   'Pannaipuram Village Info',
+      version: '1.0.0',
+      endpoints: {
+        health: '/health',
+        bus:    '/api/bus/corridors',
+        auto:   '/api/auto/drivers',
+      },
+      links: {
+        pwa:   'https://app.pannaipuram.com',
+        admin: 'https://admin.pannaipuram.com',
+        repo:  'https://github.com/VenthanGowthamS/Pannaipuram',
+      },
+    });
   }
   return res.redirect('/pwa/');
 });
