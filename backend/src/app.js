@@ -69,7 +69,17 @@ app.get('/admin', (req, res) => res.redirect('/admin/v2/'));
 // deploys with rootDir=. or rootDir=backend (full repo is always cloned).
 const PWA_DIR = path.resolve(__dirname, '../../pwa');
 app.use('/pwa', express.static(PWA_DIR));
-app.get('/', (req, res) => res.redirect('/pwa/'));
+// Hostname-aware root redirect:
+//   admin.pannaipuram.com/ → /admin/v2/    (admin panel)
+//   api.pannaipuram.com/   → /admin/v2/    (api host root → admin too, no PWA there)
+//   any other host         → /pwa/         (PWA — legacy onrender.com URL)
+app.get('/', (req, res) => {
+  const host = (req.hostname || '').toLowerCase();
+  if (host === 'admin.pannaipuram.com' || host === 'api.pannaipuram.com') {
+    return res.redirect('/admin/v2/');
+  }
+  return res.redirect('/pwa/');
+});
 // Diagnostic: log PWA path on startup (remove after first successful deploy)
 console.log('[PWA] Serving from:', PWA_DIR);
 
