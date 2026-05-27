@@ -87,6 +87,8 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) return callback(null, true);
     // Allow same-origin requests (admin panel JS modules)
     if (origin === `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`) return callback(null, true);
+    // Allow PWA hosted on GitHub Pages (any *.github.io subdomain)
+    if (/^https:\/\/[a-z0-9-]+\.github\.io$/i.test(origin)) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,

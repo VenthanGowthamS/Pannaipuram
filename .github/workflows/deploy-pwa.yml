@@ -1,0 +1,60 @@
+# Deploy PWA to GitHub Pages — instant load, no Render cold-start
+# After this workflow runs, PWA is live at:
+#   https://venthangowthams.github.io/Pannaipuram/
+#
+# API calls still go to Render (api.js auto-detects github.io hostname).
+# Backend CORS already allows *.github.io origins.
+name: Deploy PWA to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pwa/**'
+      - '.github/workflows/deploy-pwa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare deploy directory
+        run: |
+          mkdir -p _site
+          cp -R pwa/* _site/
+          # Rewrite absolute /pwa/ paths to relative (./) so they work
+          # under /Pannaipuram/ on github.io
+          find _site -type f \( -name "*.html" -o -name "*.json" -o -name "*.js" -o -name "*.css" \) \
+            -exec sed -i 's|"/pwa/|"./|g; s|'\''/pwa/|'\''./|g' {} +
+          # Add a small marker file so we can verify the deploy
+          echo "{\"deployed_at\":\"$(date -u +%FT%TZ)\",\"sha\":\"${GITHUB_SHA}\"}" > _site/build-info.json
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
