@@ -1,16 +1,66 @@
 # பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 4.6 (PWA v26 — auto-update, analytics, install fixes)
-> **Date:** April 2026
-> **Status:** PWA v26 live. Auto-update for installed PWAs. Visitor analytics. Cache v26.
+> **Version:** 4.7 (PWA v37 — GitHub Pages deploy, install wall, Render cold-start resilience)
+> **Date:** May 2026
+> **Status:** PWA v37 live on **two URLs**:
+> - ⚡ **https://venthangowthams.github.io/Pannaipuram/** (GitHub Pages — instant, primary, shared on WhatsApp)
+> - 🐢 https://pannaipuram-api.onrender.com/pwa/ (Render — fallback for old links)
+>
+> Backend API + Admin: https://pannaipuram-api.onrender.com (Render free tier).
+> Next milestone: custom domain `app.pannaipuram.com` — full plan saved in
+> `docs/domain-and-hosting-plan.md`.
 
-### PWA Recent Changes (v14 → v26, April 2026)
+### PWA Recent Changes (v14 → v37, April–May 2026)
+
+#### v37 — Hosting & infrastructure (May 2026)
+| Feature | Status |
+|---|---|
+| GitHub Pages deploy via `.github/workflows/deploy-pwa.yml` | ✅ v37 |
+| Auto-rewrite `/pwa/` → `./` paths for GitHub Pages base path | ✅ v37 |
+| `API_BASE` auto-detects github.io / pages.dev / netlify hostname | ✅ v37 |
+| Backend CORS auto-allows `*.github.io` origins | ✅ v37 |
+| Render cold-start fix: 2.5s network timeout → cached fallback | ✅ v34 |
+| `apiFetch` stale-while-revalidate at app level (memory + localStorage) | ✅ v34 |
+| Domain & hosting plan documented (`docs/domain-and-hosting-plan.md`) | ✅ |
+
+#### v35–v36 — One-tap install from WhatsApp share link
+| Feature | Status |
+|---|---|
+| Install wall (`?install=1` URL param) — full-screen install overlay | ✅ v35 |
+| Bouncing 👇 arrow + pulsing yellow button with glow ring | ✅ v36 |
+| Tamil CTA: "இந்த button-ஐ click பண்ணுங்க!" | ✅ v36 |
+| Skip button cleans URL → app loads normally | ✅ v35 |
+| Fallback to manual ⋮ steps if no `beforeinstallprompt` after 4s | ✅ v35 |
+| One-click Android native install button inside in-app banner | ✅ v34 |
+
+#### v32–v34 — Bus section improvements
+| Feature | Status |
+|---|---|
+| Bigger timetable times (1rem → 1.25rem/800) + bigger icon | ✅ v32 |
+| Operator names (Jeyamurugan/PPP/SETC) on all bus types | ✅ v32 |
+| Skip gap warning for Chennai night service (one-bus-per-night) | ✅ v32 |
+| Bus type chip on collapsed route card | ✅ v33 |
+| Bus type chip on "Leaving soon" strip cards | ✅ v34 |
+| Long-distance routes never show "டவுன் பஸ்" (Trichy/Palani fix) | ✅ v34 |
+
+#### v27–v31 — Bus card simplification, Auto redesign, Tamil copy
+| Feature | Status |
+|---|---|
+| Bus card simplified — destination + time + countdown only (Steve Jobs UX) | ✅ v31 |
+| Route chain ("via") moved to expanded view, alt routes behind toggle | ✅ v31 |
+| Driver name truncation with ellipsis (call btn no overlap) | ✅ v30 |
+| `phone_verified` flag for auto drivers — admin toggle + PWA "விரைவில்" | ✅ v29 |
+| Auto section redesign: amber #F59E0B + charcoal #1C1C1E + green call | ✅ v28 |
+| Bus group renames: உள்ளூர் பயணம் / தொலைதூர பயணம் / சென்னை இரவு | ✅ v27 |
+| Updated About / Feedback / How-to-use Tamil copy | ✅ v29 |
+| Indian mobile phone validation (10 digits, 6/7/8/9 start) | ✅ v27 |
+
+#### v14–v26 — Earlier (April 2026)
 | Feature | Status |
 |---|---|
 | Hamburger menu (Feedback / About / How-to-use / Install) | ✅ v21 |
-| Auto section refresh button ↻ | ✅ v21 |
-| Bus section refresh button ↻ (top-right of header) | ✅ v23 |
+| Auto + Bus section refresh button ↻ | ✅ v21/v23 |
 | Bus title centered (no hamburger overlap) | ✅ v23 |
 | PWA visitor analytics (pwa_visits table + admin stats tab) | ✅ v21 |
 | Admin PWA Stats tab (unique users, daily, recent 20) | ✅ v21 |
@@ -19,7 +69,6 @@
 | Permanent cache fix — network-first for HTML/CSS/JS | ✅ v22 |
 | Auto-update installed PWAs (SKIP_WAITING + controllerchange reload) | ✅ v23 |
 | Android install banner — beforeinstallprompt captured pre-DOM | ✅ v25 |
-| Android install 2s fallback for Samsung/Firefox browsers | ✅ v25 |
 | Install sheet in hamburger with native button + iOS steps | ✅ v24 |
 | Manifest: separate any + maskable icon entries (Chrome requirement) | ✅ v25 |
 | Fix install banner after PWA uninstall (clear stale localStorage) | ✅ v26 |
@@ -448,12 +497,18 @@ WHY NOT STATIC DATA IN THE APP?
 | Mobile App | Flutter (Dart) — Android APK | ✅ Built & Deployed |
 | Local Storage | SharedPreferences (CacheService for offline) | ✅ Implemented — doctors & emergency cached |
 | Push Notifications | Firebase Cloud Messaging (FCM) | ⏳ Deferred (scaffolded, not integrated yet) |
-| Backend | Node.js + Express (lightweight) | ✅ Deployed — https://pannaipuram-api.onrender.com |
+| **PWA Hosting (primary)** | **GitHub Pages — `venthangowthams.github.io/Pannaipuram/`** | ✅ Live (v37, May 2026) — instant load via CDN, never sleeps |
+| **PWA Hosting (fallback)** | Render `/pwa/` route | ✅ Kept for old links — same backend |
+| **PWA → API routing** | Auto-detected via `API_BASE` in `pwa/js/api.js` | ✅ github.io → Render; same-origin elsewhere |
+| **PWA deploy automation** | GitHub Actions (`.github/workflows/deploy-pwa.yml`) | ✅ Triggers on push to `main` touching `pwa/**` |
+| Backend | Node.js + Express | ✅ Deployed — https://pannaipuram-api.onrender.com |
 | Database | Supabase (PostgreSQL, Asia-Pacific Singapore) | ✅ Live — project: eoiaexdbnyzysolgwitw |
-| Hosting | Render.com (free tier Node.js) | ✅ Production URL: https://pannaipuram-api.onrender.com |
+| Backend Hosting | Render.com (free tier Node.js) | ✅ Production URL above — note: cold-starts after 15 min idle |
+| Cold-start mitigation | App-level stale-while-revalidate (2.5s timeout → cached fallback) | ✅ v34 |
 | Admin Panel | React + MUI (admin-v2) | ✅ Live at /admin/v2 — full CRUD all modules |
 | TNEB Data | Manual admin entry (scraper deferred) | ⏳ Scraper code ready, not integrated yet |
-| Analytics | Firebase Analytics | ⏳ Deferred for later phases |
+| Analytics | Custom PWA visit ping (`/api/pwa/ping`) + admin stats tab | ✅ v21 |
+| Custom domain | `app.pannaipuram.com` (planned) | ⏳ Plan in `docs/domain-and-hosting-plan.md` |
 
 ---
 
@@ -713,6 +768,152 @@ Steve Jobs critique identified these as the highest-impact improvements:
 - Doctors admin: schedule column shows days & times in table
 - About screen: Assembly constituency English spelling corrected to "Cumbum"
 - Admin UI error messages: show actual API errors instead of generic text
+
+---
+
+### Phase 10 — PWA Polish + Infrastructure Hardening ✅ COMPLETE (April–May 2026)
+
+**Auto Section Redesign (v27–v30) — ✅ COMPLETE**
+- New palette: amber `#F59E0B` + charcoal `#1C1C1E` + green call button `#16A34A` (replaced "vomit" neon yellow/black + purple form)
+- Driver name truncation with ellipsis — call button never overlaps long names
+- `phone_verified` BOOLEAN column on `auto_drivers` table; admin toggle in UI
+- PWA shows "விரைவில்" placeholder (no call button) when `phone_verified = false`
+- Phone number validation: Indian mobile (10 digits starting with 6/7/8/9)
+
+**Bus Section Steve Jobs Simplification (v31–v34) — ✅ COMPLETE**
+- Collapsed route card now shows ONLY destination + next time + countdown
+- Route chain ("பண்ணைப்புரம் → தேவாரம் → போடி → தேனி") moved to expanded view
+- Alt-route suggestions hidden behind explicit toggle (progressive disclosure)
+- Bus type chip (Jeyamurugan/PPP/மொஃபசல்/டவுன் பஸ்) on:
+  - Route card subtitle (v33)
+  - "Leaving soon" strip cards (v34)
+  - Timetable rows for ALL types, not just private (v32)
+- Long-distance routes never labeled "டவுன் பஸ்" — Trichy/Palani show as மொஃபசல்
+- Bigger timetable times (1rem → 1.25rem/800), bigger icons (36px → 42px)
+- Chennai night-service skips the "9 மணி இடைவெளி" gap warning (one-bus-per-night by design)
+
+**Tamil Copy Refresh (v27, v29) — ✅ COMPLETE**
+- About section: நம்ம ஊரின் தகவல் மையம், 'இது என்ன?', 'ஏன் உருவாக்கப்பட்டது?', முக்கிய அம்சங்கள்
+- Feedback intro: hint cards explaining what to share
+- How-to-use: 7 steps with formal Tamil
+- Bus group names: உள்ளூர் பயணம் / தொலைதூர பயணம் / சென்னை இரவு பேருந்து
+
+**Install Wall — One-Tap from WhatsApp (v34–v36) — ✅ COMPLETE**
+- Share link format: `?install=1` URL param triggers full-screen install overlay
+- Full-screen navy gradient blocks app UI until user taps the install button
+- Big yellow button (#FFD600) with pulsing glow ring + bouncing 👇 arrow
+- Tamil CTA: "இந்த button-ஐ click பண்ணுங்க!"
+- One tap fires native `beforeinstallprompt.prompt()` — no banner-hunt
+- 4s fallback: if no native prompt (Samsung/Firefox), button shows ⋮ manual steps
+- Skip button closes overlay and cleans URL → normal app loads
+- iOS unchanged: still shows Share → Add to Home Screen 3-step instructions
+
+**Hosting Migration: Render → GitHub Pages (v37) — ✅ COMPLETE**
+
+| Aspect | Before (Render only) | After (GitHub Pages primary) |
+|---|---|---|
+| First load | 30–60s if Render cold | <1s from GitHub CDN |
+| Cold-start splash | "Allocating resources…" visible | Never seen by user |
+| API calls | Same origin (relative URLs) | Cross-origin to Render (auto-detected) |
+| Deploy | `git push` → Render redeploy | `git push` → GitHub Actions runs deploy-pwa.yml |
+| URL | `pannaipuram-api.onrender.com/pwa/` | `venthangowthams.github.io/Pannaipuram/` |
+
+- New workflow `.github/workflows/deploy-pwa.yml` — on push to `main` touching `pwa/**`:
+  1. Copies `pwa/*` to deploy artifact
+  2. Sed-rewrites `/pwa/` → `./` so paths work at `/Pannaipuram/` base
+  3. Adds `build-info.json` with timestamp + SHA for verification
+  4. Uses `actions/deploy-pages@v4` to publish
+- `pwa/js/api.js`: `API_BASE` detects `*.github.io` / `*.pages.dev` / `*.netlify.app` hostnames and routes API to Render
+- `pwa/js/app.js` + `auto.js`: same pattern for `/api/feedback` and `/api/pwa/ping` direct fetches
+- `backend/src/app.js`: CORS auto-allows `^https://[a-z0-9-]+\.github\.io$`
+- Both URLs work — Render version retained for backward compat with old WhatsApp shares
+
+**Render Cold-Start Resilience (v34) — ✅ COMPLETE**
+- `apiFetch` rewritten as stale-while-revalidate at app level
+- If cache (memory or localStorage) exists → 2.5s network timeout → serve cache
+- Network keeps running after timeout to silently refresh cache for next load
+- `/api/bus/next` stays network-only (stale countdowns would mislead)
+- Combined effect with GitHub Pages: user never sees Render's loading splash
+
+**Cache versioning:** SW + localStorage bumped to **v37** (`pannai-pwa-v37` / `pannai-v37`).
+
+---
+
+### Phase 11 — Custom Domain Migration 🔴 NEXT (after domain purchase)
+
+> **Full plan saved in `docs/domain-and-hosting-plan.md`** — Claude can
+> resume the work in a future session by reading that file alone.
+
+**Goal:** Replace `venthangowthams.github.io/Pannaipuram/` and
+`pannaipuram-api.onrender.com` with branded subdomains under
+`pannaipuram.com` (or `.in`):
+
+```
+app.pannaipuram.com       → PWA (GitHub Pages)
+api.pannaipuram.com       → Backend (Render)
+admin.pannaipuram.com     → Admin panel (Render)
+pannaipuram.com           → Future village home page
+school.pannaipuram.com    → Future school site
+services.pannaipuram.com  → Future local services site
+```
+
+**Pending Venthan actions:**
+1. Buy domain — recommended Cloudflare Registrar (~$10/yr .com) or BigRock for .in (~₹600/yr)
+2. Add DNS A records (GitHub IPs) + CNAMEs (Render targets) in Cloudflare
+3. Add `app.pannaipuram.com` as custom domain in GitHub repo Settings → Pages
+4. Add `api.pannaipuram.com` + `admin.pannaipuram.com` in Render Service → Custom Domains
+
+**Code changes (Claude will execute when domain is ready):**
+- Add `pwa/CNAME` file containing `app.pannaipuram.com`
+- Update `API_BASE` in `pwa/js/api.js` to recognize `app.pannaipuram.com` → `https://api.pannaipuram.com`
+- Update CORS regex in backend to allow `*.pannaipuram.{com,in}`
+- Update WhatsApp share link in all docs
+
+**Total cost:** ~₹600–820/year (just the domain). Everything else stays free.
+
+---
+
+### Phase 12 — Future Roadmap (Beyond Phase 11) 🔴 NOT STARTED
+
+These are deferred items still on the wishlist:
+
+**Data Entry (Venthan's ongoing task):**
+- ⏳ Dindigul (#10) bus timings — only corridor with no data
+- ⏳ Auto driver real phone numbers (all currently `phone_verified=false`)
+- ⏳ All 57 street names in Streets tab (partial entered)
+- ⏳ Water schedules per street (only வள்ளுவர் தெரு confirmed)
+- ⏳ Panchayat office contact + water board numbers in Emergency tab
+
+**Engineering — Backend/Infrastructure:**
+- ⏳ Email notifications for feedback (Nodemailer + Gmail App Password)
+- ⏳ Push notifications via FCM — Phase 7+ (device table exists, integration pending)
+- ⏳ Live TNEB power cut feed integration (scraper code exists, not wired up)
+- ⏳ UptimeRobot or cron-job.org ping every 5 min to keep Render warm (alternative to GitHub Pages migration)
+- ⏳ Postgres backups automation (currently relying on Supabase defaults)
+
+**Engineering — Mobile App:**
+- ⏳ Flutter APK rebuild — release with v37 features (bus card simplification, operator chips, etc.)
+- ⏳ QR code generation script for WhatsApp APK distribution
+- ⏳ iOS build — not planned yet
+
+**Future village ecosystem (under pannaipuram.com umbrella):**
+- ⏳ School website — separate repo, deployed to `school.pannaipuram.com`
+- ⏳ Local services directory — separate repo, deployed to `services.pannaipuram.com`
+- ⏳ Village home landing page — `pannaipuram.com` apex domain
+- ⏳ Photo/event archive (could be a static gallery on Cloudflare R2)
+
+---
+
+### Resume-from-Cold-Start Guide for Future Sessions
+
+When Venthan returns after time away, the fastest way to resume work:
+
+1. `cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram`
+2. `git pull origin main` — pick up any changes
+3. `claude` — start session
+4. Tell Claude: **"Read `CLAUDE.md` and `docs/requirements.md` Phase 10/11/12 — what's the current status and what's next?"**
+
+Claude reads the canonical state from disk (not chat history), and can pick up exactly where we left off. Conversation history is per-machine — but every important decision is committed to git, so the repo IS the memory.
 
 **Hospital/Doctor Admin Redo — March 2026 — ✅ DONE**
 - Backend: Full Hospital CRUD (POST/PUT/DELETE /admin/hospital, GET /admin/hospital/list)

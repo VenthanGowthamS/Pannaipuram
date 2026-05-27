@@ -19,15 +19,25 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 | Hosting | Render.com (Node.js) | https://pannaipuram-api.onrender.com |
 | Docs | Markdown | `docs/` |
 
-### PWA — Key Architecture Facts
+### PWA — Key Architecture Facts (v37, May 2026)
 - **Source lives at:** `pwa/` (repo root) — NOT inside `backend/`
-- **Served by:** `backend/src/app.js` line 56: `express.static(path.join(__dirname, '../../pwa'))`
-- **URL:** https://pannaipuram-api.onrender.com/pwa/
+- **Two live URLs (both serve same code):**
+  - ⚡ **Primary (share this):** https://venthangowthams.github.io/Pannaipuram/ — GitHub Pages, instant CDN, never sleeps
+  - 🐢 Fallback: https://pannaipuram-api.onrender.com/pwa/ — Render, kept for backward compat
+- **GitHub Pages deploy:** `.github/workflows/deploy-pwa.yml` runs on push to `main` touching `pwa/**`. Sed-rewrites `/pwa/` → `./` so paths work at `/Pannaipuram/` base path.
+- **Render serving:** `backend/src/app.js` line 56: `express.static(path.join(__dirname, '../../pwa'))`
+- **API routing — `pwa/js/api.js` `API_BASE`:** auto-detects hostname:
+  - `*.github.io` / `*.pages.dev` / `*.netlify.app` → `https://pannaipuram-api.onrender.com`
+  - Same-origin (Render, localhost) → `''` (relative)
+- **Backend CORS:** auto-allows any `*.github.io` subdomain (regex in `backend/src/app.js`)
+- **Cold-start resilience (v34):** `apiFetch` has 2.5s timeout — if Render is cold, cached data served instantly; network keeps running to refresh
+- **One-tap install share link:** `https://venthangowthams.github.io/Pannaipuram/?install=1` triggers full-screen install wall (Android only)
 - **Render config:** `render.yaml` at repo root with `rootDir: .` ensures full repo is deployed
 - **NEVER edit files inside `backend/public/pwa/`** — that folder was deleted. Edit only in `pwa/`
 - **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release
 - **Icon generation:** Run `node backend/gen-icon.js` to regenerate `pwa/icons/icon-192.png` + `icon-512.png`
 - **Service Worker:** 3-tier cache — SW (stale-while-revalidate for /api/*) → api.js memory → localStorage fallback
+- **Future custom domain:** `docs/domain-and-hosting-plan.md` — full migration plan for `app.pannaipuram.com` once domain is purchased
 
 ---
 
@@ -446,30 +456,44 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 - Line 344: `தொலைதூர பயணம்` — Long Distance ✅ (updated April 2026)
 - No night/Chennai section in Flutter APK (PWA-only feature)
 
-### ✅ Live & Complete — PWA (Bus + Auto) — Phase 9 UX v14
+### ✅ Live & Complete — PWA (Bus + Auto) — v37 (May 2026)
 
 | Feature | File | Status |
 |---|---|---|
-| Bus section — grouped routes (Local / Long / Night) | pwa/js/bus.js | ✅ Live |
-| Tamil group names: உள்ளூர்/தொலைதூர/சென்னை இரவு | pwa/js/bus.js | ✅ Live |
-| Accordion groups — one open at a time | pwa/js/bus.js | ✅ Live |
-| "Now departing" smart strip — top 3 imminent buses with urgency colour | pwa/js/bus.js | ✅ Live |
-| Tamil search bar — 16px input, 48px target, live filter | pwa/js/bus.js | ✅ Live |
-| Data freshness indicator + 10-minute auto-refresh | pwa/js/bus.js | ✅ Live |
-| Next-bus badge with time + countdown pill | pwa/js/bus.js | ✅ Live |
-| Timetable expand with "Next Bus" header card | pwa/js/bus.js | ✅ Live |
-| Gap warnings + ROUTE_ALTS (verified geography) | pwa/js/bus.js | ✅ Live |
-| WhatsApp long-press share on every timing row | pwa/js/bus.js | ✅ Live |
-| Chennai overnight boarding note (Theni bus stand) | pwa/js/bus.js | ✅ Live |
-| Auto section — driver list + registration form | pwa/js/auto.js | ✅ Live |
-| Offline 3-tier cache (SW + memory + localStorage) | pwa/sw.js + api.js | ✅ Live |
-| Tamil install-to-home-screen banner (iOS/Android) | pwa/js/app.js | ✅ Live |
-| Permanent install banner dismiss (appinstalled event) | pwa/js/app.js | ✅ Live |
-| Google Translate disabled (translate=no + notranslate meta) | pwa/index.html | ✅ Live |
-| Design token scale (--ta-xs through --ta-xxl) | pwa/css/tokens.css | ✅ Live |
-| Focus ring a11y (gold 3px :focus-visible) | pwa/css/base.css | ✅ Live |
-| New bus icon (navy + bus silhouette + route dots) | pwa/icons/ | ✅ Live |
-| SW cache v14 / localStorage key pannai-v14 | pwa/sw.js + api.js | ✅ Live |
+| **Hosting:** GitHub Pages CDN — instant load, never sleeps | .github/workflows/deploy-pwa.yml | ✅ v37 |
+| **Hosting:** Render fallback URL still works | backend/src/app.js | ✅ |
+| **API routing:** `API_BASE` auto-detects github.io vs Render | pwa/js/api.js | ✅ v37 |
+| **Backend CORS:** auto-allows `*.github.io` origins | backend/src/app.js | ✅ v37 |
+| **Install wall** (`?install=1`) — full-screen Android one-tap install | pwa/index.html + app.js | ✅ v35–36 |
+| **Bouncing 👇 + pulsing yellow button** on install wall | pwa/css/base.css | ✅ v36 |
+| **Cold-start fix:** 2.5s timeout → cached fallback | pwa/js/api.js | ✅ v34 |
+| **Bus type chip** on route card + Leaving-soon strip + timetable | pwa/js/bus.js | ✅ v33–34 |
+| Long-distance never labeled "டவுன் பஸ்" (Trichy/Palani fix) | pwa/js/bus.js | ✅ v34 |
+| Bigger timetable times (1.25rem/800) + 42px icons | pwa/css/bus.css | ✅ v32 |
+| No gap warning for Chennai night service | pwa/js/bus.js | ✅ v32 |
+| Bus card simplified — destination + time only (Steve Jobs UX) | pwa/js/bus.js | ✅ v31 |
+| Driver name truncation — call btn never overlaps | pwa/css/auto.css | ✅ v30 |
+| Auto driver `phone_verified` toggle — admin UI + PWA "விரைவில்" | admin-ui + pwa/js/auto.js | ✅ v29 |
+| Auto section: amber #F59E0B + charcoal + green call | pwa/css/auto.css | ✅ v28 |
+| Updated About / Feedback / How-to-use Tamil copy | pwa/index.html | ✅ v29 |
+| Bus section — grouped routes (Local / Long / Night) | pwa/js/bus.js | ✅ |
+| Tamil group names: உள்ளூர் பயணம்/தொலைதூர பயணம்/சென்னை இரவு | pwa/js/bus.js | ✅ |
+| Accordion groups — one open at a time | pwa/js/bus.js | ✅ |
+| "Now departing" smart strip — top 3 imminent buses with urgency | pwa/js/bus.js | ✅ |
+| Tamil search bar — 16px input, 48px target, live filter | pwa/js/bus.js | ✅ |
+| Data freshness indicator + 10-minute auto-refresh | pwa/js/bus.js | ✅ |
+| Auto-update installed PWAs (SKIP_WAITING + controllerchange reload) | pwa/js/app.js | ✅ v23 |
+| PWA visitor analytics (pwa_visits table + admin stats tab) | backend + admin-ui | ✅ v21 |
+| WhatsApp long-press share on every timing row | pwa/js/bus.js | ✅ |
+| Chennai overnight boarding note (Theni bus stand) | pwa/js/bus.js | ✅ |
+| Offline 3-tier cache (SW + memory + localStorage) | pwa/sw.js + api.js | ✅ |
+| Hamburger menu drawer (Feedback/About/How-to-use/Install sheets) | pwa/js/app.js | ✅ v21 |
+| Tamil install-to-home-screen banner (iOS/Android) | pwa/js/app.js | ✅ |
+| Google Translate disabled (translate=no + notranslate meta) | pwa/index.html | ✅ |
+| Design token scale (--ta-xs through --ta-xxl) | pwa/css/tokens.css | ✅ |
+| Focus ring a11y (gold 3px :focus-visible) | pwa/css/base.css | ✅ |
+| New bus icon (navy + bus silhouette + route dots) | pwa/icons/ | ✅ |
+| **SW cache v37 / localStorage key pannai-v37** | pwa/sw.js + api.js | ✅ v37 |
 
 ### ✅ Infrastructure
 - JWT auth + RBAC (super_admin, admin, viewer)
@@ -486,20 +510,26 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 
 ### 🔜 Next Up (In Priority Order)
 
+**Custom Domain — Phase 11 (waiting on Venthan)**
+- ⏳ Buy `pannaipuram.com` from Cloudflare (~₹820/yr) or `pannaipuram.in` from BigRock (~₹600/yr)
+- ⏳ After purchase: tell Claude "Read docs/domain-and-hosting-plan.md and execute Steps 2-5"
+- ⏳ Target: `app.pannaipuram.com` for PWA, `api.pannaipuram.com` for backend, `admin.pannaipuram.com` for admin
+
 **Data Entry (Venthan's task — via Admin Panel)**
 - ⏳ Bus timings — only **Dindigul** still pending (Thevaram ✅23, Theni ✅2, Coimbatore ✅3, Trichy ✅3, Palani ✅6, Bodi/Cumbum/Chinnamanur/Madurai/Kumily/Gudalur/Mettupalayam/Suruli ✅ all in DB)
-- ⏳ Auto driver phone numbers (all registered drivers)
+- ⏳ Auto driver phone numbers (currently all `phone_verified=false` → PWA shows "விரைவில்")
 - ⏳ All 57 street names in Streets tab
 - ⏳ Water schedules (only வள்ளுவர் தெரு done so far)
 - ⏳ Panchayat office contact + water board numbers in Emergency tab
 
 **Other Pending**
-- ⏳ APK rebuild — release APK with all recent changes (run `flutter build apk --release`)
-- ⏳ QR code for WhatsApp APK distribution
+- ⏳ APK rebuild — release APK with all v27–v37 features (run `flutter build apk --release`)
+- ⏳ QR code for WhatsApp APK distribution (encode `https://venthangowthams.github.io/Pannaipuram/?install=1`)
 - ⏳ Email notifications for feedback (Nodemailer + Gmail App Password)
 - ⏳ Push notifications — Phase 7+ (FCM, device table exists)
 - ⏳ Live TNEB power cuts — Phase 7+ (needs TNEB feed)
 - ⏳ iOS build — not planned yet
+- ⏳ UptimeRobot 5-min ping to keep Render warm (alternative since GitHub Pages already solves cold-start UX)
 
 **ROUTE_ALTS Geography Notes (verified April 2026):**
 - Thevaram → Bodi → Theni (Bodi is between Thevaram and Theni on the same route)
@@ -529,8 +559,15 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram && node -c pwa/js
 # PWA — regenerate icons
 cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/backend && node gen-icon.js
 
-# PWA — verify deployed version (SW cache version should match pwa/sw.js)
-curl -s https://pannaipuram-api.onrender.com/pwa/sw.js | head -2
+# PWA — verify deployed version on both hosts (SW cache version should match pwa/sw.js)
+curl -s https://venthangowthams.github.io/Pannaipuram/sw.js | head -2   # GitHub Pages (primary)
+curl -s https://pannaipuram-api.onrender.com/pwa/sw.js | head -2        # Render (fallback)
+
+# PWA — verify GitHub Pages deploy succeeded
+curl -s https://venthangowthams.github.io/Pannaipuram/build-info.json   # shows deployed_at + sha
+
+# PWA — check GitHub Actions workflow runs
+curl -s "https://api.github.com/repos/VenthanGowthamS/Pannaipuram/actions/runs?per_page=3" | python3 -c "import json,sys;[print(r['name'],r['status'],r['conclusion']) for r in json.load(sys.stdin)['workflow_runs']]"
 
 # Flutter analyze
 cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter analyze
@@ -547,14 +584,17 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram && git add app/li
 
 ---
 
-## Contact
+## Contact & URLs
 
 - **Developer:** Venthan
 - **Email:** venthan89@gmail.com
+- **PWA (share this on WhatsApp):** https://venthangowthams.github.io/Pannaipuram/?install=1
+- **PWA (Render fallback):** https://pannaipuram-api.onrender.com/pwa/
 - **Admin panel:** https://pannaipuram-api.onrender.com/admin/v2
 - **Production API:** https://pannaipuram-api.onrender.com
+- **Future custom domain:** `app.pannaipuram.com` (plan: `docs/domain-and-hosting-plan.md`)
 
 ---
 
-*Last updated: April 18, 2026*
+*Last updated: May 27, 2026 — PWA v37, GitHub Pages deploy, install wall*
 *Built with ❤️ for பண்ணைப்புரம் — உங்கள் ஊரின் தகவல் மையம்*
