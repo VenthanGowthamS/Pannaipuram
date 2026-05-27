@@ -89,6 +89,8 @@ app.use(cors({
     if (origin === `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`) return callback(null, true);
     // Allow PWA hosted on GitHub Pages (any *.github.io subdomain)
     if (/^https:\/\/[a-z0-9-]+\.github\.io$/i.test(origin)) return callback(null, true);
+    // Allow pannaipuram.com + all subdomains (app / api / admin / school etc.)
+    if (/^https:\/\/([a-z0-9-]+\.)?pannaipuram\.(com|in)$/i.test(origin)) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,

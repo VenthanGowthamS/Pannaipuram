@@ -48,8 +48,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       var standalone = window.matchMedia('(display-mode: standalone)').matches ||
                        window.navigator.standalone === true;
-      var _apiBase = (location.hostname.endsWith('.github.io') || location.hostname.endsWith('.pages.dev') || location.hostname.endsWith('.netlify.app'))
-        ? 'https://pannaipuram-api.onrender.com' : '';
+      var _apiBase = (location.hostname === 'app.pannaipuram.com')
+        ? 'https://api.pannaipuram.com'
+        : (location.hostname.endsWith('.github.io') || location.hostname.endsWith('.pages.dev') || location.hostname.endsWith('.netlify.app'))
+          ? 'https://pannaipuram-api.onrender.com' : '';
       fetch(_apiBase + '/api/pwa/ping', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -437,8 +439,10 @@ document.addEventListener('DOMContentLoaded', function() {
       if (result) result.hidden = true;
 
       try {
-        var _fbBase = (location.hostname.endsWith('.github.io') || location.hostname.endsWith('.pages.dev') || location.hostname.endsWith('.netlify.app'))
-          ? 'https://pannaipuram-api.onrender.com' : '';
+        var _fbBase = (location.hostname === 'app.pannaipuram.com')
+          ? 'https://api.pannaipuram.com'
+          : (location.hostname.endsWith('.github.io') || location.hostname.endsWith('.pages.dev') || location.hostname.endsWith('.netlify.app'))
+            ? 'https://pannaipuram-api.onrender.com' : '';
         var resp = await fetch(_fbBase + '/api/feedback', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

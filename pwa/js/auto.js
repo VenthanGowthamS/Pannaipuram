@@ -168,8 +168,10 @@ var Auto = (function() {
       result.hidden = true;
 
       try {
-        var _fbBase = (location.hostname.endsWith('.github.io') || location.hostname.endsWith('.pages.dev') || location.hostname.endsWith('.netlify.app'))
-          ? 'https://pannaipuram-api.onrender.com' : '';
+        var _fbBase = (location.hostname === 'app.pannaipuram.com')
+          ? 'https://api.pannaipuram.com'
+          : (location.hostname.endsWith('.github.io') || location.hostname.endsWith('.pages.dev') || location.hostname.endsWith('.netlify.app'))
+            ? 'https://pannaipuram-api.onrender.com' : '';
         var resp = await fetch(_fbBase + '/api/feedback', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

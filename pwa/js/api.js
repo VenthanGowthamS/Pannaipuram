@@ -2,12 +2,15 @@
 // Three-tier cache: in-memory → localStorage → network.
 // localStorage survives reloads, making the app usable offline after first load.
 var _mem = {};
-var CACHE_VERSION = 'pannai-v37';
+var CACHE_VERSION = 'pannai-v38';
 
-// API base — when PWA is hosted on GitHub Pages, requests go cross-origin
-// to the Render backend. When on Render itself, same-origin (empty base).
+// API base — auto-detects hosting environment:
+//   app.pannaipuram.com  → api.pannaipuram.com  (custom domain, future)
+//   *.github.io          → pannaipuram-api.onrender.com (GitHub Pages CDN)
+//   same-origin (Render) → '' (relative URLs)
 var API_BASE = (function() {
   var h = (typeof location !== 'undefined') ? location.hostname : '';
+  if (h === 'app.pannaipuram.com') return 'https://api.pannaipuram.com';
   if (h.endsWith('.github.io') || h.endsWith('.pages.dev') || h.endsWith('.netlify.app')) {
     return 'https://pannaipuram-api.onrender.com';
   }
