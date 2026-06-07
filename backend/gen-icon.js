@@ -1,88 +1,98 @@
 // Generate PWA icons for Pannaipuram — UNIFIED village info app
-// Navy→green gradient + white cottage + amber location pin.
+// Flashy vivid-blue gradient + glossy highlight + white house + amber location pin.
 // Full-bleed background (no transparent corners) = safe for maskable icons.
 const { createCanvas } = require('./node_modules/canvas');
 const fs = require('fs');
 const path = require('path');
 
-function roundedRect(ctx, x, y, w, h, r) {
+function rr(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 }
 
 function drawIcon(size) {
   const c = createCanvas(size, size);
   const ctx = c.getContext('2d');
-  const u = size / 192; // unit: design coords are based on a 192 grid
+  const u = size / 192;
 
-  // ── Background: full-bleed navy → green gradient ──────────
+  // ── Background: full-bleed vivid blue gradient ───────────
   const bg = ctx.createLinearGradient(0, 0, size, size);
-  bg.addColorStop(0, '#16307A');   // deep navy
-  bg.addColorStop(1, '#1B7A3E');   // village green
+  bg.addColorStop(0, '#2D9CFF');   // bright sky blue
+  bg.addColorStop(1, '#0D47A1');   // deep blue
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, size, size);
 
-  // Soft drop shadow under the cottage for depth
+  // ── Cottage shadow ───────────────────────────────────────
   ctx.save();
   ctx.fillStyle = 'rgba(0,0,0,0.18)';
   ctx.beginPath();
-  ctx.ellipse(96 * u, 158 * u, 52 * u, 11 * u, 0, 0, Math.PI * 2);
+  ctx.ellipse(96 * u, 158 * u, 50 * u, 10 * u, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
-  // ── Cottage roof (triangle) ──────────────────────────────
+  // ── Roof ─────────────────────────────────────────────────
   ctx.fillStyle = '#FFFFFF';
   ctx.beginPath();
-  ctx.moveTo(96 * u, 50 * u);    // peak
-  ctx.lineTo(46 * u, 98 * u);    // left eave
-  ctx.lineTo(146 * u, 98 * u);   // right eave
+  ctx.moveTo(96 * u, 52 * u);
+  ctx.lineTo(48 * u, 98 * u);
+  ctx.lineTo(144 * u, 98 * u);
   ctx.closePath();
   ctx.fill();
 
-  // ── Cottage body ─────────────────────────────────────────
-  roundedRect(ctx, 60 * u, 96 * u, 72 * u, 56 * u, 6 * u);
+  // ── Body ─────────────────────────────────────────────────
+  rr(ctx, 62 * u, 96 * u, 68 * u, 56 * u, 6 * u);
   ctx.fillStyle = '#FFFFFF';
   ctx.fill();
 
-  // ── Door (warm green cut-out, arched top) ────────────────
-  const doorX = 86 * u, doorW = 20 * u, doorY = 118 * u, doorBottom = 152 * u, doorR = 10 * u;
-  ctx.fillStyle = '#1B7A3E';
+  // ── Door (blue cut-out, arched) ──────────────────────────
+  const dx = 86 * u, dw = 20 * u, dy = 118 * u, db = 152 * u, dr = 10 * u;
+  ctx.fillStyle = '#1565C0';
   ctx.beginPath();
-  ctx.moveTo(doorX, doorBottom);
-  ctx.lineTo(doorX, doorY + doorR);
-  ctx.quadraticCurveTo(doorX, doorY, doorX + doorR, doorY);
-  ctx.quadraticCurveTo(doorX + doorW, doorY, doorX + doorW, doorY + doorR);
-  ctx.lineTo(doorX + doorW, doorBottom);
+  ctx.moveTo(dx, db);
+  ctx.lineTo(dx, dy + dr);
+  ctx.quadraticCurveTo(dx, dy, dx + dr, dy);
+  ctx.quadraticCurveTo(dx + dw, dy, dx + dw, dy + dr);
+  ctx.lineTo(dx + dw, db);
   ctx.closePath();
   ctx.fill();
 
-  // ── Window (amber square) ────────────────────────────────
-  roundedRect(ctx, 68 * u, 108 * u, 14 * u, 14 * u, 3 * u);
+  // ── Window (amber) ───────────────────────────────────────
+  rr(ctx, 70 * u, 108 * u, 13 * u, 13 * u, 3 * u);
   ctx.fillStyle = '#FFC107';
   ctx.fill();
 
   // ── Location pin (amber teardrop, top-right) ─────────────
-  const pinX = 142 * u, pinHeadY = 54 * u, pinHeadR = 17 * u, pinTipY = 92 * u;
+  const px = 142 * u, headY = 54 * u, headR = 17 * u, tipY = 92 * u;
   ctx.fillStyle = '#FFC107';
   ctx.beginPath();
-  ctx.arc(pinX, pinHeadY, pinHeadR, Math.PI * 0.85, Math.PI * 0.15, false); // head arc
-  ctx.lineTo(pinX, pinTipY);  // taper to point
+  ctx.arc(px, headY, headR, Math.PI * 0.85, Math.PI * 0.15, false);
+  ctx.lineTo(px, tipY);
   ctx.closePath();
   ctx.fill();
-  // pin shadow ring + white hole
   ctx.fillStyle = '#FFFFFF';
   ctx.beginPath();
-  ctx.arc(pinX, pinHeadY, pinHeadR * 0.42, 0, Math.PI * 2);
+  ctx.arc(px, headY, headR * 0.42, 0, Math.PI * 2);
   ctx.fill();
+
+  // ── Glossy highlight (flashy sheen, top) ─────────────────
+  ctx.save();
+  const g = ctx.createLinearGradient(0, 0, 0, size * 0.6);
+  g.addColorStop(0, 'rgba(255,255,255,0.22)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(size, 0);
+  ctx.lineTo(size, size * 0.30);
+  ctx.quadraticCurveTo(size * 0.5, size * 0.5, 0, size * 0.34);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
 
   return c;
 }
@@ -91,8 +101,8 @@ const outDir = path.join(__dirname, '../pwa/icons');
 
 const c192 = drawIcon(192);
 fs.writeFileSync(path.join(outDir, 'icon-192.png'), c192.toBuffer('image/png'));
-console.log('✅ icon-192.png written (cottage + pin)');
+console.log('✅ icon-192.png written (flashy blue house + pin)');
 
 const c512 = drawIcon(512);
 fs.writeFileSync(path.join(outDir, 'icon-512.png'), c512.toBuffer('image/png'));
-console.log('✅ icon-512.png written (cottage + pin)');
+console.log('✅ icon-512.png written (flashy blue house + pin)');

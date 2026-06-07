@@ -1,9 +1,9 @@
 # பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 4.9 (PWA v39 — custom domain live, Emergency Contacts tab, About village stats)
+> **Version:** 5.0 (PWA v41 — unified app: Bus + Auto + Hospital + Emergency, new icon, English name)
 > **Date:** June 2026
-> **Status:** PWA v39 live on the **custom domain**:
+> **Status:** PWA v41 live (unified: Bus + Auto + Hospital + Emergency) on the **custom domain**:
 > - 🌟 **https://app.pannaipuram.com** (primary — share `?install=1` on WhatsApp)
 > - 🔗 API: https://api.pannaipuram.com · 🛠 Admin: https://admin.pannaipuram.com
 > - Legacy (still work): https://venthangowthams.github.io/Pannaipuram/ · https://pannaipuram-api.onrender.com
@@ -11,7 +11,19 @@
 > `pannaipuram.com` bought on Cloudflare Registrar (June 2026). Phase 11 (custom
 > domain migration) **COMPLETE** — see `docs/domain-and-hosting-plan.md`.
 
-### PWA Recent Changes (v14 → v39, April–June 2026)
+### PWA Recent Changes (v14 → v41, April–June 2026)
+
+#### v40–v41 — Unified village app (June 2026)
+| Feature | Status |
+|---|---|
+| **Hospital & Doctors tab** (🏥 மருத்துவம், 4th nav) — doctors by hospital, day-chips, "இன்று கிடைக்கும்" today badge | ✅ v40 |
+| **New icon** — flashy vivid-blue gradient + white cottage + amber location pin (replaced bus) | ✅ v40 |
+| **English searchable name** — manifest `short_name` "Pannaipuram" (findable without Tamil keyboard) | ✅ v40 |
+| **Auto phone fix** — was maxlength=15/>10 digits; now exactly 10, digits-only, starts 6-9 | ✅ v40 |
+| Cache bump v39 → v41 (`pannai-pwa-v41` / `pannai-v41`); hospital.js/css in SW shell | ✅ v41 |
+
+> **Direction decision:** PWA is now a **unified village info hub** (matches the
+> tagline & APK), not bus-only. 4 tabs: Bus · Auto · Hospital · Emergency.
 
 #### v38–v39 — Custom domain + Emergency tab (June 2026)
 | Feature | Status |
