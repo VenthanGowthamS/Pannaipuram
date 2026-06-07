@@ -1,17 +1,28 @@
 # பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 4.7 (PWA v37 — GitHub Pages deploy, install wall, Render cold-start resilience)
-> **Date:** May 2026
-> **Status:** PWA v37 live on **two URLs**:
-> - ⚡ **https://venthangowthams.github.io/Pannaipuram/** (GitHub Pages — instant, primary, shared on WhatsApp)
-> - 🐢 https://pannaipuram-api.onrender.com/pwa/ (Render — fallback for old links)
+> **Version:** 4.9 (PWA v39 — custom domain live, Emergency Contacts tab, About village stats)
+> **Date:** June 2026
+> **Status:** PWA v39 live on the **custom domain**:
+> - 🌟 **https://app.pannaipuram.com** (primary — share `?install=1` on WhatsApp)
+> - 🔗 API: https://api.pannaipuram.com · 🛠 Admin: https://admin.pannaipuram.com
+> - Legacy (still work): https://venthangowthams.github.io/Pannaipuram/ · https://pannaipuram-api.onrender.com
 >
-> Backend API + Admin: https://pannaipuram-api.onrender.com (Render free tier).
-> Next milestone: custom domain `app.pannaipuram.com` — full plan saved in
-> `docs/domain-and-hosting-plan.md`.
+> `pannaipuram.com` bought on Cloudflare Registrar (June 2026). Phase 11 (custom
+> domain migration) **COMPLETE** — see `docs/domain-and-hosting-plan.md`.
 
-### PWA Recent Changes (v14 → v37, April–May 2026)
+### PWA Recent Changes (v14 → v39, April–June 2026)
+
+#### v38–v39 — Custom domain + Emergency tab (June 2026)
+| Feature | Status |
+|---|---|
+| `pannaipuram.com` bought (Cloudflare Registrar) — app/api/admin subdomains live with SSL | ✅ v38 |
+| `pwa/CNAME` = `app.pannaipuram.com`; `API_BASE` routes app.→api.pannaipuram.com | ✅ v38 |
+| CORS allows `*.pannaipuram.{com,in}`; hostname-aware root redirect (admin→/admin/v2, api→JSON) | ✅ v38–39 |
+| **Emergency Contacts** — new 3rd bottom-nav tab (📞 அவசரம்), grouped one-tap call cards | ✅ v39 |
+| **About village stats** — population/households/wards/streets/cardamom in ☰ About sheet | ✅ v39 |
+| Bottom nav `grid-auto-flow:column` (auto-fits 3 tabs); XSS-safe esc() in emergency.js | ✅ v39 |
+| Cache bump v37 → v39 (`pannai-pwa-v39` / `pannai-v39`) | ✅ v39 |
 
 #### v37 — Hosting & infrastructure (May 2026)
 | Feature | Status |
@@ -129,8 +140,8 @@ This app is not for the internet. It is for Pannaipuram.
 **Tagline:** உங்கள் ஊரின் தகவல் மையம்
 **Platforms:**
 - Android APK (Flutter — no Play Store required)
-- PWA / Web App (Bus + Auto — works on iPhone Safari, Android Chrome, Mac)
-**PWA URL:** https://pannaipuram-api.onrender.com/pwa/
+- PWA / Web App (Bus + Auto + Emergency — works on iPhone Safari, Android Chrome, Mac)
+**PWA URL:** https://app.pannaipuram.com
 **Distribution:** QR Code → WhatsApp share (both APK link and PWA URL)
 **Language:** Tamil primary, small English label below every element
 **Target Users:** All 1,719 households across 57 streets of Pannaipuram
@@ -839,37 +850,31 @@ Steve Jobs critique identified these as the highest-impact improvements:
 
 ---
 
-### Phase 11 — Custom Domain Migration 🔴 NEXT (after domain purchase)
+### Phase 11 — Custom Domain Migration ✅ COMPLETE (June 2026)
 
-> **Full plan saved in `docs/domain-and-hosting-plan.md`** — Claude can
-> resume the work in a future session by reading that file alone.
+> **Plan reference:** `docs/domain-and-hosting-plan.md` (now executed).
 
-**Goal:** Replace `venthangowthams.github.io/Pannaipuram/` and
-`pannaipuram-api.onrender.com` with branded subdomains under
-`pannaipuram.com` (or `.in`):
+**Done:** `pannaipuram.com` bought on Cloudflare Registrar (auto-renew on).
+Branded subdomains all live with auto-provisioned SSL:
 
 ```
-app.pannaipuram.com       → PWA (GitHub Pages)
-api.pannaipuram.com       → Backend (Render)
-admin.pannaipuram.com     → Admin panel (Render)
-pannaipuram.com           → Future village home page
-school.pannaipuram.com    → Future school site
-services.pannaipuram.com  → Future local services site
+app.pannaipuram.com    → PWA (GitHub Pages)        ✅ live
+api.pannaipuram.com    → Backend (Render)          ✅ live (JSON landing at /)
+admin.pannaipuram.com  → Admin panel (Render)      ✅ live (root → /admin/v2)
+pannaipuram.com / www  → placeholder A records      ⏳ redirect rule not yet set
+school./services.       → reserved for future sites
 ```
 
-**Pending Venthan actions:**
-1. Buy domain — recommended Cloudflare Registrar (~$10/yr .com) or BigRock for .in (~₹600/yr)
-2. Add DNS A records (GitHub IPs) + CNAMEs (Render targets) in Cloudflare
-3. Add `app.pannaipuram.com` as custom domain in GitHub repo Settings → Pages
-4. Add `api.pannaipuram.com` + `admin.pannaipuram.com` in Render Service → Custom Domains
+**Executed:**
+1. ✅ Cloudflare DNS: `app` = 4× GitHub Pages A records; `api`/`admin` = CNAME → `pannaipuram-api.onrender.com` — **all DNS-only (grey cloud)** so Render/GitHub issue their own SSL
+2. ✅ GitHub repo Settings → Pages → custom domain `app.pannaipuram.com` + Enforce HTTPS
+3. ✅ Render Service → Custom Domains: `api.` + `admin.` (Certificate Issued)
+4. ✅ Code: `pwa/CNAME`, `API_BASE` 3-way detection (api.js/app.js/auto.js), CORS regex `*.pannaipuram.{com,in}`, hostname-aware root redirect in `app.js`
 
-**Code changes (Claude will execute when domain is ready):**
-- Add `pwa/CNAME` file containing `app.pannaipuram.com`
-- Update `API_BASE` in `pwa/js/api.js` to recognize `app.pannaipuram.com` → `https://api.pannaipuram.com`
-- Update CORS regex in backend to allow `*.pannaipuram.{com,in}`
-- Update WhatsApp share link in all docs
+**Gotcha learned:** Cloudflare proxy (orange cloud) MUST be off for Render/GitHub
+custom domains — it blocks Let's Encrypt cert issuance (was the cause of an early 403).
 
-**Total cost:** ~₹600–820/year (just the domain). Everything else stays free.
+**Cost:** ~₹820/year (domain only). Everything else stays free.
 
 ---
 
@@ -884,16 +889,22 @@ These are deferred items still on the wishlist:
 - ⏳ Water schedules per street (only வள்ளுவர் தெரு confirmed)
 - ⏳ Panchayat office contact + water board numbers in Emergency tab
 
+**Engineering — Security (recommended next):**
+- ⏳ Rate-limit public POST endpoints (`/api/feedback`, `/api/pwa/ping`, `/api/water/alert`) — `express-rate-limit` already used on admin auth only
+- ⏳ Re-enable scoped CSP for `/pwa/` + `/api/` (currently disabled globally)
+- ⏳ Confirm Supabase RLS on all public tables (Security Advisor flagged `rls_disabled_in_public`)
+
 **Engineering — Backend/Infrastructure:**
 - ⏳ Email notifications for feedback (Nodemailer + Gmail App Password)
 - ⏳ Push notifications via FCM — Phase 7+ (device table exists, integration pending)
 - ⏳ Live TNEB power cut feed integration (scraper code exists, not wired up)
-- ⏳ UptimeRobot or cron-job.org ping every 5 min to keep Render warm (alternative to GitHub Pages migration)
 - ⏳ Postgres backups automation (currently relying on Supabase defaults)
 
 **Engineering — Mobile App:**
-- ⏳ Flutter APK rebuild — release with v37 features (bus card simplification, operator chips, etc.)
-- ⏳ QR code generation script for WhatsApp APK distribution
+- ⏳ Flutter APK rebuild — release with v27–v39 features (bus card simplification, operator chips, etc.)
+- ⏳ Port Emergency Contacts + About village stats to APK ↔ PWA parity (Emergency already in APK; About stats already in APK)
+- ⏳ QR code generation script for WhatsApp APK distribution (encode `https://app.pannaipuram.com/?install=1`)
+- ⏳ Bus departure reminders (local notifications) — chosen feature, deferred (needs APK rebuild + notification permission)
 - ⏳ iOS build — not planned yet
 
 **Future village ecosystem (under pannaipuram.com umbrella):**

@@ -1,8 +1,11 @@
 # Domain & Hosting Plan — pannaipuram.com / .in
 
-> **Status:** ⏳ Waiting on domain purchase. Once Venthan buys the domain,
-> implementation steps below are ready to execute.
-> Saved May 27, 2026.
+> **Status:** ✅ EXECUTED (June 2026). `pannaipuram.com` bought on Cloudflare
+> Registrar. app/api/admin subdomains live with SSL. Steps below are kept as a
+> reference record of what was done.
+> **Key gotcha:** Cloudflare proxy (orange cloud) MUST be DNS-only (grey) for the
+> Render + GitHub Pages custom domains — proxy blocks Let's Encrypt cert issuance.
+> Saved May 27, 2026 · executed June 2026.
 
 ---
 

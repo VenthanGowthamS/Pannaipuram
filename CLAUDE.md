@@ -19,25 +19,33 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 | Hosting | Render.com (Node.js) | https://pannaipuram-api.onrender.com |
 | Docs | Markdown | `docs/` |
 
-### PWA — Key Architecture Facts (v37, May 2026)
+### PWA — Key Architecture Facts (v39, June 2026)
 - **Source lives at:** `pwa/` (repo root) — NOT inside `backend/`
-- **Two live URLs (both serve same code):**
-  - ⚡ **Primary (share this):** https://venthangowthams.github.io/Pannaipuram/ — GitHub Pages, instant CDN, never sleeps
-  - 🐢 Fallback: https://pannaipuram-api.onrender.com/pwa/ — Render, kept for backward compat
-- **GitHub Pages deploy:** `.github/workflows/deploy-pwa.yml` runs on push to `main` touching `pwa/**`. Sed-rewrites `/pwa/` → `./` so paths work at `/Pannaipuram/` base path.
-- **Render serving:** `backend/src/app.js` line 56: `express.static(path.join(__dirname, '../../pwa'))`
+- **Custom domain LIVE (June 2026):** `pannaipuram.com` bought on Cloudflare Registrar (auto-renew on). Subdomains:
+  - 🌟 **PWA (share this):** https://app.pannaipuram.com — GitHub Pages, ships `pwa/CNAME` = `app.pannaipuram.com`
+  - 🔗 **API:** https://api.pannaipuram.com — Render custom domain
+  - 🛠 **Admin:** https://admin.pannaipuram.com — Render custom domain
+  - **Cloudflare DNS:** `app` = 4× GitHub Pages A records; `api`/`admin` = CNAME → `pannaipuram-api.onrender.com`; root `@` + `www` = placeholder A `192.0.2.1` (for future redirect rule, not yet set up). **All proxy = DNS-only (grey cloud)** — Render & GitHub issue their own SSL; Cloudflare proxy would break cert issuance.
+- **Legacy URLs (still work, backward compat):** https://venthangowthams.github.io/Pannaipuram/ and https://pannaipuram-api.onrender.com/pwa/
+- **GitHub Pages deploy:** `.github/workflows/deploy-pwa.yml` runs on push to `main` touching `pwa/**`. Sed-rewrites `/pwa/` → `./` so paths work at `/Pannaipuram/` base path. `pwa/CNAME` ships custom domain.
+- **Render serving:** `backend/src/app.js` `express.static(path.resolve(__dirname, '../../pwa'))`
+- **Hostname-aware root redirect (`backend/src/app.js` `app.get('/')`):** `admin.pannaipuram.com` → `/admin/v2/`; `api.pannaipuram.com` → JSON API landing (name/endpoints/links); any other host → `/pwa/`
 - **API routing — `pwa/js/api.js` `API_BASE`:** auto-detects hostname:
+  - `app.pannaipuram.com` → `https://api.pannaipuram.com`
   - `*.github.io` / `*.pages.dev` / `*.netlify.app` → `https://pannaipuram-api.onrender.com`
   - Same-origin (Render, localhost) → `''` (relative)
-- **Backend CORS:** auto-allows any `*.github.io` subdomain (regex in `backend/src/app.js`)
+  - Same 3-way detection duplicated in `pwa/js/app.js` (ping + feedback) and `pwa/js/auto.js` (feedback)
+- **Backend CORS:** auto-allows any `*.github.io` subdomain AND `*.pannaipuram.{com,in}` (two regexes in `backend/src/app.js`)
 - **Cold-start resilience (v34):** `apiFetch` has 2.5s timeout — if Render is cold, cached data served instantly; network keeps running to refresh
-- **One-tap install share link:** `https://venthangowthams.github.io/Pannaipuram/?install=1` triggers full-screen install wall (Android only)
+- **One-tap install share link:** `https://app.pannaipuram.com/?install=1` triggers full-screen install wall (Android only)
+- **PWA sections (v39):** 3 bottom-nav tabs — 🚌 பேருந்து (`bus.js`) · 🛺 ஆட்டோ (`auto.js`) · 📞 அவசரம் Emergency (`emergency.js`, fetches `/api/emergency/contacts`, lazy-inits on first open). About sheet in ☰ menu has village stats (population/wards/streets/cardamom).
+- **Bottom nav (`pwa/css/nav.css`):** uses `grid-auto-flow: column` — auto-fits any number of tabs (don't hardcode column count).
 - **Render config:** `render.yaml` at repo root with `rootDir: .` ensures full repo is deployed
 - **NEVER edit files inside `backend/public/pwa/`** — that folder was deleted. Edit only in `pwa/`
-- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release
+- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v39.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
 - **Icon generation:** Run `node backend/gen-icon.js` to regenerate `pwa/icons/icon-192.png` + `icon-512.png`
 - **Service Worker:** 3-tier cache — SW (stale-while-revalidate for /api/*) → api.js memory → localStorage fallback
-- **Future custom domain:** `docs/domain-and-hosting-plan.md` — full migration plan for `app.pannaipuram.com` once domain is purchased
+- **Domain plan reference:** `docs/domain-and-hosting-plan.md` — original migration plan (now executed)
 
 ---
 
@@ -456,14 +464,19 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 - Line 344: `தொலைதூர பயணம்` — Long Distance ✅ (updated April 2026)
 - No night/Chennai section in Flutter APK (PWA-only feature)
 
-### ✅ Live & Complete — PWA (Bus + Auto) — v37 (May 2026)
+### ✅ Live & Complete — PWA (Bus + Auto + Emergency) — v39 (June 2026)
 
 | Feature | File | Status |
 |---|---|---|
+| **Custom domain:** app/api/admin.pannaipuram.com all live (Cloudflare + Render + GH Pages) | pwa/CNAME + backend/src/app.js | ✅ v38–39 |
+| **Emergency Contacts tab** (📞 அவசரம்) — grouped call cards from `/api/emergency/contacts` | pwa/js/emergency.js + css | ✅ v39 |
+| **About village stats** — population/wards/streets/cardamom in ☰ About sheet | pwa/index.html + css/emergency.css | ✅ v39 |
+| **Bottom nav** — `grid-auto-flow:column` auto-fits 3 tabs | pwa/css/nav.css | ✅ v39 |
+| **api.pannaipuram.com/** → JSON API landing; **admin.** → /admin/v2 | backend/src/app.js | ✅ v39 |
 | **Hosting:** GitHub Pages CDN — instant load, never sleeps | .github/workflows/deploy-pwa.yml | ✅ v37 |
 | **Hosting:** Render fallback URL still works | backend/src/app.js | ✅ |
-| **API routing:** `API_BASE` auto-detects github.io vs Render | pwa/js/api.js | ✅ v37 |
-| **Backend CORS:** auto-allows `*.github.io` origins | backend/src/app.js | ✅ v37 |
+| **API routing:** `API_BASE` auto-detects app.pannaipuram.com / github.io / Render | pwa/js/api.js | ✅ v37–39 |
+| **Backend CORS:** auto-allows `*.github.io` + `*.pannaipuram.{com,in}` origins | backend/src/app.js | ✅ v37–39 |
 | **Install wall** (`?install=1`) — full-screen Android one-tap install | pwa/index.html + app.js | ✅ v35–36 |
 | **Bouncing 👇 + pulsing yellow button** on install wall | pwa/css/base.css | ✅ v36 |
 | **Cold-start fix:** 2.5s timeout → cached fallback | pwa/js/api.js | ✅ v34 |
@@ -493,7 +506,7 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 | Design token scale (--ta-xs through --ta-xxl) | pwa/css/tokens.css | ✅ |
 | Focus ring a11y (gold 3px :focus-visible) | pwa/css/base.css | ✅ |
 | New bus icon (navy + bus silhouette + route dots) | pwa/icons/ | ✅ |
-| **SW cache v37 / localStorage key pannai-v37** | pwa/sw.js + api.js | ✅ v37 |
+| **SW cache v39 / localStorage key pannai-v39** | pwa/sw.js + api.js | ✅ v39 |
 
 ### ✅ Infrastructure
 - JWT auth + RBAC (super_admin, admin, viewer)
@@ -510,10 +523,15 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 
 ### 🔜 Next Up (In Priority Order)
 
-**Custom Domain — Phase 11 (waiting on Venthan)**
-- ⏳ Buy `pannaipuram.com` from Cloudflare (~₹820/yr) or `pannaipuram.in` from BigRock (~₹600/yr)
-- ⏳ After purchase: tell Claude "Read docs/domain-and-hosting-plan.md and execute Steps 2-5"
-- ⏳ Target: `app.pannaipuram.com` for PWA, `api.pannaipuram.com` for backend, `admin.pannaipuram.com` for admin
+**✅ Custom Domain — Phase 11 DONE (June 2026)**
+- ✅ `pannaipuram.com` bought on Cloudflare Registrar (auto-renew on)
+- ✅ `app.pannaipuram.com` (PWA), `api.pannaipuram.com` (backend), `admin.pannaipuram.com` (admin) all live with SSL
+- ⏳ Optional leftover: redirect bare `pannaipuram.com` + `www` → `app.` (Cloudflare Redirect Rule; placeholder A records already added). Not urgent.
+
+**Security hardening (recommended next)**
+- ⏳ Add `express-rate-limit` to public POST endpoints: `/api/feedback`, `/api/pwa/ping`, `/api/water/alert` (currently only admin auth is rate-limited — spam/abuse risk)
+- ⏳ Re-enable a scoped CSP for `/pwa/` + `/api/` (currently `contentSecurityPolicy:false` globally)
+- ⏳ Confirm Supabase RLS enabled on all public tables (Security Advisor flagged `rls_disabled_in_public` — backend uses superuser so unaffected, but Data API was exposed)
 
 **Data Entry (Venthan's task — via Admin Panel)**
 - ⏳ Bus timings — only **Dindigul** still pending (Thevaram ✅23, Theni ✅2, Coimbatore ✅3, Trichy ✅3, Palani ✅6, Bodi/Cumbum/Chinnamanur/Madurai/Kumily/Gudalur/Mettupalayam/Suruli ✅ all in DB)
@@ -523,8 +541,8 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 - ⏳ Panchayat office contact + water board numbers in Emergency tab
 
 **Other Pending**
-- ⏳ APK rebuild — release APK with all v27–v37 features (run `flutter build apk --release`)
-- ⏳ QR code for WhatsApp APK distribution (encode `https://venthangowthams.github.io/Pannaipuram/?install=1`)
+- ⏳ APK rebuild — release APK with all v27–v39 features (run `flutter build apk --release`)
+- ⏳ QR code for WhatsApp APK distribution (encode `https://app.pannaipuram.com/?install=1`)
 - ⏳ Email notifications for feedback (Nodemailer + Gmail App Password)
 - ⏳ Push notifications — Phase 7+ (FCM, device table exists)
 - ⏳ Live TNEB power cuts — Phase 7+ (needs TNEB feed)
@@ -588,13 +606,13 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram && git add app/li
 
 - **Developer:** Venthan
 - **Email:** venthan89@gmail.com
-- **PWA (share this on WhatsApp):** https://venthangowthams.github.io/Pannaipuram/?install=1
-- **PWA (Render fallback):** https://pannaipuram-api.onrender.com/pwa/
-- **Admin panel:** https://pannaipuram-api.onrender.com/admin/v2
-- **Production API:** https://pannaipuram-api.onrender.com
-- **Future custom domain:** `app.pannaipuram.com` (plan: `docs/domain-and-hosting-plan.md`)
+- **PWA (share this on WhatsApp):** https://app.pannaipuram.com/?install=1
+- **PWA (legacy GitHub Pages):** https://venthangowthams.github.io/Pannaipuram/
+- **PWA (legacy Render fallback):** https://pannaipuram-api.onrender.com/pwa/
+- **Admin panel:** https://admin.pannaipuram.com (or https://pannaipuram-api.onrender.com/admin/v2)
+- **Production API:** https://api.pannaipuram.com (or https://pannaipuram-api.onrender.com)
 
 ---
 
-*Last updated: May 27, 2026 — PWA v37, GitHub Pages deploy, install wall*
+*Last updated: June 7, 2026 — PWA v39, custom domain (app/api/admin.pannaipuram.com) live, Emergency Contacts tab + About village stats*
 *Built with ❤️ for பண்ணைப்புரம் — உங்கள் ஊரின் தகவல் மையம்*
