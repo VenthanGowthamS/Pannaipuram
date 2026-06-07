@@ -19,7 +19,7 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 | Hosting | Render.com (Node.js) | https://pannaipuram-api.onrender.com |
 | Docs | Markdown | `docs/` |
 
-### PWA — Key Architecture Facts (v41, June 2026)
+### PWA — Key Architecture Facts (v42, June 2026)
 - **Source lives at:** `pwa/` (repo root) — NOT inside `backend/`
 - **Custom domain LIVE (June 2026):** `pannaipuram.com` bought on Cloudflare Registrar (auto-renew on). Subdomains:
   - 🌟 **PWA (share this):** https://app.pannaipuram.com — GitHub Pages, ships `pwa/CNAME` = `app.pannaipuram.com`
@@ -39,12 +39,12 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 - **Cold-start resilience (v34):** `apiFetch` has 2.5s timeout — if Render is cold, cached data served instantly; network keeps running to refresh
 - **One-tap install share link:** `https://app.pannaipuram.com/?install=1` triggers full-screen install wall (Android only)
 - **PWA sections (v41):** 4 bottom-nav tabs — 🚌 பேருந்து (`bus.js`) · 🛺 ஆட்டோ (`auto.js`) · 🏥 மருத்துவம் Hospital (`hospital.js`, fetches `/api/hospital/list` + `/api/hospital/doctors`, shows doctor day-chips + "இன்று கிடைக்கும்" today badge) · 📞 அவசரம் Emergency (`emergency.js`, fetches `/api/emergency/contacts`). Hospital + Emergency lazy-init on first open. About sheet in ☰ menu has village stats (population/wards/streets/cardamom).
-- **App identity (v40):** icon = flashy vivid-blue gradient + white cottage + amber location pin (`backend/gen-icon.js`, run `node gen-icon.js` to regen). Manifest `short_name` = **"Pannaipuram"** (English, searchable without Tamil keyboard); `name` = "Pannaipuram பண்ணைப்புரம்".
+- **App identity (v42):** icon = flashy blue gradient + 3 white service badges in a triangle (top=hospital red cross, bottom-left=bus blue, bottom-right=auto green) (`backend/gen-icon.js`, run `node gen-icon.js` to regen). Manifest `short_name` = **"Pannaipuram"** (English, searchable without Tamil keyboard); `name` = "Pannaipuram பண்ணைப்புரம்".
 - **Phone validation:** Indian mobile = EXACTLY 10 digits starting 6/7/8/9. Auto reg form (`pwa/js/auto.js`) strips non-digits + caps at 10; input `maxlength=10`.
 - **Bottom nav (`pwa/css/nav.css`):** uses `grid-auto-flow: column` — auto-fits any number of tabs (don't hardcode column count).
 - **Render config:** `render.yaml` at repo root with `rootDir: .` ensures full repo is deployed
 - **NEVER edit files inside `backend/public/pwa/`** — that folder was deleted. Edit only in `pwa/`
-- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v41.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
+- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v42.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
 - **Icon generation:** Run `node backend/gen-icon.js` to regenerate `pwa/icons/icon-192.png` + `icon-512.png`
 - **Service Worker:** 3-tier cache — SW (stale-while-revalidate for /api/*) → api.js memory → localStorage fallback
 - **Domain plan reference:** `docs/domain-and-hosting-plan.md` — original migration plan (now executed)
@@ -466,11 +466,11 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 - Line 344: `தொலைதூர பயணம்` — Long Distance ✅ (updated April 2026)
 - No night/Chennai section in Flutter APK (PWA-only feature)
 
-### ✅ Live & Complete — PWA (unified: Bus + Auto + Hospital + Emergency) — v41 (June 2026)
+### ✅ Live & Complete — PWA (unified: Bus + Auto + Hospital + Emergency) — v42 (June 2026)
 
 | Feature | File | Status |
 |---|---|---|
-| **New icon** — flashy blue gradient + white cottage + amber pin (no more bus) | backend/gen-icon.js + pwa/icons | ✅ v40 |
+| **New icon** — flashy blue + 3 service badges (bus/auto/hospital) in a triangle | backend/gen-icon.js + pwa/icons | ✅ v42 |
 | **English searchable name** — manifest short_name "Pannaipuram" | pwa/manifest.json | ✅ v40 |
 | **Hospital & Doctors tab** (🏥 மருத்துவம்) — doctors by hospital, day-chips, "இன்று கிடைக்கும்" today badge | pwa/js/hospital.js + css | ✅ v40 |
 | **Auto phone fix** — exactly 10 digits (6-9 start), was maxlength=15 | pwa/js/auto.js + index.html | ✅ v40 |
@@ -512,7 +512,7 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 | Design token scale (--ta-xs through --ta-xxl) | pwa/css/tokens.css | ✅ |
 | Focus ring a11y (gold 3px :focus-visible) | pwa/css/base.css | ✅ |
 | New bus icon (navy + bus silhouette + route dots) | pwa/icons/ | ✅ |
-| **SW cache v41 / localStorage key pannai-v41** | pwa/sw.js + api.js | ✅ v41 |
+| **SW cache v42 / localStorage key pannai-v42** | pwa/sw.js + api.js | ✅ v42 |
 
 ### ✅ Infrastructure
 - JWT auth + RBAC (super_admin, admin, viewer)
@@ -620,5 +620,5 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram && git add app/li
 
 ---
 
-*Last updated: June 7, 2026 — PWA v41, unified app (Bus + Auto + Hospital + Emergency), new flashy-blue cottage+pin icon, English searchable name "Pannaipuram", auto phone fix*
+*Last updated: June 7, 2026 — PWA v42, unified app (Bus + Auto + Hospital + Emergency), new flashy-blue 3-badge icon (bus/auto/hospital), English searchable name "Pannaipuram", auto phone fix*
 *Built with ❤️ for பண்ணைப்புரம் — உங்கள் ஊரின் தகவல் மையம்*
