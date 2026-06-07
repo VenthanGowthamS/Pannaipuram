@@ -19,7 +19,7 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 | Hosting | Render.com (Node.js) | https://pannaipuram-api.onrender.com |
 | Docs | Markdown | `docs/` |
 
-### PWA — Key Architecture Facts (v43, June 2026)
+### PWA — Key Architecture Facts (v44, June 2026)
 - **Source lives at:** `pwa/` (repo root) — NOT inside `backend/`
 - **Custom domain LIVE (June 2026):** `pannaipuram.com` bought on Cloudflare Registrar (auto-renew on). Subdomains:
   - 🌟 **PWA (share this):** https://app.pannaipuram.com — GitHub Pages, ships `pwa/CNAME` = `app.pannaipuram.com`
@@ -466,11 +466,11 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 - Line 344: `தொலைதூர பயணம்` — Long Distance ✅ (updated April 2026)
 - No night/Chennai section in Flutter APK (PWA-only feature)
 
-### ✅ Live & Complete — PWA (unified: Bus + Auto + Hospital + Emergency) — v43 (June 2026)
+### ✅ Live & Complete — PWA (unified: Bus + Auto + Hospital + Emergency) — v44 (June 2026)
 
 | Feature | File | Status |
 |---|---|---|
-| **New icon** — illustrated village scene (home + hospital + bus) | backend/gen-icon.js + pwa/icons | ✅ v43 |
+| **Icon** — original navy-blue bus restored (new unified icon TBD) | backend/gen-icon.js + pwa/icons | ✅ v44 |
 | **English searchable name** — manifest short_name "Pannaipuram" | pwa/manifest.json | ✅ v40 |
 | **Hospital & Doctors tab** (🏥 மருத்துவம்) — doctors by hospital, day-chips, "இன்று கிடைக்கும்" today badge | pwa/js/hospital.js + css | ✅ v40 |
 | **Auto phone fix** — exactly 10 digits (6-9 start), was maxlength=15 | pwa/js/auto.js + index.html | ✅ v40 |
