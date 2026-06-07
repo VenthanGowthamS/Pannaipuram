@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="/pwa/css/nav.css">
   <link rel="stylesheet" href="/pwa/css/bus.css">
   <link rel="stylesheet" href="/pwa/css/auto.css">
+  <link rel="stylesheet" href="/pwa/css/emergency.css">
 </head>
 <body data-section="bus" class="notranslate" translate="no">
 
@@ -197,10 +198,55 @@
           <li>🚌 அனைத்து பேருந்து நேரங்களும்</li>
           <li>⏳ அடுத்த பேருந்து வரும் நேரக் கணிப்பு</li>
           <li>🛺 ஊர் ஆட்டோ ஓட்டுநர்களின் தொடர்பு விவரங்கள்</li>
+          <li>📞 அவசர தொலைபேசி எண்கள் — ஒரே tap-ல் call</li>
           <li>📴 இணையம் இல்லாமலும் பயன்படுத்தலாம்</li>
           <li>🔄 10 நிமிடத்திற்கு ஒருமுறை தானாகப் புதுப்பிக்கும்</li>
           <li>💬 உங்கள் கருத்துகளை நேரடியாக பகிரலாம்</li>
         </ul>
+      </section>
+
+      <section class="about-section">
+        <h4>நம்ம ஊர் — பண்ணைப்புரம்</h4>
+        <p class="about-cardamom-en" style="margin-bottom:10px;">தேனி மாவட்டம் · உத்தமபாளையம் தாலுகா · Pincode 625524</p>
+        <div class="about-stats">
+          <div class="about-stat">
+            <div class="about-stat-emoji">👥</div>
+            <div class="about-stat-val">~9,323</div>
+            <div class="about-stat-label">மக்கள் தொகை</div>
+          </div>
+          <div class="about-stat">
+            <div class="about-stat-emoji">🏠</div>
+            <div class="about-stat-val">1,719</div>
+            <div class="about-stat-label">வீடுகள்</div>
+          </div>
+          <div class="about-stat">
+            <div class="about-stat-emoji">🏘️</div>
+            <div class="about-stat-val">15</div>
+            <div class="about-stat-label">வார்டுகள்</div>
+          </div>
+          <div class="about-stat">
+            <div class="about-stat-emoji">🛣️</div>
+            <div class="about-stat-val">57</div>
+            <div class="about-stat-label">தெருக்கள்</div>
+          </div>
+          <div class="about-stat">
+            <div class="about-stat-emoji">📏</div>
+            <div class="about-stat-val">15.36</div>
+            <div class="about-stat-label">சதுர கி.மீ</div>
+          </div>
+          <div class="about-stat">
+            <div class="about-stat-emoji">🗳️</div>
+            <div class="about-stat-val">கம்பம்</div>
+            <div class="about-stat-label">சட்டமன்றத் தொகுதி</div>
+          </div>
+        </div>
+
+        <div class="about-cardamom">
+          <p class="about-cardamom-title">🌿 ஏலக்காய் தோட்டம்</p>
+          <p class="about-cardamom-en">Cardamom Estate Region</p>
+          <p class="about-cardamom-text">பண்ணைப்புரம் ஏலக்காய் தோட்டங்களுக்குப் பிரசித்தமானது. மேற்குத் தொடர்ச்சி மலையடிவாரத்தில் அமைந்த இந்த ஊர், விவசாயம் சார்ந்த வாழ்க்கை முறையைக் கொண்டது.</p>
+        </div>
+        <p class="about-cardamom-en" style="margin-top:10px;">மக்கள் தொகை: 2011 மக்கள் தொகை கணக்கெடுப்பு</p>
       </section>
     </div>
   </div>
@@ -443,6 +489,22 @@
 
     </section>
 
+    <!-- EMERGENCY SECTION -->
+    <section id="section-emergency" class="section notranslate" translate="no" hidden>
+
+      <!-- Red header -->
+      <div class="em-header">
+        <button id="em-refresh-btn" class="em-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
+        <p class="em-header-ta">அவசர தொலைபேசி எண்கள்</p>
+        <p class="em-header-en">Emergency Contacts</p>
+        <span class="em-header-note">📞 ஒரே tap-ல் call பண்ணுங்க</span>
+      </div>
+
+      <!-- Contact groups (rendered by emergency.js) -->
+      <div id="em-list"></div>
+
+    </section>
+
   </main>
 
   <!-- ── Bottom Navigation ────────────────────────────── -->
@@ -455,11 +517,16 @@
       <span class="nav-icon" aria-hidden="true">🛺</span>
       <span class="nav-label">ஆட்டோ</span>
     </button>
+    <button class="nav-tab" role="tab" data-section="emergency" aria-selected="false" aria-label="Emergency contacts">
+      <span class="nav-icon" aria-hidden="true">📞</span>
+      <span class="nav-label">அவசரம்</span>
+    </button>
   </nav>
 
   <script src="/pwa/js/api.js"></script>
   <script src="/pwa/js/bus.js"></script>
   <script src="/pwa/js/auto.js"></script>
+  <script src="/pwa/js/emergency.js"></script>
   <script src="/pwa/js/app.js"></script>
 </body>
 </html>

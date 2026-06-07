@@ -118,6 +118,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (pushHash && window.location.hash !== '#' + id) {
       history.replaceState(null, '', '#' + id);
     }
+    // Lazy-init Emergency on first visit (fetches contacts only when opened)
+    if (id === 'emergency' && window.Emergency) Emergency.init();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -129,12 +131,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   window.addEventListener('hashchange', function() {
     var h = window.location.hash.replace('#', '');
-    if (h === 'bus' || h === 'auto') switchSection(h, false);
+    if (h === 'bus' || h === 'auto' || h === 'emergency') switchSection(h, false);
   });
 
-  // Handle deep links (#bus / #auto in URL)
+  // Handle deep links (#bus / #auto / #emergency in URL)
   var hash = window.location.hash.replace('#', '');
-  var startSection = (hash === 'auto') ? 'auto' : 'bus';
+  var startSection = (hash === 'auto' || hash === 'emergency') ? hash : 'bus';
 
   // ── Online/Offline banner ──────────────────────────────
   var banner = document.getElementById('offline-banner');

@@ -1,0 +1,207 @@
+/* ── Emergency Contacts Section ─────────────────────────── */
+
+/* Header — red theme (urgency) */
+.em-header {
+  position: relative;
+  background: linear-gradient(135deg, #C62828 0%, #8E1B1B 100%);
+  color: #fff;
+  /* side padding clears the fixed ☰ (left) and ↻ (right) buttons */
+  padding: 18px 60px 18px;
+  text-align: center;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+}
+.em-header-ta {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2;
+}
+.em-header-en {
+  font-size: 0.82rem;
+  opacity: 0.9;
+  margin: 4px 0 0;
+}
+.em-header-note {
+  display: inline-block;
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.em-refresh-btn {
+  position: absolute;
+  top: 16px;
+  right: 14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.em-refresh-btn.spinning { animation: em-spin 0.5s linear; }
+@keyframes em-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+/* Group (category) */
+.em-group { margin: 18px 12px 0; }
+.em-group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-left: 4px;
+}
+.em-group-emoji { font-size: 1.5rem; }
+.em-group-titles { display: flex; flex-direction: column; }
+.em-group-ta {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1A1A1A;
+  line-height: 1.1;
+}
+.em-group-en {
+  font-size: 0.72rem;
+  color: #757575;
+}
+.em-group-cards { display: flex; flex-direction: column; gap: 10px; }
+
+/* Contact card — whole card is the call link */
+.em-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #EFEFEF;
+  border-radius: 14px;
+  padding: 14px 14px;
+  text-decoration: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  -webkit-tap-highlight-color: transparent;
+}
+.em-card:active { background: #FFF5F5; transform: scale(0.99); }
+.em-card-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.em-card-ta {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1A1A1A;
+  line-height: 1.25;
+}
+.em-card-en {
+  font-size: 0.74rem;
+  color: #888;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.em-card-phone {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #C62828;
+  margin-top: 4px;
+  letter-spacing: 0.3px;
+}
+.em-badge {
+  font-size: 0.6rem;
+  padding: 1px 7px;
+  border-radius: 7px;
+  font-weight: 700;
+  font-family: 'Noto Sans Tamil', sans-serif;
+}
+.em-badge-nat { background: #E3F2FD; color: #1565C0; }
+
+/* Call button */
+.em-call-btn {
+  flex-shrink: 0;
+  background: #16A34A;
+  color: #fff;
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  padding: 11px 14px;
+  border-radius: 11px;
+  white-space: nowrap;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+/* Empty / spacer at bottom so last card clears the nav bar */
+.em-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: #888;
+}
+.em-empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.em-empty-ta { font-family: 'Noto Sans Tamil', sans-serif; font-size: 1.05rem; font-weight: 600; margin: 0; }
+.em-empty-en { font-size: 0.8rem; margin: 4px 0 0; }
+
+#section-emergency { padding-bottom: 90px; }
+
+/* ── About sheet — village stats grid (ported from APK) ──── */
+.about-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+.about-stat {
+  background: #F7F7F7;
+  border-radius: 12px;
+  padding: 12px 10px;
+  text-align: center;
+}
+.about-stat-emoji { font-size: 1.4rem; }
+.about-stat-val {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1A1A1A;
+  margin-top: 4px;
+}
+.about-stat-label {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.78rem;
+  color: #666;
+  margin-top: 2px;
+}
+.about-cardamom {
+  margin-top: 14px;
+  background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
+  border-radius: 12px;
+  padding: 14px;
+}
+.about-cardamom-title {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #2E7D32;
+  margin: 0;
+}
+.about-cardamom-en { font-size: 0.74rem; color: #757575; margin: 2px 0 8px; }
+.about-cardamom-text {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.9rem;
+  color: #333;
+  line-height: 1.5;
+  margin: 0;
+}
