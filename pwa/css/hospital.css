@@ -75,6 +75,52 @@
   white-space: nowrap;
 }
 
+/* Hospital contact call chips */
+.hd-contacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+.hd-contact {
+  flex: 1 1 auto;
+  min-width: 130px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #fff;
+  border: 1px solid #E0F2F1;
+  border-left: 4px solid #00838F;
+  border-radius: 11px;
+  padding: 9px 11px;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.hd-contact:active { background: #F1FBFC; }
+.hd-contact-ic { font-size: 18px; }
+.hd-contact-txt { display: flex; flex-direction: column; min-width: 0; }
+.hd-contact-lbl {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.78rem;
+  color: #555;
+  line-height: 1.2;
+}
+.hd-contact-num {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #006064;
+  letter-spacing: 0.3px;
+}
+.hd-pharmacy {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.88rem;
+  color: #555;
+  background: #F5F5F5;
+  border-radius: 9px;
+  padding: 8px 11px;
+  margin-bottom: 12px;
+}
+
 /* Doctor card */
 .hd-card {
   background: #fff;

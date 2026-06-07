@@ -5,7 +5,7 @@ const { query } = require('../db/pool');
 // GET /api/hospital/list — all hospitals (public, no auth needed)
 router.get('/list', async (req, res) => {
   try {
-    const result = await query('SELECT id, name_tamil, name_english, address_tamil, phone_casualty FROM hospitals ORDER BY id');
+    const result = await query('SELECT id, name_tamil, name_english, address_tamil, phone_casualty, phone_ambulance, phone_general, pharmacy_hours FROM hospitals ORDER BY id');
     res.json({ success: true, data: result.rows });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });

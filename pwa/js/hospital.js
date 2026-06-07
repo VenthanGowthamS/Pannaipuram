@@ -69,15 +69,30 @@ var Hospital = (function() {
       '</div>';
   }
 
+  // Contact call chips — one per available number (casualty / ambulance / general)
+  function contactChips(hosp) {
+    var chips = [];
+    if (hosp.phone_casualty)  chips.push(['📞', 'அவசர சிகிச்சை', hosp.phone_casualty]);
+    if (hosp.phone_ambulance) chips.push(['🚑', 'ஆம்புலன்ஸ்',   hosp.phone_ambulance]);
+    if (hosp.phone_general)   chips.push(['☎️', 'அலுவலகம்',     hosp.phone_general]);
+    if (!chips.length) return '';
+    return '<div class="hd-contacts">' + chips.map(function(c) {
+      return '<a class="hd-contact" href="' + telHref(c[2]) + '">' +
+        '<span class="hd-contact-ic">' + c[0] + '</span>' +
+        '<span class="hd-contact-txt"><span class="hd-contact-lbl">' + c[1] + '</span>' +
+        '<span class="hd-contact-num">' + esc(String(c[2]).trim()) + '</span></span></a>';
+    }).join('') + '</div>';
+  }
+
   function renderHospital(hosp, doctors, todayDow) {
     var docs = doctors.filter(function(d) {
       return d.hospital_id === hosp.id && d.is_active !== false;
     });
-    var callBtn = hosp.phone_casualty
-      ? '<a class="hd-hosp-call" href="' + telHref(hosp.phone_casualty) + '">📞 அவசர சிகிச்சை</a>' : '';
     var docsHtml = docs.length
       ? docs.map(function(d) { return renderDoctor(d, todayDow); }).join('')
       : '<div class="hd-empty-small">டாக்டர் தகவல் விரைவில் சேர்க்கப்படும்</div>';
+    var pharmacy = hosp.pharmacy_hours
+      ? '<div class="hd-pharmacy">💊 மருந்தகம்: ' + esc(hosp.pharmacy_hours) + '</div>' : '';
 
     return '' +
       '<section class="hd-hospital">' +
@@ -87,8 +102,9 @@ var Hospital = (function() {
             (hosp.name_english ? '<span class="hd-hosp-en">' + esc(hosp.name_english) + '</span>' : '') +
             (hosp.address_tamil ? '<span class="hd-hosp-addr">📍 ' + esc(hosp.address_tamil) + '</span>' : '') +
           '</div>' +
-          callBtn +
         '</div>' +
+        contactChips(hosp) +
+        pharmacy +
         docsHtml +
       '</section>';
   }
