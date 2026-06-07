@@ -1,101 +1,143 @@
-// Generate PWA icons for Pannaipuram — UNIFIED village info app.
-// Beautiful village scene: blue sky + sun, green hills + trees,
-// home (terracotta roof) + hospital (red cross), bus on a winding road.
-// Full-bleed = safe for maskable icons.
+// Generate PWA icons for Pannaipuram
+// Navy blue background + bus silhouette + "பண்" Tamil text
 const { createCanvas } = require('./node_modules/canvas');
 const fs = require('fs');
 const path = require('path');
 
-function rr(ctx, x, y, w, h, r) {
-  ctx.beginPath(); ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
-}
-
-function tree(ctx, x, groundY, s, c) {
-  ctx.fillStyle = '#8D6E63';
-  rr(ctx, x - s * 0.08, groundY - s * 0.5, s * 0.16, s * 0.5, s * 0.04); ctx.fill();
-  ctx.fillStyle = c;
-  ctx.beginPath(); ctx.arc(x, groundY - s * 0.7, s * 0.34, 0, 7); ctx.fill();
-  ctx.beginPath(); ctx.arc(x - s * 0.24, groundY - s * 0.52, s * 0.26, 0, 7); ctx.fill();
-  ctx.beginPath(); ctx.arc(x + s * 0.24, groundY - s * 0.52, s * 0.26, 0, 7); ctx.fill();
-}
-
-function cottage(ctx, cx, baseY, w) {
-  const bw = w, bh = w * 0.62, x = cx - bw / 2, y = baseY - bh;
-  ctx.fillStyle = '#FFFFFF'; rr(ctx, x, y, bw, bh, w * 0.05); ctx.fill();
-  ctx.fillStyle = '#E2683C';
-  ctx.beginPath(); ctx.moveTo(cx, y - bh * 0.55);
-  ctx.lineTo(x - bw * 0.12, y + bh * 0.06); ctx.lineTo(x + bw * 1.12, y + bh * 0.06);
-  ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#E2683C'; rr(ctx, cx - bw * 0.12, y + bh * 0.42, bw * 0.24, bh * 0.58, w * 0.03); ctx.fill();
-  ctx.fillStyle = '#FFD24A'; rr(ctx, x + bw * 0.12, y + bh * 0.36, bw * 0.18, bw * 0.18, w * 0.03); ctx.fill();
-}
-
-function hospital(ctx, cx, baseY, w) {
-  const bw = w, bh = w * 0.95, x = cx - bw / 2, y = baseY - bh;
-  ctx.fillStyle = '#FFFFFF'; rr(ctx, x, y, bw, bh, w * 0.05); ctx.fill();
-  ctx.fillStyle = '#E53935'; rr(ctx, x, y, bw, bh * 0.2, w * 0.05); ctx.fill();
-  ctx.fillRect(x, y + bh * 0.12, bw, bh * 0.08);
-  const cs = bw * 0.34, ccx = cx, ccy = y + bh * 0.5, t = cs * 0.34;
-  ctx.fillStyle = '#E53935';
-  rr(ctx, ccx - t / 2, ccy - cs / 2, t, cs, t * 0.3); ctx.fill();
-  rr(ctx, ccx - cs / 2, ccy - t / 2, cs, t, t * 0.3); ctx.fill();
-  ctx.fillStyle = '#BBDEFB'; rr(ctx, ccx - bw * 0.15, y + bh * 0.7, bw * 0.3, bh * 0.3, w * 0.03); ctx.fill();
-}
-
-function bus(ctx, cx, cy, w, color) {
-  const h = w * 0.6, x = cx - w / 2, y = cy - h / 2;
-  ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.12)';
-  ctx.beginPath(); ctx.ellipse(cx, y + h * 0.96, w * 0.5, h * 0.12, 0, 0, 7); ctx.fill(); ctx.restore();
-  ctx.fillStyle = color; rr(ctx, x, y, w, h * 0.8, w * 0.17); ctx.fill();
-  ctx.fillStyle = '#FFFFFF';
-  const ww = w * 0.17, wh = h * 0.26, gap = w * 0.07; let wx = x + w * 0.1; const wy = y + h * 0.12;
-  for (let i = 0; i < 3; i++) { rr(ctx, wx, wy, ww, wh, w * 0.04); ctx.fill(); wx += ww + gap; }
-  ctx.fillStyle = '#263238';
-  ctx.beginPath(); ctx.arc(x + w * 0.27, y + h * 0.82, w * 0.1, 0, 7); ctx.fill();
-  ctx.beginPath(); ctx.arc(x + w * 0.73, y + h * 0.82, w * 0.1, 0, 7); ctx.fill();
-}
-
 function drawIcon(size) {
-  const c = createCanvas(size, size), ctx = c.getContext('2d'), u = size / 192;
-  // sky
-  const sky = ctx.createLinearGradient(0, 0, 0, size);
-  sky.addColorStop(0, '#BFE4FF'); sky.addColorStop(1, '#7FC4F2');
-  ctx.fillStyle = sky; ctx.fillRect(0, 0, size, size);
-  // sun
-  ctx.fillStyle = '#FFE08A';
-  ctx.beginPath(); ctx.arc(150 * u, 46 * u, 20 * u, 0, 7); ctx.fill();
-  // far hill
-  ctx.fillStyle = '#9BD9A6';
-  ctx.beginPath(); ctx.moveTo(0, 120 * u);
-  ctx.quadraticCurveTo(60 * u, 96 * u, 120 * u, 116 * u);
-  ctx.quadraticCurveTo(165 * u, 130 * u, size, 110 * u);
-  ctx.lineTo(size, size); ctx.lineTo(0, size); ctx.closePath(); ctx.fill();
-  // trees
-  tree(ctx, 26 * u, 120 * u, 30 * u, '#5BB56C');
-  tree(ctx, 172 * u, 116 * u, 26 * u, '#5BB56C');
-  // buildings
-  cottage(ctx, 60 * u, 138 * u, 46 * u);
-  hospital(ctx, 122 * u, 138 * u, 44 * u);
-  // near hill
-  ctx.fillStyle = '#4FAE6A';
-  ctx.beginPath(); ctx.moveTo(0, 150 * u);
-  ctx.quadraticCurveTo(96 * u, 138 * u, size, 152 * u);
-  ctx.lineTo(size, size); ctx.lineTo(0, size); ctx.closePath(); ctx.fill();
-  // road
-  ctx.fillStyle = '#ECE6D6';
+  const c = createCanvas(size, size);
+  const ctx = c.getContext('2d');
+  const s = size / 192; // scale factor (192 is base design size)
+
+  // ── Background: deep navy gradient ────────────────────────
+  const bg = ctx.createLinearGradient(0, 0, size, size);
+  bg.addColorStop(0, '#1A237E');
+  bg.addColorStop(1, '#0D47A1');
+  ctx.fillStyle = bg;
+
+  // Rounded rect background
+  const r = size * 0.22;
   ctx.beginPath();
-  ctx.moveTo(36 * u, size); ctx.quadraticCurveTo(70 * u, 168 * u, 150 * u, 160 * u);
-  ctx.lineTo(176 * u, 168 * u); ctx.quadraticCurveTo(96 * u, 182 * u, 80 * u, size);
-  ctx.closePath(); ctx.fill();
-  // bus
-  bus(ctx, 110 * u, 168 * u, 46 * u, '#1565C0');
+  ctx.moveTo(r, 0);
+  ctx.lineTo(size - r, 0);
+  ctx.quadraticCurveTo(size, 0, size, r);
+  ctx.lineTo(size, size - r);
+  ctx.quadraticCurveTo(size, size, size - r, size);
+  ctx.lineTo(r, size);
+  ctx.quadraticCurveTo(0, size, 0, size - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // ── Bus body ───────────────────────────────────────────────
+  const bx = size * 0.14;   // bus left x
+  const by = size * 0.28;   // bus top y
+  const bw = size * 0.72;   // bus width
+  const bh = size * 0.34;   // bus height
+  const br = size * 0.06;   // bus corner radius
+
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.beginPath();
+  ctx.moveTo(bx + br, by);
+  ctx.lineTo(bx + bw - br, by);
+  ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + br);
+  ctx.lineTo(bx + bw, by + bh - br);
+  ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - br, by + bh);
+  ctx.lineTo(bx + br, by + bh);
+  ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - br);
+  ctx.lineTo(bx, by + br);
+  ctx.quadraticCurveTo(bx, by, bx + br, by);
+  ctx.closePath();
+  ctx.fill();
+
+  // ── Windows ────────────────────────────────────────────────
+  const winY = by + bh * 0.15;
+  const winH = bh * 0.45;
+  const winW = bw * 0.16;
+  const winR = size * 0.025;
+  const winGap = bw * 0.055;
+  const winStartX = bx + bw * 0.1;
+  const numWins = 4;
+
+  ctx.fillStyle = '#1A237E';
+  for (let i = 0; i < numWins; i++) {
+    const wx = winStartX + i * (winW + winGap);
+    ctx.beginPath();
+    ctx.moveTo(wx + winR, winY);
+    ctx.lineTo(wx + winW - winR, winY);
+    ctx.quadraticCurveTo(wx + winW, winY, wx + winW, winY + winR);
+    ctx.lineTo(wx + winW, winY + winH - winR);
+    ctx.quadraticCurveTo(wx + winW, winY + winH, wx + winW - winR, winY + winH);
+    ctx.lineTo(wx + winR, winY + winH);
+    ctx.quadraticCurveTo(wx, winY + winH, wx, winY + winH - winR);
+    ctx.lineTo(wx, winY + winR);
+    ctx.quadraticCurveTo(wx, winY, wx + winR, winY);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // ── Front light bar ────────────────────────────────────────
+  ctx.fillStyle = '#FFD54F';
+  ctx.fillRect(bx + bw - size * 0.04, by + bh * 0.3, size * 0.04, bh * 0.25);
+
+  // ── Wheels ─────────────────────────────────────────────────
+  const wheelY = by + bh;
+  const wheelR = size * 0.085;
+  const wheel1X = bx + bw * 0.22;
+  const wheel2X = bx + bw * 0.73;
+
+  // Wheel shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath(); ctx.ellipse(wheel1X, wheelY + wheelR * 0.4, wheelR * 1.1, wheelR * 0.35, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(wheel2X, wheelY + wheelR * 0.4, wheelR * 1.1, wheelR * 0.35, 0, 0, Math.PI * 2); ctx.fill();
+
+  // Wheel body
+  ctx.fillStyle = '#263238';
+  ctx.beginPath(); ctx.arc(wheel1X, wheelY, wheelR, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(wheel2X, wheelY, wheelR, 0, Math.PI * 2); ctx.fill();
+
+  // Wheel hub
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.beginPath(); ctx.arc(wheel1X, wheelY, wheelR * 0.38, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(wheel2X, wheelY, wheelR * 0.38, 0, Math.PI * 2); ctx.fill();
+
+  // ── "பண்" label below bus ──────────────────────────────────
+  const fontSize = size * 0.165;
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `bold ${fontSize}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // Route line dots
+  const dotY = size * 0.87;
+  const dotR = size * 0.025;
+  const dots = 5;
+  const dotSpan = size * 0.44;
+  const dotStartX = size / 2 - dotSpan / 2;
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  for (let i = 0; i < dots; i++) {
+    ctx.beginPath();
+    ctx.arc(dotStartX + i * (dotSpan / (dots - 1)), dotY, dotR, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Larger center dot = Pannaipuram stop
+  ctx.fillStyle = '#FFD54F';
+  ctx.beginPath();
+  ctx.arc(size / 2, dotY, dotR * 1.9, 0, Math.PI * 2);
+  ctx.fill();
+
   return c;
 }
 
 const outDir = path.join(__dirname, '../pwa/icons');
-fs.writeFileSync(path.join(outDir, 'icon-192.png'), drawIcon(192).toBuffer('image/png'));
-console.log('✅ icon-192.png written (village scene)');
-fs.writeFileSync(path.join(outDir, 'icon-512.png'), drawIcon(512).toBuffer('image/png'));
-console.log('✅ icon-512.png written (village scene)');
+
+// 192 × 192
+const c192 = drawIcon(192);
+fs.writeFileSync(path.join(outDir, 'icon-192.png'), c192.toBuffer('image/png'));
+console.log('✅ icon-192.png written');
+
+// 512 × 512
+const c512 = drawIcon(512);
+fs.writeFileSync(path.join(outDir, 'icon-512.png'), c512.toBuffer('image/png'));
+console.log('✅ icon-512.png written');
