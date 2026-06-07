@@ -106,10 +106,10 @@ var Auto = (function() {
     var phoneErr = document.getElementById('acf-phone-err');
     if (!form) return;
 
-    // Phone validation helper
+    // Phone validation helper — Indian mobile = EXACTLY 10 digits starting 6/7/8/9
     function validatePhone(val) {
       var digits = val.replace(/\D/g, '');
-      return digits.length >= 10 && /^[6-9]/.test(digits);
+      return digits.length === 10 && /^[6-9]/.test(digits);
     }
 
     function clearPhoneErr() {
@@ -127,9 +127,13 @@ var Auto = (function() {
       }
     }
 
-    // Clear inline error as user types
+    // Clear inline error as user types + keep only digits, max 10
     var phoneInput = document.getElementById('acf-phone');
-    if (phoneInput) phoneInput.addEventListener('input', clearPhoneErr);
+    if (phoneInput) phoneInput.addEventListener('input', function() {
+      var d = phoneInput.value.replace(/\D/g, '').slice(0, 10);
+      if (phoneInput.value !== d) phoneInput.value = d;
+      clearPhoneErr();
+    });
 
     form.addEventListener('submit', async function(ev) {
       ev.preventDefault();
@@ -147,7 +151,7 @@ var Auto = (function() {
         return;
       }
       if (!validatePhone(phone)) {
-        showPhoneErr('சரியான தொலைபேசி எண்ணை உள்ளிடுங்கள்.');
+        showPhoneErr('10 இலக்க மொபைல் எண்ணை சரியாக உள்ளிடுங்கள் (6/7/8/9-ல் தொடங்கணும்).');
         return;
       }
       if (!name) {

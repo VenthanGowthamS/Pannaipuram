@@ -1,0 +1,162 @@
+/* ── Hospital & Doctors Section ──────────────────────────── */
+
+.hd-header {
+  position: relative;
+  background: linear-gradient(135deg, #00838F 0%, #006064 100%);
+  color: #fff;
+  padding: 18px 60px 18px;
+  text-align: center;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+}
+.hd-header-ta {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2;
+}
+.hd-header-en { font-size: 0.82rem; opacity: 0.9; margin: 4px 0 0; }
+.hd-header-note {
+  display: inline-block;
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.hd-refresh-btn {
+  position: absolute;
+  top: 16px; right: 14px;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.hd-refresh-btn.spinning { animation: hd-spin 0.5s linear; }
+@keyframes hd-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+/* Hospital group */
+.hd-hospital { margin: 18px 12px 0; }
+.hd-hosp-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+.hd-hosp-titles { display: flex; flex-direction: column; min-width: 0; }
+.hd-hosp-ta {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: #006064;
+  line-height: 1.2;
+}
+.hd-hosp-en { font-size: 0.74rem; color: #757575; margin-top: 1px; }
+.hd-hosp-addr { font-family: 'Noto Sans Tamil', sans-serif; font-size: 0.78rem; color: #888; margin-top: 2px; }
+.hd-hosp-call {
+  flex-shrink: 0;
+  background: #C62828;
+  color: #fff;
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 9px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Doctor card */
+.hd-card {
+  background: #fff;
+  border: 1px solid #EFEFEF;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.hd-card-top { display: flex; align-items: flex-start; gap: 12px; }
+.hd-avatar {
+  flex-shrink: 0;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: #E0F7FA;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.hd-card-name { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.hd-name-ta {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1A1A1A;
+  line-height: 1.25;
+}
+.hd-name-en { font-size: 0.74rem; color: #888; }
+.hd-spec {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.82rem;
+  color: #00838F;
+  font-weight: 600;
+  margin-top: 3px;
+}
+.hd-today-badge {
+  flex-shrink: 0;
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: #E8F5E9;
+  color: #2E7D32;
+  white-space: nowrap;
+}
+.hd-today-badge.hd-today-no { background: #F5F5F5; color: #9E9E9E; }
+
+/* Day chips */
+.hd-days { display: flex; gap: 5px; margin-top: 12px; }
+.hd-day-chip {
+  flex: 1;
+  text-align: center;
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 5px 0;
+  border-radius: 8px;
+  background: #F5F5F5;
+  color: #BDBDBD;
+}
+.hd-day-chip.on { background: #E0F7FA; color: #00838F; }
+.hd-day-chip.today.on { background: #00838F; color: #fff; }
+.hd-day-chip.today { box-shadow: 0 0 0 2px #00838F33; }
+
+/* Schedule rows */
+.hd-scheds { margin-top: 10px; border-top: 1px dashed #ECECEC; padding-top: 10px; }
+.hd-sched-row {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.9rem;
+  color: #333;
+  padding: 3px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hd-sched-day { font-weight: 700; color: #006064; min-width: 64px; }
+.hd-sched-time { font-weight: 600; color: #1A1A1A; }
+.hd-sched-empty, .hd-empty-small {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.85rem;
+  color: #999;
+  padding: 8px 4px;
+}
+
+#section-hospital { padding-bottom: 90px; }

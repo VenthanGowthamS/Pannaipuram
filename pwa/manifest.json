@@ -1,7 +1,7 @@
 {
-  "name": "பண்ணைப்புரம்",
-  "short_name": "பண்ணைப்புரம்",
-  "description": "பேருந்து நேரம், ஆட்டோ தகவல் — Pannaipuram village transport app",
+  "name": "Pannaipuram பண்ணைப்புரம்",
+  "short_name": "Pannaipuram",
+  "description": "Pannaipuram village info — bus timings, auto, hospital, emergency contacts. பேருந்து, ஆட்டோ, மருத்துவம், அவசர எண்கள்.",
   "start_url": "/pwa/",
   "scope": "/pwa/",
   "display": "standalone",
@@ -49,7 +49,14 @@
       "description": "Auto and van transport",
       "url": "/pwa/#auto",
       "icons": [{ "src": "/pwa/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "அவசர எண்கள்",
+      "short_name": "அவசரம்",
+      "description": "Emergency contacts",
+      "url": "/pwa/#emergency",
+      "icons": [{ "src": "/pwa/icons/icon-192.png", "sizes": "192x192" }]
     }
   ],
-  "categories": ["utilities", "transportation"]
+  "categories": ["utilities", "transportation", "medical", "lifestyle"]
 }

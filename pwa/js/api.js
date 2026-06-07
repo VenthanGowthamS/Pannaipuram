@@ -2,7 +2,7 @@
 // Three-tier cache: in-memory → localStorage → network.
 // localStorage survives reloads, making the app usable offline after first load.
 var _mem = {};
-var CACHE_VERSION = 'pannai-v39';
+var CACHE_VERSION = 'pannai-v40';
 
 // API base — auto-detects hosting environment:
 //   app.pannaipuram.com  → api.pannaipuram.com  (custom domain, future)
@@ -104,4 +104,6 @@ var PannaiAPI = {
   getAutoDrivers:  function(force) { return apiFetch('/api/auto/drivers', { force: force }); },
   getAutoContact:  function() { return apiFetch('/api/auto/contact'); },
   getEmergency:    function(force) { return apiFetch('/api/emergency/contacts', { force: force }); },
+  getHospitals:    function(force) { return apiFetch('/api/hospital/list', { force: force }); },
+  getDoctors:      function(force) { return apiFetch('/api/hospital/doctors', { force: force }); },
 };

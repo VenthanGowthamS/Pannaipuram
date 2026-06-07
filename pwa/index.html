@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="/pwa/css/nav.css">
   <link rel="stylesheet" href="/pwa/css/bus.css">
   <link rel="stylesheet" href="/pwa/css/auto.css">
+  <link rel="stylesheet" href="/pwa/css/hospital.css">
   <link rel="stylesheet" href="/pwa/css/emergency.css">
 </head>
 <body data-section="bus" class="notranslate" translate="no">
@@ -461,7 +462,7 @@
           </div>
           <div class="auto-form-field">
             <label class="auto-form-label" for="acf-phone">தொலைபேசி எண் <span class="auto-form-required">*</span></label>
-            <input id="acf-phone" class="auto-form-input" type="tel" placeholder="உங்கள் மொபைல் எண்ணை உள்ளிடுங்கள்" required maxlength="15" autocomplete="tel" inputmode="tel">
+            <input id="acf-phone" class="auto-form-input" type="tel" placeholder="10 இலக்க மொபைல் எண்" required maxlength="10" autocomplete="tel" inputmode="numeric" pattern="[6-9][0-9]{9}">
             <p id="acf-phone-err" class="auto-form-field-err" hidden></p>
           </div>
           <div class="auto-form-field">
@@ -486,6 +487,22 @@
           <p id="auto-form-result" class="auto-form-result" hidden></p>
         </form>
       </div>
+
+    </section>
+
+    <!-- HOSPITAL SECTION -->
+    <section id="section-hospital" class="section notranslate" translate="no" hidden>
+
+      <!-- Teal header -->
+      <div class="hd-header">
+        <button id="hd-refresh-btn" class="hd-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
+        <p class="hd-header-ta">மருத்துவம் & டாக்டர்கள்</p>
+        <p class="hd-header-en">Hospitals & Doctors</p>
+        <span class="hd-header-note">🩺 எந்த நாள் எந்த டாக்டர்?</span>
+      </div>
+
+      <!-- Hospitals + doctors (rendered by hospital.js) -->
+      <div id="hd-list"></div>
 
     </section>
 
@@ -517,6 +534,10 @@
       <span class="nav-icon" aria-hidden="true">🛺</span>
       <span class="nav-label">ஆட்டோ</span>
     </button>
+    <button class="nav-tab" role="tab" data-section="hospital" aria-selected="false" aria-label="Hospitals and doctors">
+      <span class="nav-icon" aria-hidden="true">🏥</span>
+      <span class="nav-label">மருத்துவம்</span>
+    </button>
     <button class="nav-tab" role="tab" data-section="emergency" aria-selected="false" aria-label="Emergency contacts">
       <span class="nav-icon" aria-hidden="true">📞</span>
       <span class="nav-label">அவசரம்</span>
@@ -526,6 +547,7 @@
   <script src="/pwa/js/api.js"></script>
   <script src="/pwa/js/bus.js"></script>
   <script src="/pwa/js/auto.js"></script>
+  <script src="/pwa/js/hospital.js"></script>
   <script src="/pwa/js/emergency.js"></script>
   <script src="/pwa/js/app.js"></script>
 </body>

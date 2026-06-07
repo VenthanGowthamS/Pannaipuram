@@ -1,5 +1,5 @@
 // ── Pannaipuram PWA — Service Worker ─────────────────────
-var CACHE = 'pannai-pwa-v39';
+var CACHE = 'pannai-pwa-v40';
 
 var SHELL = [
   '/pwa/',
@@ -10,10 +10,12 @@ var SHELL = [
   '/pwa/css/bus.css',
   '/pwa/css/auto.css',
   '/pwa/css/emergency.css',
+  '/pwa/css/hospital.css',
   '/pwa/js/api.js',
   '/pwa/js/bus.js',
   '/pwa/js/auto.js',
   '/pwa/js/emergency.js',
+  '/pwa/js/hospital.js',
   '/pwa/js/app.js',
   '/pwa/manifest.json',
   '/pwa/icons/icon-192.png',
