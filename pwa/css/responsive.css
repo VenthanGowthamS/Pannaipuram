@@ -1,23 +1,23 @@
 /* ── Responsive Web Design (loaded LAST so it wins) ───────────
    Mobile (≤699px): unchanged — single column, full width.
-   Tablet/desktop (≥700px): fluid container; section headers stay
-   full-width banners; flat card lists reflow into multi-column grids;
-   forms/search constrained for readability; the complex Bus section
-   stays a clean centered column (its accordion + sibling timetables
-   don't grid safely). */
+   Tablet/desktop (≥700px): fluid container; card lists reflow into
+   centered multi-column grids; bus route list goes 2-column with the
+   expanded route spanning the full row. */
 
 @media (min-width: 700px) {
   html body { max-width: 1000px; }
   body::before { max-width: 1000px; }
 
-  /* Multi-column card grids for the simple/flat sections */
+  /* Flat card grids — cards STRETCH to fill the row (auto-fit + 1fr):
+     multi-column when there are several, full-width when only one.
+     No left-bunching, no empty right gap. */
   #driver-list,
   .em-group-cards,
   #more-acting,
   .more-svc-cards,
   .hd-docs {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 12px;
     align-items: start;
   }
@@ -27,17 +27,26 @@
   .more-svc-cards .more-card,
   .hd-docs .hd-card { margin-bottom: 0; }
 
-  /* Keep the complex Bus section a clean centered column */
+  /* Bus: search + "now departing" strip stay a clean centered column */
   #section-bus .bus-search-wrap,
   #section-bus #bus-freshness,
-  #section-bus #bus-now-strip,
-  #section-bus #bus-route-list {
-    max-width: 640px;
+  #section-bus #bus-now-strip {
+    max-width: 660px;
     margin-left: auto;
     margin-right: auto;
   }
+  /* Bus route list → multi-column; expanded route spans the full row
+     so its timetable is wide and readable */
+  .group-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 12px;
+    align-items: start;
+  }
+  .route-wrap { min-width: 0; }
+  .route-wrap.expanded { grid-column: 1 / -1; }
 
-  /* Constrain auto form so single inputs don't stretch wide */
+  /* Auto form constrained so single inputs don't stretch wide */
   .auto-hero, .auto-contact-card { max-width: 920px; margin-left: auto; margin-right: auto; }
   .auto-contact-form { max-width: 600px; margin-left: auto; margin-right: auto; }
 
@@ -50,7 +59,7 @@
   }
 }
 
-/* Wider desktops — allow a 3rd/4th column and a bit more width */
+/* Wider desktops — a bit more width + an extra column */
 @media (min-width: 1100px) {
   html body { max-width: 1140px; }
   body::before { max-width: 1140px; }

@@ -179,16 +179,20 @@ var Bus = (function() {
     }
 
     var displayNameTamil = meta.nameTamil || c.name_tamil;
-    return '<div class="route-card" data-id="' + c.id + '" role="button">' +
-      '<div class="route-rail" style="background:' + railColor + '"></div>' +
-      '<div class="route-emoji-circle" style="background:' + meta.color + '1A">' + meta.emoji + '</div>' +
-      '<div class="route-info">' +
-        '<span class="' + nameClass + '">' + displayNameTamil + '</span>' +
-        '<span class="route-name-en">' + c.name_english + (busChip ? '  ' + busChip : '') + '</span>' +
+    // Wrap card + its (sibling) timetable so the list can grid on desktop;
+    // the expanded wrap spans the full row (see responsive.css).
+    return '<div class="route-wrap' + (expandedId === c.id ? ' expanded' : '') + '">' +
+      '<div class="route-card" data-id="' + c.id + '" role="button">' +
+        '<div class="route-rail" style="background:' + railColor + '"></div>' +
+        '<div class="route-emoji-circle" style="background:' + meta.color + '1A">' + meta.emoji + '</div>' +
+        '<div class="route-info">' +
+          '<span class="' + nameClass + '">' + displayNameTamil + '</span>' +
+          '<span class="route-name-en">' + c.name_english + (busChip ? '  ' + busChip : '') + '</span>' +
+        '</div>' +
+        renderBadge(meta, timings, c.id) +
       '</div>' +
-      renderBadge(meta, timings, c.id) +
-    '</div>' +
-    '<div class="route-timetable" id="tt-' + c.id + '"' + (expandedId === c.id ? '' : ' hidden') + '></div>';
+      '<div class="route-timetable" id="tt-' + c.id + '"' + (expandedId === c.id ? '' : ' hidden') + '></div>' +
+    '</div>';
   }
 
   // ── Collapsible group header + contents ────────────────────────
@@ -423,14 +427,16 @@ var Bus = (function() {
       var el = document.getElementById('tt-' + id);
       if (el) el.hidden = true;
       var prevCard = document.querySelector('.route-card[data-id="' + id + '"]');
-      if (prevCard) prevCard.classList.remove('expanded');
+      if (prevCard) { prevCard.classList.remove('expanded');
+        if (prevCard.closest('.route-wrap')) prevCard.closest('.route-wrap').classList.remove('expanded'); }
       return;
     }
     if (expandedId !== null) {
       var prev = document.getElementById('tt-' + expandedId);
       if (prev) prev.hidden = true;
       var oldCard = document.querySelector('.route-card[data-id="' + expandedId + '"]');
-      if (oldCard) oldCard.classList.remove('expanded');
+      if (oldCard) { oldCard.classList.remove('expanded');
+        if (oldCard.closest('.route-wrap')) oldCard.closest('.route-wrap').classList.remove('expanded'); }
     }
     expandedId = id;
 
@@ -438,7 +444,8 @@ var Bus = (function() {
     if (!ttEl) return;
     ttEl.hidden = false;
     var card = document.querySelector('.route-card[data-id="' + id + '"]');
-    if (card) card.classList.add('expanded');
+    if (card) { card.classList.add('expanded');
+      if (card.closest('.route-wrap')) card.closest('.route-wrap').classList.add('expanded'); }
 
     if (timingsCache[id] === undefined) {
       ttEl.innerHTML = '<div class="tt-loading"><div class="skeleton" style="height:48px;margin:8px 16px;border-radius:8px"></div></div>';
