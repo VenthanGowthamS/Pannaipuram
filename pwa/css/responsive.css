@@ -10,15 +10,48 @@
   html body { max-width: 1100px; }
   body::before { max-width: 1100px; }
 
-  /* Align the hamburger button + drawer + sheets to the centered app
-     column (not the viewport edge) so the menu behaves correctly on web. */
-  .menu-btn    { left: max(10px, calc(50% - 538px)); }
+  /* Align the hamburger button to the centered app column. */
+  .menu-btn { left: max(10px, calc(50% - 538px)); }
+
+  /* On web the drawer becomes a compact floating dropdown PANEL anchored
+     under the menu button (not a full-height phone drawer). It sizes to its
+     content, drops down with a fade, and a light dim catches outside clicks. */
+  .menu-backdrop { background: rgba(0, 0, 0, 0.18); }
   .menu-drawer {
-    left: max(0px, calc(50% - 550px));
-    border-top-right-radius: 18px;
-    border-bottom-right-radius: 18px;
+    top: 62px;
+    bottom: auto;
+    left: max(10px, calc(50% - 538px));
+    width: 300px;
+    max-height: 74vh;
+    border-radius: 16px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.30);
+    overflow-y: auto;
+    transform: translateY(-12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 200ms ease, opacity 200ms ease;
   }
-  .menu-sheet  { left: max(0px, calc(50% - 550px)); right: auto; margin: 0; }
+  .menu-drawer.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+  /* Sheets (About/Feedback/etc.) → a centered floating panel, not full-screen */
+  .menu-sheet {
+    left: 50%;
+    right: auto;
+    top: 50%;
+    bottom: auto;
+    transform: translate(-50%, -48%);
+    width: 480px;
+    max-width: 92vw;
+    max-height: 86vh;
+    margin: 0;
+    border-radius: 18px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 220ms ease, opacity 220ms ease;
+  }
+  .menu-sheet.open { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; }
+  .menu-sheet[hidden] { display: flex; }   /* keep transitions; hidden handled by opacity */
 
   /* Flat card grids — cards STRETCH to fill the row (auto-fit + 1fr):
      multi-column when there are several, full-width when only one.
