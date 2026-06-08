@@ -5,8 +5,16 @@
    expanded route spanning the full row. */
 
 @media (min-width: 700px) {
-  html body { max-width: 1000px; }
-  body::before { max-width: 1000px; }
+  /* Single content column width so all fixed UI can align to it.
+     Column left edge = max(0, 50% - 550px). */
+  html body { max-width: 1100px; }
+  body::before { max-width: 1100px; }
+
+  /* Align the hamburger button + drawer + sheets to the centered app
+     column (not the viewport edge) so the menu behaves correctly on web. */
+  .menu-btn    { left: max(10px, calc(50% - 538px)); }
+  .menu-drawer { left: max(0px,  calc(50% - 550px)); }
+  .menu-sheet  { left: max(0px,  calc(50% - 550px)); right: auto; margin: 0; }
 
   /* Flat card grids — cards STRETCH to fill the row (auto-fit + 1fr):
      multi-column when there are several, full-width when only one.
@@ -59,8 +67,3 @@
   }
 }
 
-/* Wider desktops — a bit more width + an extra column */
-@media (min-width: 1100px) {
-  html body { max-width: 1140px; }
-  body::before { max-width: 1140px; }
-}
