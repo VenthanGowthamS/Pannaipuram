@@ -250,6 +250,23 @@ class ApiService {
     return this.request('DELETE', `/admin/auto/drivers/${id}`);
   }
 
+  // ── Acting (substitute) drivers ──────────────────────────
+  getActingDrivers() {
+    return this.request('GET', '/admin/acting/drivers');
+  }
+
+  addActingDriver(data) {
+    return this.request('POST', '/admin/acting/drivers', data);
+  }
+
+  updateActingDriver(id, data) {
+    return this.request('PUT', `/admin/acting/drivers/${id}`, data);
+  }
+
+  deleteActingDriver(id) {
+    return this.request('DELETE', `/admin/acting/drivers/${id}`);
+  }
+
   // Water
   getWaterSchedules() {
     return this.request('GET', '/admin/water/streets');

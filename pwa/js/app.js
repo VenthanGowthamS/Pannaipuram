@@ -1,3 +1,17 @@
+// ── Phone-only detection ───────────────────────────────────
+// Install prompts (banner + wall) must appear ONLY on Android/Apple
+// PHONES — never on tablets (iPad / Android tablet), laptops, or desktops.
+//   iPhone/iPod            → phone ✓
+//   Android WITH "Mobile"  → phone ✓ (Android tablets omit "Mobile")
+//   iPad / Android tablet / desktop / laptop / iPadOS-as-Mac → not a phone ✗
+window._isPhone = function() {
+  var ua = navigator.userAgent || '';
+  if (/iPad/.test(ua)) return false;                 // iPad = tablet
+  if (/iPhone|iPod/.test(ua) && !window.MSStream) return true;
+  if (/Android/.test(ua)) return /Mobile/.test(ua);  // "Mobile" => phone
+  return false;                                       // desktop / laptop / other
+};
+
 // ── Install wall: show full-screen install UI on ?install=1 ─
 // This is used for the WhatsApp share link. The page loads showing
 // ONLY a giant "Install" button — one tap fires the native prompt.
@@ -6,6 +20,7 @@
 (function() {
   var params = new URLSearchParams(window.location.search);
   if (params.get('install') !== '1') return;
+  if (!window._isPhone()) return;   // only on phones — skip tablet/desktop
   // Show wall immediately (before DOMContentLoaded) by inlining a style.
   // Actual element interaction handled after DOMContentLoaded below.
   window._installWallRequested = true;
@@ -121,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Lazy-init sections on first visit (fetch only when opened)
     if (id === 'emergency' && window.Emergency) Emergency.init();
     if (id === 'hospital' && window.Hospital) Hospital.init();
+    if (id === 'more' && window.More) More.init();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -132,12 +148,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   window.addEventListener('hashchange', function() {
     var h = window.location.hash.replace('#', '');
-    if (h === 'bus' || h === 'auto' || h === 'hospital' || h === 'emergency') switchSection(h, false);
+    if (h === 'bus' || h === 'auto' || h === 'hospital' || h === 'emergency' || h === 'more') switchSection(h, false);
   });
 
-  // Handle deep links (#bus / #auto / #hospital / #emergency in URL)
+  // Handle deep links (#bus / #auto / #hospital / #emergency / #more in URL)
   var hash = window.location.hash.replace('#', '');
-  var startSection = (hash === 'auto' || hash === 'hospital' || hash === 'emergency') ? hash : 'bus';
+  var startSection = (hash === 'auto' || hash === 'hospital' || hash === 'emergency' || hash === 'more') ? hash : 'bus';
 
   // ── Online/Offline banner ──────────────────────────────
   var banner = document.getElementById('offline-banner');
@@ -165,6 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var _bannerClickBound = false;
 
   function _showInstallBanner() {
+    if (!window._isPhone()) return;   // phones only — no banner on tablet/desktop
     var banner = document.getElementById('install-banner');
     var steps  = document.getElementById('install-steps');
     if (!banner || !steps) return;
@@ -272,10 +289,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!banner || !closeBtn) return;
 
     if (_isInstalled()) { banner.hidden = true; return; }
+    if (!window._isPhone()) { banner.hidden = true; return; }  // phones only
 
     var ua    = navigator.userAgent || '';
-    var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-    var isAndroid = /Android/.test(ua);
+    var isIOS = /iPhone|iPod/.test(ua) && !window.MSStream;     // iPad excluded (tablet)
+    var isAndroid = /Android/.test(ua) && /Mobile/.test(ua);    // Android phone only
 
     // iOS: show immediately (no beforeinstallprompt on iOS)
     if (isIOS) { _showInstallBanner(); }
@@ -311,7 +329,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var installMenuItem = document.getElementById('menu-install-btn');
     if (installMenuItem) {
       installMenuItem.addEventListener('click', _updateInstallSheet);
-      if (_isInstalled()) installMenuItem.hidden = true;
+      // Hide "Install app" on tablets/desktops (installed or not a phone)
+      if (_isInstalled() || !window._isPhone()) installMenuItem.hidden = true;
     }
   })();
 

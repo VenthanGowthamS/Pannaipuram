@@ -1,0 +1,57 @@
+/* ── Responsive Web Design (loaded LAST so it wins) ───────────
+   Mobile (≤699px): unchanged — single column, full width.
+   Tablet/desktop (≥700px): fluid container; section headers stay
+   full-width banners; flat card lists reflow into multi-column grids;
+   forms/search constrained for readability; the complex Bus section
+   stays a clean centered column (its accordion + sibling timetables
+   don't grid safely). */
+
+@media (min-width: 700px) {
+  html body { max-width: 1000px; }
+  body::before { max-width: 1000px; }
+
+  /* Multi-column card grids for the simple/flat sections */
+  #driver-list,
+  .em-group-cards,
+  #more-acting,
+  .more-svc-cards,
+  .hd-docs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+    align-items: start;
+  }
+  #driver-list .driver-card,
+  .em-group-cards .em-card,
+  #more-acting .more-card,
+  .more-svc-cards .more-card,
+  .hd-docs .hd-card { margin-bottom: 0; }
+
+  /* Keep the complex Bus section a clean centered column */
+  #section-bus .bus-search-wrap,
+  #section-bus #bus-freshness,
+  #section-bus #bus-now-strip,
+  #section-bus #bus-route-list {
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Constrain auto form so single inputs don't stretch wide */
+  .auto-hero, .auto-contact-card { max-width: 920px; margin-left: auto; margin-right: auto; }
+  .auto-contact-form { max-width: 600px; margin-left: auto; margin-right: auto; }
+
+  /* Bottom nav: a neat centered tab bar, not a stretched strip */
+  #bottom-nav {
+    max-width: 560px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    box-shadow: 0 -2px 18px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* Wider desktops — allow a 3rd/4th column and a bit more width */
+@media (min-width: 1100px) {
+  html body { max-width: 1140px; }
+  body::before { max-width: 1140px; }
+}

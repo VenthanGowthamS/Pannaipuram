@@ -89,7 +89,7 @@ var Hospital = (function() {
       return d.hospital_id === hosp.id && d.is_active !== false;
     });
     var docsHtml = docs.length
-      ? docs.map(function(d) { return renderDoctor(d, todayDow); }).join('')
+      ? '<div class="hd-docs">' + docs.map(function(d) { return renderDoctor(d, todayDow); }).join('') + '</div>'
       : '<div class="hd-empty-small">டாக்டர் தகவல் விரைவில் சேர்க்கப்படும்</div>';
     var pharmacy = hosp.pharmacy_hours
       ? '<div class="hd-pharmacy">💊 மருந்தகம்: ' + esc(hosp.pharmacy_hours) + '</div>' : '';

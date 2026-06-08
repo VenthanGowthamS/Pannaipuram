@@ -11,6 +11,7 @@ import BusTimings from './pages/BusTimings';
 import Doctors from './pages/Doctors';
 import Emergency from './pages/Emergency';
 import AutoDrivers from './pages/AutoDrivers';
+import ActingDrivers from './pages/ActingDrivers';
 import Water from './pages/Water';
 import Streets from './pages/Streets';
 import LocalServices from './pages/LocalServices';
@@ -63,6 +64,8 @@ const AppContent = () => {
         return <Emergency {...props} />;
       case 'auto':
         return <AutoDrivers {...props} />;
+      case 'acting':
+        return <ActingDrivers {...props} />;
       case 'water':
         return <Water {...props} />;
       case 'streets':

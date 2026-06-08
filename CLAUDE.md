@@ -19,7 +19,7 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 | Hosting | Render.com (Node.js) | https://pannaipuram-api.onrender.com |
 | Docs | Markdown | `docs/` |
 
-### PWA — Key Architecture Facts (v44, June 2026)
+### PWA — Key Architecture Facts (v46, June 2026)
 - **Source lives at:** `pwa/` (repo root) — NOT inside `backend/`
 - **Custom domain LIVE (June 2026):** `pannaipuram.com` bought on Cloudflare Registrar (auto-renew on). Subdomains:
   - 🌟 **PWA (share this):** https://app.pannaipuram.com — GitHub Pages, ships `pwa/CNAME` = `app.pannaipuram.com`
@@ -41,10 +41,14 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 - **PWA sections (v41):** 4 bottom-nav tabs — 🚌 பேருந்து (`bus.js`) · 🛺 ஆட்டோ (`auto.js`) · 🏥 மருத்துவம் Hospital (`hospital.js`, fetches `/api/hospital/list` + `/api/hospital/doctors`, shows doctor day-chips + "இன்று கிடைக்கும்" today badge) · 📞 அவசரம் Emergency (`emergency.js`, fetches `/api/emergency/contacts`). Hospital + Emergency lazy-init on first open. About sheet in ☰ menu has village stats (population/wards/streets/cardamom).
 - **App identity (v44):** icon = original navy-blue bus (white bus + route dots + gold stop dot) — temporarily restored from v39 while a new unified icon is decided (`backend/gen-icon.js`, run `node gen-icon.js` to regen). Manifest `short_name` = **"Pannaipuram"** (English, searchable without Tamil keyboard); `name` = "Pannaipuram பண்ணைப்புரம்".
 - **Phone validation:** Indian mobile = EXACTLY 10 digits starting 6/7/8/9. Auto reg form (`pwa/js/auto.js`) strips non-digits + caps at 10; input `maxlength=10`.
+- **PWA sections (v46):** 5 bottom-nav tabs — 🚌 பேருந்து · 🛺 ஆட்டோ · 🏥 மருத்துவம் · 📞 அவசரம் · ➕ மேலும் (More: `more.js` — Acting/substitute drivers `/api/acting/drivers` + Local Services `/api/services`).
+- **Responsive (v46):** `pwa/css/responsive.css` (loaded LAST so it wins). Mobile ≤699px unchanged (single column). ≥700px: fluid container (max 1000/1140px), flat card lists (`#driver-list`, `.em-group-cards`, `.hd-docs`, `#more-acting`, `.more-svc-cards`) become multi-column grids; bus stays a centered 640px column (accordion+sibling timetables don't grid). Uses `html body` specificity to beat base `body{max-width:480}`.
+- **Install prompts = PHONES ONLY (v46):** `window._isPhone()` in `app.js` gates the install banner + `?install=1` wall + hamburger install item. iPhone/iPod → yes; Android WITH "Mobile" → yes; iPad / Android tablet / desktop / laptop → no.
+- **Acting drivers:** `acting_drivers` table (mirrors `auto_drivers`); migration `backend/src/db/migration_acting_drivers.sql`; admin tab "🔄 Acting Drivers"; shown in PWA மேலும் tab.
 - **Bottom nav (`pwa/css/nav.css`):** uses `grid-auto-flow: column` — auto-fits any number of tabs (don't hardcode column count).
 - **Render config:** `render.yaml` at repo root with `rootDir: .` ensures full repo is deployed
 - **NEVER edit files inside `backend/public/pwa/`** — that folder was deleted. Edit only in `pwa/`
-- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v44.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
+- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v46.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
 - **Icon generation:** Run `node backend/gen-icon.js` to regenerate `pwa/icons/icon-192.png` + `icon-512.png`
 - **Service Worker:** 3-tier cache — SW (stale-while-revalidate for /api/*) → api.js memory → localStorage fallback
 - **Domain plan reference:** `docs/domain-and-hosting-plan.md` — original migration plan (now executed)

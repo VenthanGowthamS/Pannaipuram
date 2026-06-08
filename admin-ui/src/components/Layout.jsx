@@ -51,6 +51,7 @@ const Layout = ({ children, currentTab, onTabChange, snackbar, setSnackbar }) =>
     { id: 'doctors',       label: 'Doctors',      icon: '🏥', MuiIcon: HospitalIcon },
     { id: 'emergency',     label: 'Emergency',    icon: '📞', MuiIcon: EmergencyIcon },
     { id: 'auto',          label: 'Auto/Van',     icon: '🚗', MuiIcon: AutoIcon },
+    { id: 'acting',        label: 'Acting Drivers', icon: '🔄', MuiIcon: AutoIcon },
     { id: 'water',         label: 'Water',        icon: '💧', MuiIcon: WaterIcon },
     { id: 'streets',       label: 'Streets',      icon: '🏘', MuiIcon: StreetsIcon },
     { id: 'services',      label: 'Services',     icon: '🛍', MuiIcon: ServicesIcon },

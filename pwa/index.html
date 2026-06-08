@@ -31,6 +31,8 @@
   <link rel="stylesheet" href="/pwa/css/auto.css">
   <link rel="stylesheet" href="/pwa/css/hospital.css">
   <link rel="stylesheet" href="/pwa/css/emergency.css">
+  <link rel="stylesheet" href="/pwa/css/more.css">
+  <link rel="stylesheet" href="/pwa/css/responsive.css">
 </head>
 <body data-section="bus" class="notranslate" translate="no">
 
@@ -522,6 +524,42 @@
 
     </section>
 
+    <!-- MORE SECTION -->
+    <section id="section-more" class="section notranslate" translate="no" hidden>
+
+      <!-- Purple header -->
+      <div class="more-header">
+        <button id="more-refresh-btn" class="more-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
+        <p class="more-header-ta">மேலும் சேவைகள்</p>
+        <p class="more-header-en">More Village Services</p>
+      </div>
+
+      <!-- Acting / substitute drivers -->
+      <section class="more-feature">
+        <div class="more-feature-head">
+          <span class="more-feature-emoji">🔄</span>
+          <div class="more-feature-titles">
+            <span class="more-feature-ta">மாற்று ஓட்டுநர்கள்</span>
+            <span class="more-feature-en">Acting / Substitute Drivers</span>
+          </div>
+        </div>
+        <div id="more-acting"></div>
+      </section>
+
+      <!-- Local services -->
+      <section class="more-feature">
+        <div class="more-feature-head">
+          <span class="more-feature-emoji">🛍</span>
+          <div class="more-feature-titles">
+            <span class="more-feature-ta">ஊர் சேவைகள்</span>
+            <span class="more-feature-en">Local Services</span>
+          </div>
+        </div>
+        <div id="more-services"></div>
+      </section>
+
+    </section>
+
   </main>
 
   <!-- ── Bottom Navigation ────────────────────────────── -->
@@ -542,6 +580,10 @@
       <span class="nav-icon" aria-hidden="true">📞</span>
       <span class="nav-label">அவசரம்</span>
     </button>
+    <button class="nav-tab" role="tab" data-section="more" aria-selected="false" aria-label="More services">
+      <span class="nav-icon" aria-hidden="true">➕</span>
+      <span class="nav-label">மேலும்</span>
+    </button>
   </nav>
 
   <script src="/pwa/js/api.js"></script>
@@ -549,6 +591,7 @@
   <script src="/pwa/js/auto.js"></script>
   <script src="/pwa/js/hospital.js"></script>
   <script src="/pwa/js/emergency.js"></script>
+  <script src="/pwa/js/more.js"></script>
   <script src="/pwa/js/app.js"></script>
 </body>
 </html>
