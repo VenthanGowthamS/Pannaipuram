@@ -13,8 +13,12 @@
   /* Align the hamburger button + drawer + sheets to the centered app
      column (not the viewport edge) so the menu behaves correctly on web. */
   .menu-btn    { left: max(10px, calc(50% - 538px)); }
-  .menu-drawer { left: max(0px,  calc(50% - 550px)); }
-  .menu-sheet  { left: max(0px,  calc(50% - 550px)); right: auto; margin: 0; }
+  .menu-drawer {
+    left: max(0px, calc(50% - 550px));
+    border-top-right-radius: 18px;
+    border-bottom-right-radius: 18px;
+  }
+  .menu-sheet  { left: max(0px, calc(50% - 550px)); right: auto; margin: 0; }
 
   /* Flat card grids — cards STRETCH to fill the row (auto-fit + 1fr):
      multi-column when there are several, full-width when only one.

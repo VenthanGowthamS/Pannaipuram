@@ -20,6 +20,9 @@ html {
   font-size: 16px;
   scroll-behavior: smooth;
   background: #EAEDF3;
+  /* Stop rubber-band overscroll from revealing the hidden offline banner
+     (which sits just above the viewport top) when the user pulls down. */
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -30,11 +33,35 @@ body {
   margin: 0 auto;
   min-height: 100dvh;
   overflow-x: hidden;
+  overscroll-behavior-y: none;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   position: relative;
   isolation: isolate;
 }
+
+/* ── Global toast (refresh feedback across all sections) ──── */
+.app-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--nav-height, 64px) + 20px);
+  transform: translateX(-50%) translateY(14px);
+  background: #1B5E20;
+  color: #fff;
+  font-family: var(--font-tamil);
+  font-size: 0.92rem;
+  font-weight: 700;
+  padding: 11px 20px;
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+  z-index: 1200;
+  opacity: 0;
+  pointer-events: none;
+  max-width: 88vw;
+  text-align: center;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+.app-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* Pannaipuram village watermark behind all content */
 body::before {

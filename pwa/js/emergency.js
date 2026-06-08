@@ -98,7 +98,9 @@ var Emergency = (function() {
     try {
       var data = await PannaiAPI.getEmergency(!!force);
       render(data);
+      if (force && window.showToast) window.showToast('✅ புதுப்பிக்கப்பட்டது · Updated');
     } catch (e) {
+      if (force && window.showToast) window.showToast('❌ இணைப்பு இல்லை · Try again');
       if (host) {
         host.innerHTML =
           '<div class="load-error">' +

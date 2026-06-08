@@ -12,6 +12,23 @@ window._isPhone = function() {
   return false;                                       // desktop / laptop / other
 };
 
+// ── Global toast — refresh feedback shown on every section ──
+window.showToast = function(msg) {
+  var el = document.getElementById('app-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'app-toast';
+    el.className = 'app-toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.remove('visible');
+  void el.offsetWidth;            // restart the show animation
+  requestAnimationFrame(function() { el.classList.add('visible'); });
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(function() { el.classList.remove('visible'); }, 1800);
+};
+
 // ── Install wall: show full-screen install UI on ?install=1 ─
 // This is used for the WhatsApp share link. The page loads showing
 // ONLY a giant "Install" button — one tap fires the native prompt.

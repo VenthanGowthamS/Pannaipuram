@@ -100,6 +100,7 @@ var More = (function() {
       var svc = await PannaiAPI.getServices(!!force).catch(function() { return {}; });
       renderServices(svc);
     } catch (_) { renderServices({}); }
+    if (force && window.showToast) window.showToast('✅ புதுப்பிக்கப்பட்டது · Updated');
     if (refreshBtn) setTimeout(function() { refreshBtn.classList.remove('spinning'); refreshBtn.disabled = false; }, 500);
   }
 

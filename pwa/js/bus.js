@@ -939,8 +939,9 @@ var Bus = (function() {
           timingsCache = {};
           await prefetchAllTimings();
           renderList();
+          if (window.showToast) window.showToast('✅ புதுப்பிக்கப்பட்டது · Updated');
         } catch (_) {
-          // Silent — UI stays as-is
+          if (window.showToast) window.showToast('❌ இணைப்பு இல்லை · Try again');
         } finally {
           setTimeout(function() { refreshBtn.classList.remove('is-spinning'); }, 600);
         }
