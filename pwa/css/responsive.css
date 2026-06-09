@@ -28,12 +28,15 @@
     overflow-y: auto;
     transform: translateY(-12px);
     opacity: 0;
+    visibility: hidden;            /* fully hide when closed (not just opacity) */
     pointer-events: none;
-    transition: transform 200ms ease, opacity 200ms ease;
+    transition: transform 200ms ease, opacity 200ms ease, visibility 200ms ease;
   }
-  .menu-drawer.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .menu-drawer.open { transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; }
 
-  /* Sheets (About/Feedback/etc.) → a centered floating panel, not full-screen */
+  /* Sheets (About/Feedback/etc.) → a centered floating modal, not full-screen.
+     Closed sheets keep the base [hidden]{display:none} (so they are NOT rendered
+     at page load); visibility belt-and-suspenders for the brief open frame. */
   .menu-sheet {
     left: 50%;
     right: auto;
@@ -47,11 +50,11 @@
     border-radius: 18px;
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
-    transition: transform 220ms ease, opacity 220ms ease;
+    transition: transform 220ms ease, opacity 220ms ease, visibility 220ms ease;
   }
-  .menu-sheet.open { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; }
-  .menu-sheet[hidden] { display: flex; }   /* keep transitions; hidden handled by opacity */
+  .menu-sheet.open { transform: translate(-50%, -50%); opacity: 1; visibility: visible; pointer-events: auto; }
 
   /* Flat card grids — cards STRETCH to fill the row (auto-fit + 1fr):
      multi-column when there are several, full-width when only one.
