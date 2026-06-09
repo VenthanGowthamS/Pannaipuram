@@ -103,11 +103,16 @@ a { text-decoration: none; color: inherit; }
   font-family: var(--font-tamil);
   font-weight: 600;
   z-index: 999;
-  transform: translateY(-100%);
-  transition: transform 220ms ease-out;
+  /* Hidden state stays AT top:0 (inside the viewport) but invisible — so the
+     iOS rubber-band overscroll can't reveal it (translateY above the viewport
+     was being exposed on pull-down; iOS ignores overscroll-behavior). */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 200ms ease, visibility 200ms ease;
   box-shadow: 0 2px 8px rgba(245, 127, 23, 0.3);
 }
-#offline-banner.visible { transform: translateY(0); }
+#offline-banner.visible { opacity: 1; visibility: visible; pointer-events: auto; }
 
 /* Retry button + error states (shared by bus + auto) */
 .load-error {

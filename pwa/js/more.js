@@ -11,7 +11,7 @@ var More = (function() {
   function hasPhone(p) { return p && String(p).replace(/\D/g, '').length >= 10; }
 
   function vehIcon(t) {
-    return { auto: '🛺', van: '🚐', car: '🚕', any: '🚗' }[(t || '').toLowerCase()] || '🚗';
+    return { auto: '🛺', van: '🚐', car: '🚗', taxi: '🚖', any: '🚙' }[(t || '').toLowerCase()] || '🚗';
   }
 
   // ── Acting (substitute) drivers ───────────────────────────
