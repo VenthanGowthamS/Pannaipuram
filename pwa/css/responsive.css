@@ -57,12 +57,8 @@
   .menu-sheet.open { transform: translate(-50%, -50%); opacity: 1; visibility: visible; pointer-events: auto; }
 
   /* Flat card grids — cards STRETCH to fill the row (auto-fit + 1fr):
-     multi-column when there are several, full-width when only one.
-     No left-bunching, no empty right gap. */
+     multi-column when there are several, full-width when only one. */
   #driver-list,
-  .em-group-cards,
-  #more-acting,
-  .more-svc-cards,
   .hd-docs {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -70,10 +66,33 @@
     align-items: start;
   }
   #driver-list .driver-card,
-  .em-group-cards .em-card,
-  #more-acting .more-card,
-  .more-svc-cards .more-card,
   .hd-docs .hd-card { margin-bottom: 0; }
+
+  /* Emergency + Services: CATEGORY PANELS side-by-side on web */
+  #em-list,
+  #more-services {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+    gap: 14px;
+    align-items: start;
+    margin: 16px 12px 0;
+  }
+  #em-list .em-panel { margin: 0; }
+  #more-services .svc-panel { margin: 0; }
+
+  /* Acting driver rows: 2-up tiles inside the panel on web */
+  #more-acting {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+  }
+  #more-acting .acting-row {
+    border-bottom: none;
+    background: #F7F8FA;
+    border-radius: 12px;
+    padding: 12px;
+  }
 
   /* Bus: search + "now departing" strip stay a clean centered column */
   #section-bus .bus-search-wrap,

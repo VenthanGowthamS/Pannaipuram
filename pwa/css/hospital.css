@@ -42,15 +42,23 @@
 .hd-refresh-btn.spinning { animation: hd-spin 0.5s linear; }
 @keyframes hd-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 
-/* Hospital group */
-.hd-hospital { margin: 18px 12px 0; }
+/* Hospital group — one white panel per hospital */
+.hd-hospital {
+  margin: 16px 12px 0;
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 2px 10px rgba(20, 30, 70, 0.07);
+  border-top: 3px solid #00838F;
+}
 .hd-hosp-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 10px;
-  padding: 0 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #E0EEEF;
 }
 .hd-hosp-titles { display: flex; flex-direction: column; min-width: 0; }
 .hd-hosp-ta {
@@ -121,15 +129,15 @@
   margin-bottom: 12px;
 }
 
-/* Doctor card */
+/* Doctor card — soft sub-card inside the hospital panel */
 .hd-card {
-  background: #fff;
-  border: 1px solid #EFEFEF;
-  border-radius: 14px;
-  padding: 14px;
+  background: #F8FAFB;
+  border: 1px solid #EDF2F4;
+  border-radius: 13px;
+  padding: 13px;
   margin-bottom: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
+.hd-card:last-child { margin-bottom: 0; }
 .hd-card-top { display: flex; align-items: flex-start; gap: 12px; }
 .hd-avatar {
   flex-shrink: 0;

@@ -14,51 +14,58 @@ var More = (function() {
     return { auto: '🛺', van: '🚐', car: '🚗', taxi: '🚖', any: '🚙' }[(t || '').toLowerCase()] || '🚗';
   }
 
-  // ── Acting (substitute) drivers ───────────────────────────
-  function actingCard(d) {
+  // ── Acting (substitute) drivers — prominent rows w/ avatar ──
+  function actingRow(d) {
     var verified = d.phone_verified !== false;
     var call = (hasPhone(d.phone) && verified)
       ? '<a class="more-call" href="' + telHref(d.phone) + '">📞 அழைக்க</a>'
       : '<span class="more-call more-call-pending">விரைவில்</span>';
-    var cover = d.coverage_tamil || d.schedule_tamil || '';
-    return '<div class="more-card">' +
-      '<div class="more-card-ic">' + vehIcon(d.vehicle_type) + '</div>' +
-      '<div class="more-card-info">' +
-        '<span class="more-card-ta">' + esc(d.name_tamil) + '</span>' +
-        (d.name_english ? '<span class="more-card-en">' + esc(d.name_english) + '</span>' : '') +
-        (cover ? '<span class="more-card-meta">' + esc(cover) + '</span>' : '') +
+    var cover = d.coverage_tamil || '';
+    var sched = d.schedule_tamil || '';
+    return '<div class="acting-row">' +
+      '<div class="acting-avatar">' + vehIcon(d.vehicle_type) + '</div>' +
+      '<div class="acting-info">' +
+        '<span class="acting-ta">' + esc(d.name_tamil) + '</span>' +
+        (d.name_english ? '<span class="acting-en">' + esc(d.name_english) + '</span>' : '') +
+        (cover ? '<span class="acting-meta">📍 ' + esc(cover) + '</span>' : '') +
+        (sched ? '<span class="acting-meta">🕐 ' + esc(sched) + '</span>' : '') +
       '</div>' + call + '</div>';
   }
 
   // ── Local services (grouped by category) ──────────────────
   var SVC_CATS = {
-    milk:        { emoji: '🥛', ta: 'பால்' },
-    post:        { emoji: '📮', ta: 'தபால்' },
-    flower:      { emoji: '🌺', ta: 'பூ' },
-    plumber:     { emoji: '🔧', ta: 'பிளம்பர்' },
-    electrician: { emoji: '⚡', ta: 'எலக்ட்ரீஷியன்' },
-    grocery:     { emoji: '🛒', ta: 'மளிகை' },
-    carpenter:   { emoji: '🪚', ta: 'தச்சர்' },
-    other:       { emoji: '🛍', ta: 'மற்றவை' },
+    milk:        { emoji: '🥛', ta: 'பால்',          tint: '#EAF4FE' },
+    post:        { emoji: '📮', ta: 'தபால்',         tint: '#FDECEC' },
+    flower:      { emoji: '🌺', ta: 'பூ',            tint: '#FCEAF3' },
+    plumber:     { emoji: '🔧', ta: 'பிளம்பர்',      tint: '#EAF1F8' },
+    electrician: { emoji: '⚡', ta: 'எலக்ட்ரீஷியன்', tint: '#FFF8E1' },
+    grocery:     { emoji: '🛒', ta: 'மளிகை',        tint: '#EAF7EC' },
+    carpenter:   { emoji: '🪚', ta: 'தச்சர்',        tint: '#F6EFE7' },
+    other:       { emoji: '🛍', ta: 'மற்றவை',       tint: '#F3E8F9' },
   };
-  function svcCard(s) {
+  function svcRow(s) {
     var call = hasPhone(s.phone)
       ? '<a class="more-call" href="' + telHref(s.phone) + '">📞 அழைக்க</a>'
       : '<span class="more-call more-call-pending">விரைவில்</span>';
     var area = s.area_tamil || s.area_english || '';
-    return '<div class="more-card">' +
-      '<div class="more-card-info">' +
-        '<span class="more-card-ta">' + esc(s.name_tamil || s.name_english) + '</span>' +
-        (s.name_english && s.name_tamil ? '<span class="more-card-en">' + esc(s.name_english) + '</span>' : '') +
-        (area ? '<span class="more-card-meta">📍 ' + esc(area) + '</span>' : '') +
+    return '<div class="svc-row">' +
+      '<div class="svc-row-info">' +
+        '<span class="svc-row-ta">' + esc(s.name_tamil || s.name_english) + '</span>' +
+        (s.name_english && s.name_tamil ? '<span class="svc-row-en">' + esc(s.name_english) + '</span>' : '') +
+        (area ? '<span class="svc-row-meta">📍 ' + esc(area) + '</span>' : '') +
       '</div>' + call + '</div>';
   }
+  // One category = one compact white panel with a tinted header + rows
   function svcGroup(cat, list) {
     if (!list || !list.length) return '';
-    var meta = SVC_CATS[cat] || { emoji: '🛍', ta: cat };
-    return '<div class="more-svc-group">' +
-      '<div class="more-svc-head">' + meta.emoji + ' ' + esc(meta.ta) + '</div>' +
-      '<div class="more-svc-cards">' + list.map(svcCard).join('') + '</div>' +
+    var meta = SVC_CATS[cat] || { emoji: '🛍', ta: cat, tint: '#F3E8F9' };
+    return '<div class="svc-panel">' +
+      '<div class="svc-panel-head" style="background:' + meta.tint + '">' +
+        '<span class="svc-panel-ic">' + meta.emoji + '</span>' +
+        '<span class="svc-panel-ta">' + esc(meta.ta) + '</span>' +
+        '<span class="svc-panel-count">' + list.length + '</span>' +
+      '</div>' +
+      '<div class="svc-rows">' + list.map(svcRow).join('') + '</div>' +
       '</div>';
   }
 
@@ -67,7 +74,7 @@ var More = (function() {
     if (!host) return;
     var active = (drivers || []).filter(function(d) { return d.is_active !== false; });
     host.innerHTML = active.length
-      ? active.map(actingCard).join('')
+      ? active.map(actingRow).join('')
       : '<div class="more-empty">மாற்று ஓட்டுநர் விரைவில் சேர்க்கப்படும் · Substitute drivers coming soon</div>';
   }
   function renderServices(data) {

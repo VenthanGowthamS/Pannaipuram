@@ -19,47 +19,115 @@
 .more-refresh-btn.spinning { animation: more-spin 0.5s linear; }
 @keyframes more-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 
-.more-feature { margin: 22px 12px 0; }
-.more-feature:first-of-type { margin-top: 16px; }
+/* ── Acting drivers — prominent white panel with indigo accent ── */
+.more-feature.acting-panel {
+  margin: 16px 12px 0;
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 2px 10px rgba(20, 30, 70, 0.07);
+  border-top: 3px solid #5E35B1;
+}
 .more-feature-head {
-  display: flex; align-items: center; gap: 9px;
-  margin-bottom: 10px; padding-left: 4px;
+  display: flex; align-items: center; gap: 10px;
 }
-.more-feature-emoji { font-size: 1.5rem; }
+.more-feature-emoji {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: #EFEAF8;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
 .more-feature-titles { display: flex; flex-direction: column; }
-.more-feature-ta { font-family: 'Noto Sans Tamil', sans-serif; font-size: 1.15rem; font-weight: 800; color: #311B92; line-height: 1.1; }
-.more-feature-en { font-size: 0.72rem; color: #757575; }
-
-.more-card {
-  display: flex; align-items: center; gap: 12px;
-  background: #fff; border: 1px solid #ECECEC; border-radius: 12px;
-  padding: 9px 13px; margin-bottom: 8px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+.more-feature-ta { font-family: 'Noto Sans Tamil', sans-serif; font-size: 1.12rem; font-weight: 800; color: #311B92; line-height: 1.15; }
+.more-feature-en { font-size: 0.7rem; color: #757575; }
+.more-feature-desc {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.84rem;
+  color: #666;
+  margin: 9px 0 4px;
+  line-height: 1.45;
 }
-.more-card-ic { font-size: 1.5rem; flex-shrink: 0; }
-.more-card-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-.more-card-ta { font-family: 'Noto Sans Tamil', sans-serif; font-size: 1.05rem; font-weight: 700; color: #1A1A1A; line-height: 1.25; }
-.more-card-en { font-size: 0.74rem; color: #888; }
-.more-card-meta { font-family: 'Noto Sans Tamil', sans-serif; font-size: 0.82rem; color: #666; margin-top: 2px; }
+
+/* Acting driver rows — avatar circle + details + call */
+.acting-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 2px;
+  border-bottom: 1px solid #F2F2F4;
+}
+.acting-row:last-child { border-bottom: none; padding-bottom: 4px; }
+.acting-avatar {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #EFEAF8, #E3F2FD);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 23px;
+  flex-shrink: 0;
+}
+.acting-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.acting-ta { font-family: 'Noto Sans Tamil', sans-serif; font-size: 1.02rem; font-weight: 700; color: #1A1A1A; line-height: 1.3; }
+.acting-en { font-size: 0.72rem; color: #8A8A8E; }
+.acting-meta { font-family: 'Noto Sans Tamil', sans-serif; font-size: 0.8rem; color: #666; margin-top: 2px; }
+
+/* ── Local Services — section head + compact category panels ── */
+.more-svc-section-head {
+  display: flex; align-items: center; gap: 10px;
+  margin: 22px 14px 10px;
+}
+.svc-panel {
+  margin: 0 12px 12px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 1px 6px rgba(20, 30, 70, 0.06);
+  overflow: hidden;
+}
+.svc-panel-head {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 13px;
+}
+.svc-panel-ic { font-size: 17px; }
+.svc-panel-ta {
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #333;
+  flex: 1;
+}
+.svc-panel-count {
+  min-width: 22px; height: 22px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+  color: #555;
+  font-size: 0.72rem;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 7px;
+}
+.svc-rows { display: flex; flex-direction: column; }
+.svc-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 13px;
+  border-bottom: 1px solid #F2F2F4;
+}
+.svc-row:last-child { border-bottom: none; }
+.svc-row-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.svc-row-ta { font-family: 'Noto Sans Tamil', sans-serif; font-size: 0.98rem; font-weight: 700; color: #1A1A1A; line-height: 1.3; }
+.svc-row-en { font-size: 0.7rem; color: #8A8A8E; }
+.svc-row-meta { font-family: 'Noto Sans Tamil', sans-serif; font-size: 0.78rem; color: #777; margin-top: 1px; }
+
+/* Shared call pill */
 .more-call {
   flex-shrink: 0; background: #16A34A; color: #fff;
-  font-family: 'Noto Sans Tamil', sans-serif; font-size: 0.9rem; font-weight: 700;
-  padding: 9px 14px; border-radius: 10px; white-space: nowrap;
-  min-height: 42px; display: flex; align-items: center; text-decoration: none;
+  font-family: 'Noto Sans Tamil', sans-serif; font-size: 0.86rem; font-weight: 700;
+  padding: 8px 13px; border-radius: 999px; white-space: nowrap;
+  min-height: 38px; display: flex; align-items: center; text-decoration: none;
 }
 .more-call-pending { background: #ECEFF1; color: #90A4AE; }
 
-/* Category groups in Local Services — clear separation, tight cards */
-.more-svc-group { margin-bottom: 18px; }
-.more-svc-head {
-  font-family: 'Noto Sans Tamil', sans-serif; font-size: 0.92rem; font-weight: 700;
-  color: #5E35B1; margin: 0 0 7px 2px;
-  display: flex; align-items: center; gap: 6px;
-  padding-bottom: 5px; border-bottom: 1px solid #E8E3F2;
-}
 .more-empty {
   font-family: 'Noto Sans Tamil', sans-serif; font-size: 0.9rem; color: #999;
-  text-align: center; padding: 24px 16px;
+  text-align: center; padding: 18px 16px;
 }
 
 #section-more { padding-bottom: 90px; }

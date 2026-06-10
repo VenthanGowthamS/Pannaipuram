@@ -13,14 +13,14 @@ var Emergency = (function() {
       .replace(/'/g, '&#39;');
   }
 
-  // Display order + Tamil/English labels + emoji per category.
+  // Display order + Tamil/English labels + emoji + accent colour per category.
   // Medical first (most time-critical), then police, fire, power, other.
   var CATS = [
-    { key: 'medical', emoji: '🏥', ta: 'மருத்துவம்',  en: 'Medical & Ambulance' },
-    { key: 'police',  emoji: '🚓', ta: 'போலீஸ்',      en: 'Police' },
-    { key: 'fire',    emoji: '🚒', ta: 'தீயணைப்பு',   en: 'Fire & Rescue' },
-    { key: 'power',   emoji: '⚡', ta: 'மின்சாரம்',    en: 'Electricity (TNEB)' },
-    { key: 'other',   emoji: '📞', ta: 'பிற உதவி எண்', en: 'Other Helplines' },
+    { key: 'medical', emoji: '🏥', ta: 'மருத்துவம்',  en: 'Medical & Ambulance', color: '#E53935', tint: '#FDECEC' },
+    { key: 'police',  emoji: '🚓', ta: 'போலீஸ்',      en: 'Police',              color: '#1565C0', tint: '#E7F0FB' },
+    { key: 'fire',    emoji: '🚒', ta: 'தீயணைப்பு',   en: 'Fire & Rescue',       color: '#EF6C00', tint: '#FDF1E3' },
+    { key: 'power',   emoji: '⚡', ta: 'மின்சாரம்',    en: 'Electricity (TNEB)',  color: '#F9A825', tint: '#FFF8E1' },
+    { key: 'other',   emoji: '📞', ta: 'பிற உதவி எண்', en: 'Other Helplines',     color: '#6A1B9A', tint: '#F3E8F9' },
   ];
 
   // Phone number for the tel: link — strip spaces/dashes for dialing
@@ -32,20 +32,24 @@ var Emergency = (function() {
     return String(phone || '').trim();
   }
 
-  function renderContactCard(c) {
+  // One contact = one tappable ROW inside the category panel
+  function renderContactRow(c) {
     var nat = c.is_national
       ? '<span class="em-badge em-badge-nat">இந்தியா முழுவதும்</span>' : '';
     return '' +
-      '<a class="em-card" href="' + telHref(c.phone) + '">' +
-        '<div class="em-card-info">' +
-          '<span class="em-card-ta">' + esc(c.name_tamil) + '</span>' +
-          (c.name_english ? '<span class="em-card-en">' + esc(c.name_english) + nat + '</span>' : nat) +
-          '<span class="em-card-phone">' + esc(telDisplay(c.phone)) + '</span>' +
+      '<a class="em-row" href="' + telHref(c.phone) + '">' +
+        '<div class="em-row-info">' +
+          '<span class="em-row-ta">' + esc(c.name_tamil) + '</span>' +
+          (c.name_english ? '<span class="em-row-en">' + esc(c.name_english) + nat + '</span>' : nat) +
         '</div>' +
-        '<span class="em-call-btn">📞 அழைக்க</span>' +
+        '<div class="em-row-right">' +
+          '<span class="em-row-phone">' + esc(telDisplay(c.phone)) + '</span>' +
+          '<span class="em-row-call">📞 அழைக்க</span>' +
+        '</div>' +
       '</a>';
   }
 
+  // One category = one white PANEL: tinted header + rows with dividers
   function renderGroup(cat, list) {
     if (!list || !list.length) return '';
     // Defensive dedupe — admin data occasionally has the same contact twice
@@ -57,17 +61,18 @@ var Emergency = (function() {
       seen[key] = true;
       return true;
     });
-    var cards = list.map(renderContactCard).join('');
+    var color = cat.color || '#5E35B1', tint = cat.tint || '#F3E8F9';
     return '' +
-      '<section class="em-group">' +
-        '<div class="em-group-head">' +
-          '<span class="em-group-emoji">' + cat.emoji + '</span>' +
-          '<div class="em-group-titles">' +
-            '<span class="em-group-ta">' + cat.ta + '</span>' +
-            '<span class="em-group-en">' + cat.en + '</span>' +
+      '<section class="em-panel" style="--cat:' + color + ';--cat-tint:' + tint + '">' +
+        '<div class="em-panel-head">' +
+          '<span class="em-panel-ic">' + cat.emoji + '</span>' +
+          '<div class="em-panel-titles">' +
+            '<span class="em-panel-ta">' + cat.ta + '</span>' +
+            '<span class="em-panel-en">' + cat.en + '</span>' +
           '</div>' +
+          '<span class="em-panel-count">' + list.length + '</span>' +
         '</div>' +
-        '<div class="em-group-cards">' + cards + '</div>' +
+        '<div class="em-rows">' + list.map(renderContactRow).join('') + '</div>' +
       '</section>';
   }
 

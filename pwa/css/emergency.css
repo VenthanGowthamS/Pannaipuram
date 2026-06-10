@@ -52,73 +52,104 @@
 .em-refresh-btn.spinning { animation: em-spin 0.5s linear; }
 @keyframes em-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 
-/* Group (category) */
-.em-group { margin: 18px 12px 0; }
-.em-group-head {
+/* ── Category PANEL — one white card per category, rows inside ──
+   --cat / --cat-tint are set inline per category (red medical, blue
+   police, orange fire, amber power, purple other). */
+.em-panel {
+  margin: 14px 12px 0;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(20, 30, 70, 0.07);
+  overflow: hidden;
+}
+.em-panel-head {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-  padding-left: 4px;
+  gap: 11px;
+  padding: 12px 14px;
+  background: var(--cat-tint, #F5F5F5);
+  border-bottom: 2px solid var(--cat, #5E35B1);
 }
-.em-group-emoji { font-size: 1.5rem; }
-.em-group-titles { display: flex; flex-direction: column; }
-.em-group-ta {
+.em-panel-ic {
+  width: 38px; height: 38px;
+  border-radius: 11px;
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  flex-shrink: 0;
+}
+.em-panel-titles { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.em-panel-ta {
   font-family: 'Noto Sans Tamil', sans-serif;
-  font-size: 1.15rem;
+  font-size: 1.08rem;
   font-weight: 800;
   color: #1A1A1A;
-  line-height: 1.1;
+  line-height: 1.15;
 }
-.em-group-en {
-  font-size: 0.72rem;
-  color: #757575;
+.em-panel-en { font-size: 0.7rem; color: #757575; }
+.em-panel-count {
+  flex-shrink: 0;
+  min-width: 26px; height: 26px;
+  border-radius: 999px;
+  background: var(--cat, #5E35B1);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 8px;
 }
-.em-group-cards { display: flex; flex-direction: column; gap: 10px; }
 
-/* Contact card — whole card is the call link */
-.em-card {
+/* Rows inside the panel — whole row is the call link */
+.em-rows { display: flex; flex-direction: column; }
+.em-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  background: #fff;
-  border: 1px solid #EFEFEF;
-  border-radius: 14px;
-  padding: 14px 14px;
+  gap: 10px;
+  padding: 12px 14px;
   text-decoration: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid #F2F2F4;
   -webkit-tap-highlight-color: transparent;
 }
-.em-card:active { background: #FFF5F5; transform: scale(0.99); }
-.em-card-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  flex: 1;
-}
-.em-card-ta {
+.em-row:last-child { border-bottom: none; }
+.em-row:active { background: var(--cat-tint, #F7F7F7); }
+.em-row-info { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.em-row-ta {
   font-family: 'Noto Sans Tamil', sans-serif;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1A1A1A;
-  line-height: 1.25;
+  line-height: 1.3;
 }
-.em-card-en {
-  font-size: 0.74rem;
-  color: #888;
+.em-row-en {
+  font-size: 0.72rem;
+  color: #8A8A8E;
   margin-top: 1px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
 }
-.em-card-phone {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #C62828;
-  margin-top: 4px;
+.em-row-right {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+.em-row-phone {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--cat, #C62828);
   letter-spacing: 0.3px;
+}
+.em-row-call {
+  background: #16A34A;
+  color: #fff;
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 .em-badge {
   font-size: 0.6rem;
@@ -128,22 +159,6 @@
   font-family: 'Noto Sans Tamil', sans-serif;
 }
 .em-badge-nat { background: #E3F2FD; color: #1565C0; }
-
-/* Call button */
-.em-call-btn {
-  flex-shrink: 0;
-  background: #16A34A;
-  color: #fff;
-  font-family: 'Noto Sans Tamil', sans-serif;
-  font-size: 0.92rem;
-  font-weight: 700;
-  padding: 11px 14px;
-  border-radius: 11px;
-  white-space: nowrap;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-}
 
 /* Empty / spacer at bottom so last card clears the nav bar */
 .em-empty {
