@@ -38,6 +38,10 @@ const { startWaterScheduler } = require('./services/waterScheduler');
 
 const app = express();
 
+// Render terminates TLS at its proxy (one hop) — required so rate limiters
+// and req.ip see the real client IP from X-Forwarded-For, not the proxy.
+app.set('trust proxy', 1);
+
 // ── Environment Validation ───────────────────────────────
 const requiredEnvVars = ['JWT_SECRET', 'DATABASE_URL'];
 for (const envVar of requiredEnvVars) {
@@ -49,6 +53,20 @@ for (const envVar of requiredEnvVars) {
 
 // ── Middleware ──────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false })); // CSP off so admin HTML loads
+
+// Rate-limit public write endpoints (feedback / visit ping / water alerts) —
+// they need no auth, so without this anyone can flood the DB.
+const rateLimit = require('express-rate-limit');
+const publicWriteLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,  // 10 minutes
+  max: 30,                   // 30 requests per IP per window
+  message: { success: false, error: 'Too many requests — please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/feedback', publicWriteLimiter);
+app.use('/api/pwa/ping', publicWriteLimiter);
+app.use('/api/water/alert', publicWriteLimiter);
 
 // ── Serve Admin Panel (static — before CORS so module scripts load) ──
 // index.html = no-cache so admins always get latest bundle references.

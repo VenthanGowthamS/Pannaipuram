@@ -302,7 +302,25 @@ var Bus = (function() {
     el.classList.toggle('stale', secs > 1800); // orange after 30 min
   }
 
-  // ── Phase 9: Prefetch timings for ALL corridors (for strip + search) ──
+  // ── Batch load: corridors + ALL timings in ONE request ────────
+  // /api/bus/all replaces 18 round trips with 1 — much faster on 2G and
+  // cold Render. Returns false if unavailable so callers can fall back.
+  async function loadAllData(force) {
+    try {
+      var all = await PannaiAPI.getBusAll(!!force);
+      if (!all || !all.corridors || !all.corridors.length) return false;
+      corridors = all.corridors;
+      timingsCache = {};
+      corridors.forEach(function(c) {
+        timingsCache[c.id] = (all.timings && all.timings[c.id]) || [];
+      });
+      fetchedAt = Date.now();
+      return true;
+    } catch (_) { return false; }
+  }
+
+  // ── Prefetch timings per corridor (FALLBACK when /api/bus/all
+  //    is unavailable; no-ops for corridors already in cache) ──
   async function prefetchAllTimings() {
     await Promise.all(corridors.map(function(c) {
       if (timingsCache[c.id] !== undefined) return Promise.resolve();
@@ -316,9 +334,15 @@ var Bus = (function() {
     renderList();
   }
 
-  // ── Auto-refresh: clear cache + re-fetch every 10 minutes ─────
+  // ── Auto-refresh: re-fetch everything every 10 minutes ─────
   async function refreshAllData() {
-    // Clear in-memory timings cache so prefetchAllTimings re-fetches from network
+    if (await loadAllData(true)) {
+      renderNowDeparting();
+      renderFreshness();
+      renderList();
+      return;
+    }
+    // Fallback: per-corridor refresh
     timingsCache = {};
     await prefetchAllTimings();
   }
@@ -849,7 +873,11 @@ var Bus = (function() {
       '<div class="skeleton" style="height:92px;border-radius:16px;margin:0 16px 10px"></div>' +
       '</div>';
     try {
-      corridors = await PannaiAPI.getBusCorridors();
+      // Batch endpoint first (1 request for everything); fall back to
+      // corridors-only — init's prefetchAllTimings() then fills the rest.
+      if (!(await loadAllData(false))) {
+        corridors = await PannaiAPI.getBusCorridors();
+      }
       loadFailed = false;
     } catch(e) {
       corridors = [];
@@ -934,10 +962,14 @@ var Bus = (function() {
         if (refreshBtn.classList.contains('is-spinning')) return;
         refreshBtn.classList.add('is-spinning');
         try {
-          // Force-bypass cache: re-fetch corridors + clear timings cache
-          corridors = await PannaiAPI.getBusCorridors(true);
-          timingsCache = {};
-          await prefetchAllTimings();
+          // Force-bypass cache: batch re-fetch (fallback: per-corridor)
+          if (!(await loadAllData(true))) {
+            corridors = await PannaiAPI.getBusCorridors(true);
+            timingsCache = {};
+            await prefetchAllTimings();
+          }
+          renderNowDeparting();
+          renderFreshness();
           renderList();
           if (window.showToast) window.showToast('✅ புதுப்பிக்கப்பட்டது · Updated');
         } catch (_) {

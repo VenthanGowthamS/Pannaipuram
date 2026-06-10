@@ -1,17 +1,40 @@
 # பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 5.0 (PWA v41 — unified app: Bus + Auto + Hospital + Emergency, new icon, English name)
+> **Version:** 5.1 (PWA v53 — responsive web design, More tab + acting drivers, batch bus API, security hardening)
 > **Date:** June 2026
-> **Status:** PWA v41 live (unified: Bus + Auto + Hospital + Emergency) on the **custom domain**:
+> **Status:** PWA v53 live (unified: Bus + Auto + Hospital + Emergency + More) on the **custom domain**:
 > - 🌟 **https://app.pannaipuram.com** (primary — share `?install=1` on WhatsApp)
 > - 🔗 API: https://api.pannaipuram.com · 🛠 Admin: https://admin.pannaipuram.com
+> - 🌐 `pannaipuram.com` + `www` → 301 redirect to the app (Cloudflare Redirect Rule)
 > - Legacy (still work): https://venthangowthams.github.io/Pannaipuram/ · https://pannaipuram-api.onrender.com
 >
 > `pannaipuram.com` bought on Cloudflare Registrar (June 2026). Phase 11 (custom
 > domain migration) **COMPLETE** — see `docs/domain-and-hosting-plan.md`.
 
-### PWA Recent Changes (v14 → v41, April–June 2026)
+### PWA Recent Changes (v14 → v53, April–June 2026)
+
+#### v53 — Performance + security + data quality (June 2026)
+| Feature | Status |
+|---|---|
+| **Batch bus API** — `GET /api/bus/all` (corridors + all timings in ONE request; was 1+17 round trips). `bus.js` uses it for initial load / auto-refresh / ↻, with automatic fallback to the old per-corridor endpoints | ✅ v53 |
+| **Preconnect** to `api.pannaipuram.com` (+ dns-prefetch Render) — first API call skips DNS+TLS | ✅ v53 |
+| **Rate limiting** on public POSTs (`/api/feedback`, `/api/pwa/ping`, `/api/water/alert` — 30 req/10 min/IP) + `trust proxy` on Render | ✅ v53 |
+| **XSS escaping** in `auto.js` (driver fields were injected unescaped); tel: hrefs digit-only | ✅ v53 |
+| **Emergency dedupe** — client-side by name+phone (live DB had Thevaram Police twice) | ✅ v53 |
+
+#### v42–v52 — Responsive web design + More tab + UX fixes (June 2026)
+| Feature | Status |
+|---|---|
+| **Responsive web design** (`responsive.css`): mobile 1-col unchanged; ≥700px fluid container, card grids auto-fit (2–3 cols), bus route list grids with expanded route spanning full row | ✅ v46–48 |
+| **➕ மேலும் (More) tab** — acting/substitute drivers (`acting_drivers` table + admin tab + `/api/acting/drivers`) + Local Services in PWA | ✅ v46 |
+| **Install prompts phones-only** — `_isPhone()` gates banner/wall/menu item (no tablet/desktop prompts) | ✅ v46 |
+| **Web hamburger** — column-aligned; desktop = dropdown panel + centered modal sheets; stray-× bleed-through fixed | ✅ v48–52 |
+| **Refresh toast** on all sections (`window.showToast`); offline-banner no longer revealed by iOS pull-down (visibility-based hide) | ✅ v49, v51 |
+| **Hospital contact chips** (casualty/ambulance/general + pharmacy hours) wired in PWA; backend list expanded | ✅ v45 |
+| **More page decluttered**; acting-driver vehicle icons (🚗/🚐/🛺/🚙) | ✅ v51 |
+| Bare `pannaipuram.com` + `www` → 301 redirect to app (Cloudflare rule; fixed 522) | ✅ |
+| Icon: original navy-blue bus restored (new unified icon TBD) | ✅ v44 |
 
 #### v40–v41 — Unified village app (June 2026)
 | Feature | Status |
@@ -902,7 +925,7 @@ These are deferred items still on the wishlist:
 - ⏳ Panchayat office contact + water board numbers in Emergency tab
 
 **Engineering — Security (recommended next):**
-- ⏳ Rate-limit public POST endpoints (`/api/feedback`, `/api/pwa/ping`, `/api/water/alert`) — `express-rate-limit` already used on admin auth only
+- ✅ Rate-limit public POST endpoints — DONE v53 (30 req/10 min/IP + trust proxy)
 - ⏳ Re-enable scoped CSP for `/pwa/` + `/api/` (currently disabled globally)
 - ⏳ Confirm Supabase RLS on all public tables (Security Advisor flagged `rls_disabled_in_public`)
 

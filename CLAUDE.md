@@ -19,13 +19,13 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 | Hosting | Render.com (Node.js) | https://pannaipuram-api.onrender.com |
 | Docs | Markdown | `docs/` |
 
-### PWA — Key Architecture Facts (v46, June 2026)
+### PWA — Key Architecture Facts (v53, June 2026)
 - **Source lives at:** `pwa/` (repo root) — NOT inside `backend/`
 - **Custom domain LIVE (June 2026):** `pannaipuram.com` bought on Cloudflare Registrar (auto-renew on). Subdomains:
   - 🌟 **PWA (share this):** https://app.pannaipuram.com — GitHub Pages, ships `pwa/CNAME` = `app.pannaipuram.com`
   - 🔗 **API:** https://api.pannaipuram.com — Render custom domain
   - 🛠 **Admin:** https://admin.pannaipuram.com — Render custom domain
-  - **Cloudflare DNS:** `app` = 4× GitHub Pages A records; `api`/`admin` = CNAME → `pannaipuram-api.onrender.com`; root `@` + `www` = placeholder A `192.0.2.1` (for future redirect rule, not yet set up). **All proxy = DNS-only (grey cloud)** — Render & GitHub issue their own SSL; Cloudflare proxy would break cert issuance.
+  - **Cloudflare DNS:** `app` = 4× GitHub Pages A records; `api`/`admin` = CNAME → `pannaipuram-api.onrender.com` (these = DNS-only/grey — Render & GitHub issue their own SSL; proxy breaks cert issuance). Root `@` + `www` = placeholder A `192.0.2.1` **Proxied (orange)** + a Cloudflare Redirect Rule `(http.host eq "pannaipuram.com" or http.host eq "www.pannaipuram.com")` → 301 `concat("https://app.pannaipuram.com", http.request.uri.path)` — bare/www now redirect to the app (✅ live, June 2026).
 - **Legacy URLs (still work, backward compat):** https://venthangowthams.github.io/Pannaipuram/ and https://pannaipuram-api.onrender.com/pwa/
 - **GitHub Pages deploy:** `.github/workflows/deploy-pwa.yml` runs on push to `main` touching `pwa/**`. Sed-rewrites `/pwa/` → `./` so paths work at `/Pannaipuram/` base path. `pwa/CNAME` ships custom domain.
 - **Render serving:** `backend/src/app.js` `express.static(path.resolve(__dirname, '../../pwa'))`
@@ -38,17 +38,19 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 - **Backend CORS:** auto-allows any `*.github.io` subdomain AND `*.pannaipuram.{com,in}` (two regexes in `backend/src/app.js`)
 - **Cold-start resilience (v34):** `apiFetch` has 2.5s timeout — if Render is cold, cached data served instantly; network keeps running to refresh
 - **One-tap install share link:** `https://app.pannaipuram.com/?install=1` triggers full-screen install wall (Android only)
-- **PWA sections (v41):** 4 bottom-nav tabs — 🚌 பேருந்து (`bus.js`) · 🛺 ஆட்டோ (`auto.js`) · 🏥 மருத்துவம் Hospital (`hospital.js`, fetches `/api/hospital/list` + `/api/hospital/doctors`, shows doctor day-chips + "இன்று கிடைக்கும்" today badge) · 📞 அவசரம் Emergency (`emergency.js`, fetches `/api/emergency/contacts`). Hospital + Emergency lazy-init on first open. About sheet in ☰ menu has village stats (population/wards/streets/cardamom).
+- **PWA sections (v46+):** 5 bottom-nav tabs — 🚌 பேருந்து (`bus.js`) · 🛺 ஆட்டோ (`auto.js`) · 🏥 மருத்துவம் (`hospital.js`: doctors by hospital, day-chips, "இன்று கிடைக்கும்" today badge, contact call chips) · 📞 அவசரம் (`emergency.js`) · ➕ மேலும் (`more.js`: acting drivers + local services). Hospital/Emergency/More lazy-init on first open. About sheet in ☰ menu has village stats.
+- **Bus data loading (v53):** `GET /api/bus/all` returns corridors + ALL timings grouped by corridor in ONE request (was 1+17 round trips). `bus.js` `loadAllData()` uses it for initial load, 10-min auto-refresh, and the ↻ button — with automatic fallback to `/corridors` + per-corridor `/timings/:id` if the batch endpoint errors.
+- **Perf (v53):** `index.html` preconnects to `https://api.pannaipuram.com` (+ dns-prefetch onrender.com) so the first API call skips DNS+TLS setup.
+- **Security (v53):** `express-rate-limit` on public POSTs — `/api/feedback`, `/api/pwa/ping`, `/api/water/alert` (30 req / 10 min / IP). `app.set('trust proxy', 1)` so limiters see the real client IP behind Render. All PWA renderers (`bus/auto/hospital/emergency/more`) escape DB strings before innerHTML (XSS-safe); `emergency.js` dedupes contacts by name+phone.
 - **App identity (v44):** icon = original navy-blue bus (white bus + route dots + gold stop dot) — temporarily restored from v39 while a new unified icon is decided (`backend/gen-icon.js`, run `node gen-icon.js` to regen). Manifest `short_name` = **"Pannaipuram"** (English, searchable without Tamil keyboard); `name` = "Pannaipuram பண்ணைப்புரம்".
 - **Phone validation:** Indian mobile = EXACTLY 10 digits starting 6/7/8/9. Auto reg form (`pwa/js/auto.js`) strips non-digits + caps at 10; input `maxlength=10`.
-- **PWA sections (v46):** 5 bottom-nav tabs — 🚌 பேருந்து · 🛺 ஆட்டோ · 🏥 மருத்துவம் · 📞 அவசரம் · ➕ மேலும் (More: `more.js` — Acting/substitute drivers `/api/acting/drivers` + Local Services `/api/services`).
 - **Responsive (v46):** `pwa/css/responsive.css` (loaded LAST so it wins). Mobile ≤699px unchanged (single column). ≥700px: fluid container (max 1000/1140px), flat card lists (`#driver-list`, `.em-group-cards`, `.hd-docs`, `#more-acting`, `.more-svc-cards`) become multi-column grids; bus stays a centered 640px column (accordion+sibling timetables don't grid). Uses `html body` specificity to beat base `body{max-width:480}`.
 - **Install prompts = PHONES ONLY (v46):** `window._isPhone()` in `app.js` gates the install banner + `?install=1` wall + hamburger install item. iPhone/iPod → yes; Android WITH "Mobile" → yes; iPad / Android tablet / desktop / laptop → no.
 - **Acting drivers:** `acting_drivers` table (mirrors `auto_drivers`); migration `backend/src/db/migration_acting_drivers.sql`; admin tab "🔄 Acting Drivers"; shown in PWA மேலும் tab.
 - **Bottom nav (`pwa/css/nav.css`):** uses `grid-auto-flow: column` — auto-fits any number of tabs (don't hardcode column count).
 - **Render config:** `render.yaml` at repo root with `rootDir: .` ensures full repo is deployed
 - **NEVER edit files inside `backend/public/pwa/`** — that folder was deleted. Edit only in `pwa/`
-- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v46.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
+- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v53.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
 - **Icon generation:** Run `node backend/gen-icon.js` to regenerate `pwa/icons/icon-192.png` + `icon-512.png`
 - **Service Worker:** 3-tier cache — SW (stale-while-revalidate for /api/*) → api.js memory → localStorage fallback
 - **Domain plan reference:** `docs/domain-and-hosting-plan.md` — original migration plan (now executed)
@@ -470,7 +472,7 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 - Line 344: `தொலைதூர பயணம்` — Long Distance ✅ (updated April 2026)
 - No night/Chennai section in Flutter APK (PWA-only feature)
 
-### ✅ Live & Complete — PWA (unified: Bus + Auto + Hospital + Emergency) — v44 (June 2026)
+### ✅ Live & Complete — PWA (unified: Bus + Auto + Hospital + Emergency + More) — v53 (June 2026)
 
 | Feature | File | Status |
 |---|---|---|
@@ -516,7 +518,7 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 | Design token scale (--ta-xs through --ta-xxl) | pwa/css/tokens.css | ✅ |
 | Focus ring a11y (gold 3px :focus-visible) | pwa/css/base.css | ✅ |
 | New bus icon (navy + bus silhouette + route dots) | pwa/icons/ | ✅ |
-| **SW cache v44 / localStorage key pannai-v44** | pwa/sw.js + api.js | ✅ v43 |
+| **SW cache v53 / localStorage key pannai-v53** | pwa/sw.js + api.js | ✅ v53 |
 
 ### ✅ Infrastructure
 - JWT auth + RBAC (super_admin, admin, viewer)
@@ -538,10 +540,12 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 - ✅ `app.pannaipuram.com` (PWA), `api.pannaipuram.com` (backend), `admin.pannaipuram.com` (admin) all live with SSL
 - ⏳ Optional leftover: redirect bare `pannaipuram.com` + `www` → `app.` (Cloudflare Redirect Rule; placeholder A records already added). Not urgent.
 
-**Security hardening (recommended next)**
-- ⏳ Add `express-rate-limit` to public POST endpoints: `/api/feedback`, `/api/pwa/ping`, `/api/water/alert` (currently only admin auth is rate-limited — spam/abuse risk)
+**Security hardening**
+- ✅ Rate-limit public POSTs (`/api/feedback`, `/api/pwa/ping`, `/api/water/alert` — 30/10min/IP) + `trust proxy` (v53, June 2026)
+- ✅ XSS escaping on all PWA renderers; emergency contact dedupe (v53)
 - ⏳ Re-enable a scoped CSP for `/pwa/` + `/api/` (currently `contentSecurityPolicy:false` globally)
-- ⏳ Confirm Supabase RLS enabled on all public tables (Security Advisor flagged `rls_disabled_in_public` — backend uses superuser so unaffected, but Data API was exposed)
+- ⏳ Confirm Supabase RLS enabled on all public tables (Security Advisor flagged `rls_disabled_in_public` — backend uses superuser so unaffected, but Data API was exposed; Venthan ran the bulk-enable SQL — verify in Security Advisor)
+- ⏳ Remove duplicate emergency row in DB (Thevaram Police, ids 26 & 55 — PWA already dedupes client-side)
 
 **Data Entry (Venthan's task — via Admin Panel)**
 - ⏳ Bus timings — only **Dindigul** still pending (Thevaram ✅23, Theni ✅2, Coimbatore ✅3, Trichy ✅3, Palani ✅6, Bodi/Cumbum/Chinnamanur/Madurai/Kumily/Gudalur/Mettupalayam/Suruli ✅ all in DB)

@@ -48,6 +48,15 @@ var Emergency = (function() {
 
   function renderGroup(cat, list) {
     if (!list || !list.length) return '';
+    // Defensive dedupe — admin data occasionally has the same contact twice
+    // (same name + phone); show each number once.
+    var seen = {};
+    list = list.filter(function(c) {
+      var key = (c.name_english || c.name_tamil || '') + '|' + (c.phone || '');
+      if (seen[key]) return false;
+      seen[key] = true;
+      return true;
+    });
     var cards = list.map(renderContactCard).join('');
     return '' +
       '<section class="em-group">' +

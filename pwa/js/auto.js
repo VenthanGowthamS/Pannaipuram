@@ -1,17 +1,25 @@
 // ── Auto/Van Section Controller ──────────────────────────────
 var Auto = (function() {
 
+  // Escape DB-sourced strings before injecting into innerHTML (XSS-safe)
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   function vehicleIcon(type) {
-    var map = { auto: '🛺', van: '🚐', car: '🚕', taxi: '🚕' };
+    var map = { auto: '🛺', van: '🚐', car: '🚗', taxi: '🚖' };
     return map[(type || '').toLowerCase()] || '🚗';
   }
 
   function renderCard(driver) {
     var icon = vehicleIcon(driver.vehicle_type);
-    var hasPhone = driver.phone && driver.phone.replace(/\D/g, '').length >= 10;
+    var digits = String(driver.phone || '').replace(/\D/g, '');
+    var hasPhone = digits.length >= 10;
     var isVerified = driver.phone_verified !== false; // true by default if field absent
     var callEl = (hasPhone && isVerified)
-      ? '<a href="tel:' + driver.phone + '" class="call-btn">📞 அழைக்க</a>'
+      ? '<a href="tel:' + digits + '" class="call-btn">📞 அழைக்க</a>'
       : '<span class="call-btn call-btn-pending">விரைவில்</span>';
 
     var coverage = driver.coverage_tamil || driver.schedule_tamil || '';
@@ -19,9 +27,9 @@ var Auto = (function() {
     return '<div class="driver-card">' +
       '<div class="driver-icon">' + icon + '</div>' +
       '<div class="driver-info">' +
-        '<span class="driver-name-ta">' + driver.name_tamil + '</span>' +
-        (driver.name_english ? '<span class="driver-name-en">' + driver.name_english + '</span>' : '') +
-        (coverage ? '<span class="driver-meta">' + coverage + '</span>' : '') +
+        '<span class="driver-name-ta">' + esc(driver.name_tamil) + '</span>' +
+        (driver.name_english ? '<span class="driver-name-en">' + esc(driver.name_english) + '</span>' : '') +
+        (coverage ? '<span class="driver-meta">' + esc(coverage) + '</span>' : '') +
       '</div>' +
       callEl +
     '</div>';

@@ -14,6 +14,35 @@ router.get('/corridors', async (req, res) => {
   }
 });
 
+// GET /api/bus/all — corridors + ALL timings in ONE response.
+// Replaces 1 + N round trips (18 requests for 17 corridors) with a single
+// request — critical on 2G and when Render is cold. Timings are grouped by
+// corridor_id with the exact same row shape as /timings/:corridorId.
+router.get('/all', async (req, res) => {
+  try {
+    const [corridors, timings] = await Promise.all([
+      query('SELECT * FROM bus_corridors ORDER BY id ASC'),
+      query(`
+        SELECT br.corridor_id, bt.id, bt.departs_at, bt.days_of_week, bt.bus_type,
+               bt.operator_name, bt.is_last_bus,
+               br.direction, br.origin_tamil, br.dest_tamil, br.stops_tamil
+        FROM bus_timings bt
+        JOIN bus_routes br ON bt.route_id = br.id
+        WHERE bt.is_active = TRUE
+        ORDER BY bt.departs_at ASC
+      `),
+    ]);
+    const grouped = {};
+    for (const row of timings.rows) {
+      const { corridor_id, ...t } = row;
+      (grouped[corridor_id] = grouped[corridor_id] || []).push(t);
+    }
+    res.json({ success: true, data: { corridors: corridors.rows, timings: grouped } });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 // GET /api/bus/timings/:corridorId
 router.get('/timings/:corridorId', async (req, res) => {
   try {
