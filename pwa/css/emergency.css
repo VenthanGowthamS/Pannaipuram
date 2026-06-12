@@ -3,7 +3,7 @@
 /* Header — red theme (urgency) */
 .em-header {
   position: relative;
-  background: linear-gradient(135deg, #C62828 0%, #8E1B1B 100%);
+  background: linear-gradient(135deg, #1A237E 0%, #283593 100%);
   color: #fff;
   /* side padding clears the fixed ☰ (left) and ↻ (right) buttons */
   padding: 18px 60px 18px;

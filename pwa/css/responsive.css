@@ -10,21 +10,32 @@
   html body { max-width: 1100px; }
   body::before { max-width: 1100px; }
 
-  /* Align the hamburger button to the centered app column. */
-  .menu-btn { left: max(10px, calc(50% - 538px)); }
+  /* Hamburger button: properly sized for web (was a tiny phone button),
+     aligned to the app column. */
+  .menu-btn {
+    left: max(14px, calc(50% - 534px));
+    top: 14px;
+    width: 62px;
+    height: 62px;
+    gap: 6px;
+  }
+  .menu-btn-bar { width: 28px; height: 3px; }
 
-  /* On web the drawer becomes a compact floating dropdown PANEL anchored
-     under the menu button (not a full-height phone drawer). It sizes to its
-     content, drops down with a fade, and a light dim catches outside clicks. */
-  .menu-backdrop { background: rgba(0, 0, 0, 0.18); }
+  /* No install UI on desktop/laptop — belt & braces over the JS gate */
+  #menu-install-btn, #install-banner, #install-wall { display: none !important; }
+
+  /* On web the drawer becomes a floating dropdown PANEL anchored under the
+     menu button — sized & themed to match the app (navy header inside). */
+  .menu-backdrop { background: rgba(13, 27, 62, 0.30); }
   .menu-drawer {
-    top: 62px;
+    top: 86px;
     bottom: auto;
-    left: max(10px, calc(50% - 538px));
-    width: 300px;
-    max-height: 74vh;
-    border-radius: 16px;
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.30);
+    left: max(14px, calc(50% - 534px));
+    width: 380px;
+    max-width: 380px;
+    max-height: 78vh;
+    border-radius: 18px;
+    box-shadow: 0 18px 50px rgba(13, 27, 62, 0.35);
     overflow-y: auto;
     transform: translateY(-12px);
     opacity: 0;
@@ -33,6 +44,11 @@
     transition: transform 200ms ease, opacity 200ms ease, visibility 200ms ease;
   }
   .menu-drawer.open { transform: translateY(0); opacity: 1; visibility: visible; pointer-events: auto; }
+  /* Roomier, larger menu items on web — proportional to the page */
+  .menu-drawer .menu-item { padding-top: 18px; padding-bottom: 18px; }
+  .menu-drawer .menu-item-ta { font-size: 1.12rem; }
+  .menu-drawer .menu-item-en { font-size: 0.8rem; }
+  .menu-drawer .menu-drawer-title-ta { font-size: 1.3rem; }
 
   /* Sheets (About/Feedback/etc.) → a centered floating modal, not full-screen.
      Closed sheets keep the base [hidden]{display:none} (so they are NOT rendered

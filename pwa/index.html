@@ -548,6 +548,43 @@
         </div>
         <p class="more-feature-desc">தேவைப்படும்போது வண்டி ஓட்ட உதவும் ஓட்டுநர்கள் — ஒரே tap-ல் கூப்பிடுங்க</p>
         <div id="more-acting"></div>
+
+        <!-- Acting driver registration (collapsible) -->
+        <details class="acting-reg" id="acting-reg">
+          <summary class="acting-reg-cta">
+            <span class="acting-reg-ic">🚖</span>
+            <span class="acting-reg-txt">
+              <span class="acting-reg-ta">நீங்களும் ஓட்டுநரா? இங்க பதிவு பண்ணுங்க</span>
+              <span class="acting-reg-en">Register as an acting driver</span>
+            </span>
+            <span class="acting-reg-caret">▾</span>
+          </summary>
+          <form id="acting-reg-form" class="acting-reg-form" novalidate>
+            <label class="auto-form-label" for="arf-name">பெயர் <span class="auto-form-required">*</span></label>
+            <input id="arf-name" class="auto-form-input" type="text" placeholder="பெயர்" required maxlength="80" autocomplete="name">
+
+            <label class="auto-form-label" for="arf-phone">தொலைபேசி எண் <span class="auto-form-required">*</span></label>
+            <input id="arf-phone" class="auto-form-input" type="tel" placeholder="10 இலக்க மொபைல் எண்" required maxlength="10" autocomplete="tel" inputmode="numeric" pattern="[6-9][0-9]{9}">
+            <p id="arf-phone-err" class="auto-form-field-err" hidden></p>
+
+            <label class="auto-form-label" for="arf-vehicle">எந்த வண்டி ஓட்டுவீங்க?</label>
+            <select id="arf-vehicle" class="auto-form-input">
+              <option value="கார்">🚗 கார்</option>
+              <option value="வேன்">🚐 வேன்</option>
+              <option value="ஆட்டோ">🛺 ஆட்டோ</option>
+              <option value="எல்லா வண்டியும்">🚙 எல்லா வண்டியும்</option>
+            </select>
+
+            <label class="auto-form-label" for="arf-area">எந்த பகுதி வரை வருவீங்க?</label>
+            <input id="arf-area" class="auto-form-input" type="text" placeholder="எ.கா: தேவாரம், தேனி" maxlength="120">
+
+            <label class="auto-form-label" for="arf-msg">வேற ஏதாவது சொல்லணுமா?</label>
+            <textarea id="arf-msg" class="auto-form-input auto-form-textarea" placeholder="நேரம், அனுபவம்..." rows="2" maxlength="300"></textarea>
+
+            <button type="submit" id="arf-btn" class="acting-reg-btn"><span id="arf-btn-text">📩 பதிவு அனுப்புங்க</span></button>
+            <p id="arf-result" class="auto-form-result" hidden></p>
+          </form>
+        </details>
       </section>
 
       <!-- Local services -->
