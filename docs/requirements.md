@@ -1,9 +1,9 @@
 # பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 5.1 (PWA v53 — responsive web design, More tab + acting drivers, batch bus API, security hardening)
+> **Version:** 5.2 (PWA v56 — per-page colours + colour-matching menu, village-hub icon, acting-driver registration, web menu sizing)
 > **Date:** June 2026
-> **Status:** PWA v53 live (unified: Bus + Auto + Hospital + Emergency + More) on the **custom domain**:
+> **Status:** PWA v56 live (unified: Bus + Auto + Hospital + Emergency + More) on the **custom domain**:
 > - 🌟 **https://app.pannaipuram.com** (primary — share `?install=1` on WhatsApp)
 > - 🔗 API: https://api.pannaipuram.com · 🛠 Admin: https://admin.pannaipuram.com
 > - 🌐 `pannaipuram.com` + `www` → 301 redirect to the app (Cloudflare Redirect Rule)
@@ -12,7 +12,19 @@
 > `pannaipuram.com` bought on Cloudflare Registrar (June 2026). Phase 11 (custom
 > domain migration) **COMPLETE** — see `docs/domain-and-hosting-plan.md`.
 
-### PWA Recent Changes (v14 → v53, April–June 2026)
+### PWA Recent Changes (v14 → v56, April–June 2026)
+
+#### v54–v56 — Panel UI, per-page colours, acting registration, hub icon (June 2026)
+| Feature | Status |
+|---|---|
+| **Panel UI system** — Emergency/Services as category panels (tinted headers, count chips, divider rows); hospitals as teal-accent panels with doctor sub-cards | ✅ v54 |
+| **Per-page colours kept** (bus navy / auto amber / hospital teal / emergency red / more purple) + **hamburger drawer & sheets dynamically match the page colour** via `body[data-section]` | ✅ v56 |
+| **Village-hub icon** — three roads converge on the gold Pannaipuram stop (hospital ✚ / bus / auto markers, premium navy) | ✅ v55 |
+| **Acting driver profiles + registration** — vehicle chip + 📍/🕐 rows; "நீங்களும் ஓட்டுநரா?" form → /api/feedback `[மாற்று ஓட்டுநர் பதிவு]` | ✅ v55 |
+| **Web hamburger** — 62px button, 380px themed dropdown, larger items; install UI force-hidden on desktop, kept on phones | ✅ v55–56 |
+| **SW shell fix** — network-first no longer keyed on '/pwa/' literal (GH Pages sed broke it → stale UI on custom domain) | ✅ v56 |
+| Doctor today badge → "✅ டாக்டர் இன்று இருக்காங்க" / "டாக்டர் இன்று இல்லை"; services head centred | ✅ v56 |
+
 
 #### v53 — Performance + security + data quality (June 2026)
 | Feature | Status |

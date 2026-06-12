@@ -19,7 +19,7 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 | Hosting | Render.com (Node.js) | https://pannaipuram-api.onrender.com |
 | Docs | Markdown | `docs/` |
 
-### PWA — Key Architecture Facts (v53, June 2026)
+### PWA — Key Architecture Facts (v56, June 2026)
 - **Source lives at:** `pwa/` (repo root) — NOT inside `backend/`
 - **Custom domain LIVE (June 2026):** `pannaipuram.com` bought on Cloudflare Registrar (auto-renew on). Subdomains:
   - 🌟 **PWA (share this):** https://app.pannaipuram.com — GitHub Pages, ships `pwa/CNAME` = `app.pannaipuram.com`
@@ -42,15 +42,20 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 - **Bus data loading (v53):** `GET /api/bus/all` returns corridors + ALL timings grouped by corridor in ONE request (was 1+17 round trips). `bus.js` `loadAllData()` uses it for initial load, 10-min auto-refresh, and the ↻ button — with automatic fallback to `/corridors` + per-corridor `/timings/:id` if the batch endpoint errors.
 - **Perf (v53):** `index.html` preconnects to `https://api.pannaipuram.com` (+ dns-prefetch onrender.com) so the first API call skips DNS+TLS setup.
 - **Security (v53):** `express-rate-limit` on public POSTs — `/api/feedback`, `/api/pwa/ping`, `/api/water/alert` (30 req / 10 min / IP). `app.set('trust proxy', 1)` so limiters see the real client IP behind Render. All PWA renderers (`bus/auto/hospital/emergency/more`) escape DB strings before innerHTML (XSS-safe); `emergency.js` dedupes contacts by name+phone.
-- **App identity (v44):** icon = original navy-blue bus (white bus + route dots + gold stop dot) — temporarily restored from v39 while a new unified icon is decided (`backend/gen-icon.js`, run `node gen-icon.js` to regen). Manifest `short_name` = **"Pannaipuram"** (English, searchable without Tamil keyboard); `name` = "Pannaipuram பண்ணைப்புரம்".
+- **App identity (v55):** icon = "village hub" — three roads converge on the glowing gold Pannaipuram stop; white markers hold hospital (red cross), bus (blue + amber stripe, hero) and auto-rickshaw (green) on a premium navy gradient (`backend/gen-icon.js`, run `node gen-icon.js` to regen). Manifest `short_name` = **"Pannaipuram"** (English, searchable without Tamil keyboard); `name` = "Pannaipuram பண்ணைப்புரம்".
 - **Phone validation:** Indian mobile = EXACTLY 10 digits starting 6/7/8/9. Auto reg form (`pwa/js/auto.js`) strips non-digits + caps at 10; input `maxlength=10`.
+- **Section colours (v56):** every section keeps its OWN identity colour — bus navy `#1A237E→#283593`, auto amber, hospital teal `#00838F→#006064`, emergency red `#C62828→#8E1B1B`, more purple `#5E35B1→#3949AB`. The hamburger drawer + sheet headers DYNAMICALLY match the current page via `body[data-section]` rules in `nav.css` (bus/default = navy).
+- **Web hamburger (v55–56):** ≥700px the menu button is 62px (28px bars), drawer = 380px dropdown panel under the button with larger items; sheets open as centred modals. `#menu-install-btn / #install-banner / #install-wall` are `display:none !important` on desktop (`responsive.css`) + JS `_isPhone()` gate — install UI is PHONES ONLY, and must stay visible on phones.
+- **Acting driver registration (v55):** collapsible `<details>` form in the More panel ("நீங்களும் ஓட்டுநரா?") → POST `/api/feedback` tagged `[மாற்று ஓட்டுநர் பதிவு]`; shares `.auto-form-*` styles RE-THEMED light via `.acting-reg-form` overrides (the auto originals are white-on-dark).
+- **SW shell rule (v56) — IMPORTANT:** never match shell paths with a `'/pwa/'` string literal inside `sw.js` — the GH Pages deploy sed-rewrites it to `'./'`, which silently disabled network-first on app.pannaipuram.com (stale UI). The fetch handler now matches same-origin `.html/.css/.js` or trailing `/` paths, excluding `/api/`.
+- **Doctor today badge (v56):** "✅ டாக்டர் இன்று இருக்காங்க" / "டாக்டர் இன்று இல்லை" (multi-line pill, max-width 104px).
 - **Responsive (v46):** `pwa/css/responsive.css` (loaded LAST so it wins). Mobile ≤699px unchanged (single column). ≥700px: fluid container (max 1000/1140px), flat card lists (`#driver-list`, `.em-group-cards`, `.hd-docs`, `#more-acting`, `.more-svc-cards`) become multi-column grids; bus stays a centered 640px column (accordion+sibling timetables don't grid). Uses `html body` specificity to beat base `body{max-width:480}`.
 - **Install prompts = PHONES ONLY (v46):** `window._isPhone()` in `app.js` gates the install banner + `?install=1` wall + hamburger install item. iPhone/iPod → yes; Android WITH "Mobile" → yes; iPad / Android tablet / desktop / laptop → no.
 - **Acting drivers:** `acting_drivers` table (mirrors `auto_drivers`); migration `backend/src/db/migration_acting_drivers.sql`; admin tab "🔄 Acting Drivers"; shown in PWA மேலும் tab.
 - **Bottom nav (`pwa/css/nav.css`):** uses `grid-auto-flow: column` — auto-fits any number of tabs (don't hardcode column count).
 - **Render config:** `render.yaml` at repo root with `rootDir: .` ensures full repo is deployed
 - **NEVER edit files inside `backend/public/pwa/`** — that folder was deleted. Edit only in `pwa/`
-- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v53.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
+- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v56.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
 - **Icon generation:** Run `node backend/gen-icon.js` to regenerate `pwa/icons/icon-192.png` + `icon-512.png`
 - **Service Worker:** 3-tier cache — SW (stale-while-revalidate for /api/*) → api.js memory → localStorage fallback
 - **Domain plan reference:** `docs/domain-and-hosting-plan.md` — original migration plan (now executed)
@@ -628,5 +633,5 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram && git add app/li
 
 ---
 
-*Last updated: June 7, 2026 — PWA v42, unified app (Bus + Auto + Hospital + Emergency), new flashy-blue 3-badge icon (bus/auto/hospital), English searchable name "Pannaipuram", auto phone fix*
+*Last updated: June 12, 2026 — PWA v56: per-page colours + colour-matching hamburger, village-hub icon, acting-driver registration, web menu sizing, SW shell fix*
 *Built with ❤️ for பண்ணைப்புரம் — உங்கள் ஊரின் தகவல் மையம்*

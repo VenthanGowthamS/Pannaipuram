@@ -126,6 +126,27 @@
   background: linear-gradient(135deg, #1A237E 0%, #283593 100%);
   color: #ffffff;
 }
+
+/* ── Drawer + sheet headers MATCH the page the user is on ─────
+   Bus stays navy (default above); other sections tint the menu to
+   their own identity colour. body[data-section] is kept in sync by
+   the bottom-nav switcher in app.js. */
+body[data-section="auto"] .menu-drawer-header,
+body[data-section="auto"] .menu-sheet-header {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+}
+body[data-section="hospital"] .menu-drawer-header,
+body[data-section="hospital"] .menu-sheet-header {
+  background: linear-gradient(135deg, #00838F 0%, #006064 100%);
+}
+body[data-section="emergency"] .menu-drawer-header,
+body[data-section="emergency"] .menu-sheet-header {
+  background: linear-gradient(135deg, #C62828 0%, #8E1B1B 100%);
+}
+body[data-section="more"] .menu-drawer-header,
+body[data-section="more"] .menu-sheet-header {
+  background: linear-gradient(135deg, #5E35B1 0%, #3949AB 100%);
+}
 .menu-drawer-title {
   display: flex;
   flex-direction: column;

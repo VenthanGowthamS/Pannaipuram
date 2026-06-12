@@ -1,5 +1,5 @@
 // ── Pannaipuram PWA — Service Worker ─────────────────────
-var CACHE = 'pannai-pwa-v55';
+var CACHE = 'pannai-pwa-v56';
 
 var SHELL = [
   '/pwa/',
@@ -81,14 +81,17 @@ self.addEventListener('fetch', function(e) {
   }
 
   // PWA app shell (HTML / CSS / JS) — NETWORK-FIRST
-  // This is the PERMANENT cache fix: users always get the latest HTML/CSS/JS when online,
-  // with cached fallback only when offline. No more "hard refresh to see changes".
-  if (url.pathname.startsWith('/pwa/') &&
+  // Users always get the latest HTML/CSS/JS when online, cached fallback
+  // only when offline. IMPORTANT: do NOT match on a '/pwa/' prefix string —
+  // the GitHub Pages deploy sed-rewrites '/pwa/' literals to './', which
+  // silently turned this branch off on app.pannaipuram.com (shell became
+  // cache-first there → stale UI until the SW version bumped).
+  if (url.origin === self.location.origin &&
+      !url.pathname.startsWith('/api/') &&
       (url.pathname.endsWith('.html') ||
        url.pathname.endsWith('.css') ||
        url.pathname.endsWith('.js') ||
-       url.pathname === '/pwa/' ||
-       url.pathname === '/pwa')) {
+       url.pathname.endsWith('/'))) {
     e.respondWith(
       fetch(e.request).then(function(resp) {
         if (resp && resp.status === 200) {

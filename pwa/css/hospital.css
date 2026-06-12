@@ -2,7 +2,7 @@
 
 .hd-header {
   position: relative;
-  background: linear-gradient(135deg, #1A237E 0%, #283593 100%);
+  background: linear-gradient(135deg, #00838F 0%, #006064 100%);
   color: #fff;
   padding: 18px 60px 18px;
   text-align: center;
@@ -168,11 +168,13 @@
   font-family: 'Noto Sans Tamil', sans-serif;
   font-size: 0.66rem;
   font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 8px;
+  padding: 4px 9px;
+  border-radius: 9px;
   background: #E8F5E9;
   color: #2E7D32;
-  white-space: nowrap;
+  max-width: 104px;
+  text-align: center;
+  line-height: 1.4;
 }
 .hd-today-badge.hd-today-no { background: #F5F5F5; color: #9E9E9E; }
 
