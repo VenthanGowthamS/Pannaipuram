@@ -76,6 +76,7 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 
 ## Rules (Always Follow These)
 
+- **PRODUCTION VERIFICATION RULE (mandatory):** after every PWA change — (1) bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together, (2) commit + push, (3) **verify ON PRODUCTION, never just localhost**: `curl -s "https://app.pannaipuram.com/sw.js?x=$RANDOM" | grep CACHE` must show the new version, AND grep the deployed file for the actual changed rule/text (e.g. `curl -s ".../css/responsive.css?x=$RANDOM" | grep "width: 62px"`). Only report "done" after the live check passes. Local preview alone is NOT verification.
 - Fix **ONE issue at a time** — don't chain multiple fixes without checking with Venthan
 - After each fix, **run the relevant test/build** to verify it worked
 - If a fix fails twice, **STOP** and explain the problem instead of trying again
