@@ -21,6 +21,19 @@
   }
   .menu-btn-bar { width: 28px; height: 3px; }
 
+  /* Section-header refresh buttons mirror the 62px menu button on the
+     right side — same visual weight, vertically centre-aligned with it. */
+  .bus-refresh-btn,
+  .em-refresh-btn,
+  .hd-refresh-btn,
+  .more-refresh-btn {
+    width: 54px;
+    height: 54px;
+    top: 16px;
+    right: 16px;
+    font-size: 26px;
+  }
+
   /* No install UI on desktop/laptop — belt & braces over the JS gate */
   #menu-install-btn, #install-banner, #install-wall { display: none !important; }
 
