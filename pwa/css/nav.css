@@ -147,6 +147,13 @@ body[data-section="more"] .menu-drawer-header,
 body[data-section="more"] .menu-sheet-header {
   background: linear-gradient(135deg, #5E35B1 0%, #3949AB 100%);
 }
+
+/* The refresh toast ("✅ புதுப்பிக்கப்பட்டது") also wears the page colour */
+body[data-section="bus"] .app-toast       { background: #1A237E; }
+body[data-section="auto"] .app-toast      { background: #B45309; }
+body[data-section="hospital"] .app-toast  { background: #006064; }
+body[data-section="emergency"] .app-toast { background: #8E1B1B; }
+body[data-section="more"] .app-toast      { background: #3C2E85; }
 .menu-drawer-title {
   display: flex;
   flex-direction: column;

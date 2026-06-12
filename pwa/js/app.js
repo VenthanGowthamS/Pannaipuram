@@ -511,15 +511,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   })();
 
-  // ── Install wall (Android one-tap install via ?install=1 link) ──
+  // ── Install wall (?install=1 link) ──────────────────────
+  // Android: one-tap native install button. iPhone: same full-screen
+  // wall but with the 3 "Add to Home Screen" steps (iOS has no one-tap).
   (function initInstallWall() {
     var wall = document.getElementById('install-wall');
     if (!wall) return;
     var ua = navigator.userAgent || '';
     var isAndroid = /Android/.test(ua);
+    var isIOS = /iPhone|iPod/.test(ua) && !window.MSStream;
 
-    // Only show on Android + not already installed
-    if (!window._installWallRequested || !isAndroid || _isInstalled()) return;
+    if (!window._installWallRequested || _isInstalled() || !(isAndroid || isIOS)) return;
 
     wall.hidden = false;
 
@@ -530,6 +532,20 @@ document.addEventListener('DOMContentLoaded', function() {
       wall.hidden = true;
       // Clean URL so sharing from inside the app doesn't re-trigger
       try { history.replaceState(null, '', '/pwa/'); } catch(_) {}
+    }
+
+    if (isIOS) {
+      // Swap the Android button for the iOS step list
+      var btnWrap = document.querySelector('.iw-btn-wrap');
+      var tapLbl  = document.querySelector('.iw-tap-label');
+      var arrow   = document.querySelector('.iw-tap-arrow');
+      if (btnWrap) btnWrap.hidden = true;
+      if (arrow) arrow.hidden = true;
+      if (tapLbl) tapLbl.textContent = 'App-ஆ சேர்க்க இந்த 3 steps போதும்:';
+      var iosSteps = document.getElementById('iw-ios-steps');
+      if (iosSteps) iosSteps.hidden = false;
+      if (skipBtn) skipBtn.addEventListener('click', closeWall);
+      return;   // no beforeinstallprompt wiring on iOS
     }
 
     // If prompt already captured (Chrome fired early), wire it immediately

@@ -393,6 +393,23 @@ main {
   opacity: 0.7;
   font-family: var(--font-latin);
 }
+/* iOS variant of the install wall — numbered Safari steps */
+.iw-ios-steps {
+  text-align: left;
+  margin: 14px auto 4px;
+  padding: 14px 16px 14px 34px;
+  max-width: 300px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  color: #fff;
+  font-family: var(--font-tamil);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+.iw-ios-steps li { margin-bottom: 9px; }
+.iw-ios-steps li:last-child { margin-bottom: 0; }
+.iw-ios-steps b { color: #FFD600; }
+
 .iw-skip-btn {
   background: none;
   border: none;

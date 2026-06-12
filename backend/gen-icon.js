@@ -46,36 +46,41 @@ function busGlyph(ctx, cx, cy, r, color) {
   });
 }
 
-// Side-view auto-rickshaw: high domed canopy, slanted windshield, open
-// side window, front cowl, small front wheel + bigger rear wheel.
+// FRONT-view auto-rickshaw (like the classic 🛺 silhouette): domed roof,
+// big windshield, central headlight, single front wheel under a mudguard.
 function autoGlyph(ctx, cx, cy, r, color) {
-  const g = cy + 0.42 * r;   // ground line
+  // body: rounded-dome cabin
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.moveTo(cx - 0.62 * r, g - 0.12 * r);
-  ctx.lineTo(cx - 0.62 * r, cy - 0.05 * r);
-  ctx.quadraticCurveTo(cx - 0.62 * r, cy - 0.62 * r, cx - 0.02 * r, cy - 0.62 * r);
-  ctx.quadraticCurveTo(cx + 0.42 * r, cy - 0.62 * r, cx + 0.52 * r, cy - 0.12 * r);
-  ctx.quadraticCurveTo(cx + 0.58 * r, cy + 0.12 * r, cx + 0.52 * r, g - 0.12 * r);
+  ctx.moveTo(cx - 0.52 * r, cy + 0.30 * r);            // bottom-left
+  ctx.lineTo(cx - 0.52 * r, cy - 0.10 * r);            // left wall
+  ctx.quadraticCurveTo(cx - 0.52 * r, cy - 0.60 * r, cx, cy - 0.60 * r);   // roof left
+  ctx.quadraticCurveTo(cx + 0.52 * r, cy - 0.60 * r, cx + 0.52 * r, cy - 0.10 * r); // roof right
+  ctx.lineTo(cx + 0.52 * r, cy + 0.30 * r);            // right wall
   ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#FFFFFF';                            // windshield
+  // windshield: wide rounded glass across the upper body
+  ctx.fillStyle = '#FFFFFF';
   ctx.beginPath();
-  ctx.moveTo(cx + 0.16 * r, cy - 0.52 * r);
-  ctx.quadraticCurveTo(cx + 0.36 * r, cy - 0.52 * r, cx + 0.44 * r, cy - 0.1 * r);
-  ctx.lineTo(cx + 0.3 * r, cy - 0.1 * r);
+  ctx.moveTo(cx - 0.38 * r, cy + 0.02 * r);
+  ctx.lineTo(cx - 0.38 * r, cy - 0.18 * r);
+  ctx.quadraticCurveTo(cx - 0.38 * r, cy - 0.46 * r, cx, cy - 0.46 * r);
+  ctx.quadraticCurveTo(cx + 0.38 * r, cy - 0.46 * r, cx + 0.38 * r, cy - 0.18 * r);
+  ctx.lineTo(cx + 0.38 * r, cy + 0.02 * r);
   ctx.closePath(); ctx.fill();
-  rr(ctx, cx - 0.48 * r, cy - 0.46 * r, 0.5 * r, 0.36 * r, 0.07 * r);  // side window
-  ctx.fill();
-  function wheel(wx, wr) {
-    ctx.fillStyle = '#1C2233';
-    ctx.beginPath(); ctx.arc(wx, g, wr, 0, 7); ctx.fill();
-    ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath(); ctx.arc(wx, g, wr * 0.42, 0, 7); ctx.fill();
-  }
-  wheel(cx - 0.34 * r, 0.17 * r);
-  wheel(cx + 0.38 * r, 0.14 * r);
-  ctx.fillStyle = '#FFD54F';                            // headlight on cowl
-  ctx.beginPath(); ctx.arc(cx + 0.52 * r, cy + 0.05 * r, 0.06 * r, 0, 7); ctx.fill();
+  // headlight: single round lamp centred on the cowl
+  ctx.fillStyle = '#FFD54F';
+  ctx.beginPath(); ctx.arc(cx, cy + 0.17 * r, 0.085 * r, 0, 7); ctx.fill();
+  // mudguard arc over the single front wheel
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 0.09 * r;
+  ctx.beginPath();
+  ctx.arc(cx, cy + 0.42 * r, 0.21 * r, Math.PI * 1.05, Math.PI * 1.95);
+  ctx.stroke();
+  // single front wheel: dark tyre + white hub
+  ctx.fillStyle = '#1C2233';
+  ctx.beginPath(); ctx.arc(cx, cy + 0.46 * r, 0.155 * r, 0, 7); ctx.fill();
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath(); ctx.arc(cx, cy + 0.46 * r, 0.065 * r, 0, 7); ctx.fill();
 }
 
 function crossGlyph(ctx, cx, cy, s, color) {
