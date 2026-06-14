@@ -1,11 +1,17 @@
 // Generate PWA icons for Pannaipuram — "Village hub" design.
 // Three roads converge on the glowing gold Pannaipuram stop; white markers
-// hold the three core services: hospital (red cross), bus (blue, hero),
-// auto-rickshaw (green). Premium navy gradient + glow, full-bleed
+// hold the three core services: hospital (red cross), bus (hero) and
+// auto-rickshaw. The bus + auto markers carry the EXACT Google Noto emoji
+// artwork (🚌/🛺) the app shows in its bottom-nav tabs, so the icon matches
+// what villagers see on Android. Premium navy gradient + glow, full-bleed
 // (maskable-safe). Run: node gen-icon.js
-const { createCanvas } = require('./node_modules/canvas');
+const { createCanvas, loadImage } = require('./node_modules/canvas');
 const fs = require('fs');
 const path = require('path');
+
+// Real Noto-emoji PNGs (🚌 / 🛺) downloaded into ./icon-assets — loaded once.
+const busImg = path.join(__dirname, 'icon-assets/bus.png');
+const autoImg = path.join(__dirname, 'icon-assets/auto.png');
 
 function rr(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -17,70 +23,14 @@ function rr(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-// Side-view bus: rounded body, windshield + passenger windows, amber
-// stripe, wheels with hubs, headlight. Facing right.
-function busGlyph(ctx, cx, cy, r, color) {
-  const w = 1.5 * r, h = 0.92 * r, x = cx - w / 2, y = cy - h / 2;
-  ctx.fillStyle = color;
-  rr(ctx, x, y, w, h * 0.82, r * 0.18); ctx.fill();
-  ctx.fillStyle = '#FFFFFF';
-  const wy = y + h * 0.13, wh = h * 0.3;
-  rr(ctx, x + w * 0.08, wy, w * 0.22, wh, r * 0.05); ctx.fill();
-  rr(ctx, x + w * 0.36, wy, w * 0.22, wh, r * 0.05); ctx.fill();
-  ctx.beginPath();                                      // windshield (slanted front)
-  ctx.moveTo(x + w * 0.64, wy);
-  ctx.lineTo(x + w * 0.82, wy);
-  ctx.quadraticCurveTo(x + w * 0.9, wy, x + w * 0.9, wy + wh * 0.45);
-  ctx.lineTo(x + w * 0.9, wy + wh);
-  ctx.lineTo(x + w * 0.64, wy + wh);
-  ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#FFC107';                            // amber side stripe
-  rr(ctx, x + w * 0.06, y + h * 0.52, w * 0.88, h * 0.1, r * 0.04); ctx.fill();
-  ctx.fillStyle = '#FFD54F';                            // headlight
-  ctx.beginPath(); ctx.arc(x + w * 0.93, y + h * 0.68, r * 0.06, 0, 7); ctx.fill();
-  [x + w * 0.24, x + w * 0.74].forEach(function(wx) {   // wheels
-    ctx.fillStyle = '#1C2233';
-    ctx.beginPath(); ctx.arc(wx, y + h * 0.84, r * 0.16, 0, 7); ctx.fill();
-    ctx.fillStyle = '#FFFFFF';
-    ctx.beginPath(); ctx.arc(wx, y + h * 0.84, r * 0.07, 0, 7); ctx.fill();
-  });
-}
-
-// FRONT-view auto-rickshaw (like the classic 🛺 silhouette): domed roof,
-// big windshield, central headlight, single front wheel under a mudguard.
-function autoGlyph(ctx, cx, cy, r, color) {
-  // body: rounded-dome cabin
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.moveTo(cx - 0.52 * r, cy + 0.30 * r);            // bottom-left
-  ctx.lineTo(cx - 0.52 * r, cy - 0.10 * r);            // left wall
-  ctx.quadraticCurveTo(cx - 0.52 * r, cy - 0.60 * r, cx, cy - 0.60 * r);   // roof left
-  ctx.quadraticCurveTo(cx + 0.52 * r, cy - 0.60 * r, cx + 0.52 * r, cy - 0.10 * r); // roof right
-  ctx.lineTo(cx + 0.52 * r, cy + 0.30 * r);            // right wall
-  ctx.closePath(); ctx.fill();
-  // windshield: wide rounded glass across the upper body
-  ctx.fillStyle = '#FFFFFF';
-  ctx.beginPath();
-  ctx.moveTo(cx - 0.38 * r, cy + 0.02 * r);
-  ctx.lineTo(cx - 0.38 * r, cy - 0.18 * r);
-  ctx.quadraticCurveTo(cx - 0.38 * r, cy - 0.46 * r, cx, cy - 0.46 * r);
-  ctx.quadraticCurveTo(cx + 0.38 * r, cy - 0.46 * r, cx + 0.38 * r, cy - 0.18 * r);
-  ctx.lineTo(cx + 0.38 * r, cy + 0.02 * r);
-  ctx.closePath(); ctx.fill();
-  // headlight: single round lamp centred on the cowl
-  ctx.fillStyle = '#FFD54F';
-  ctx.beginPath(); ctx.arc(cx, cy + 0.17 * r, 0.085 * r, 0, 7); ctx.fill();
-  // mudguard arc over the single front wheel
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 0.09 * r;
-  ctx.beginPath();
-  ctx.arc(cx, cy + 0.42 * r, 0.21 * r, Math.PI * 1.05, Math.PI * 1.95);
-  ctx.stroke();
-  // single front wheel: dark tyre + white hub
-  ctx.fillStyle = '#1C2233';
-  ctx.beginPath(); ctx.arc(cx, cy + 0.46 * r, 0.155 * r, 0, 7); ctx.fill();
-  ctx.fillStyle = '#FFFFFF';
-  ctx.beginPath(); ctx.arc(cx, cy + 0.46 * r, 0.065 * r, 0, 7); ctx.fill();
+// Composite a square emoji image centred on a marker, scaled to sit inside
+// the white circle (its corners are transparent so it never spills).
+function emojiGlyph(ctx, img, cx, cy, r, f) {
+  const d = (f || 1.7) * r;      // draw box side — clipped to the 2r circle
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+  ctx.drawImage(img, cx - d / 2, cy - d / 2, d, d);
+  ctx.restore();
 }
 
 function crossGlyph(ctx, cx, cy, s, color) {
@@ -90,7 +40,7 @@ function crossGlyph(ctx, cx, cy, s, color) {
   rr(ctx, cx - L / 2, cy - t / 2, L, t, t * 0.35); ctx.fill();
 }
 
-function drawIcon(size) {
+function drawIcon(size, bus, auto) {
   const c = createCanvas(size, size);
   const ctx = c.getContext('2d');
   const u = size / 192;
@@ -153,8 +103,8 @@ function drawIcon(size) {
   marker(stops[2].x, stops[2].y, 27 * u);
 
   crossGlyph(ctx, stops[0].x, stops[0].y, 34 * u, '#E53935');
-  busGlyph(ctx,  stops[1].x, stops[1].y, 30 * u, '#1565C0');
-  autoGlyph(ctx, stops[2].x, stops[2].y, 30 * u, '#16A34A');
+  emojiGlyph(ctx, bus,  stops[1].x, stops[1].y, 31 * u, 1.62);   // 🚌 Noto emoji (hero)
+  emojiGlyph(ctx, auto, stops[2].x, stops[2].y, 27 * u, 1.58);   // 🛺 Noto emoji
 
   // The glowing gold Pannaipuram stop (hub) — from the original icon
   ctx.save();
@@ -182,7 +132,11 @@ function drawIcon(size) {
 }
 
 const outDir = path.join(__dirname, '../pwa/icons');
-fs.writeFileSync(path.join(outDir, 'icon-192.png'), drawIcon(192).toBuffer('image/png'));
-console.log('✅ icon-192.png written (village hub: bus + hospital + auto)');
-fs.writeFileSync(path.join(outDir, 'icon-512.png'), drawIcon(512).toBuffer('image/png'));
-console.log('✅ icon-512.png written (village hub: bus + hospital + auto)');
+
+(async function () {
+  const [bus, auto] = await Promise.all([loadImage(busImg), loadImage(autoImg)]);
+  fs.writeFileSync(path.join(outDir, 'icon-192.png'), drawIcon(192, bus, auto).toBuffer('image/png'));
+  console.log('✅ icon-192.png written (village hub: Noto 🚌 + hospital + 🛺)');
+  fs.writeFileSync(path.join(outDir, 'icon-512.png'), drawIcon(512, bus, auto).toBuffer('image/png'));
+  console.log('✅ icon-512.png written (village hub: Noto 🚌 + hospital + 🛺)');
+})().catch(function (e) { console.error('❌ icon generation failed:', e); process.exit(1); });
