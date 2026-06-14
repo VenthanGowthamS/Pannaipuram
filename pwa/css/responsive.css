@@ -4,6 +4,33 @@
    centered multi-column grids; bus route list goes 2-column with the
    expanded route spanning the full row. */
 
+/* Desktop narrow windows (560–699px) — e.g. an un-maximized Mac Safari/Chrome
+   window. The single-column "mobile" layout stays, but a 44px phone hamburger
+   looks tiny against a wide browser window, so give the chrome (menu + refresh)
+   its full web size here too. Real phones in portrait are < 560px, so they
+   keep the compact 44px button. */
+@media (min-width: 560px) and (max-width: 699.98px) {
+  .menu-btn {
+    left: 14px;
+    top: 14px;
+    width: 62px;
+    height: 62px;
+    gap: 6px;
+  }
+  .menu-btn-bar { width: 28px; height: 3px; }
+
+  .bus-refresh-btn,
+  .em-refresh-btn,
+  .hd-refresh-btn,
+  .more-refresh-btn {
+    width: 54px;
+    height: 54px;
+    top: 16px;
+    right: 16px;
+    font-size: 26px;
+  }
+}
+
 @media (min-width: 700px) {
   /* Single content column width so all fixed UI can align to it.
      Column left edge = max(0, 50% - 550px). */

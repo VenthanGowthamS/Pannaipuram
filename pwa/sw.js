@@ -1,5 +1,5 @@
 // ── Pannaipuram PWA — Service Worker ─────────────────────
-var CACHE = 'pannai-pwa-v59';
+var CACHE = 'pannai-pwa-v60';
 
 var SHELL = [
   '/pwa/',
