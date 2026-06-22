@@ -70,7 +70,7 @@ body::before {
   inset: 0;
   max-width: 480px;
   margin: 0 auto;
-  background: url('/pwa/icons/splash_bg.png') center top / cover no-repeat;
+  background: url('../icons/splash_bg.png') center top / cover no-repeat;
   opacity: 0.10;
   pointer-events: none;
   z-index: -1;
