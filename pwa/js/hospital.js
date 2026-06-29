@@ -126,7 +126,7 @@ var Hospital = (function() {
     }).join('');
   }
 
-  async function load(force) {
+  async function load(force, silent) {
     var host = document.getElementById('hd-list');
     var refreshBtn = document.getElementById('hd-refresh-btn');
     if (!force && host) {
@@ -140,9 +140,9 @@ var Hospital = (function() {
         PannaiAPI.getDoctors(!!force),
       ]);
       render(results[0], results[1]);
-      if (force && window.showToast) window.showToast('✅ புதுப்பிக்கப்பட்டது · Updated');
+      if (force && !silent && window.showToast) window.showToast('✅ புதுப்பிக்கப்பட்டது · Updated');
     } catch (e) {
-      if (force && window.showToast) window.showToast('❌ இணைப்பு இல்லை · Try again');
+      if (force && !silent && window.showToast) window.showToast('❌ இணைப்பு இல்லை · Try again');
       if (host) {
         host.innerHTML =
           '<div class="load-error"><div class="load-error-icon">📡</div>' +
@@ -161,12 +161,17 @@ var Hospital = (function() {
 
   var inited = false;
   function init() {
-    if (inited) return;
+    if (inited) { load(true, true); return; }   // re-open → refresh in place
     inited = true;
-    load(false);
+    load(false);                                  // first open → skeleton + fetch
     var refreshBtn = document.getElementById('hd-refresh-btn');
-    if (refreshBtn) refreshBtn.addEventListener('click', function() { load(true); });
+    if (refreshBtn) refreshBtn.addEventListener('click', function() {
+      if (window.PannaiRefreshAll) window.PannaiRefreshAll(); else load(true);
+    });
   }
 
-  return { init: init };
+  // Silent reload for the global "refresh everything" sweep
+  function refresh() { return load(true, true); }
+
+  return { init: init, refresh: refresh };
 })();

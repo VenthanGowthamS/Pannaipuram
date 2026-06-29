@@ -137,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ── Section switching ──────────────────────────────────
+  var _shownSections = {};   // tracks which tabs have been shown at least once
   function switchSection(id, pushHash) {
     document.body.dataset.section = id;
     document.querySelectorAll('.section').forEach(function(s) {
@@ -150,10 +151,17 @@ document.addEventListener('DOMContentLoaded', function() {
     if (pushHash && window.location.hash !== '#' + id) {
       history.replaceState(null, '', '#' + id);
     }
-    // Lazy-init sections on first visit (fetch only when opened)
+    // Bring fresh data whenever a section is (re-)opened.
+    // Lazy sections fetch on first open, then refresh in place thereafter (see their init()).
     if (id === 'emergency' && window.Emergency) Emergency.init();
     if (id === 'hospital' && window.Hospital) Hospital.init();
     if (id === 'more' && window.More) More.init();
+    // Bus & Auto are inited once at startup — refresh them on every RE-open (skip first show).
+    if (_shownSections[id]) {
+      if (id === 'bus' && window.Bus && Bus.refresh) Bus.refresh();
+      if (id === 'auto' && window.Auto && Auto.refresh) Auto.refresh();
+    }
+    _shownSections[id] = true;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -586,6 +594,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (skipBtn) skipBtn.addEventListener('click', closeWall);
   })();
+
+  // ── Global refresh: ONE tap refreshes EVERY section at once ──
+  // Wired to every section's ↻ button so a single press brings all data
+  // (bus + auto + hospital + emergency + more) fresh, with one toast.
+  window.PannaiRefreshAll = function() {
+    var jobs = [];
+    if (window.Bus && Bus.refresh) jobs.push(Bus.refresh());
+    if (window.Auto && Auto.refresh) jobs.push(Auto.refresh());
+    if (window.Hospital && Hospital.refresh) jobs.push(Hospital.refresh());
+    if (window.Emergency && Emergency.refresh) jobs.push(Emergency.refresh());
+    if (window.More && More.refresh) jobs.push(More.refresh());
+    var done = function() {
+      if (window.showToast) window.showToast('✅ எல்லாம் புதுப்பிக்கப்பட்டது · All updated');
+    };
+    return Promise.all(jobs).then(done, done);
+  };
 
   // ── Init sections ──────────────────────────────────────
   Bus.init();

@@ -955,31 +955,37 @@ var Bus = (function() {
     clearInterval(dataRefreshTimer);
     dataRefreshTimer = setInterval(refreshAllData, DATA_REFRESH_MS);
 
-    // Manual refresh button (top-right of bus header)
+    // Manual refresh button (top-right of bus header) → refresh ALL sections
     var refreshBtn = document.getElementById('bus-refresh-btn');
     if (refreshBtn) {
-      refreshBtn.addEventListener('click', async function() {
-        if (refreshBtn.classList.contains('is-spinning')) return;
-        refreshBtn.classList.add('is-spinning');
-        try {
-          // Force-bypass cache: batch re-fetch (fallback: per-corridor)
-          if (!(await loadAllData(true))) {
-            corridors = await PannaiAPI.getBusCorridors(true);
-            timingsCache = {};
-            await prefetchAllTimings();
-          }
-          renderNowDeparting();
-          renderFreshness();
-          renderList();
-          if (window.showToast) window.showToast('✅ புதுப்பிக்கப்பட்டது · Updated');
-        } catch (_) {
-          if (window.showToast) window.showToast('❌ இணைப்பு இல்லை · Try again');
-        } finally {
-          setTimeout(function() { refreshBtn.classList.remove('is-spinning'); }, 600);
-        }
+      refreshBtn.addEventListener('click', function() {
+        if (window.PannaiRefreshAll) window.PannaiRefreshAll(); else refresh();
       });
     }
   }
 
-  return { init: init };
+  // Silent reload (no toast — the global sweep shows one) for refresh() / refresh-on-open.
+  // Spins the bus ↻ button and force-bypasses cache, with per-corridor fallback.
+  async function refresh() {
+    var refreshBtn = document.getElementById('bus-refresh-btn');
+    if (refreshBtn) {
+      if (refreshBtn.classList.contains('is-spinning')) return;
+      refreshBtn.classList.add('is-spinning');
+    }
+    try {
+      if (!(await loadAllData(true))) {
+        corridors = await PannaiAPI.getBusCorridors(true);
+        timingsCache = {};
+        await prefetchAllTimings();
+      }
+      renderNowDeparting();
+      renderFreshness();
+      renderList();
+    } catch (_) { /* keep existing data on failure */ }
+    finally {
+      if (refreshBtn) setTimeout(function() { refreshBtn.classList.remove('is-spinning'); }, 600);
+    }
+  }
+
+  return { init: init, refresh: refresh };
 })();

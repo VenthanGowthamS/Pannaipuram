@@ -35,7 +35,7 @@ var Auto = (function() {
     '</div>';
   }
 
-  async function loadDrivers(force) {
+  async function loadDrivers(force, silent) {
     var list = document.getElementById('driver-list');
     var refreshBtn = document.getElementById('auto-refresh-btn');
 
@@ -61,11 +61,11 @@ var Auto = (function() {
           '<p class="auto-empty-en">Driver info coming soon</p>' +
           '</div>';
       }
-      if (force) showToast('✅ புதுப்பிக்கப்பட்டது · Updated');
+      if (force && !silent) showToast('✅ புதுப்பிக்கப்பட்டது · Updated');
     } catch(e) {
       if (force) {
         // Refresh failed — keep existing list, just toast the error
-        showToast('❌ Connection issue — try again');
+        if (!silent) showToast('❌ Connection issue — try again');
       } else {
         list.innerHTML =
           '<div class="load-error">' +
@@ -215,12 +215,17 @@ var Auto = (function() {
     await loadDrivers(false);
     initContactForm();
 
-    // Wire refresh button — forces cache bypass
+    // Refresh button → refresh ALL sections at once (one tap = everything fresh)
     var refreshBtn = document.getElementById('auto-refresh-btn');
     if (refreshBtn) {
-      refreshBtn.addEventListener('click', function() { loadDrivers(true); });
+      refreshBtn.addEventListener('click', function() {
+        if (window.PannaiRefreshAll) window.PannaiRefreshAll(); else loadDrivers(true);
+      });
     }
   }
 
-  return { init: init };
+  // Silent reload for the global "refresh everything" sweep
+  function refresh() { return loadDrivers(true, true); }
+
+  return { init: init, refresh: refresh };
 })();

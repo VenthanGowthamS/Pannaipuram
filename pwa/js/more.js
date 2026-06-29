@@ -166,7 +166,7 @@ var More = (function() {
     host.innerHTML = html || '<div class="more-empty">சேவை தகவல் விரைவில் · Services coming soon</div>';
   }
 
-  async function load(force) {
+  async function load(force, silent) {
     var refreshBtn = document.getElementById('more-refresh-btn');
     if (refreshBtn) { refreshBtn.classList.add('spinning'); refreshBtn.disabled = true; }
     var aHost = document.getElementById('more-acting');
@@ -183,19 +183,24 @@ var More = (function() {
       var svc = await PannaiAPI.getServices(!!force).catch(function() { return {}; });
       renderServices(svc);
     } catch (_) { renderServices({}); }
-    if (force && window.showToast) window.showToast('✅ புதுப்பிக்கப்பட்டது · Updated');
+    if (force && !silent && window.showToast) window.showToast('✅ புதுப்பிக்கப்பட்டது · Updated');
     if (refreshBtn) setTimeout(function() { refreshBtn.classList.remove('spinning'); refreshBtn.disabled = false; }, 500);
   }
 
   var inited = false;
   function init() {
-    if (inited) return;
+    if (inited) { load(true, true); return; }   // re-open → refresh in place
     inited = true;
-    load(false);
+    load(false);                                  // first open → skeleton + fetch
     initRegForm();
     var refreshBtn = document.getElementById('more-refresh-btn');
-    if (refreshBtn) refreshBtn.addEventListener('click', function() { load(true); });
+    if (refreshBtn) refreshBtn.addEventListener('click', function() {
+      if (window.PannaiRefreshAll) window.PannaiRefreshAll(); else load(true);
+    });
   }
 
-  return { init: init };
+  // Silent reload for the global "refresh everything" sweep
+  function refresh() { return load(true, true); }
+
+  return { init: init, refresh: refresh };
 })();
