@@ -346,6 +346,20 @@ This information does not exist anywhere online. It cannot be scraped or fetched
 - Updated via admin panel (🚗 Auto/Van tab) — no APK rebuild needed
 - API: `GET /api/auto/drivers` — admin CRUD at `/admin/auto/drivers`
 
+**🔜 Planned Enhancements — Pricing & Charges (requirement):**
+
+1. **Acting / substitute driver — minimum charge** ⏳
+   - Show a **minimum charge** ("குறைந்தபட்ச கட்டணம்") for each acting driver as a card feature.
+   - Surfaced in the ➕ மேலும் (More) tab acting-driver profile and captured in the registration form / admin `acting_drivers` tab.
+
+2. **Car & Van — per-km fare by vehicle type** ⏳
+   - Show **per-kilometre rupees (₹/km)** for each vehicle type (e.g. hatchback / sedan / SUV / van) — types and rates editable in the admin panel, not hardcoded.
+   - Display **driver bata (allowance)** as a separate line where applicable.
+   - Show a clear note that **additional charges may apply** — e.g. **"கூடுதல் கட்டணம் பொருந்தலாம் — விவரங்களுக்கு உரிமையாளரை தொடர்பு கொள்ளுங்க / Additional charges may apply — contact owner for more info"**.
+   - Rates are **indicative only** (tie in to the Data-Accuracy disclaimer) — final fare is confirmed with the driver/owner.
+
+   *Implementation notes (TBD):* needs new fields on the driver/vehicle records (`min_charge`, `per_km_rate`, `vehicle_subtype`, `bata`, `extra_charge_note`) — schema + admin form + PWA card display. Bus route geography rules unaffected.
+
 ---
 
 ### Module 6 — அவசர தொலைபேசி (Emergency Contacts)

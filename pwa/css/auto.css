@@ -274,9 +274,11 @@
   color: var(--auto-amb-dk, #D97706);
   display: block;
   margin-top: 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* Route/coverage can be long — wrap fully instead of cropping to one line */
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 /* Call button — green (universal phone colour) */
