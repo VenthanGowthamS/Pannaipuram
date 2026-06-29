@@ -604,7 +604,16 @@ document.addEventListener('DOMContentLoaded', function() {
   // ── Global refresh: ONE tap refreshes EVERY section at once ──
   // Wired to every section's ↻ button so a single press brings all data
   // (bus + auto + hospital + emergency + more) fresh, with one toast.
+  // Also force-checks for a new APP version: reg.update() fetches sw.js
+  // fresh; if a newer build exists the updatefound → SKIP_WAITING →
+  // controllerchange flow auto-reloads to it. Lets users pull the latest
+  // app straight from the ↻ button (no close/reopen needed).
   window.PannaiRefreshAll = function() {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then(function(reg) {
+        if (reg) reg.update().catch(function() {});
+      }).catch(function() {});
+    }
     var jobs = [];
     if (window.Bus && Bus.refresh) jobs.push(Bus.refresh());
     if (window.Auto && Auto.refresh) jobs.push(Auto.refresh());
