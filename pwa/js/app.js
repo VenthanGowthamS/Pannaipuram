@@ -108,8 +108,14 @@ document.addEventListener('DOMContentLoaded', function() {
       window.location.reload();
     });
 
-    navigator.serviceWorker.register('/pwa/sw.js', { scope: '/pwa/' })
+    // updateViaCache:'none' — ALWAYS fetch sw.js fresh on update checks,
+    // bypassing the HTTP cache. sw.js ships Cache-Control: max-age=14400 (4h),
+    // and the default ('imports') honours it — which left Android PWAs stuck
+    // on a stale worker (and stale shell) for up to 4h after each deploy.
+    navigator.serviceWorker.register('/pwa/sw.js', { scope: '/pwa/', updateViaCache: 'none' })
       .then(function(reg) {
+        // Proactively check for a new version on every load (network-fresh).
+        reg.update().catch(function() {});
         // If a new SW is already waiting when this page loaded, activate it now
         if (reg.waiting) { reg.waiting.postMessage({ type: 'SKIP_WAITING' }); }
 
