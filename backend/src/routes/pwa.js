@@ -22,15 +22,26 @@ router.post('/ping', async (req, res) => {
   const standalone = !!is_standalone;
 
   try {
+    // is_standalone is STICKY (once installed, stays installed) and
+    // installed_at records the FIRST time the app pinged as installed —
+    // that powers the daily-install counts in the admin stats.
     await query(
-      `INSERT INTO pwa_visits (visitor_id, user_agent, is_standalone, first_seen_at, last_seen_at, visit_count)
-       VALUES ($1, $2, $3, NOW(), NOW(), 1)
+      `INSERT INTO pwa_visits (visitor_id, user_agent, is_standalone, first_seen_at, last_seen_at, visit_count, installed_at)
+       VALUES ($1, $2, $3, NOW(), NOW(), 1, CASE WHEN $3::boolean THEN NOW() END)
        ON CONFLICT (visitor_id) DO UPDATE SET
          last_seen_at   = NOW(),
          visit_count    = pwa_visits.visit_count + 1,
-         is_standalone  = EXCLUDED.is_standalone,
+         is_standalone  = pwa_visits.is_standalone OR EXCLUDED.is_standalone,
+         installed_at   = COALESCE(pwa_visits.installed_at, CASE WHEN EXCLUDED.is_standalone THEN NOW() END),
          user_agent     = EXCLUDED.user_agent`,
       [vid, ua, standalone]
+    );
+    // One row per visitor per day → true daily unique-user counts
+    await query(
+      `INSERT INTO pwa_visit_days (visitor_id, day, opens)
+       VALUES ($1, CURRENT_DATE, 1)
+       ON CONFLICT (visitor_id, day) DO UPDATE SET opens = pwa_visit_days.opens + 1`,
+      [vid]
     );
     res.json({ success: true });
   } catch (err) {

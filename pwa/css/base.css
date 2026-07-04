@@ -425,3 +425,58 @@ main {
 /* Section base */
 .section { display: block; }
 .section[hidden] { display: none; }
+
+/* ── Village announcements (📢) ─────────────────────────── */
+#announce-host:not(:empty) { padding: 10px 12px 0; display: flex; flex-direction: column; gap: 8px; }
+/* First card sits beside the floating ☰ button — indent its text clear of it */
+#announce-host .ann-card:first-child { padding-left: 56px; }
+@media (min-width: 700px) {
+  #announce-host .ann-card:first-child { padding-left: 84px; }
+}
+.ann-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 11px 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  border-left: 4px solid #1565C0;
+}
+.ann-info    { border-left-color: #1565C0; }
+.ann-warning { border-left-color: #E65100; }
+.ann-urgent  { border-left-color: #C62828; }
+.ann-event   { border-left-color: #6A1B9A; }
+.ann-ic { font-size: 18px; line-height: 1.3; }
+.ann-txt { flex: 1; min-width: 0; }
+.ann-ta {
+  font-family: var(--font-tamil);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+}
+.ann-en {
+  font-family: var(--font-latin);
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  margin: 2px 0 0;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
+.ann-close {
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1;
+  padding: 8px;
+  margin: -4px -4px 0 0;
+  min-width: 32px;
+  min-height: 32px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.ann-close:active { background: rgba(0,0,0,0.06); }

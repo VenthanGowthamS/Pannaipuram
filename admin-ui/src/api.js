@@ -328,8 +328,12 @@ class ApiService {
   }
 
   // PWA Analytics
-  getPwaStats() {
-    return this.request('GET', '/admin/pwa/stats');
+  getPwaStats(excludeLabeled) {
+    return this.request('GET', `/admin/pwa/stats${excludeLabeled ? '?exclude_labeled=1' : ''}`);
+  }
+
+  setPwaVisitorLabel(visitorId, label) {
+    return this.request('PUT', `/admin/pwa/visitors/${encodeURIComponent(visitorId)}/label`, { label });
   }
 }
 

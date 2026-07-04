@@ -267,6 +267,10 @@
       </section>
 
       <section class="about-section">
+        <p class="about-device-id">Device ID: <code id="about-device-id">—</code></p>
+      </section>
+
+      <section class="about-section">
         <div class="about-disclaimer">
           <p class="about-disclaimer-title">⚠️ தரவு துல்லியம் <span class="about-disclaimer-en">Data Accuracy</span></p>
           <p class="about-disclaimer-text">இங்குள்ள தகவல்கள் இந்த app-ஐ உருவாக்கியவரால் தனிப்பட்ட முறையில் சேகரித்து கைமுறையாக update செய்யப்படுகின்றன. இது ஊர் நிர்வாகத்தின் அதிகாரபூர்வ தகவல் அல்ல, மேலும் இதன் முழுமையான துல்லியத்திற்கு உத்தரவாதம் தர முடியாது. முக்கியமான தேவைகளுக்கு தயவுசெய்து சரிபார்த்துக் கொள்ளுங்கள். தகவலில் மாற்றம் இருந்தால் Feedback மூலம் தெரியப்படுத்தவும்.</p>
@@ -405,6 +409,9 @@
 
   <!-- ── Main Content ─────────────────────────────────── -->
   <main class="notranslate" translate="no">
+
+    <!-- Village announcements (📢 posted via admin panel, shown on every tab) -->
+    <div id="announce-host"></div>
 
     <!-- BUS SECTION (default) -->
     <section id="section-bus" class="section notranslate" translate="no">
@@ -614,6 +621,47 @@
         </div>
       </div>
       <div id="more-services"></div>
+
+      <!-- Service provider registration (collapsible) -->
+      <details class="acting-reg svc-reg" id="svc-reg">
+        <summary class="acting-reg-cta">
+          <span class="acting-reg-ic">🛍</span>
+          <span class="acting-reg-txt">
+            <span class="acting-reg-ta">உங்க சேவையை இங்க பதிவு பண்ணுங்க</span>
+            <span class="acting-reg-en">Register your service (milk, electrician…)</span>
+          </span>
+          <span class="acting-reg-caret">▾</span>
+        </summary>
+        <form id="svc-reg-form" class="acting-reg-form" novalidate>
+          <label class="auto-form-label" for="srf-name">பெயர் <span class="auto-form-required">*</span></label>
+          <input id="srf-name" class="auto-form-input" type="text" placeholder="பெயர்" required maxlength="80" autocomplete="name">
+
+          <label class="auto-form-label" for="srf-phone">தொலைபேசி எண் <span class="auto-form-required">*</span></label>
+          <input id="srf-phone" class="auto-form-input" type="tel" placeholder="10 இலக்க மொபைல் எண்" required maxlength="10" autocomplete="tel" inputmode="numeric" pattern="[6-9][0-9]{9}">
+          <p id="srf-phone-err" class="auto-form-field-err" hidden></p>
+
+          <label class="auto-form-label" for="srf-type">என்ன சேவை?</label>
+          <select id="srf-type" class="auto-form-input">
+            <option value="பால்">🥛 பால்</option>
+            <option value="தபால்">📮 தபால்</option>
+            <option value="பூ">🌺 பூ</option>
+            <option value="பிளம்பர்">🔧 பிளம்பர்</option>
+            <option value="எலக்ட்ரீஷியன்">⚡ எலக்ட்ரீஷியன்</option>
+            <option value="மளிகை">🛒 மளிகை</option>
+            <option value="தச்சர்">🪚 தச்சர்</option>
+            <option value="மற்றவை">🛍 மற்றவை</option>
+          </select>
+
+          <label class="auto-form-label" for="srf-area">எந்த பகுதி?</label>
+          <input id="srf-area" class="auto-form-input" type="text" placeholder="எ.கா: வள்ளுவர் தெரு, பண்ணைப்புரம்" maxlength="120">
+
+          <label class="auto-form-label" for="srf-msg">வேற ஏதாவது சொல்லணுமா?</label>
+          <textarea id="srf-msg" class="auto-form-input auto-form-textarea" placeholder="நேரம், விவரம்..." rows="2" maxlength="300"></textarea>
+
+          <button type="submit" id="srf-btn" class="acting-reg-btn"><span id="srf-btn-text">📩 பதிவு அனுப்புங்க</span></button>
+          <p id="srf-result" class="auto-form-result" hidden></p>
+        </form>
+      </details>
 
     </section>
 

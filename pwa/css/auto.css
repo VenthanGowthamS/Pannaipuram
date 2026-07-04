@@ -254,9 +254,11 @@
   font-weight: 700;
   display: block;
   color: var(--color-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* Names must never crop — small phones wrap to a second line instead */
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.35;
 }
 .driver-name-en {
   font-family: var(--font-latin);
@@ -264,9 +266,9 @@
   color: var(--color-muted);
   display: block;
   margin-top: 1px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 .driver-meta {
   font-family: var(--font-tamil);
@@ -310,6 +312,13 @@
   cursor: default;
   pointer-events: none;
   box-shadow: none;
+}
+
+/* Small phones — slim the icon + call button so the name gets room */
+@media (max-width: 389px) {
+  .driver-card { gap: 10px; padding: 12px; }
+  .driver-icon { width: 40px; height: 40px; font-size: 18px; }
+  .call-btn { padding: 10px 10px; min-width: 64px; font-size: 0.8rem; }
 }
 
 /* ── Register / contact form card ─────────────────────────── */

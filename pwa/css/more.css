@@ -84,6 +84,16 @@
 
 /* ── Acting driver registration (collapsible) ────────────── */
 .acting-reg { margin-top: 12px; border-top: 1px dashed #E6E2F2; padding-top: 10px; }
+/* Service registration sits directly in the section (no white panel) —
+   give it its own card look so it doesn't float on the page background */
+.svc-reg {
+  margin-top: 14px;
+  border-top: none;
+  padding: 12px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
 .acting-reg summary { list-style: none; cursor: pointer; }
 .acting-reg summary::-webkit-details-marker { display: none; }
 .acting-reg-cta {

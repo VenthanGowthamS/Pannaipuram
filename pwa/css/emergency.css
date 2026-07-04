@@ -247,3 +247,21 @@
   line-height: 1.55;
   margin: 0;
 }
+
+/* About sheet — device id (for admin stats labelling) */
+.about-device-id {
+  font-family: var(--font-latin);
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  text-align: center;
+  margin: 0;
+}
+.about-device-id code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+  background: rgba(0,0,0,0.05);
+  padding: 2px 7px;
+  border-radius: 6px;
+  user-select: all;
+  -webkit-user-select: all;
+}

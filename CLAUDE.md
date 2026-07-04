@@ -55,7 +55,10 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 - **Bottom nav (`pwa/css/nav.css`):** uses `grid-auto-flow: column` — auto-fits any number of tabs (don't hardcode column count).
 - **Render config:** `render.yaml` at repo root with `rootDir: .` ensures full repo is deployed
 - **NEVER edit files inside `backend/public/pwa/`** — that folder was deleted. Edit only in `pwa/`
-- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v56.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
+- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v66.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
+- **Announcements in PWA (v66):** `window.Announce` in `pwa/js/app.js` renders active `/api/announcements` into `#announce-host` (top of `<main>`, visible on all tabs). Per-device dismiss via localStorage `pannai:ann-dismissed`. Venthan posts via the existing admin Announcements tab. First card is indented to clear the floating ☰ button.
+- **Service registration form (v66):** `#svc-reg` collapsible in More tab (milk/electrician/etc.) → POST `/api/feedback` tagged `[சேவை பதிவு]`; shares the acting-driver form wiring via `wireRegForm()` in `pwa/js/more.js`.
+- **PWA stats v2 (v66):** `pwa_visit_days` table (one row per visitor per day → TRUE daily uniques); `pwa_visits.installed_at` (set on first standalone ping; `is_standalone` is sticky) → daily install counts; `pwa_visits.label` to tag known devices (edit in admin PWA Stats tab; `?exclude_labeled=1` filters them out). PWA re-pings max once/5 min on visibilitychange + on `appinstalled` → powers the "Live Now (5 min)" stat. Device ID shown in ☰ → About so Venthan can identify/label his own phones. Migration: `backend/src/db/migration_pwa_stats_v2.sql` (applied to Supabase on July 4, 2026).
 - **Icon generation:** Run `node backend/gen-icon.js` to regenerate `pwa/icons/icon-192.png` + `icon-512.png`
 - **Service Worker:** 3-tier cache — SW (stale-while-revalidate for /api/*) → api.js memory → localStorage fallback
 - **Domain plan reference:** `docs/domain-and-hosting-plan.md` — original migration plan (now executed)
@@ -634,5 +637,5 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram && git add app/li
 
 ---
 
-*Last updated: June 12, 2026 — PWA v56: per-page colours + colour-matching hamburger, village-hub icon, acting-driver registration, web menu sizing, SW shell fix*
+*Last updated: July 4, 2026 — PWA v66: announcements banner, service registration form, auto name-wrap fix (+small-phone sizing), auto display-order in admin, PWA stats v2 (live 5-min count, true daily uniques, daily installs, device labels)*
 *Built with ❤️ for பண்ணைப்புரம் — உங்கள் ஊரின் தகவல் மையம்*

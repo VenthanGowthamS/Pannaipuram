@@ -35,15 +35,17 @@ var More = (function() {
       '</div>' + call + '</div>';
   }
 
-  // ── Acting driver registration form ───────────────────────
-  function initRegForm() {
-    var form = document.getElementById('acting-reg-form');
+  // ── Registration forms (acting driver + local service) ────
+  // Both forms share the same layout/behaviour — only the field ids,
+  // the feedback tag, and the "type" field label differ.
+  function wireRegForm(opts) {
+    var form = document.getElementById(opts.formId);
     if (!form) return;
-    var btn = document.getElementById('arf-btn');
-    var btnTxt = document.getElementById('arf-btn-text');
-    var result = document.getElementById('arf-result');
-    var phoneErr = document.getElementById('arf-phone-err');
-    var phoneInput = document.getElementById('arf-phone');
+    var btn = document.getElementById(opts.prefix + '-btn');
+    var btnTxt = document.getElementById(opts.prefix + '-btn-text');
+    var result = document.getElementById(opts.prefix + '-result');
+    var phoneErr = document.getElementById(opts.prefix + '-phone-err');
+    var phoneInput = document.getElementById(opts.prefix + '-phone');
 
     function showResult(msg, ok) {
       result.textContent = msg;
@@ -58,11 +60,11 @@ var More = (function() {
 
     form.addEventListener('submit', async function(ev) {
       ev.preventDefault();
-      var name = (document.getElementById('arf-name').value || '').trim();
+      var name = (document.getElementById(opts.prefix + '-name').value || '').trim();
       var phone = (phoneInput.value || '').trim();
-      var vehicle = (document.getElementById('arf-vehicle').value || '').trim();
-      var area = (document.getElementById('arf-area').value || '').trim();
-      var extra = (document.getElementById('arf-msg').value || '').trim();
+      var typeVal = (document.getElementById(opts.typeFieldId).value || '').trim();
+      var area = (document.getElementById(opts.prefix + '-area').value || '').trim();
+      var extra = (document.getElementById(opts.prefix + '-msg').value || '').trim();
 
       if (!(phone.length === 10 && /^[6-9]/.test(phone))) {
         if (phoneErr) { phoneErr.textContent = '10 இலக்க மொபைல் எண்ணை சரியாக உள்ளிடுங்கள் (6/7/8/9-ல் தொடங்கணும்).'; phoneErr.hidden = false; }
@@ -72,10 +74,10 @@ var More = (function() {
       if (!name) { showResult('பெயரை கொடுங்கள்', false); return; }
 
       var message =
-        '[மாற்று ஓட்டுநர் பதிவு]\n' +
+        '[' + opts.tag + ']\n' +
         'பெயர்: ' + name + '\n' +
         'தொலைபேசி: ' + phone + '\n' +
-        'வண்டி: ' + vehicle + '\n' +
+        opts.typeLabel + ': ' + typeVal + '\n' +
         (area ? 'பகுதி: ' + area + '\n' : '') +
         (extra ? 'குறிப்பு: ' + extra : '');
 
@@ -105,6 +107,19 @@ var More = (function() {
         btn.disabled = false;
         btnTxt.textContent = '📩 பதிவு அனுப்புங்க';
       }
+    });
+  }
+
+  function initRegForm() {
+    wireRegForm({
+      formId: 'acting-reg-form', prefix: 'arf',
+      typeFieldId: 'arf-vehicle', typeLabel: 'வண்டி',
+      tag: 'மாற்று ஓட்டுநர் பதிவு',
+    });
+    wireRegForm({
+      formId: 'svc-reg-form', prefix: 'srf',
+      typeFieldId: 'srf-type', typeLabel: 'சேவை',
+      tag: 'சேவை பதிவு',
     });
   }
 

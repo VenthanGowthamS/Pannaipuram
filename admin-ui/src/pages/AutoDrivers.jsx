@@ -35,6 +35,7 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
     coverage_tamil: '',
     schedule_tamil: '',
     phone_verified: true,
+    display_order: 0,
   });
   const [editingId, setEditingId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
@@ -100,6 +101,7 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
     coverage_tamil: '',
     schedule_tamil: '',
     phone_verified: true,
+    display_order: 0,
   };
 
   const handleAddDriver = async (e) => {
@@ -110,12 +112,13 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
     }
 
     try {
+      const payload = { ...form, display_order: parseInt(form.display_order, 10) || 0 };
       if (editingId) {
-        await api.updateAutoDriver(editingId, form);
+        await api.updateAutoDriver(editingId, payload);
         onSnackbar('Driver updated successfully', 'success');
         setEditingId(null);
       } else {
-        await api.addAutoDriver(form);
+        await api.addAutoDriver(payload);
         onSnackbar('Driver added successfully', 'success');
       }
       setForm(emptyForm);
@@ -152,6 +155,7 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
       coverage_tamil: driver.coverage_tamil || '',
       schedule_tamil: driver.schedule_tamil || '',
       phone_verified: driver.phone_verified !== false,
+      display_order: driver.display_order || 0,
     });
   };
 
@@ -318,6 +322,18 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
                 placeholder="6:00 AM - 9:00 PM"
               />
             </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Display Order"
+                value={form.display_order}
+                onChange={(e) =>
+                  setForm({ ...form, display_order: e.target.value })
+                }
+                helperText="Lower number shows first in the app list"
+              />
+            </Grid>
             <Grid item xs={12}>
               <Box sx={{ p: 1.5, border: '1px solid #e0e0e0', borderRadius: 2, bgcolor: form.phone_verified ? '#f1f8e9' : '#fff8e1' }}>
                 <FormControlLabel
@@ -381,6 +397,7 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
             <Table>
               <TableHead sx={{ bgcolor: '#f5f5f5' }}>
                 <TableRow>
+                  <TableCell>Order</TableCell>
                   <TableCell>Type</TableCell>
                   <TableCell>Name (Tamil)</TableCell>
                   <TableCell>Name (English)</TableCell>
@@ -399,6 +416,7 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
                   const verified = driver.phone_verified !== false;
                   return (
                     <TableRow key={driver.id} sx={{ opacity: driver.is_active === false ? 0.5 : 1 }}>
+                      <TableCell sx={{ fontFamily: 'monospace' }}>{driver.display_order ?? 0}</TableCell>
                       <TableCell>
                         <Chip
                           label={typeInfo?.label || driver.vehicle_type}

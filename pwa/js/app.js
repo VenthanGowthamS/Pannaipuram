@@ -65,32 +65,120 @@ window.addEventListener('beforeinstallprompt', function(e) {
   }
 });
 
+// ── Village announcements (📢 posted via admin Announcements tab) ──
+// Shown above every section; each announcement is dismissible and stays
+// dismissed on that device (ids kept in localStorage).
+window.Announce = (function() {
+  var DISMISS_KEY = 'pannai:ann-dismissed';
+  var TYPE_ICON = { info: '📢', warning: '⚠️', urgent: '🚨', event: '🎉' };
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function dismissedIds() {
+    try { return JSON.parse(localStorage.getItem(DISMISS_KEY)) || []; } catch (_) { return []; }
+  }
+  function dismiss(id) {
+    var d = dismissedIds();
+    if (d.indexOf(id) === -1) d.push(id);
+    try { localStorage.setItem(DISMISS_KEY, JSON.stringify(d.slice(-50))); } catch (_) {}
+  }
+
+  function render(list) {
+    var host = document.getElementById('announce-host');
+    if (!host) return;
+    var hidden = dismissedIds();
+    var show = (list || []).filter(function(a) { return hidden.indexOf(a.id) === -1; }).slice(0, 3);
+    if (!show.length) { host.innerHTML = ''; return; }
+    host.innerHTML = show.map(function(a) {
+      var t = TYPE_ICON[(a.type || '').toLowerCase()] ? (a.type || '').toLowerCase() : 'info';
+      return '<div class="ann-card ann-' + t + '">' +
+        '<span class="ann-ic">' + TYPE_ICON[t] + '</span>' +
+        '<div class="ann-txt">' +
+          '<p class="ann-ta">' + esc(a.message_tamil) + '</p>' +
+          (a.message_english ? '<p class="ann-en">' + esc(a.message_english) + '</p>' : '') +
+        '</div>' +
+        '<button class="ann-close" type="button" aria-label="மூடு · Dismiss" data-ann-close="' + a.id + '">✕</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  async function load(force) {
+    try { render(await PannaiAPI.getAnnouncements(!!force)); } catch (_) { /* offline — keep whatever is shown */ }
+  }
+
+  function init() {
+    var host = document.getElementById('announce-host');
+    if (host) host.addEventListener('click', function(ev) {
+      var btn = ev.target.closest ? ev.target.closest('[data-ann-close]') : null;
+      if (!btn) return;
+      dismiss(parseInt(btn.getAttribute('data-ann-close'), 10));
+      var card = btn.closest('.ann-card');
+      if (card) card.remove();
+    });
+    load(false);
+  }
+
+  return { init: init, refresh: function() { return load(true); } };
+})();
+
 // ── App Shell ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function() {
 
   // ── PWA Visit Ping (analytics — fire and forget) ───────
   (function pingVisit() {
-    try {
-      var VID_KEY = 'pannai:visitor-id';
-      var vid = localStorage.getItem(VID_KEY);
-      if (!vid) {
-        // Generate a random visitor ID: "v-<timestamp36>-<random8>" — no personal data
-        vid = 'v-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
-        localStorage.setItem(VID_KEY, vid);
+    var PING_GAP_MS = 5 * 60 * 1000;   // matches the "Live now" 5-min window in admin stats
+    var _lastPing = 0;
+
+    function doPing(forceStandalone) {
+      try {
+        var VID_KEY = 'pannai:visitor-id';
+        var vid = localStorage.getItem(VID_KEY);
+        if (!vid) {
+          // Generate a random visitor ID: "v-<timestamp36>-<random8>" — no personal data
+          vid = 'v-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+          localStorage.setItem(VID_KEY, vid);
+        }
+        var standalone = forceStandalone === true ||
+                         window.matchMedia('(display-mode: standalone)').matches ||
+                         window.navigator.standalone === true;
+        var _apiBase = (location.hostname === 'app.pannaipuram.com')
+          ? 'https://api.pannaipuram.com'
+          : (location.hostname.endsWith('.github.io') || location.hostname.endsWith('.pages.dev') || location.hostname.endsWith('.netlify.app'))
+            ? 'https://pannaipuram-api.onrender.com' : '';
+        _lastPing = Date.now();
+        fetch(_apiBase + '/api/pwa/ping', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ visitor_id: vid, is_standalone: standalone }),
+          keepalive: true,
+        }).catch(function() { /* offline — skip silently */ });
+      } catch (_) { /* localStorage blocked — skip */ }
+    }
+
+    doPing();
+
+    // Re-ping when the user comes back to an app they kept open (installed
+    // PWAs stay alive for days) — keeps the "Live now" admin stat honest.
+    // Throttled so at most one ping per 5-minute window.
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible' && Date.now() - _lastPing > PING_GAP_MS) {
+        doPing();
       }
-      var standalone = window.matchMedia('(display-mode: standalone)').matches ||
-                       window.navigator.standalone === true;
-      var _apiBase = (location.hostname === 'app.pannaipuram.com')
-        ? 'https://api.pannaipuram.com'
-        : (location.hostname.endsWith('.github.io') || location.hostname.endsWith('.pages.dev') || location.hostname.endsWith('.netlify.app'))
-          ? 'https://pannaipuram-api.onrender.com' : '';
-      fetch(_apiBase + '/api/pwa/ping', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ visitor_id: vid, is_standalone: standalone }),
-        keepalive: true,
-      }).catch(function() { /* offline — skip silently */ });
-    } catch (_) { /* localStorage blocked — skip */ }
+    });
+
+    // The moment the user installs to home screen, record it as an install
+    // (is_standalone is sticky server-side → counted in daily installs).
+    window.addEventListener('appinstalled', function() { doPing(true); });
+
+    // Show this device's id in ☰ → About so Venthan can find and label his
+    // own devices in the admin stats.
+    try {
+      var idEl = document.getElementById('about-device-id');
+      if (idEl) idEl.textContent = localStorage.getItem('pannai:visitor-id') || '—';
+    } catch (_) {}
   })();
 
   // ── Service Worker (auto-update on installed PWAs) ─────
@@ -620,6 +708,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.Hospital && Hospital.refresh) jobs.push(Hospital.refresh());
     if (window.Emergency && Emergency.refresh) jobs.push(Emergency.refresh());
     if (window.More && More.refresh) jobs.push(More.refresh());
+    if (window.Announce && Announce.refresh) jobs.push(Announce.refresh());
     var done = function() {
       if (window.showToast) window.showToast('✅ எல்லாம் புதுப்பிக்கப்பட்டது · All updated');
     };
@@ -627,6 +716,7 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
   // ── Init sections ──────────────────────────────────────
+  Announce.init();
   Bus.init();
   Auto.init();
   switchSection(startSection);
