@@ -119,6 +119,9 @@ window.Announce = (function() {
       if (card) card.remove();
     });
     load(false);
+    // Cached render is instant but can be stale (SW + localStorage layers);
+    // announcements must be FRESH — re-fetch from network shortly after.
+    setTimeout(function() { load(true); }, 4000);
   }
 
   return { init: init, refresh: function() { return load(true); } };
@@ -178,6 +181,17 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
       var idEl = document.getElementById('about-device-id');
       if (idEl) idEl.textContent = localStorage.getItem('pannai:visitor-id') || '—';
+    } catch (_) {}
+
+    // Visible app version (☰ drawer footer + About) — lets anyone confirm
+    // which build their device is actually running. CACHE_VERSION comes
+    // from api.js ('pannai-v67' → shown as 'v67').
+    try {
+      var ver = (typeof CACHE_VERSION === 'string') ? CACHE_VERSION.replace('pannai-', '') : '?';
+      var dv = document.getElementById('drawer-version');
+      if (dv) dv.textContent = ver;
+      var av = document.getElementById('about-app-version');
+      if (av) av.textContent = ver;
     } catch (_) {}
   })();
 
