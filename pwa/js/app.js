@@ -77,12 +77,21 @@ window.Announce = (function() {
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
+  // Dismiss key = id + fingerprint of the TEXT. If Venthan edits or
+  // re-publishes an announcement, the key changes and it re-appears on
+  // every device — dismissing by bare id hid edited announcements forever.
+  function annKey(a) {
+    var s = String(a.message_tamil || '') + '|' + String(a.message_english || '') + '|' + String(a.type || '');
+    var h = 0;
+    for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) | 0; }
+    return a.id + ':' + h;
+  }
   function dismissedIds() {
     try { return JSON.parse(localStorage.getItem(DISMISS_KEY)) || []; } catch (_) { return []; }
   }
-  function dismiss(id) {
+  function dismiss(key) {
     var d = dismissedIds();
-    if (d.indexOf(id) === -1) d.push(id);
+    if (d.indexOf(key) === -1) d.push(key);
     try { localStorage.setItem(DISMISS_KEY, JSON.stringify(d.slice(-50))); } catch (_) {}
   }
 
@@ -90,7 +99,7 @@ window.Announce = (function() {
     var host = document.getElementById('announce-host');
     if (!host) return;
     var hidden = dismissedIds();
-    var show = (list || []).filter(function(a) { return hidden.indexOf(a.id) === -1; }).slice(0, 3);
+    var show = (list || []).filter(function(a) { return hidden.indexOf(annKey(a)) === -1; }).slice(0, 3);
     if (!show.length) { host.innerHTML = ''; return; }
     host.innerHTML = show.map(function(a) {
       var t = TYPE_ICON[(a.type || '').toLowerCase()] ? (a.type || '').toLowerCase() : 'info';
@@ -100,7 +109,7 @@ window.Announce = (function() {
           '<p class="ann-ta">' + esc(a.message_tamil) + '</p>' +
           (a.message_english ? '<p class="ann-en">' + esc(a.message_english) + '</p>' : '') +
         '</div>' +
-        '<button class="ann-close" type="button" aria-label="மூடு · Dismiss" data-ann-close="' + a.id + '">✕</button>' +
+        '<button class="ann-close" type="button" aria-label="மூடு · Dismiss" data-ann-close="' + annKey(a) + '">✕</button>' +
       '</div>';
     }).join('');
   }
@@ -119,7 +128,7 @@ window.Announce = (function() {
     if (host) host.addEventListener('click', function(ev) {
       var btn = ev.target.closest ? ev.target.closest('[data-ann-close]') : null;
       if (!btn) return;
-      dismiss(parseInt(btn.getAttribute('data-ann-close'), 10));
+      dismiss(btn.getAttribute('data-ann-close'));
       var card = btn.closest('.ann-card');
       if (card) card.remove();
     });
