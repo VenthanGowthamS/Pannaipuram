@@ -143,7 +143,8 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json());
+// 1mb (default 100kb) — admin driver photos ship as small base64 data-URLs
+app.use(express.json({ limit: '1mb' }));
 
 // ── Mobile API Routes ───────────────────────────────────
 app.use('/api/water',     waterRoutes);

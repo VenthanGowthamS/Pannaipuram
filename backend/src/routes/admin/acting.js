@@ -30,10 +30,18 @@ router.post('/drivers', requireRole('admin', 'super_admin'), async (req, res) =>
     return res.status(400).json({ success: false, error: 'Phone must be a 10-digit Indian mobile number starting with 6-9' });
   }
   try {
+    // photo_url column only exists after migration_driver_photos.sql —
+    // include it only when a photo was actually sent so plain adds keep
+    // working on a pre-migration database.
+    const photo = req.body.photo_url || null;
+    const cols = ['name_tamil', 'name_english', 'phone', 'vehicle_type', 'coverage_tamil', 'coverage_english', 'schedule_tamil', 'display_order'];
+    const vals = [name_tamil, name_english, phone, vehicle_type || 'any', trimStr(coverage_tamil), trimStr(coverage_english), trimStr(schedule_tamil), parseInt(display_order, 10) || 0];
+    if (photo) { cols.push('photo_url'); vals.push(photo); }
+    const placeholders = vals.map((_, i) => `$${i + 1}`).join(', ');
     const result = await query(`
-      INSERT INTO acting_drivers (name_tamil, name_english, phone, vehicle_type, coverage_tamil, coverage_english, schedule_tamil, display_order)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *
-    `, [name_tamil, name_english, phone, vehicle_type || 'any', trimStr(coverage_tamil), trimStr(coverage_english), trimStr(schedule_tamil), display_order || 0]);
+      INSERT INTO acting_drivers (${cols.join(', ')})
+      VALUES (${placeholders}) RETURNING *
+    `, vals);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });
@@ -43,7 +51,18 @@ router.post('/drivers', requireRole('admin', 'super_admin'), async (req, res) =>
 // PUT /admin/acting/drivers/:id — update
 router.put('/drivers/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   const { name_tamil, name_english, phone, vehicle_type, coverage_tamil, coverage_english, schedule_tamil, is_active, phone_verified, display_order } = req.body;
+  // '' from a cleared number field must not reach COALESCE (int cast error)
+  const orderVal = (display_order === '' || display_order === undefined) ? null : parseInt(display_order, 10);
   try {
+    const params = [name_tamil, name_english, phone, vehicle_type, coverage_tamil, coverage_english, schedule_tamil, is_active, phone_verified, orderVal];
+    // photo_url is only touched when the client sends it ('' clears the photo);
+    // keeps updates working on a pre-migration database.
+    let photoClause = '';
+    if ('photo_url' in req.body) {
+      params.push(req.body.photo_url || '');
+      photoClause = `, photo_url = NULLIF($${params.length}, '')`;
+    }
+    params.push(req.params.id);
     const result = await query(`
       UPDATE acting_drivers
       SET name_tamil      = COALESCE($1, name_tamil),
@@ -55,9 +74,9 @@ router.put('/drivers/:id', validateIdParam, requireRole('admin', 'super_admin'),
           schedule_tamil  = COALESCE($7, schedule_tamil),
           is_active       = COALESCE($8, is_active),
           phone_verified  = COALESCE($9, phone_verified),
-          display_order   = COALESCE($10, display_order)
-      WHERE id = $11 RETURNING *
-    `, [name_tamil, name_english, phone, vehicle_type, coverage_tamil, coverage_english, schedule_tamil, is_active, phone_verified, display_order, req.params.id]);
+          display_order   = COALESCE($10, display_order)${photoClause}
+      WHERE id = $${params.length} RETURNING *
+    `, params);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });
