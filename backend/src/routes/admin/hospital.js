@@ -95,10 +95,16 @@ router.post('/doctors', requireRole('admin', 'super_admin'), async (req, res) =>
     if (hCheck.rows.length === 0) {
       return res.status(400).json({ success: false, error: `Hospital #${hospital_id} does not exist. Add the hospital first.` });
     }
+    // notes_tamil only when provided — keeps adds working pre-migration
+    const cols = ['hospital_id', 'name_tamil', 'name_english', 'specialisation', 'photo_url'];
+    const vals = [hospital_id, name_tamil, name_english, specialisation, photo_url];
+    const notes = trimStr(req.body.notes_tamil);
+    if (notes) { cols.push('notes_tamil'); vals.push(notes); }
+    const placeholders = vals.map((_, i) => `$${i + 1}`).join(', ');
     const result = await query(`
-      INSERT INTO doctors (hospital_id, name_tamil, name_english, specialisation, photo_url)
-      VALUES ($1, $2, $3, $4, $5) RETURNING *
-    `, [hospital_id, name_tamil, name_english, specialisation, photo_url]);
+      INSERT INTO doctors (${cols.join(', ')})
+      VALUES (${placeholders}) RETURNING *
+    `, vals);
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     console.error('Doctor POST error:', err.message);
@@ -110,15 +116,23 @@ router.post('/doctors', requireRole('admin', 'super_admin'), async (req, res) =>
 router.put('/doctors/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   const { hospital_id, name_tamil, name_english, specialisation, is_active } = req.body;
   try {
+    const params = [hospital_id, name_tamil, name_english, specialisation, is_active];
+    // notes_tamil only when the client sends it ('' clears) — pre-migration safe
+    let notesClause = '';
+    if ('notes_tamil' in req.body) {
+      params.push(req.body.notes_tamil || '');
+      notesClause = `, notes_tamil = NULLIF($${params.length}, '')`;
+    }
+    params.push(req.params.id);
     const result = await query(`
       UPDATE doctors
       SET hospital_id   = COALESCE($1, hospital_id),
           name_tamil     = COALESCE($2, name_tamil),
           name_english   = COALESCE($3, name_english),
           specialisation = COALESCE($4, specialisation),
-          is_active      = COALESCE($5, is_active)
-      WHERE id = $6 RETURNING *
-    `, [hospital_id, name_tamil, name_english, specialisation, is_active, req.params.id]);
+          is_active      = COALESCE($5, is_active)${notesClause}
+      WHERE id = $${params.length} RETURNING *
+    `, params);
     if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'Doctor not found' });
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {

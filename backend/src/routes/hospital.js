@@ -25,9 +25,10 @@ router.get('/info', async (req, res) => {
 // GET /api/hospital/doctors
 // All doctors with full weekly schedule
 router.get('/doctors', async (req, res) => {
-  try {
-    const result = await query(`
-      SELECT d.id, d.hospital_id, d.name_tamil, d.name_english, d.specialisation, d.photo_url, d.is_active,
+  // d.notes_tamil is the doctor-level "More Details" note (one per doctor,
+  // shown once in the PWA) — column exists after migration_doctor_notes.sql.
+  const buildQuery = (extraCols) => `
+      SELECT d.id, d.hospital_id, d.name_tamil, d.name_english, d.specialisation, d.photo_url, d.is_active${extraCols},
              COALESCE(
                json_agg(
                  json_build_object(
@@ -44,7 +45,14 @@ router.get('/doctors', async (req, res) => {
       WHERE d.is_active = TRUE
       GROUP BY d.id
       ORDER BY d.id
-    `);
+    `;
+  try {
+    let result;
+    try {
+      result = await query(buildQuery(', d.notes_tamil'));
+    } catch (_colMissing) {
+      result = await query(buildQuery(''));
+    }
     res.json({ success: true, data: result.rows });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });

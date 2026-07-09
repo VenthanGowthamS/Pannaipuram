@@ -486,6 +486,12 @@ NODE_ENV=production
 - `express.json` limit raised to 1 MB for the photo payloads.
 - PWA renders the photo inside the driver avatar circle (`pwa/js/auto.js` + `more.js`), emoji fallback when empty; only `data:image/*` or http(s) sources are accepted.
 
+## Acting-driver licence + doctor notes (July 2026, v69)
+
+- `acting_drivers.license_verified BOOLEAN DEFAULT FALSE` — `migration_acting_license.sql`. Admin toggles "DL Verified"; PWA shows a green "🪪 உரிமம் சரிபார்த்தது ✅" chip.
+- `doctors.notes_tamil TEXT` — `migration_doctor_notes.sql`. ONE doctor-level note (clinic instructions etc.) shown once under the timetable in the PWA, replacing the anti-pattern of pasting the same note into every `doctor_schedules.notes_tamil` row. The PWA additionally hoists any schedule note that repeats on ≥2 days into the same single 📝 box.
+- Same pre-migration-safe pattern as photos: columns only touched when the client sends them; public GETs fall back to column-less SELECTs.
+
 ---
 
 *Built with ❤️ for பண்ணைப்புரம் by Venthan — Technology for Real People*

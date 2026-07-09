@@ -12,6 +12,7 @@ import api from '../api';
 const EMPTY = {
   name_tamil: '', name_english: '', phone: '', vehicle_type: 'any',
   coverage_tamil: '', coverage_english: '', schedule_tamil: '', display_order: 0,
+  license_verified: false,
 };
 
 const VEH_EMOJI = { any: '🚙', auto: '🛺', van: '🚐', car: '🚗' };
@@ -93,6 +94,7 @@ export default function ActingDrivers({ onSnackbar, canEdit }) {
       phone: d.phone || '', vehicle_type: d.vehicle_type || 'any',
       coverage_tamil: d.coverage_tamil || '', coverage_english: d.coverage_english || '',
       schedule_tamil: d.schedule_tamil || '', display_order: d.display_order || 0,
+      license_verified: d.license_verified === true,
       // undefined = untouched (not sent to API); string = set; '' = remove
       photo_url: d.photo_url || undefined,
     });
@@ -117,6 +119,14 @@ export default function ActingDrivers({ onSnackbar, canEdit }) {
       await api.updateActingDriver(d.id, { phone_verified: !d.phone_verified });
       load();
     } catch (e) { onSnackbar?.('Update failed', 'error'); }
+  };
+
+  const toggleLicense = async (d) => {
+    try {
+      await api.updateActingDriver(d.id, { license_verified: !d.license_verified });
+      onSnackbar?.(d.license_verified ? 'DL mark removed' : 'DL marked as verified ✅', 'success');
+      load();
+    } catch (e) { onSnackbar?.('Update failed — run migration_acting_license.sql?', 'error'); }
   };
 
   const handleDelete = async () => {
@@ -169,6 +179,18 @@ export default function ActingDrivers({ onSnackbar, canEdit }) {
             <Grid item xs={6} sm={3}>
               <TextField fullWidth label="Order" type="number" value={form.display_order} onChange={handleChange('display_order')} size="small" helperText="Lower shows first" />
             </Grid>
+            <Grid item xs={6} sm={3}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={!!form.license_verified}
+                    onChange={(e) => setForm({ ...form, license_verified: e.target.checked })}
+                    color="success"
+                  />
+                }
+                label={form.license_verified ? '🪪 DL Verified ✅' : '🪪 DL not verified'}
+              />
+            </Grid>
             <Grid item xs={12} sm={6}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1.5, border: '1px dashed #bbb', borderRadius: 2 }}>
                 <Avatar src={form.photo_url || undefined} sx={{ width: 56, height: 56 }}>
@@ -212,16 +234,17 @@ export default function ActingDrivers({ onSnackbar, canEdit }) {
               <TableCell>Vehicle</TableCell>
               <TableCell>Coverage</TableCell>
               <TableCell>Verified</TableCell>
+              <TableCell>DL</TableCell>
               {canEdit && <TableCell align="right">Actions</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               [...Array(3)].map((_, i) => (
-                <TableRow key={i}><TableCell colSpan={6}><Skeleton /></TableCell></TableRow>
+                <TableRow key={i}><TableCell colSpan={7}><Skeleton /></TableCell></TableRow>
               ))
             ) : drivers.length === 0 ? (
-              <TableRow><TableCell colSpan={6} align="center">No acting drivers yet</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} align="center">No acting drivers yet</TableCell></TableRow>
             ) : (
               drivers.map((d) => (
                 <TableRow key={d.id}>
@@ -240,6 +263,15 @@ export default function ActingDrivers({ onSnackbar, canEdit }) {
                     <FormControlLabel
                       control={<Switch size="small" checked={!!d.phone_verified} onChange={() => canEdit && toggleVerified(d)} disabled={!canEdit} />}
                       label={d.phone_verified ? 'Yes' : 'No'}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      size="small"
+                      label={d.license_verified ? '🪪 ✅' : '🪪 —'}
+                      color={d.license_verified ? 'success' : 'default'}
+                      onClick={() => canEdit && toggleLicense(d)}
+                      sx={{ cursor: canEdit ? 'pointer' : 'default' }}
                     />
                   </TableCell>
                   {canEdit && (

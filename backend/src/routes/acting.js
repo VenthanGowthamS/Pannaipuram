@@ -10,11 +10,11 @@ router.get('/drivers', async (req, res) => {
     let result;
     try {
       result = await query(`
-        SELECT ${cols}, photo_url FROM acting_drivers
+        SELECT ${cols}, photo_url, license_verified FROM acting_drivers
         WHERE is_active = TRUE ORDER BY display_order, id
       `);
     } catch (_colMissing) {
-      // photo_url migration not applied yet — serve without photos
+      // photo_url / license_verified migrations not applied yet
       result = await query(`
         SELECT ${cols} FROM acting_drivers
         WHERE is_active = TRUE ORDER BY display_order, id

@@ -37,6 +37,7 @@ router.post('/drivers', requireRole('admin', 'super_admin'), async (req, res) =>
     const cols = ['name_tamil', 'name_english', 'phone', 'vehicle_type', 'coverage_tamil', 'coverage_english', 'schedule_tamil', 'display_order'];
     const vals = [name_tamil, name_english, phone, vehicle_type || 'any', trimStr(coverage_tamil), trimStr(coverage_english), trimStr(schedule_tamil), parseInt(display_order, 10) || 0];
     if (photo) { cols.push('photo_url'); vals.push(photo); }
+    if ('license_verified' in req.body) { cols.push('license_verified'); vals.push(req.body.license_verified === true); }
     const placeholders = vals.map((_, i) => `$${i + 1}`).join(', ');
     const result = await query(`
       INSERT INTO acting_drivers (${cols.join(', ')})
@@ -61,6 +62,10 @@ router.put('/drivers/:id', validateIdParam, requireRole('admin', 'super_admin'),
     if ('photo_url' in req.body) {
       params.push(req.body.photo_url || '');
       photoClause = `, photo_url = NULLIF($${params.length}, '')`;
+    }
+    if ('license_verified' in req.body) {
+      params.push(req.body.license_verified === true);
+      photoClause += `, license_verified = $${params.length}`;
     }
     params.push(req.params.id);
     const result = await query(`

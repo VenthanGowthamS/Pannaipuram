@@ -197,6 +197,22 @@
 
 /* Schedule rows */
 .hd-scheds { margin-top: 10px; border-top: 1px dashed #ECECEC; padding-top: 10px; }
+
+/* Doctor-level "More Details" note — shown ONCE under the timetable
+   (also holds schedule notes that repeated on several days) */
+.hd-doc-note {
+  margin-top: 8px;
+  background: #E0F2F1;
+  border-left: 3px solid #00838F;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: 'Noto Sans Tamil', sans-serif;
+  font-size: 0.82rem;
+  color: #00565E;
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
 .hd-sched-row {
   font-family: 'Noto Sans Tamil', sans-serif;
   font-size: 0.9rem;

@@ -74,7 +74,7 @@ const Doctors = ({ onSnackbar, canEdit }) => {
   // Doctor form
   const [editingDoctorId, setEditingDoctorId] = useState(null);
   const [doctorForm, setDoctorForm] = useState({
-    hospital_id: '', name_tamil: '', name_english: '', specialisation: '',
+    hospital_id: '', name_tamil: '', name_english: '', specialisation: '', notes_tamil: '',
   });
 
   // Schedule dialog
@@ -185,7 +185,7 @@ const Doctors = ({ onSnackbar, canEdit }) => {
   const resetDoctorForm = () => {
     setDoctorForm({
       hospital_id: hospitals.length > 0 ? String(hospitals[0].id) : '',
-      name_tamil: '', name_english: '', specialisation: '',
+      name_tamil: '', name_english: '', specialisation: '', notes_tamil: '',
     });
     setEditingDoctorId(null);
   };
@@ -197,6 +197,7 @@ const Doctors = ({ onSnackbar, canEdit }) => {
       name_tamil: doctor.name_tamil || '',
       name_english: doctor.name_english || '',
       specialisation: doctor.specialisation || '',
+      notes_tamil: doctor.notes_tamil || '',
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -217,6 +218,7 @@ const Doctors = ({ onSnackbar, canEdit }) => {
         name_tamil: doctorForm.name_tamil,
         name_english: doctorForm.name_english,
         specialisation: doctorForm.specialisation,
+        notes_tamil: doctorForm.notes_tamil,
       };
       if (editingDoctorId) {
         await api.updateDoctor(editingDoctorId, payload);
@@ -468,6 +470,14 @@ const Doctors = ({ onSnackbar, canEdit }) => {
                 <TextField fullWidth label="Specialisation" value={doctorForm.specialisation}
                   onChange={e => setDoctorForm({ ...doctorForm, specialisation: e.target.value })}
                   placeholder="e.g., பொது மருத்துவம் (General Medicine)" />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField fullWidth multiline rows={2}
+                  label="More Details (Tamil) — shown ONCE under the doctor in the app 📝"
+                  value={doctorForm.notes_tamil}
+                  onChange={e => setDoctorForm({ ...doctorForm, notes_tamil: e.target.value })}
+                  placeholder="எ.கா. மாலை மட்டும் · அவசரம் என்றால் கோம்பை கிளினிக் செல்லவும்..."
+                  helperText="Clinic instructions, alternate clinic, fees etc. — enter here ONCE instead of repeating the same note in every day's schedule" />
               </Grid>
               <Grid item xs={12}>
                 <Button type="submit" variant="contained" sx={{ bgcolor: '#1B5E20', mr: 1 }}

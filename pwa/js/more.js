@@ -33,12 +33,16 @@ var More = (function() {
     var cover = d.coverage_tamil || '';
     var sched = d.schedule_tamil || '';
     var vehTa = VEH_TA[(d.vehicle_type || '').toLowerCase()] || '';
+    // Admin-verified driving licence → trust badge
+    var dl = d.license_verified === true
+      ? '<span class="acting-dl-chip">🪪 உரிமம் சரிபார்த்தது ✅</span>' : '';
     return '<div class="acting-row">' +
       '<div class="acting-avatar">' + avatarHtml(d) + '</div>' +
       '<div class="acting-info">' +
         '<span class="acting-ta">' + esc(d.name_tamil) +
           (vehTa ? ' <span class="acting-veh-chip">' + vehTa + '</span>' : '') + '</span>' +
         (d.name_english ? '<span class="acting-en">' + esc(d.name_english) + '</span>' : '') +
+        dl +
         (cover ? '<span class="acting-meta">📍 ' + esc(cover) + '</span>' : '') +
         (sched ? '<span class="acting-meta">🕐 ' + esc(sched) + '</span>' : '') +
       '</div>' + call + '</div>';

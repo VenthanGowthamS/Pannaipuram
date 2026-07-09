@@ -24,17 +24,42 @@ var Hospital = (function() {
 
   function telHref(phone) { return 'tel:' + String(phone || '').replace(/[^0-9+]/g, ''); }
 
-  function scheduleLine(s) {
+  function scheduleLine(s, hoistedNotes) {
     var day = DAY_TA[s.day_of_week] != null ? DAY_TA[s.day_of_week] : '';
     var time = (s.start_time || s.end_time)
       ? fmtTime(s.start_time) + ' – ' + fmtTime(s.end_time) : '';
-    var note = s.notes_tamil ? ' · ' + esc(s.notes_tamil) : '';
+    // Notes repeated across several days are hoisted to ONE line under the
+    // schedule (see renderDoctor) — don't repeat them on every day row.
+    var noteTxt = s.notes_tamil && !hoistedNotes[s.notes_tamil] ? s.notes_tamil : '';
+    var note = noteTxt ? ' · ' + esc(noteTxt) : '';
     return '<div class="hd-sched-row"><span class="hd-sched-day">' + esc(day) + '</span>' +
            '<span class="hd-sched-time">' + esc(time) + '</span>' + note + '</div>';
   }
 
   function renderDoctor(doc, todayDow) {
     var scheds = doc.schedules || [];
+
+    // Collect notes that appear on MORE than one day — show them once
+    // below the timetable instead of duplicating on every row.
+    var noteCounts = {};
+    scheds.forEach(function(s) {
+      if (s.notes_tamil) noteCounts[s.notes_tamil] = (noteCounts[s.notes_tamil] || 0) + 1;
+    });
+    var hoistedNotes = {};
+    Object.keys(noteCounts).forEach(function(n) {
+      if (noteCounts[n] > 1) hoistedNotes[n] = true;
+    });
+
+    // Doctor-level "More Details" (admin) + hoisted duplicate schedule notes,
+    // deduped against each other.
+    var noteLines = [];
+    if (doc.notes_tamil) noteLines.push(doc.notes_tamil);
+    Object.keys(hoistedNotes).forEach(function(n) {
+      if (n !== doc.notes_tamil) noteLines.push(n);
+    });
+    var notesHtml = noteLines.map(function(n) {
+      return '<div class="hd-doc-note">📝 ' + esc(n) + '</div>';
+    }).join('');
     var availToday = scheds.some(function(s) { return s.day_of_week === todayDow; });
     var todayBadge = availToday
       ? '<span class="hd-today-badge">✅ டாக்டர் இன்று இருக்காங்க</span>'
@@ -50,7 +75,7 @@ var Hospital = (function() {
     }).join('');
 
     var schedHtml = scheds.length
-      ? scheds.map(scheduleLine).join('')
+      ? scheds.map(function(s) { return scheduleLine(s, hoistedNotes); }).join('')
       : '<div class="hd-sched-row hd-sched-empty">நேரம் விரைவில் சேர்க்கப்படும்</div>';
 
     return '' +
@@ -66,6 +91,7 @@ var Hospital = (function() {
         '</div>' +
         '<div class="hd-days">' + chips + '</div>' +
         '<div class="hd-scheds">' + schedHtml + '</div>' +
+        notesHtml +
       '</div>';
   }
 
