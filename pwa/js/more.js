@@ -14,6 +14,15 @@ var More = (function() {
     return { auto: '🛺', van: '🚐', car: '🚗', taxi: '🚖', any: '🚙' }[(t || '').toLowerCase()] || '🚗';
   }
 
+  // Driver photo (from admin) wins over the vehicle emoji in the avatar circle.
+  function avatarHtml(d) {
+    var photo = String(d.photo_url || '');
+    if (/^(data:image\/|https?:\/\/)/.test(photo)) {
+      return '<img class="driver-photo" src="' + esc(photo) + '" alt="" loading="lazy">';
+    }
+    return vehIcon(d.vehicle_type);
+  }
+
   // ── Acting (substitute) drivers — profile rows w/ avatar ──
   var VEH_TA = { auto: 'ஆட்டோ', van: 'வேன்', car: 'கார்', taxi: 'டாக்ஸி', any: 'எல்லா வண்டியும்' };
   function actingRow(d) {
@@ -25,7 +34,7 @@ var More = (function() {
     var sched = d.schedule_tamil || '';
     var vehTa = VEH_TA[(d.vehicle_type || '').toLowerCase()] || '';
     return '<div class="acting-row">' +
-      '<div class="acting-avatar">' + vehIcon(d.vehicle_type) + '</div>' +
+      '<div class="acting-avatar">' + avatarHtml(d) + '</div>' +
       '<div class="acting-info">' +
         '<span class="acting-ta">' + esc(d.name_tamil) +
           (vehTa ? ' <span class="acting-veh-chip">' + vehTa + '</span>' : '') + '</span>' +
@@ -139,11 +148,13 @@ var More = (function() {
       ? '<a class="more-call" href="' + telHref(s.phone) + '">📞 அழைக்க</a>'
       : '<span class="more-call more-call-pending">விரைவில்</span>';
     var area = s.area_tamil || s.area_english || '';
+    var notes = s.notes_tamil || '';
     return '<div class="svc-row">' +
       '<div class="svc-row-info">' +
         '<span class="svc-row-ta">' + esc(s.name_tamil || s.name_english) + '</span>' +
         (s.name_english && s.name_tamil ? '<span class="svc-row-en">' + esc(s.name_english) + '</span>' : '') +
         (area ? '<span class="svc-row-meta">📍 ' + esc(area) + '</span>' : '') +
+        (notes ? '<span class="svc-row-meta svc-row-notes">📝 ' + esc(notes) + '</span>' : '') +
       '</div>' + call + '</div>';
   }
   // One category = one compact white panel with a tinted header + rows
@@ -207,6 +218,10 @@ var More = (function() {
     if (inited) { load(true, true); return; }   // re-open → refresh in place
     inited = true;
     load(false);                                  // first open → skeleton + fetch
+    // First render can come from cache (SW + localStorage) — pull fresh from
+    // the network shortly after so admin edits (order/photos/new drivers)
+    // always reach the screen, not just the cache.
+    setTimeout(function() { load(true, true); }, 3000);
     initRegForm();
     var refreshBtn = document.getElementById('more-refresh-btn');
     if (refreshBtn) refreshBtn.addEventListener('click', function() {

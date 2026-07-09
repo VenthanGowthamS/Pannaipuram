@@ -65,6 +65,7 @@
   display: flex; align-items: center; justify-content: center;
   font-size: 23px;
   flex-shrink: 0;
+  overflow: hidden;
 }
 .acting-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .acting-ta { font-family: 'Noto Sans Tamil', sans-serif; font-size: 1.02rem; font-weight: 700; color: #1A1A1A; line-height: 1.3; }
@@ -192,6 +193,8 @@
 .svc-row-ta { font-family: 'Noto Sans Tamil', sans-serif; font-size: 0.98rem; font-weight: 700; color: #1A1A1A; line-height: 1.3; }
 .svc-row-en { font-size: 0.7rem; color: #8A8A8E; }
 .svc-row-meta { font-family: 'Noto Sans Tamil', sans-serif; font-size: 0.78rem; color: #777; margin-top: 1px; }
+/* Extra details entered by admin (timing, price, etc.) — wraps fully */
+.svc-row-notes { color: #5E35B1; line-height: 1.4; white-space: normal; overflow-wrap: break-word; }
 
 /* Shared call pill */
 .more-call {

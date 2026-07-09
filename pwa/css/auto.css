@@ -233,8 +233,57 @@
   border: 1px solid #F5E6C3;
 }
 
+/* ── Vehicle-type group headers (🛺 ஆட்டோ / 🚐 வேன் / 🚗 கார்) ── */
+.driver-group { display: flex; flex-direction: column; gap: 10px; }
+.driver-group + .driver-group { margin-top: 8px; }
+.driver-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 0;
+}
+.driver-group-ic { font-size: 20px; }
+.driver-group-ta {
+  font-family: var(--font-tamil);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+.driver-group-en {
+  font-family: var(--font-latin);
+  font-size: 0.7rem;
+  color: var(--color-muted);
+  align-self: center;
+}
+.driver-group-count {
+  margin-left: auto;
+  background: var(--auto-amb-bg, #FEF3C7);
+  color: var(--auto-amb-dk, #D97706);
+  font-family: var(--font-latin);
+  font-size: 0.75rem;
+  font-weight: 800;
+  border-radius: 999px;
+  min-width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+}
+
+/* Driver photo (admin-uploaded) fills the avatar circle */
+.driver-icon .driver-photo,
+.acting-avatar .driver-photo {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
 /* Amber-tinted icon circle */
 .driver-icon {
+  overflow: hidden;
   width: 52px;
   height: 52px;
   border-radius: 26px;
@@ -330,6 +379,26 @@
   text-align: center;
   box-shadow: 0 4px 18px rgba(0,0,0,0.20), 0 0 0 1.5px rgba(245,158,11,0.22);
 }
+
+/* Collapsible registration (details/summary) — closed = compact CTA card */
+.auto-reg summary { list-style: none; cursor: pointer; }
+.auto-reg summary::-webkit-details-marker { display: none; }
+.auto-reg-cta { display: block; }
+.auto-reg-caret {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(245,158,11,0.55);
+  color: var(--auto-amber, #F59E0B);
+  font-family: var(--font-tamil);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.auto-reg-caret-arrow { transition: transform 180ms ease; }
+.auto-reg[open] .auto-reg-caret-arrow { transform: rotate(180deg); }
 
 .register-emoji {
   font-size: 28px;

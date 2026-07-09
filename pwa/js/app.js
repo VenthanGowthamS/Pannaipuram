@@ -105,8 +105,13 @@ window.Announce = (function() {
     }).join('');
   }
 
+  var _lastFetch = 0;
   async function load(force) {
-    try { render(await PannaiAPI.getAnnouncements(!!force)); } catch (_) { /* offline — keep whatever is shown */ }
+    try {
+      var data = await PannaiAPI.getAnnouncements(!!force);
+      if (force) _lastFetch = Date.now();
+      render(data);
+    } catch (_) { /* offline — keep whatever is shown */ }
   }
 
   function init() {
@@ -122,6 +127,20 @@ window.Announce = (function() {
     // Cached render is instant but can be stale (SW + localStorage layers);
     // announcements must be FRESH — re-fetch from network shortly after.
     setTimeout(function() { load(true); }, 4000);
+
+    // Installed PWAs stay alive for DAYS without a page load — without these
+    // two hooks an announcement published after launch never reaches them:
+    //  1. re-fetch when the user comes back to the app (visibilitychange),
+    //  2. re-fetch every 15 min while the app stays on screen.
+    var MIN_GAP_MS = 2 * 60 * 1000;   // don't hammer the API on rapid tab flips
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible' && Date.now() - _lastFetch > MIN_GAP_MS) {
+        load(true);
+      }
+    });
+    setInterval(function() {
+      if (document.visibilityState === 'visible') load(true);
+    }, 15 * 60 * 1000);
   }
 
   return { init: init, refresh: function() { return load(true); } };

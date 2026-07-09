@@ -480,13 +480,17 @@
         </div>
       </div>
 
-      <!-- Register as driver -->
+      <!-- Register as driver (collapsible — tap to open, like the acting-driver form) -->
       <div class="register-card">
-        <div class="register-emoji">🚗</div>
-        <span class="register-label-ta">உங்க வண்டியையும் சேர்க்கணுமா?</span>
-        <span class="register-label-en">உங்கள் ஆட்டோ / வேன் / கார் விவரங்களை பதிவு செய்யுங்கள்</span>
+        <details class="auto-reg" id="auto-reg">
+          <summary class="auto-reg-cta">
+            <div class="register-emoji">🚗</div>
+            <span class="register-label-ta">உங்க வண்டியையும் சேர்க்கணுமா?</span>
+            <span class="register-label-en">உங்கள் ஆட்டோ / வேன் / கார் விவரங்களை பதிவு செய்யுங்கள்</span>
+            <span class="auto-reg-caret">பதிவு பண்ண இங்க தட்டுங்க <span class="auto-reg-caret-arrow">▾</span></span>
+          </summary>
 
-        <form id="auto-contact-form" class="auto-form" novalidate>
+          <form id="auto-contact-form" class="auto-form" novalidate>
           <div class="auto-form-field">
             <label class="auto-form-label" for="acf-name">உங்கள் பெயர்</label>
             <input id="acf-name" class="auto-form-input" type="text" placeholder="பெயர்" required maxlength="80" autocomplete="name">
@@ -516,7 +520,8 @@
             <span id="auto-form-btn-text">📩 விவரங்களை அனுப்புங்கள்</span>
           </button>
           <p id="auto-form-result" class="auto-form-result" hidden></p>
-        </form>
+          </form>
+        </details>
       </div>
 
     </section>

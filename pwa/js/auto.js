@@ -13,8 +13,17 @@ var Auto = (function() {
     return map[(type || '').toLowerCase()] || '🚗';
   }
 
+  // Driver photo (from admin) wins over the vehicle emoji in the avatar circle.
+  // Only data: images or http(s) URLs are allowed — anything else falls back.
+  function avatarHtml(driver) {
+    var photo = String(driver.photo_url || '');
+    if (/^(data:image\/|https?:\/\/)/.test(photo)) {
+      return '<img class="driver-photo" src="' + esc(photo) + '" alt="" loading="lazy">';
+    }
+    return vehicleIcon(driver.vehicle_type);
+  }
+
   function renderCard(driver) {
-    var icon = vehicleIcon(driver.vehicle_type);
     var digits = String(driver.phone || '').replace(/\D/g, '');
     var hasPhone = digits.length >= 10;
     var isVerified = driver.phone_verified !== false; // true by default if field absent
@@ -25,7 +34,7 @@ var Auto = (function() {
     var coverage = driver.coverage_tamil || driver.schedule_tamil || '';
 
     return '<div class="driver-card">' +
-      '<div class="driver-icon">' + icon + '</div>' +
+      '<div class="driver-icon">' + avatarHtml(driver) + '</div>' +
       '<div class="driver-info">' +
         '<span class="driver-name-ta">' + esc(driver.name_tamil) + '</span>' +
         (driver.name_english ? '<span class="driver-name-en">' + esc(driver.name_english) + '</span>' : '') +
@@ -33,6 +42,38 @@ var Auto = (function() {
       '</div>' +
       callEl +
     '</div>';
+  }
+
+  // ── Vehicle-type groups — ஆட்டோ / வேன் / கார் / டாக்ஸி ─────
+  // Users browse icon-wise: each type gets its own header + card block.
+  // display_order is preserved inside each group (server returns sorted rows).
+  var VEH_GROUPS = [
+    { key: 'auto',  icon: '🛺', ta: 'ஆட்டோ',   en: 'Auto' },
+    { key: 'van',   icon: '🚐', ta: 'வேன்',    en: 'Van' },
+    { key: 'car',   icon: '🚗', ta: 'கார்',    en: 'Car' },
+    { key: 'taxi',  icon: '🚖', ta: 'டாக்ஸி',  en: 'Taxi' },
+    { key: 'other', icon: '🚙', ta: 'மற்ற வண்டிகள்', en: 'Others' },
+  ];
+  function renderGrouped(drivers) {
+    var buckets = {};
+    drivers.forEach(function(d) {
+      var k = (d.vehicle_type || 'auto').toLowerCase();
+      if (!VEH_GROUPS.some(function(g) { return g.key === k; })) k = 'other';
+      (buckets[k] = buckets[k] || []).push(d);
+    });
+    return VEH_GROUPS.map(function(g) {
+      var list = buckets[g.key];
+      if (!list || !list.length) return '';
+      return '<div class="driver-group">' +
+        '<div class="driver-group-head">' +
+          '<span class="driver-group-ic">' + g.icon + '</span>' +
+          '<span class="driver-group-ta">' + g.ta + '</span>' +
+          '<span class="driver-group-en">' + g.en + '</span>' +
+          '<span class="driver-group-count">' + list.length + '</span>' +
+        '</div>' +
+        list.map(renderCard).join('') +
+      '</div>';
+    }).join('');
   }
 
   async function loadDrivers(force, silent) {
@@ -52,7 +93,7 @@ var Auto = (function() {
       var drivers = await PannaiAPI.getAutoDrivers(!!force);
       var active = drivers.filter(function(d) { return d.is_active !== false; });
       if (active.length) {
-        list.innerHTML = active.map(renderCard).join('');
+        list.innerHTML = renderGrouped(active);
       } else {
         list.innerHTML =
           '<div class="auto-empty">' +
@@ -214,6 +255,11 @@ var Auto = (function() {
   async function init() {
     await loadDrivers(false);
     initContactForm();
+
+    // First render can come from cache (SW + localStorage) — pull fresh from
+    // the network shortly after so admin edits (order/photos/new drivers)
+    // always reach the screen, not just the cache.
+    setTimeout(function() { loadDrivers(true, true); }, 3000);
 
     // Refresh button → refresh ALL sections at once (one tap = everything fresh)
     var refreshBtn = document.getElementById('auto-refresh-btn');
