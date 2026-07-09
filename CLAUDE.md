@@ -55,7 +55,8 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 - **Bottom nav (`pwa/css/nav.css`):** uses `grid-auto-flow: column` — auto-fits any number of tabs (don't hardcode column count).
 - **Render config:** `render.yaml` at repo root with `rootDir: .` ensures full repo is deployed
 - **NEVER edit files inside `backend/public/pwa/`** — that folder was deleted. Edit only in `pwa/`
-- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v67.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
+- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v68.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
+- **v68 (July 2026):** auto tab grouped by vehicle type (🛺/🚐/🚗/🚖 headers + count badges; unknown types → "மற்ற வண்டிகள்"); auto reg form collapsible `<details>` (`#auto-reg`); driver photos — admin uploads, browser-resized to ≤320px JPEG data-URL in `photo_url` (migration `backend/src/db/migration_driver_photos.sql` must run in Supabase SQL Editor; API degrades gracefully pre-migration); service `notes_tamil` shown as 📝 line in More tab (admin field relabeled "More Details"); Auto + More silently force-refresh 3s after first cached render so admin edits/order changes reach the SCREEN, not just the cache; Announce also re-fetches on visibilitychange (≥2 min gap) + every 15 min → announcements now reach installed PWAs that stay open for days; acting-driver admin sends `display_order` as int (was raw string; '' broke the UPDATE with a COALESCE int-cast error).
 - **Visible app version (v67):** ☰ drawer footer + About show CACHE_VERSION (e.g. "v67") so any device's running build can be confirmed at a glance. Announce re-fetches fresh from network 4s after the instant cached render.
 - **Announcements in PWA (v66):** `window.Announce` in `pwa/js/app.js` renders active `/api/announcements` into `#announce-host` (top of `<main>`, visible on all tabs). Per-device dismiss via localStorage `pannai:ann-dismissed`. Venthan posts via the existing admin Announcements tab. First card is indented to clear the floating ☰ button.
 - **Service registration form (v66):** `#svc-reg` collapsible in More tab (milk/electrician/etc.) → POST `/api/feedback` tagged `[சேவை பதிவு]`; shares the acting-driver form wiring via `wireRegForm()` in `pwa/js/more.js`.
@@ -638,5 +639,5 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram && git add app/li
 
 ---
 
-*Last updated: July 4, 2026 — PWA v66: announcements banner, service registration form, auto name-wrap fix (+small-phone sizing), auto display-order in admin, PWA stats v2 (live 5-min count, true daily uniques, daily installs, device labels)*
+*Last updated: July 9, 2026 — PWA v68: vehicle-type groups in auto tab, collapsible auto reg form, driver photos (auto + acting), service details in More tab, fresh-on-navigate refresh for Auto/More, announcements reach installed PWAs, acting-driver order fix*
 *Built with ❤️ for பண்ணைப்புரம் — உங்கள் ஊரின் தகவல் மையம்*

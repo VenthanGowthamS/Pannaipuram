@@ -478,4 +478,14 @@ NODE_ENV=production
 
 ---
 
+## Driver Photos (July 2026)
+
+- `auto_drivers.photo_url` + `acting_drivers.photo_url` (both `TEXT`) — added by `backend/src/db/migration_driver_photos.sql` (run in Supabase SQL Editor).
+- Photos are picked in the admin panel, resized in the browser to ≤320px JPEG and stored as a base64 data-URL (~15–35 KB) — no file storage service involved.
+- Admin PUT/POST only touch `photo_url` when the client actually sends it, and public GETs fall back to a photo-less SELECT — so the API keeps working on a pre-migration database.
+- `express.json` limit raised to 1 MB for the photo payloads.
+- PWA renders the photo inside the driver avatar circle (`pwa/js/auto.js` + `more.js`), emoji fallback when empty; only `data:image/*` or http(s) sources are accepted.
+
+---
+
 *Built with ❤️ for பண்ணைப்புரம் by Venthan — Technology for Real People*

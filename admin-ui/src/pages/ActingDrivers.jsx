@@ -6,12 +6,34 @@ import {
   DialogActions,
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
+import { Avatar } from '@mui/material';
 import api from '../api';
 
 const EMPTY = {
   name_tamil: '', name_english: '', phone: '', vehicle_type: 'any',
   coverage_tamil: '', coverage_english: '', schedule_tamil: '', display_order: 0,
 };
+
+const VEH_EMOJI = { any: '🚙', auto: '🛺', van: '🚐', car: '🚗' };
+
+// Resize + compress a picked photo to a small data-URL (≤320px JPEG).
+// Stored directly in the DB — no file storage needed at village scale.
+const fileToDataUrl = (file) => new Promise((resolve, reject) => {
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+    const MAX = 320;
+    const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(img.width * scale);
+    canvas.height = Math.round(img.height * scale);
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    resolve(canvas.toDataURL('image/jpeg', 0.72));
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Invalid image')); };
+  img.src = url;
+});
 
 export default function ActingDrivers({ onSnackbar, canEdit }) {
   const [drivers, setDrivers] = useState([]);
@@ -49,11 +71,13 @@ export default function ActingDrivers({ onSnackbar, canEdit }) {
       return;
     }
     try {
+      // display_order must go up as a number — '' or "3" broke the update SQL
+      const payload = { ...form, display_order: parseInt(form.display_order, 10) || 0 };
       if (editingId) {
-        await api.updateActingDriver(editingId, form);
+        await api.updateActingDriver(editingId, payload);
         onSnackbar?.('Acting driver updated', 'success');
       } else {
-        await api.addActingDriver(form);
+        await api.addActingDriver(payload);
         onSnackbar?.('Acting driver added', 'success');
       }
       resetForm();
@@ -69,9 +93,23 @@ export default function ActingDrivers({ onSnackbar, canEdit }) {
       phone: d.phone || '', vehicle_type: d.vehicle_type || 'any',
       coverage_tamil: d.coverage_tamil || '', coverage_english: d.coverage_english || '',
       schedule_tamil: d.schedule_tamil || '', display_order: d.display_order || 0,
+      // undefined = untouched (not sent to API); string = set; '' = remove
+      photo_url: d.photo_url || undefined,
     });
     setEditingId(d.id);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePhotoPick = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      setForm((prev) => ({ ...prev, photo_url: dataUrl }));
+    } catch {
+      onSnackbar?.('Could not read that image — try a JPG/PNG', 'error');
+    }
   };
 
   const toggleVerified = async (d) => {
@@ -129,7 +167,31 @@ export default function ActingDrivers({ onSnackbar, canEdit }) {
               <TextField fullWidth label="கிடைக்கும் நேரம் / Availability (Tamil)" value={form.schedule_tamil} onChange={handleChange('schedule_tamil')} size="small" />
             </Grid>
             <Grid item xs={6} sm={3}>
-              <TextField fullWidth label="Order" type="number" value={form.display_order} onChange={handleChange('display_order')} size="small" />
+              <TextField fullWidth label="Order" type="number" value={form.display_order} onChange={handleChange('display_order')} size="small" helperText="Lower shows first" />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1.5, border: '1px dashed #bbb', borderRadius: 2 }}>
+                <Avatar src={form.photo_url || undefined} sx={{ width: 56, height: 56 }}>
+                  {VEH_EMOJI[form.vehicle_type] || '🚙'}
+                </Avatar>
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>Driver Photo (optional)</Typography>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Shown in the app instead of the vehicle icon
+                  </Typography>
+                  <Box sx={{ mt: 0.5, display: 'flex', gap: 1 }}>
+                    <Button size="small" variant="outlined" component="label">
+                      📷 Upload
+                      <input hidden type="file" accept="image/*" onChange={handlePhotoPick} />
+                    </Button>
+                    {form.photo_url && (
+                      <Button size="small" color="error" onClick={() => setForm({ ...form, photo_url: '' })}>
+                        Remove
+                      </Button>
+                    )}
+                  </Box>
+                </Box>
+              </Box>
             </Grid>
           </Grid>
           <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
@@ -164,7 +226,12 @@ export default function ActingDrivers({ onSnackbar, canEdit }) {
               drivers.map((d) => (
                 <TableRow key={d.id}>
                   <TableCell>
-                    <strong>{d.name_tamil}</strong>{d.name_english ? ` · ${d.name_english}` : ''}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Avatar src={d.photo_url || undefined} sx={{ width: 32, height: 32 }}>
+                        {VEH_EMOJI[d.vehicle_type] || '🚙'}
+                      </Avatar>
+                      <span><strong>{d.name_tamil}</strong>{d.name_english ? ` · ${d.name_english}` : ''}</span>
+                    </Box>
                   </TableCell>
                   <TableCell>{d.phone || '—'}</TableCell>
                   <TableCell><Chip size="small" label={d.vehicle_type} /></TableCell>

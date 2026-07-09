@@ -19,6 +19,7 @@ import {
   Switch,
   FormControlLabel,
   Tooltip,
+  Avatar,
 } from '@mui/material';
 import { Delete as DeleteIcon, Edit as EditIcon, CheckCircle as CheckCircleIcon, HourglassEmpty as PendingIcon } from '@mui/icons-material';
 import api from '../api';
@@ -51,10 +52,42 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
   const [waSaving, setWaSaving] = useState(false);
 
   const vehicleTypes = [
-    { id: 'auto', label: '🚙 Auto', emoji: '🚙' },
+    { id: 'auto', label: '🛺 Auto', emoji: '🛺' },
     { id: 'van', label: '🚐 Van', emoji: '🚐' },
-    { id: 'taxi', label: '🚕 Taxi', emoji: '🚕' },
+    { id: 'car', label: '🚗 Car', emoji: '🚗' },
+    { id: 'taxi', label: '🚖 Taxi', emoji: '🚖' },
   ];
+
+  // Resize + compress a picked photo to a small data-URL (≤320px JPEG).
+  // Stored directly in the DB — no file storage needed at village scale.
+  const fileToDataUrl = (file) => new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX = 320;
+      const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.72));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Invalid image')); };
+    img.src = url;
+  });
+
+  const handlePhotoPick = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      setForm((prev) => ({ ...prev, photo_url: dataUrl }));
+    } catch {
+      onSnackbar('Could not read that image — try a JPG/PNG', 'error');
+    }
+  };
 
   const loadDrivers = async () => {
     setLoading(true);
@@ -156,6 +189,8 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
       schedule_tamil: driver.schedule_tamil || '',
       phone_verified: driver.phone_verified !== false,
       display_order: driver.display_order || 0,
+      // undefined = untouched (not sent to API); string = set; '' = remove
+      photo_url: driver.photo_url || undefined,
     });
   };
 
@@ -334,6 +369,30 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
                 helperText="Lower number shows first in the app list"
               />
             </Grid>
+            <Grid item xs={12} sm={6}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1.5, border: '1px dashed #bbb', borderRadius: 2 }}>
+                <Avatar src={form.photo_url || undefined} sx={{ width: 56, height: 56 }}>
+                  {vehicleTypes.find((vt) => vt.id === form.vehicle_type)?.emoji || '🛺'}
+                </Avatar>
+                <Box>
+                  <Typography variant="body2" fontWeight={600}>Driver Photo (optional)</Typography>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Shown in the app instead of the vehicle icon
+                  </Typography>
+                  <Box sx={{ mt: 0.5, display: 'flex', gap: 1 }}>
+                    <Button size="small" variant="outlined" component="label">
+                      📷 Upload
+                      <input hidden type="file" accept="image/*" onChange={handlePhotoPick} />
+                    </Button>
+                    {form.photo_url && (
+                      <Button size="small" color="error" onClick={() => setForm({ ...form, photo_url: '' })}>
+                        Remove
+                      </Button>
+                    )}
+                  </Box>
+                </Box>
+              </Box>
+            </Grid>
             <Grid item xs={12}>
               <Box sx={{ p: 1.5, border: '1px solid #e0e0e0', borderRadius: 2, bgcolor: form.phone_verified ? '#f1f8e9' : '#fff8e1' }}>
                 <FormControlLabel
@@ -398,6 +457,7 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
               <TableHead sx={{ bgcolor: '#f5f5f5' }}>
                 <TableRow>
                   <TableCell>Order</TableCell>
+                  <TableCell>Photo</TableCell>
                   <TableCell>Type</TableCell>
                   <TableCell>Name (Tamil)</TableCell>
                   <TableCell>Name (English)</TableCell>
@@ -417,6 +477,11 @@ const AutoDrivers = ({ onSnackbar, canEdit }) => {
                   return (
                     <TableRow key={driver.id} sx={{ opacity: driver.is_active === false ? 0.5 : 1 }}>
                       <TableCell sx={{ fontFamily: 'monospace' }}>{driver.display_order ?? 0}</TableCell>
+                      <TableCell>
+                        <Avatar src={driver.photo_url || undefined} sx={{ width: 36, height: 36 }}>
+                          {typeInfo?.emoji || '🛺'}
+                        </Avatar>
+                      </TableCell>
                       <TableCell>
                         <Chip
                           label={typeInfo?.label || driver.vehicle_type}

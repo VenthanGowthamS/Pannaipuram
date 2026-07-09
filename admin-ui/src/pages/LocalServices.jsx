@@ -260,10 +260,13 @@ const LocalServices = ({ onSnackbar, canEdit }) => {
               <Grid item xs={12} sm={8}>
                 <TextField
                   fullWidth
-                  label="Notes (Tamil)"
+                  multiline
+                  rows={2}
+                  label="More Details (Tamil) — shown in the app 📝"
                   value={form.notes_tamil}
                   onChange={(e) => setForm({ ...form, notes_tamil: e.target.value })}
-                  placeholder="எ.கா. காலை 6-8 மணி மட்டும்..."
+                  placeholder="எ.கா. காலை 6-8 மணி மட்டும், வீட்டுக்கு டெலிவரி உண்டு, விலை..."
+                  helperText="Timing, price, delivery info etc. — appears under the service in the PWA More tab"
                 />
               </Grid>
               <Grid item xs={12} sm={4}>
