@@ -757,7 +757,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // fresh; if a newer build exists the updatefound → SKIP_WAITING →
   // controllerchange flow auto-reloads to it. Lets users pull the latest
   // app straight from the ↻ button (no close/reopen needed).
-  window.PannaiRefreshAll = function() {
+  // silent = true → refresh everything WITHOUT the success toast (used for the
+  // automatic on-open / reconnect refresh so it stays invisible to the user).
+  window.PannaiRefreshAll = function(silent) {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistration().then(function(reg) {
         if (reg) reg.update().catch(function() {});
@@ -771,7 +773,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.More && More.refresh) jobs.push(More.refresh());
     if (window.Announce && Announce.refresh) jobs.push(Announce.refresh());
     var done = function() {
-      if (window.showToast) window.showToast('✅ எல்லாம் புதுப்பிக்கப்பட்டது · All updated');
+      if (!silent && window.showToast) window.showToast('✅ எல்லாம் புதுப்பிக்கப்பட்டது · All updated');
     };
     return Promise.all(jobs).then(done, done);
   };
@@ -781,5 +783,17 @@ document.addEventListener('DOMContentLoaded', function() {
   Bus.init();
   Auto.init();
   switchSection(startSection);
+
+  // ── Fresh-on-open + fresh-on-reconnect ─────────────────
+  // The sections above render instantly from cache (no blank screen during
+  // Render's cold start). Right after that, if the device is online, silently
+  // force-refresh EVERY section from the network — this overwrites the cached
+  // data so an open app is never left showing stale content when connected.
+  if (navigator.onLine !== false) {
+    setTimeout(function() { window.PannaiRefreshAll(true); }, 1200);
+  }
+  // The moment the phone regains internet (e.g. walks back into signal),
+  // pull fresh data for all sections.
+  window.addEventListener('online', function() { window.PannaiRefreshAll(true); });
 
 });
