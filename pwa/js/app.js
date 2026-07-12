@@ -242,7 +242,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // bypassing the HTTP cache. sw.js ships Cache-Control: max-age=14400 (4h),
     // and the default ('imports') honours it — which left Android PWAs stuck
     // on a stale worker (and stale shell) for up to 4h after each deploy.
-    navigator.serviceWorker.register('/pwa/sw.js', { scope: '/pwa/', updateViaCache: 'none' })
+    //
+    // BUT updateViaCache only bypasses the BROWSER cache — not the shared CDN
+    // (GitHub Pages / Fastly) edge cache, which also honours the 4h max-age and
+    // kept serving the OLD sw.js to update checks for hours. Fix: append the
+    // build version as a query string so every release is a UNIQUE URL → always
+    // a CDN cache-miss → the new worker is fetched immediately, no 4h wait.
+    var _swVer = (typeof CACHE_VERSION !== 'undefined') ? CACHE_VERSION : 'x';
+    navigator.serviceWorker.register('/pwa/sw.js?v=' + _swVer, { scope: '/pwa/', updateViaCache: 'none' })
       .then(function(reg) {
         // Proactively check for a new version on every load (network-fresh).
         reg.update().catch(function() {});
