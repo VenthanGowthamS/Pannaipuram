@@ -312,6 +312,25 @@ document.addEventListener('DOMContentLoaded', function() {
     if (h === 'bus' || h === 'auto' || h === 'hospital' || h === 'emergency' || h === 'more') switchSection(h, false);
   });
 
+  // ── Refresh the CURRENT section when the app returns to foreground ──
+  // Installed PWAs stay open for days. Switching tabs already re-fetches
+  // (see switchSection), but if the user just re-opens the app while sitting
+  // on a tab (e.g. More / acting drivers), nothing re-fetched — the page
+  // showed stale data until the ↻ button was pressed. Refresh the active
+  // section on visibility return, throttled so rapid flips don't hammer the API.
+  var _lastSectionRefresh = 0;
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState !== 'visible') return;
+    if (Date.now() - _lastSectionRefresh < 60 * 1000) return;
+    _lastSectionRefresh = Date.now();
+    var id = document.body.dataset.section;
+    if (id === 'bus' && window.Bus && Bus.refresh) Bus.refresh();
+    else if (id === 'auto' && window.Auto && Auto.refresh) Auto.refresh();
+    else if (id === 'hospital' && window.Hospital && Hospital.refresh) Hospital.refresh();
+    else if (id === 'emergency' && window.Emergency && Emergency.refresh) Emergency.refresh();
+    else if (id === 'more' && window.More && More.refresh) More.refresh();
+  });
+
   // Handle deep links (#bus / #auto / #hospital / #emergency / #more in URL)
   var hash = window.location.hash.replace('#', '');
   var startSection = (hash === 'auto' || hash === 'hospital' || hash === 'emergency' || hash === 'more') ? hash : 'bus';

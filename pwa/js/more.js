@@ -35,7 +35,7 @@ var More = (function() {
     var vehTa = VEH_TA[(d.vehicle_type || '').toLowerCase()] || '';
     // Admin-verified driving licence → trust badge
     var dl = d.license_verified === true
-      ? '<span class="acting-dl-chip">🪪 உரிமம் சரிபார்த்தது ✅</span>' : '';
+      ? '<span class="acting-dl-chip">🪪 ஓட்டுநர் உரிமம் சரிபார்க்கப்பட்டது ✅</span>' : '';
     return '<div class="acting-row">' +
       '<div class="acting-avatar">' + avatarHtml(d) + '</div>' +
       '<div class="acting-info">' +
