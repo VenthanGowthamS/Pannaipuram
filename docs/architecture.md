@@ -99,6 +99,10 @@ Data arrives → Service Worker caches it
 Next visit: cached data + background refresh
 ```
 
+**Result:** <500ms initial load. Works offline with stale data.
+
+---
+
 ### 2. User Submits Feedback / Registration
 
 ```
@@ -110,26 +114,55 @@ POST /api/feedback (rate-limited, 30 req/10min/IP)
        ↓
 Render API validates + inserts into Supabase
        ↓
-Admin notified (in Announcements/Feedback tabs)
+User gets toast confirmation ("பதிவு செய்யப்பட்டது")
+       ↓
+Admin notified (in admin panel Feedback tab)
        ↓
 Data live within seconds
 ```
+
+**Example flows:**
+- Bus timing correction → stored, admin reviews, updates official timing
+- Auto driver registration → stored with phone, admin verifies, marks verified badge
+- Service registration → electrician/plumber joins, shows up in "More" tab
+- Announcement feedback → users comment, admin sees all feedback
+
+---
 
 ### 3. Admin Updates Data
 
 ```
 Admin logs in → admin.pannaipuram.com
        ↓
-Edits bus timings, doctor schedules, announcements, etc.
+React + MUI interface (role-based: super_admin, admin, viewer)
        ↓
-Updates stored in Supabase
+Edits bus timings, doctor schedules, auto drivers, announcements, etc.
        ↓
-PWA fetches fresh data on next app open (within 10 min)
+JWT-authenticated API call to /admin/* endpoints (Render)
        ↓
-Service Worker caches new version
+Updates stored in Supabase (PostgreSQL)
        ↓
-All users see updates on next visit
+Service Worker detects new data on background refresh
+       ↓
+PWA fetches fresh data (max 10 min, can be manual refresh)
+       ↓
+All user devices see updates on next app open
+       ↓
+Analytics updated (user dashboard shows install count, daily actives, etc.)
 ```
+
+**Admin capabilities:**
+- 🚌 **Bus Timings** — add corridors, edit departure times
+- 🏥 **Doctors** — manage by hospital, update schedules & notes
+- 🚗 **Auto Drivers** — approve registrations, mark phone verified, upload photo
+- 📞 **Emergency** — add/edit contacts, group by category
+- 🛍️ **Services** — local businesses, contact, details
+- 📢 **Announcements** — push alerts to all installed PWAs (re-fetches on next open)
+- 👥 **Acting Drivers** — approve, manage DL verification status
+- 📊 **PWA Analytics** — see daily unique users, install count, device labels
+- 💬 **Feedback** — review all user submissions (timing corrections, registrations, etc.)
+
+**One admin manages everything. Zero backend developers needed.**
 
 ---
 
