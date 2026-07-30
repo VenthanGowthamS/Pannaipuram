@@ -52,12 +52,23 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 - **Responsive (v46):** `pwa/css/responsive.css` (loaded LAST so it wins). Mobile ≤699px unchanged (single column). ≥700px: fluid container (max 1000/1140px), flat card lists (`#driver-list`, `.em-group-cards`, `.hd-docs`, `#more-acting`, `.more-svc-cards`) become multi-column grids; bus stays a centered 640px column (accordion+sibling timetables don't grid). Uses `html body` specificity to beat base `body{max-width:480}`.
 - **Install prompts = PHONES ONLY (v46):** `window._isPhone()` in `app.js` gates the install banner + `?install=1` wall + hamburger install item. iPhone/iPod → yes; Android WITH "Mobile" → yes; iPad / Android tablet / desktop / laptop → no.
 - **Acting drivers:** `acting_drivers` table (mirrors `auto_drivers`); migration `backend/src/db/migration_acting_drivers.sql`; admin tab "🔄 Acting Drivers"; shown in PWA மேலும் tab.
-- **Bottom nav (`pwa/css/nav.css`):** uses `grid-auto-flow: column` — auto-fits any number of tabs (don't hardcode column count).
+- **Bottom nav (`pwa/css/nav.css`) — v75:** now a horizontal FLEX SCROLLER (`display:flex; overflow-x:auto`), not a grid. Six tabs with 📰 சங்கமம் in the CENTRE as a filled green circle (`.nav-tab-news`); the rest scroll on narrow phones. **Do not give `.nav-tab-news` a negative `margin-top`** — `overflow-x:auto` forces `overflow-y` to a non-visible value, so anything raised above the bar gets clipped and becomes untappable.
+- **Fixed-nav clearance rule:** EVERY section must reserve space for the fixed bottom nav or its last control sits underneath and cannot be tapped. Use `padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + var(--space-lg))` (see `#section-bulletin`, `#section-auto`). This bit the bulletin like-button in testing.
 - **Render config:** `render.yaml` at repo root with `rootDir: .` ensures full repo is deployed
 - **NEVER edit files inside `backend/public/pwa/`** — that folder was deleted. Edit only in `pwa/`
-- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v70.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
+- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v75.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
+- **PWA writes (v75):** `pwa/js/api.js` now has `apiPost(path, body)` — 20s timeout (a cold Render dyno must not silently drop a villager's post), never cached, and it rejects with the server's own Tamil error string. Use it for every POST; `apiFetch` is read-only.
 - **v70 (July 2026):** announcement dismiss key = `id:textHash` (was bare id) — dismissing used to hide that id FOREVER on the device, so edited/re-published announcements never re-appeared on installed apps. Now editing the text in admin re-surfaces the announcement on all devices; old int-format dismissals are ignored (one-time re-show of active announcements after update). To re-push an announcement to everyone: just edit its text in the admin Announcements tab.
-- **v71 (July 2026):** **Community Bulletin (சங்கமம்)** — new bottom-nav tab 📰 for village news sharing. Users register once with phone (10 digits, 6-9 start) + Tamil name to unlock posting. Posts include: title (Tamil+English optional), content (Tamil+English optional), optional image (≤256KB, auto-compressed base64). Posts go LIVE immediately (no approval needed yet, but moderation layer is ready for future). Admin tab "Community Bulletin" in admin panel shows all posts grouped by status (pending/approved/rejected/archived); can moderate, view full post details + images, delete. Backend: `community_posts` + `community_posters` + `community_posts_daily` tables; `POST /api/bulletin/register`, `POST /api/bulletin/submit`, `GET /api/bulletin`, `/api/bulletin/admin/*` routes. Auto-purge: posts expire after 7 days (expires_at). Daily limit: max 1 post per phone per day (tracked in `community_posts_daily`). Spam protection: 10-char min title, 10-char min content. User confirmation: "Is this important Pannaipuram-related info?" dialog before submit (UX gate, not technical gate). PWA: registration form + post form are collapsible sections in the bulletin tab; posts display with poster name + phone + time-ago + content + optional image thumbnail. Files: `pwa/js/bulletin.js`, `pwa/css/bulletin.css`, `pwa/index.html` (new section + nav button), `backend/src/routes/bulletin.js`, `backend/src/db/migration_community_posts.sql`, admin `Bulletin.jsx`.
+- **v75 (July 2026) — Community Bulletin, corrected + extended.** Supersedes the v71 notes below, which described code that never worked (`window.API` and `pool.getClient()` did not exist, and the admin routes had no auth).
+  - **Model:** anyone reads and likes with no registration. Posting needs a one-time phone (10 digits, 6-9) + Tamil name. New posters' posts are **`pending`** until an admin approves; posters flagged **`is_trusted`** skip the queue and publish instantly; **`is_blocked`** posters cannot post or re-register their way out.
+  - **Likes:** ❤️ toggle keyed on the existing `pannai:visitor-id` device id (no login). One like per device per post, enforced by a UNIQUE constraint. Optimistic UI that rolls back if the request fails.
+  - **Images:** client resizes to 1024px and steps JPEG quality down until under ~80KB (verified: a 217KB 1600×1200 photo → 72KB). Server rejects non-images and anything over 150KB.
+  - **Routes:** public `GET /api/bulletin` (`?device_id=` marks your likes), `POST /api/bulletin/register`, `POST /api/bulletin/submit`, `POST /api/bulletin/:id/like`. Admin, all JWT-protected under `/admin/bulletin`: `GET /` (`?status=`), `PATCH /:id/status`, `DELETE /:id`, `GET /posters/list`, `PATCH /posters/:id`, `DELETE /posters/:id`. Mutations also require role admin/super_admin.
+  - **Rate limits** are per IP and deliberately loose (60 writes / 300 likes per 10 min) because rural CGNAT puts a whole village behind a few IPs — a tight cap would lock out everyone on one tower. The real per-person control is 1 post per phone per day. Limiters skip entirely when `NODE_ENV !== 'production'`.
+  - **Migrations:** `migration_community_posts.sql` (tables) and **separately** `migration_community_purge.sql` (pg_cron nightly delete). They are split on purpose: if pg_cron isn't enabled, a combined script would error and roll back the table creation.
+  - **Capacity:** ~80KB/image × 1 post/person/day × 7-day expiry ≈ 56MB for 100 daily posters, inside the 500MB Supabase tier — but ONLY if the purge job runs. Without it `expires_at` merely hides rows and the DB grows forever.
+  - **Tests:** `backend/test/bulletin.test.js` — 44 tests, all green.
+- **v71 (July 2026) — ⚠️ SUPERSEDED BY v75, describes broken code:** **Community Bulletin (சங்கமம்)** — new bottom-nav tab 📰 for village news sharing. Users register once with phone (10 digits, 6-9 start) + Tamil name to unlock posting. Posts include: title (Tamil+English optional), content (Tamil+English optional), optional image (≤256KB, auto-compressed base64). Posts go LIVE immediately (no approval needed yet, but moderation layer is ready for future). Admin tab "Community Bulletin" in admin panel shows all posts grouped by status (pending/approved/rejected/archived); can moderate, view full post details + images, delete. Backend: `community_posts` + `community_posters` + `community_posts_daily` tables; `POST /api/bulletin/register`, `POST /api/bulletin/submit`, `GET /api/bulletin`, `/api/bulletin/admin/*` routes. Auto-purge: posts expire after 7 days (expires_at). Daily limit: max 1 post per phone per day (tracked in `community_posts_daily`). Spam protection: 10-char min title, 10-char min content. User confirmation: "Is this important Pannaipuram-related info?" dialog before submit (UX gate, not technical gate). PWA: registration form + post form are collapsible sections in the bulletin tab; posts display with poster name + phone + time-ago + content + optional image thumbnail. Files: `pwa/js/bulletin.js`, `pwa/css/bulletin.css`, `pwa/index.html` (new section + nav button), `backend/src/routes/bulletin.js`, `backend/src/db/migration_community_posts.sql`, admin `Bulletin.jsx`.
 - **v69 (July 2026):** acting-driver DL badge — `acting_drivers.license_verified` (migration `migration_acting_license.sql`), admin toggle in Acting Drivers tab, PWA green "🪪 உரிமம் சரிபார்த்தது ✅" chip; doctor-level "More Details" — `doctors.notes_tamil` (migration `migration_doctor_notes.sql`), one multiline admin field shown ONCE as teal 📝 box under the doctor's timetable; PWA also auto-hoists schedule notes duplicated across ≥2 days into that single 📝 box (fixes SP Clinic / Dr. Shanmugapriya note repeated on all 7 day rows).
 - **v68 (July 2026):** auto tab grouped by vehicle type (🛺/🚐/🚗/🚖 headers + count badges; unknown types → "மற்ற வண்டிகள்"); auto reg form collapsible `<details>` (`#auto-reg`); driver photos — admin uploads, browser-resized to ≤320px JPEG data-URL in `photo_url` (migration `backend/src/db/migration_driver_photos.sql` must run in Supabase SQL Editor; API degrades gracefully pre-migration); service `notes_tamil` shown as 📝 line in More tab (admin field relabeled "More Details"); Auto + More silently force-refresh 3s after first cached render so admin edits/order changes reach the SCREEN, not just the cache; Announce also re-fetches on visibilitychange (≥2 min gap) + every 15 min → announcements now reach installed PWAs that stay open for days; acting-driver admin sends `display_order` as int (was raw string; '' broke the UPDATE with a COALESCE int-cast error).
 - **Visible app version (v67):** ☰ drawer footer + About show CACHE_VERSION (e.g. "v67") so any device's running build can be confirmed at a glance. Announce re-fetches fresh from network 4s after the instant cached render.
@@ -84,6 +95,30 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 
 ## Rules (Always Follow These)
 
+- **TEST RULE (mandatory) — every change ships with a test:**
+  1. **New API endpoint → new test** in the matching `backend/test/*.test.js`. Cover the happy path AND every guard (bad input, missing auth, limits). A feature with no failing-case test is not done.
+  2. **Changed an endpoint → update its existing test** in the same commit. Never leave a test asserting old behaviour.
+  3. **Run the FULL regression before every push** — not just the file you touched:
+     ```bash
+     cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/backend && node test/admin_crud.test.js && node test/bulletin.test.js
+     ```
+  4. **Every admin route needs a "rejects without a token" test.** `/api/*` is public; `/admin/*` must 401 unauthenticated and 403 on a bad token. This is how the v71 unauthenticated-moderation hole would have been caught.
+  5. **Report real numbers** ("91 passed, 0 failed"). Never say "tests pass" without having run them in that session.
+  6. **A test that writes must clean up after itself** (see `cleanup()` in `bulletin.test.js`) and must never reuse a real villager's phone number — check the live poster list first.
+- **LOCAL TEST DATABASE (no Supabase needed, safe to break):**
+  ```bash
+  export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"; export LC_ALL="en_US.UTF-8"
+  pg_ctl -D /opt/homebrew/var/postgresql@16 -l /tmp/pg16.log start   # LC_ALL is required on macOS
+  createdb pannai_test
+  cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/backend
+  psql -d pannai_test -f src/db/schema.sql
+  for f in src/db/migration_*.sql; do psql -d pannai_test -f "$f"; done   # skip migration_community_purge.sql (needs pg_cron)
+  psql -d pannai_test -c "ALTER TABLE auto_drivers ADD COLUMN IF NOT EXISTS phone_verified BOOLEAN DEFAULT FALSE;"
+  DATABASE_URL="postgresql://$USER@localhost:5432/pannai_test" JWT_SECRET="local-test" NODE_ENV=development PORT=3000 node src/app.js
+  # then: API_BASE=http://localhost:3000 node test/bulletin.test.js
+  ```
+  Seed an admin first: `INSERT INTO admin_users (email,password_hash,role,is_active) VALUES ('venthan89@gmail.com', '<bcrypt of admin123>', 'super_admin', true);`
+  Rate limiters auto-disable when `NODE_ENV !== 'production'` so local runs are deterministic.
 - **PRODUCTION VERIFICATION RULE (mandatory):** after every PWA change — (1) bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together, (2) commit + push, (3) **verify ON PRODUCTION, never just localhost**: `curl -s "https://app.pannaipuram.com/sw.js?x=$RANDOM" | grep CACHE` must show the new version, AND grep the deployed file for the actual changed rule/text (e.g. `curl -s ".../css/responsive.css?x=$RANDOM" | grep "width: 62px"`). Only report "done" after the live check passes. Local preview alone is NOT verification.
 - Fix **ONE issue at a time** — don't chain multiple fixes without checking with Venthan
 - After each fix, **run the relevant test/build** to verify it worked
@@ -442,11 +477,15 @@ Future<void> _fetchDoctors() async {
 cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/backend && node -c src/app.js && echo "✅ OK"
 ```
 
-### 2. All API tests (52 tests) — run from Mac terminal only
+### 2. Full regression (91 admin/API + 44 bulletin = 135 tests)
 ```bash
-cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/backend && node test/admin_crud.test.js
+cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/backend && node test/admin_crud.test.js && node test/bulletin.test.js
 ```
-> Note: Tests target https://pannaipuram-api.onrender.com — cannot run from Cowork VM (outbound proxy blocks Render). Run from your Mac terminal.
+> Defaults: `admin_crud` targets production, `bulletin` targets `localhost:3000`.
+> Point either at a target with `API_BASE=...`. Prefer the local test DB (see
+> "LOCAL TEST DATABASE" in Rules) — `bulletin.test.js` writes rows, and running
+> it against production creates and deletes real records.
+> Cannot run from Cowork VM (outbound proxy blocks Render). Run from your Mac terminal.
 
 ### 3. Admin UI build
 ```bash

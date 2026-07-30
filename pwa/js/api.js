@@ -2,7 +2,7 @@
 // Three-tier cache: in-memory → localStorage → network.
 // localStorage survives reloads, making the app usable offline after first load.
 var _mem = {};
-var CACHE_VERSION = 'pannai-v74';
+var CACHE_VERSION = 'pannai-v75';
 
 // API base — auto-detects hosting environment:
 //   app.pannaipuram.com  → api.pannaipuram.com  (custom domain, future)
@@ -97,6 +97,39 @@ window.PannaiBackgroundRefresh = function(path) {
   networkFetch(path, false).catch(function() {});
 };
 
+// POST — never cached, never served stale, and given a longer timeout than
+// reads because the user is waiting on a write (a cold Render dyno must not
+// silently drop their post). Rejects with the server's Tamil error message.
+var POST_TIMEOUT_MS = 20000;
+
+function apiPost(path, body) {
+  var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var timer = setTimeout(function() { if (ctrl) ctrl.abort(); }, POST_TIMEOUT_MS);
+
+  return fetch(apiUrl(path), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body || {}),
+    signal: ctrl ? ctrl.signal : undefined,
+  })
+    .then(function(resp) {
+      return resp.json()
+        .catch(function() { throw new Error('சர்வர் பதில் சரியில்ல'); })
+        .then(function(json) {
+          // Surface the server's own message (Tamil) rather than "HTTP 429"
+          if (!resp.ok || !json.success) {
+            throw new Error(json.error || ('HTTP ' + resp.status));
+          }
+          return json.data;
+        });
+    })
+    .catch(function(err) {
+      if (err && err.name === 'AbortError') throw new Error('நெட்வொர்க் மெதுவா இருக்கு — again try பண்ணுங்க');
+      throw err;
+    })
+    .finally(function() { clearTimeout(timer); });
+}
+
 var PannaiAPI = {
   // Batch: corridors + all timings in ONE request (replaces 18 round trips)
   getBusAll:       function(force) { return apiFetch('/api/bus/all', { force: force }); },
@@ -111,4 +144,16 @@ var PannaiAPI = {
   getActingDrivers:function(force) { return apiFetch('/api/acting/drivers', { force: force }); },
   getServices:     function(force) { return apiFetch('/api/services', { force: force }); },
   getAnnouncements:function(force) { return apiFetch('/api/announcements', { force: force }); },
+
+  // ── Community Bulletin (சங்கமம்) ──
+  getBulletin:      function(deviceId, force) {
+    return apiFetch('/api/bulletin?device_id=' + encodeURIComponent(deviceId || ''), { force: force });
+  },
+  registerPoster:   function(payload) { return apiPost('/api/bulletin/register', payload); },
+  submitPost:       function(payload) { return apiPost('/api/bulletin/submit', payload); },
+  likePost:         function(id, deviceId) {
+    return apiPost('/api/bulletin/' + id + '/like', { device_id: deviceId });
+  },
 };
+
+window.PannaiAPI = PannaiAPI;

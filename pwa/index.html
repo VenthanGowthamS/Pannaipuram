@@ -675,73 +675,87 @@
     <!-- COMMUNITY BULLETIN SECTION -->
     <section id="section-bulletin" class="section notranslate" translate="no" hidden>
 
-      <div id="bulletin-tab">
-        <!-- Registration Section -->
-        <div class="bulletin-reg-section">
-          <h3>📰 சங்கமம் — பண்ணைப்புரம் செய்திகள்</h3>
-          <p style="color:#666; font-size:13px; margin:0 0 12px 0;">முக்கியமான ஊர் செய்திகளை பகிருங்க. சிறிய registration (பெயர் + phone) போதும்.</p>
-
-          <form id="bulletin-reg-form" novalidate>
-            <div class="form-group">
-              <label for="bulletin-phone">தொலைபேசி எண் <span style="color:#c62828;">*</span></label>
-              <input id="bulletin-phone" type="tel" placeholder="10 இலக்க number" maxlength="10" required inputmode="numeric">
-              <p id="bulletin-phone-err" hidden></p>
-            </div>
-            <div class="form-group">
-              <label for="bulletin-name-ta">பெயர் (தமிழ்) <span style="color:#c62828;">*</span></label>
-              <input id="bulletin-name-ta" type="text" placeholder="உங்க பெயர்" maxlength="100" required>
-            </div>
-            <div class="form-group">
-              <label for="bulletin-name-en">பெயர் (English)</label>
-              <input id="bulletin-name-en" type="text" placeholder="Your name (optional)" maxlength="100">
-            </div>
-            <button type="submit" id="bulletin-reg-btn">பதிவு செய்க</button>
-            <p id="bulletin-reg-result" hidden></p>
-          </form>
-        </div>
-
-        <!-- Post Submission Section (shown after registration) -->
-        <div id="bulletin-post-section">
-          <h3>📰 செய்தி பகிரவும்</h3>
-          <form id="bulletin-post-form" novalidate>
-            <div class="form-group">
-              <label for="bulletin-title-ta">தலைப்பு (தமிழ்) <span style="color:#c62828;">*</span></label>
-              <input id="bulletin-title-ta" type="text" placeholder="செய்தியின் தலைப்பு" maxlength="200" required>
-            </div>
-            <div class="form-group">
-              <label for="bulletin-title-en">தலைப்பு (English)</label>
-              <input id="bulletin-title-en" type="text" placeholder="Headline (optional)" maxlength="200">
-            </div>
-            <div class="form-group">
-              <label for="bulletin-content-ta">விபரம் (தமிழ்) <span style="color:#c62828;">*</span></label>
-              <textarea id="bulletin-content-ta" placeholder="என்ன நடந்தது? விளக்கமாக சொல்லுங்க" maxlength="1000" required></textarea>
-            </div>
-            <div class="form-group">
-              <label for="bulletin-content-en">விபரம் (English)</label>
-              <textarea id="bulletin-content-en" placeholder="Details in English (optional)" maxlength="1000"></textarea>
-            </div>
-            <div class="form-group">
-              <label for="bulletin-image">ছবি (அறிமுக)</label>
-              <input id="bulletin-image" type="file" accept="image/*">
-              <div id="bulletin-image-preview"></div>
-            </div>
-            <button type="submit" id="bulletin-post-btn">பகிரவும்</button>
-            <p id="bulletin-post-result" hidden></p>
-          </form>
-        </div>
-
-        <!-- Posts Feed -->
-        <div style="margin-top: 24px;">
-          <h3 style="padding: 0 12px; font-size: 15px; color: #2c3e50;">সংবাদ Feed</h3>
-          <div id="bulletin-posts"></div>
-        </div>
+      <!-- Deep-teal header -->
+      <div class="bl-header">
+        <button id="bulletin-refresh-btn" class="bl-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
+        <p class="bl-header-ta">ஊர் செய்திகள்</p>
+        <p class="bl-header-en">Village News · சங்கமம்</p>
       </div>
+
+      <!-- One-time registration (hidden once registered) -->
+      <div id="bulletin-reg" class="bl-panel">
+        <div class="bl-panel-head">
+          <span class="bl-panel-ic">✍️</span>
+          <div class="bl-panel-titles">
+            <span class="bl-panel-ta">செய்தி பகிர பதிவு பண்ணுங்க</span>
+            <span class="bl-panel-en">Register once to post</span>
+          </div>
+        </div>
+        <p class="bl-panel-note">படிக்க யாருக்கும் பதிவு தேவையில்ல. பகிரணும்னா மட்டும் ஒரு தடவை பேரும் நம்பரும் கொடுங்க.</p>
+        <form id="bulletin-reg-form" class="bl-form" novalidate>
+          <label class="bl-label" for="bulletin-phone">மொபைல் எண் <span class="bl-req">*</span></label>
+          <input id="bulletin-phone" class="bl-input" type="tel" placeholder="10 இலக்க மொபைல் எண்"
+                 maxlength="10" required inputmode="numeric" autocomplete="tel" pattern="[6-9][0-9]{9}">
+          <p id="bulletin-phone-err" class="bl-field-err" hidden></p>
+
+          <label class="bl-label" for="bulletin-name-ta">பேரு (தமிழ்) <span class="bl-req">*</span></label>
+          <input id="bulletin-name-ta" class="bl-input" type="text" placeholder="உங்க பேரு" maxlength="100" required autocomplete="name">
+
+          <label class="bl-label" for="bulletin-name-en">பேரு (English)</label>
+          <input id="bulletin-name-en" class="bl-input" type="text" placeholder="Your name — optional" maxlength="100">
+
+          <button type="submit" id="bulletin-reg-btn" class="bl-btn">பதிவு பண்ணுங்க</button>
+          <p id="bulletin-reg-result" class="bl-result" hidden></p>
+        </form>
+      </div>
+
+      <!-- Composer (revealed after registration) -->
+      <div id="bulletin-compose" class="bl-panel" hidden>
+        <div id="bulletin-whoami" class="bl-whoami"></div>
+        <details class="bl-compose">
+          <summary class="bl-compose-cta">
+            <span class="bl-compose-ic">📢</span>
+            <span class="bl-compose-txt">
+              <span class="bl-compose-ta">புது செய்தி பகிருங்க</span>
+              <span class="bl-compose-en">Share village news</span>
+            </span>
+            <span class="bl-compose-caret">▾</span>
+          </summary>
+          <form id="bulletin-post-form" class="bl-form" novalidate>
+            <label class="bl-label" for="bulletin-title-ta">தலைப்பு (தமிழ்) <span class="bl-req">*</span></label>
+            <input id="bulletin-title-ta" class="bl-input" type="text" placeholder="எ.கா: நாளைக்கு தண்ணி வராது" maxlength="200" required>
+
+            <label class="bl-label" for="bulletin-title-en">தலைப்பு (English)</label>
+            <input id="bulletin-title-en" class="bl-input" type="text" placeholder="Headline — optional" maxlength="200">
+
+            <label class="bl-label" for="bulletin-content-ta">விபரம் (தமிழ்) <span class="bl-req">*</span></label>
+            <textarea id="bulletin-content-ta" class="bl-input bl-textarea" rows="4"
+                      placeholder="என்ன நடந்துச்சு? எங்க, எப்போன்னு விளக்கமா சொல்லுங்க" maxlength="1000" required></textarea>
+
+            <label class="bl-label" for="bulletin-content-en">விபரம் (English)</label>
+            <textarea id="bulletin-content-en" class="bl-input bl-textarea" rows="2"
+                      placeholder="Details in English — optional" maxlength="1000"></textarea>
+
+            <label class="bl-label" for="bulletin-image">படம் சேர்க்கலாம் (விருப்பம்)</label>
+            <input id="bulletin-image" class="bl-input bl-file" type="file" accept="image/*">
+            <div id="bulletin-image-preview" class="bl-img-preview"></div>
+
+            <button type="submit" id="bulletin-post-btn" class="bl-btn">பகிருங்க</button>
+            <p id="bulletin-post-result" class="bl-result" hidden></p>
+          </form>
+        </details>
+      </div>
+
+      <!-- Live feed -->
+      <div id="bulletin-posts" class="bl-feed"></div>
 
     </section>
 
   </main>
 
   <!-- ── Bottom Navigation ────────────────────────────── -->
+  <!-- News sits dead-centre and raised; the other five scroll horizontally
+       around it on narrow phones. -->
   <nav id="bottom-nav" role="tablist" aria-label="Main navigation">
     <button class="nav-tab active" role="tab" data-section="bus" aria-selected="true" aria-label="Bus timings">
       <span class="nav-icon" aria-hidden="true">🚌</span>
@@ -750,6 +764,10 @@
     <button class="nav-tab" role="tab" data-section="auto" aria-selected="false" aria-label="Auto and van transport">
       <span class="nav-icon" aria-hidden="true">🛺</span>
       <span class="nav-label">ஆட்டோ</span>
+    </button>
+    <button class="nav-tab nav-tab-news" role="tab" data-section="bulletin" aria-selected="false" aria-label="Village news bulletin">
+      <span class="nav-icon" aria-hidden="true">📰</span>
+      <span class="nav-label">சங்கமம்</span>
     </button>
     <button class="nav-tab" role="tab" data-section="hospital" aria-selected="false" aria-label="Hospitals and doctors">
       <span class="nav-icon" aria-hidden="true">🏥</span>
@@ -762,10 +780,6 @@
     <button class="nav-tab" role="tab" data-section="more" aria-selected="false" aria-label="More services">
       <span class="nav-icon" aria-hidden="true">➕</span>
       <span class="nav-label">மேலும்</span>
-    </button>
-    <button class="nav-tab" role="tab" data-section="bulletin" aria-selected="false" aria-label="Community bulletin">
-      <span class="nav-icon" aria-hidden="true">📰</span>
-      <span class="nav-label">சங்கமம்</span>
     </button>
   </nav>
 

@@ -9,5 +9,8 @@ const pool = new Pool({
 
 module.exports = {
   query: (text, params) => pool.query(text, params),
+  // Checked-out client for multi-statement transactions (BEGIN/COMMIT).
+  // Caller MUST client.release() in a finally block.
+  getClient: () => pool.connect(),
   pool
 };

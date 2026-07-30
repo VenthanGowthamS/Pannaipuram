@@ -1,39 +1,55 @@
+// ── Community Bulletin (சங்கமம்) — PUBLIC routes ──────────────────
+// Model: registration required to post · admin approves · trusted posters
+//        skip the queue · anyone can view + like · 7-day expiry.
+// Admin/moderation routes live in routes/admin/bulletin.js (JWT-protected).
 const express = require('express');
 const router  = express.Router();
-const { query } = require('../db/pool');
+const { query, getClient } = require('../db/pool');
 
-// Validate Indian phone number (exactly 10 digits, starts with 6/7/8/9)
+// Indian mobile: exactly 10 digits starting 6/7/8/9
 function isValidPhone(phone) {
-  const p = String(phone).trim();
-  return /^[6-9]\d{9}$/.test(p);
+  return /^[6-9]\d{9}$/.test(String(phone == null ? '' : phone).trim());
 }
 
-// ═════════════════════════════════════════════════════════════════════
-// PUBLIC API — Anyone can view posts
-// ═════════════════════════════════════════════════════════════════════
+// Client compresses to ~80KB; allow headroom but reject anything that would
+// bloat the 500MB Supabase tier. Matches express.json({ limit: '1mb' }).
+const MAX_IMAGE_BYTES = 150 * 1024;
 
-// GET /api/bulletin — fetch active posts (approved + not expired)
+function isValidImage(url) {
+  return typeof url === 'string' && /^data:image\/(jpeg|jpg|png|webp);base64,/i.test(url);
+}
+
+const MIN_TITLE   = 5;
+const MIN_CONTENT = 10;
+
+// ── GET /api/bulletin — live feed (approved + unexpired) ──────────
+// ?device_id=<id> marks which posts this device already liked.
 router.get('/', async (req, res) => {
+  const deviceId = req.query.device_id ? String(req.query.device_id).slice(0, 64) : null;
   try {
     const result = await query(
       `SELECT
-        p.id,
-        p.title_tamil,
-        p.title_english,
-        p.content_tamil,
-        p.content_english,
-        p.image_url,
-        p.created_at,
-        poster.name_tamil,
-        poster.name_english,
-        poster.phone
-      FROM community_posts p
-      JOIN community_posters poster ON p.poster_id = poster.id
-      WHERE p.status = 'approved'
-        AND p.expires_at > NOW()
-      ORDER BY p.created_at DESC
-      LIMIT 100`,
-      []
+         p.id,
+         p.title_tamil,
+         p.title_english,
+         p.content_tamil,
+         p.content_english,
+         p.image_url,
+         p.created_at,
+         poster.name_tamil,
+         poster.name_english,
+         poster.is_trusted,
+         COUNT(l.id)::int AS like_count,
+         COALESCE(BOOL_OR(l.device_id = $1), FALSE) AS liked_by_me
+       FROM community_posts p
+       JOIN community_posters poster ON p.poster_id = poster.id
+       LEFT JOIN community_post_likes l ON l.post_id = p.id
+       WHERE p.status = 'approved'
+         AND p.expires_at > NOW()
+       GROUP BY p.id, poster.id
+       ORDER BY p.created_at DESC
+       LIMIT 100`,
+      [deviceId]
     );
     res.json({ success: true, data: result.rows });
   } catch (err) {
@@ -42,243 +58,214 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ═════════════════════════════════════════════════════════════════════
-// USER REGISTRATION — POST /api/bulletin/register
-// ═════════════════════════════════════════════════════════════════════
-
+// ── POST /api/bulletin/register — one-time phone + name ───────────
+// Idempotent: re-registering the same phone returns the same poster_id,
+// so a villager switching devices just registers again.
 router.post('/register', async (req, res) => {
   const { phone, name_tamil, name_english } = req.body || {};
 
-  // Validate phone
   if (!isValidPhone(phone)) {
     return res.status(400).json({
       success: false,
-      error: 'Invalid phone number. Must be 10 digits starting with 6/7/8/9'
+      error: '10 இலக்க மொபைல் எண் வேணும் (6/7/8/9-ல் தொடங்கணும்)',
     });
   }
-
-  // Validate name
   if (!name_tamil || String(name_tamil).trim().length < 2) {
-    return res.status(400).json({
-      success: false,
-      error: 'Name required (min 2 characters)'
-    });
+    return res.status(400).json({ success: false, error: 'பெயர் வேணும்' });
   }
 
   try {
-    const result = await query(
-      `INSERT INTO community_posters (phone, name_tamil, name_english)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (phone) DO UPDATE SET name_tamil = $2, name_english = $3
-       RETURNING id, phone, name_tamil, name_english, registered_at`,
-      [String(phone).trim(), String(name_tamil).trim(), name_english ? String(name_english).trim() : null]
+    // Blocked posters must not be silently re-enabled by re-registering.
+    const existing = await query(
+      'SELECT id, is_blocked FROM community_posters WHERE phone = $1',
+      [String(phone).trim()]
     );
-    const poster = result.rows[0];
-    res.json({
-      success: true,
-      data: {
-        poster_id: poster.id,
-        phone: poster.phone,
-        name_tamil: poster.name_tamil
-      }
-    });
-  } catch (err) {
-    console.error('bulletin register error:', err);
-    res.status(500).json({ success: false, error: 'Registration failed' });
-  }
-});
-
-// ═════════════════════════════════════════════════════════════════════
-// POST A BULLETIN — POST /api/bulletin/submit
-// ═════════════════════════════════════════════════════════════════════
-
-router.post('/submit', async (req, res) => {
-  const {
-    poster_id,
-    title_tamil,
-    title_english,
-    content_tamil,
-    content_english,
-    image_url
-  } = req.body || {};
-
-  // Validate poster_id
-  if (!poster_id || !Number.isInteger(Number(poster_id)) || Number(poster_id) <= 0) {
-    return res.status(400).json({ success: false, error: 'Invalid poster_id' });
-  }
-
-  // Validate titles
-  if (!title_tamil || String(title_tamil).trim().length < 5) {
-    return res.status(400).json({ success: false, error: 'Title required (min 5 characters)' });
-  }
-
-  // Validate content
-  if (!content_tamil || String(content_tamil).trim().length < 10) {
-    return res.status(400).json({ success: false, error: 'Content required (min 10 characters)' });
-  }
-
-  // Validate image size if provided (max 256KB)
-  if (image_url && image_url.length > 256 * 1024) {
-    return res.status(400).json({ success: false, error: 'Image too large (max 256KB)' });
-  }
-
-  const client = await require('../db/pool').getClient();
-  try {
-    await client.query('BEGIN');
-
-    // Check if poster exists
-    const posterCheck = await client.query(
-      'SELECT id FROM community_posters WHERE id = $1',
-      [Number(poster_id)]
-    );
-    if (posterCheck.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ success: false, error: 'Poster not found. Register first.' });
-    }
-
-    // Check daily post limit (max 1 post per day)
-    const today = new Date().toISOString().split('T')[0];
-    const dailyCheck = await client.query(
-      `SELECT count FROM community_posts_daily
-       WHERE poster_id = $1 AND post_date = $2`,
-      [Number(poster_id), today]
-    );
-
-    if (dailyCheck.rows.length > 0 && dailyCheck.rows[0].count >= 1) {
-      await client.query('ROLLBACK');
-      return res.status(429).json({
+    if (existing.rows.length > 0 && existing.rows[0].is_blocked) {
+      return res.status(403).json({
         success: false,
-        error: 'Daily post limit reached. Try again tomorrow.'
+        error: 'இந்த எண்ணுக்கு பதிவு அனுமதி இல்லை',
       });
     }
 
-    // Insert post (status = 'approved' by default, goes live immediately)
-    const postResult = await client.query(
-      `INSERT INTO community_posts
-        (poster_id, title_tamil, title_english, content_tamil, content_english, image_url, status)
-       VALUES ($1, $2, $3, $4, $5, $6, 'approved')
-       RETURNING id, created_at`,
+    const result = await query(
+      `INSERT INTO community_posters (phone, name_tamil, name_english)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (phone) DO UPDATE
+         SET name_tamil = EXCLUDED.name_tamil,
+             name_english = EXCLUDED.name_english
+       RETURNING id, phone, name_tamil, name_english, is_trusted`,
       [
-        Number(poster_id),
+        String(phone).trim(),
+        String(name_tamil).trim(),
+        name_english ? String(name_english).trim() : null,
+      ]
+    );
+    const p = result.rows[0];
+    res.json({
+      success: true,
+      data: {
+        poster_id: p.id,
+        phone: p.phone,
+        name_tamil: p.name_tamil,
+        is_trusted: p.is_trusted === true,
+      },
+    });
+  } catch (err) {
+    console.error('bulletin register error:', err);
+    res.status(500).json({ success: false, error: 'பதிவு தோல்வி' });
+  }
+});
+
+// ── POST /api/bulletin/submit — create a post ─────────────────────
+// Trusted posters → 'approved' (instant). Everyone else → 'pending'.
+router.post('/submit', async (req, res) => {
+  const {
+    poster_id, title_tamil, title_english,
+    content_tamil, content_english, image_url,
+  } = req.body || {};
+
+  const pid = Number(poster_id);
+  if (!Number.isInteger(pid) || pid <= 0) {
+    return res.status(400).json({ success: false, error: 'முதலில் பதிவு செய்யுங்க' });
+  }
+  if (!title_tamil || String(title_tamil).trim().length < MIN_TITLE) {
+    return res.status(400).json({ success: false, error: `தலைப்பு குறைந்தது ${MIN_TITLE} எழுத்து வேணும்` });
+  }
+  if (!content_tamil || String(content_tamil).trim().length < MIN_CONTENT) {
+    return res.status(400).json({ success: false, error: `விபரம் குறைந்தது ${MIN_CONTENT} எழுத்து வேணும்` });
+  }
+  if (image_url != null && image_url !== '') {
+    if (!isValidImage(image_url)) {
+      return res.status(400).json({ success: false, error: 'படம் சரியில்லை (JPEG/PNG/WebP மட்டும்)' });
+    }
+    if (image_url.length > MAX_IMAGE_BYTES) {
+      return res.status(400).json({ success: false, error: 'படம் ரொம்ப பெரிசு (அதிகபட்சம் 150KB)' });
+    }
+  }
+
+  const client = await getClient();
+  try {
+    await client.query('BEGIN');
+
+    const posterRes = await client.query(
+      'SELECT id, is_trusted, is_blocked FROM community_posters WHERE id = $1 FOR UPDATE',
+      [pid]
+    );
+    if (posterRes.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ success: false, error: 'முதலில் பதிவு செய்யுங்க' });
+    }
+    if (posterRes.rows[0].is_blocked) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ success: false, error: 'உங்களுக்கு பதிவிட அனுமதி இல்லை' });
+    }
+
+    // One post per poster per day. The row lock above serialises concurrent
+    // submits from the same poster, so a double-tap can't slip two through.
+    const today = new Date().toISOString().slice(0, 10);
+    const daily = await client.query(
+      'SELECT count FROM community_posts_daily WHERE poster_id = $1 AND post_date = $2',
+      [pid, today]
+    );
+    if (daily.rows.length > 0 && daily.rows[0].count >= 1) {
+      await client.query('ROLLBACK');
+      return res.status(429).json({
+        success: false,
+        error: 'ஒரு நாளைக்கு ஒரு செய்தி மட்டுமே — நாளைக்கு முயற்சி பண்ணுங்க',
+      });
+    }
+
+    const status = posterRes.rows[0].is_trusted === true ? 'approved' : 'pending';
+
+    const postRes = await client.query(
+      `INSERT INTO community_posts
+         (poster_id, title_tamil, title_english, content_tamil, content_english, image_url, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, status, created_at`,
+      [
+        pid,
         String(title_tamil).trim(),
         title_english ? String(title_english).trim() : null,
         String(content_tamil).trim(),
         content_english ? String(content_english).trim() : null,
-        image_url || null
+        image_url || null,
+        status,
       ]
     );
 
-    // Update daily counter
-    if (dailyCheck.rows.length === 0) {
-      await client.query(
-        `INSERT INTO community_posts_daily (poster_id, post_date, count)
-         VALUES ($1, $2, 1)`,
-        [Number(poster_id), today]
-      );
-    } else {
-      await client.query(
-        `UPDATE community_posts_daily
-         SET count = count + 1
-         WHERE poster_id = $1 AND post_date = $2`,
-        [Number(poster_id), today]
-      );
-    }
+    await client.query(
+      `INSERT INTO community_posts_daily (poster_id, post_date, count)
+       VALUES ($1, $2, 1)
+       ON CONFLICT (poster_id, post_date) DO UPDATE SET count = community_posts_daily.count + 1`,
+      [pid, today]
+    );
 
     await client.query('COMMIT');
     res.json({
       success: true,
       data: {
-        id: postResult.rows[0].id,
-        created_at: postResult.rows[0].created_at
-      }
+        id: postRes.rows[0].id,
+        status: postRes.rows[0].status,
+        created_at: postRes.rows[0].created_at,
+      },
     });
   } catch (err) {
-    await client.query('ROLLBACK');
+    try { await client.query('ROLLBACK'); } catch (_) { /* connection already gone */ }
     console.error('bulletin submit error:', err);
-    res.status(500).json({ success: false, error: 'Failed to submit post' });
+    res.status(500).json({ success: false, error: 'செய்தி அனுப்ப முடியல' });
   } finally {
     client.release();
   }
 });
 
-// ═════════════════════════════════════════════════════════════════════
-// ADMIN API — Moderation (requires auth token in production)
-// ═════════════════════════════════════════════════════════════════════
+// ── POST /api/bulletin/:id/like — toggle like (no registration) ───
+router.post('/:id/like', async (req, res) => {
+  const postId = Number(req.params.id);
+  const deviceId = req.body && req.body.device_id
+    ? String(req.body.device_id).trim().slice(0, 64) : '';
 
-// GET /api/bulletin/admin/pending — view pending posts
-router.get('/admin/pending', async (req, res) => {
-  // TODO: Add JWT auth middleware check
-  try {
-    const result = await query(
-      `SELECT
-        p.id,
-        p.title_tamil,
-        p.title_english,
-        p.content_tamil,
-        p.content_english,
-        p.image_url,
-        p.status,
-        p.created_at,
-        poster.name_tamil,
-        poster.phone
-      FROM community_posts p
-      JOIN community_posters poster ON p.poster_id = poster.id
-      WHERE p.status IN ('pending', 'approved', 'rejected')
-      ORDER BY p.created_at DESC`,
-      []
-    );
-    res.json({ success: true, data: result.rows });
-  } catch (err) {
-    console.error('bulletin admin/pending error:', err);
-    res.status(500).json({ success: false, error: 'Failed to fetch pending posts' });
+  if (!Number.isInteger(postId) || postId <= 0) {
+    return res.status(400).json({ success: false, error: 'Invalid post id' });
   }
-});
-
-// PATCH /api/bulletin/admin/:id/status — approve/reject a post
-router.patch('/admin/:id/status', async (req, res) => {
-  // TODO: Add JWT auth middleware check
-  const { id } = req.params;
-  const { status } = req.body || {};
-
-  if (!['approved', 'rejected', 'archived'].includes(status)) {
-    return res.status(400).json({ success: false, error: 'Invalid status' });
+  if (!deviceId) {
+    return res.status(400).json({ success: false, error: 'device_id required' });
   }
 
   try {
-    const result = await query(
-      `UPDATE community_posts
-       SET status = $1, updated_at = NOW()
-       WHERE id = $2
-       RETURNING id, status, updated_at`,
-      [status, Number(id)]
+    // Only likeable while the post is actually live.
+    const live = await query(
+      `SELECT 1 FROM community_posts
+       WHERE id = $1 AND status = 'approved' AND expires_at > NOW()`,
+      [postId]
     );
-    if (result.rows.length === 0) {
+    if (live.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Post not found' });
     }
-    res.json({ success: true, data: result.rows[0] });
-  } catch (err) {
-    console.error('bulletin admin/status error:', err);
-    res.status(500).json({ success: false, error: 'Failed to update post status' });
-  }
-});
 
-// DELETE /api/bulletin/admin/:id — delete a post
-router.delete('/admin/:id', async (req, res) => {
-  // TODO: Add JWT auth middleware check
-  const { id } = req.params;
-
-  try {
-    const result = await query(
-      'DELETE FROM community_posts WHERE id = $1 RETURNING id',
-      [Number(id)]
+    // Toggle: DELETE returns the row if a like existed, otherwise INSERT.
+    const removed = await query(
+      'DELETE FROM community_post_likes WHERE post_id = $1 AND device_id = $2 RETURNING id',
+      [postId, deviceId]
     );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Post not found' });
+    if (removed.rows.length === 0) {
+      await query(
+        `INSERT INTO community_post_likes (post_id, device_id)
+         VALUES ($1, $2) ON CONFLICT (post_id, device_id) DO NOTHING`,
+        [postId, deviceId]
+      );
     }
-    res.json({ success: true, data: { id: result.rows[0].id } });
+
+    const countRes = await query(
+      'SELECT COUNT(*)::int AS c FROM community_post_likes WHERE post_id = $1',
+      [postId]
+    );
+    res.json({
+      success: true,
+      data: { liked: removed.rows.length === 0, like_count: countRes.rows[0].c },
+    });
   } catch (err) {
-    console.error('bulletin admin delete error:', err);
-    res.status(500).json({ success: false, error: 'Failed to delete post' });
+    console.error('bulletin like error:', err);
+    res.status(500).json({ success: false, error: 'Failed to update like' });
   }
 });
 

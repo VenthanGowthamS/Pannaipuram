@@ -336,17 +336,25 @@ class ApiService {
     return this.request('PUT', `/admin/pwa/visitors/${encodeURIComponent(visitorId)}/label`, { label });
   }
 
-  // Community Bulletin
-  getBulletinPosts() {
-    return this.request('GET', '/api/bulletin/admin/pending');
+  // Community Bulletin (சங்கமம்)
+  getBulletinPosts(status) {
+    return this.request('GET', `/admin/bulletin${status ? `?status=${encodeURIComponent(status)}` : ''}`);
   }
 
   updateBulletinStatus(id, status) {
-    return this.request('PATCH', `/api/bulletin/admin/${id}/status`, { status });
+    return this.request('PATCH', `/admin/bulletin/${id}/status`, { status });
   }
 
   deleteBulletinPost(id) {
-    return this.request('DELETE', `/api/bulletin/admin/${id}`);
+    return this.request('DELETE', `/admin/bulletin/${id}`);
+  }
+
+  getBulletinPosters() {
+    return this.request('GET', '/admin/bulletin/posters/list');
+  }
+
+  updateBulletinPoster(id, flags) {
+    return this.request('PATCH', `/admin/bulletin/posters/${id}`, flags);
   }
 }
 

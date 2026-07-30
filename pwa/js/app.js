@@ -299,6 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (id === 'emergency' && window.Emergency) Emergency.init();
     if (id === 'hospital' && window.Hospital) Hospital.init();
     if (id === 'more' && window.More) More.init();
+    if (id === 'bulletin' && window.Bulletin) Bulletin.init();
     // Bus & Auto are inited once at startup — refresh them on every RE-open (skip first show).
     if (_shownSections[id]) {
       if (id === 'bus' && window.Bus && Bus.refresh) Bus.refresh();
@@ -336,11 +337,12 @@ document.addEventListener('DOMContentLoaded', function() {
     else if (id === 'hospital' && window.Hospital && Hospital.refresh) Hospital.refresh();
     else if (id === 'emergency' && window.Emergency && Emergency.refresh) Emergency.refresh();
     else if (id === 'more' && window.More && More.refresh) More.refresh();
+    else if (id === 'bulletin' && window.Bulletin && Bulletin.refresh) Bulletin.refresh();
   });
 
-  // Handle deep links (#bus / #auto / #hospital / #emergency / #more in URL)
+  // Handle deep links (#bus / #auto / #hospital / #emergency / #more / #bulletin in URL)
   var hash = window.location.hash.replace('#', '');
-  var startSection = (hash === 'auto' || hash === 'hospital' || hash === 'emergency' || hash === 'more') ? hash : 'bus';
+  var startSection = (hash === 'auto' || hash === 'hospital' || hash === 'emergency' || hash === 'more' || hash === 'bulletin') ? hash : 'bus';
 
   // ── Online/Offline banner ──────────────────────────────
   var banner = document.getElementById('offline-banner');
@@ -778,6 +780,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.Hospital && Hospital.refresh) jobs.push(Hospital.refresh());
     if (window.Emergency && Emergency.refresh) jobs.push(Emergency.refresh());
     if (window.More && More.refresh) jobs.push(More.refresh());
+    if (window.Bulletin && Bulletin.refresh) jobs.push(Bulletin.refresh());
     if (window.Announce && Announce.refresh) jobs.push(Announce.refresh());
     var done = function() {
       if (!silent && window.showToast) window.showToast('✅ எல்லாம் புதுப்பிக்கப்பட்டது · All updated');

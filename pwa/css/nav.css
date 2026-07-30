@@ -1,4 +1,7 @@
 /* ── Bottom Navigation ───────────────────────────────────── */
+/* Six tabs no longer fit 1fr each on a 320px phone, so the bar scrolls
+   horizontally and each tab keeps a real 48px+ tap target. On roomy phones
+   the tabs simply fill the bar and nothing scrolls. */
 #bottom-nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
@@ -6,16 +9,22 @@
   margin: 0 auto;
   height: calc(var(--nav-height) + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
   background: var(--color-bg);
   border-top: 1px solid var(--color-border);
   z-index: 100;
   box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
 }
+#bottom-nav::-webkit-scrollbar { display: none; }
 
 .nav-tab {
+  flex: 1 0 auto;
+  min-width: 66px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -26,6 +35,38 @@
   min-height: 48px;
   position: relative;
 }
+
+/* ── சங்கமம் — the centre tab, deliberately loud ───────────── */
+.nav-tab-news {
+  flex: 0 0 auto;
+  min-width: 78px;
+}
+/* Sits INSIDE the bar, not raised above it: #bottom-nav needs overflow-x:auto
+   for the scroller, which forces overflow-y to compute to a non-visible value,
+   so anything poking out of the top gets clipped. Prominence comes from the
+   filled circle and bold label instead of a raise. */
+.nav-tab-news .nav-icon {
+  width: 40px; height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2E7D32, #1B5E20);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(46,125,50,0.42);
+  border: 3px solid var(--color-bg);
+  transition: transform var(--trans-fast), box-shadow var(--trans-fast);
+}
+.nav-tab-news .nav-label {
+  color: #2E7D32;
+  font-weight: 700;
+}
+.nav-tab-news.active .nav-icon {
+  transform: scale(1.06);
+  box-shadow: 0 6px 18px rgba(46,125,50,0.55);
+}
+/* The centre button IS the affordance — the underline would sit off-target */
+.nav-tab-news::after { content: none; }
 
 .nav-tab::after {
   content: '';
@@ -147,6 +188,10 @@ body[data-section="more"] .menu-drawer-header,
 body[data-section="more"] .menu-sheet-header {
   background: linear-gradient(135deg, #5E35B1 0%, #3949AB 100%);
 }
+body[data-section="bulletin"] .menu-drawer-header,
+body[data-section="bulletin"] .menu-sheet-header {
+  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+}
 
 /* The refresh toast ("✅ புதுப்பிக்கப்பட்டது") also wears the page colour */
 body[data-section="bus"] .app-toast       { background: #1A237E; }
@@ -154,6 +199,7 @@ body[data-section="auto"] .app-toast      { background: #B45309; }
 body[data-section="hospital"] .app-toast  { background: #006064; }
 body[data-section="emergency"] .app-toast { background: #8E1B1B; }
 body[data-section="more"] .app-toast      { background: #3C2E85; }
+body[data-section="bulletin"] .app-toast  { background: #1B5E20; }
 .menu-drawer-title {
   display: flex;
   flex-direction: column;

@@ -32,6 +32,7 @@ const adminActingRoutes   = require('./routes/admin/acting');
 const adminServicesRoutes       = require('./routes/admin/services');
 const adminAnnouncementsRoutes  = require('./routes/admin/announcements');
 const adminFeedbackRoutes       = require('./routes/admin/feedback');
+const adminBulletinRoutes       = require('./routes/admin/bulletin');
 const adminPwaRoutes            = require('./routes/admin/pwa');
 
 // Services
@@ -68,6 +69,37 @@ const publicWriteLimiter = rateLimit({
 app.use('/api/feedback', publicWriteLimiter);
 app.use('/api/pwa/ping', publicWriteLimiter);
 app.use('/api/water/alert', publicWriteLimiter);
+
+// Bulletin: register/submit are the abuse-prone writes. Likes are a tap-toggle
+// so they get a looser budget, and the GET feed is never limited — it is the
+// most-read endpoint in the section.
+//
+// Budgets are deliberately generous because these limits are PER IP, and rural
+// mobile carriers put whole villages behind a handful of CGNAT addresses — a
+// tight limit would lock out everyone on the same tower, not just an abuser.
+// The real per-person spam control is the 1-post-per-phone-per-day rule.
+const isProd = process.env.NODE_ENV === 'production';
+const bulletinWriteLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 60,
+  message: { success: false, error: 'ரொம்ப முயற்சி — கொஞ்சம் கழிச்சு பாருங்க' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => !isProd,     // keeps local regression runs deterministic
+});
+const bulletinLikeLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 300,
+  message: { success: false, error: 'Too many likes — try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => !isProd,
+});
+app.use('/api/bulletin', (req, res, next) => {
+  if (req.method === 'GET') return next();                 // feed reads are free
+  if (/\/like\/?$/.test(req.path)) return bulletinLikeLimiter(req, res, next);
+  return bulletinWriteLimiter(req, res, next);
+});
 
 // ── Serve Admin Panel (static — before CORS so module scripts load) ──
 // index.html = no-cache so admins always get latest bundle references.
@@ -175,6 +207,7 @@ app.use('/admin/acting',   adminActingRoutes);
 app.use('/admin/services',      adminServicesRoutes);
 app.use('/admin/announcements', adminAnnouncementsRoutes);
 app.use('/admin/feedback',      adminFeedbackRoutes);
+app.use('/admin/bulletin',      adminBulletinRoutes);
 app.use('/admin/pwa',           adminPwaRoutes);
 
 // ── Health Check ────────────────────────────────────────
