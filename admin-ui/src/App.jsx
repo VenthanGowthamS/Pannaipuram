@@ -18,6 +18,7 @@ import LocalServices from './pages/LocalServices';
 import UserManagement from './pages/UserManagement';
 import Announcements from './pages/Announcements';
 import Feedback from './pages/Feedback';
+import Bulletin from './pages/Bulletin';
 import PwaStats from './pages/PwaStats';
 
 const AppContent = () => {
@@ -78,6 +79,8 @@ const AppContent = () => {
         return <Announcements {...props} />;
       case 'feedback':
         return <Feedback {...props} />;
+      case 'bulletin':
+        return <Bulletin {...props} />;
       case 'pwa':
         return <PwaStats {...props} />;
       default:

@@ -16,6 +16,7 @@ const deviceRoutes    = require('./routes/devices');
 const servicesRoutes       = require('./routes/services');
 const announcementsRoutes  = require('./routes/announcements');
 const feedbackRoutes       = require('./routes/feedback');
+const bulletinRoutes       = require('./routes/bulletin');
 const pwaRoutes            = require('./routes/pwa');
 
 // Routes — Admin API
@@ -158,6 +159,7 @@ app.use('/api/devices',   deviceRoutes);
 app.use('/api/services',       servicesRoutes);
 app.use('/api/announcements',  announcementsRoutes);
 app.use('/api/feedback',       feedbackRoutes);
+app.use('/api/bulletin',       bulletinRoutes);
 app.use('/api/pwa',            pwaRoutes);
 
 // ── Admin API Routes ────────────────────────────────────

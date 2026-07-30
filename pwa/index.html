@@ -35,6 +35,7 @@
   <link rel="stylesheet" href="/pwa/css/hospital.css">
   <link rel="stylesheet" href="/pwa/css/emergency.css">
   <link rel="stylesheet" href="/pwa/css/more.css">
+  <link rel="stylesheet" href="/pwa/css/bulletin.css">
   <link rel="stylesheet" href="/pwa/css/responsive.css">
 </head>
 <body data-section="bus" class="notranslate" translate="no">
@@ -671,6 +672,73 @@
 
     </section>
 
+    <!-- COMMUNITY BULLETIN SECTION -->
+    <section id="section-bulletin" class="section notranslate" translate="no" hidden>
+
+      <div id="bulletin-tab">
+        <!-- Registration Section -->
+        <div class="bulletin-reg-section">
+          <h3>📰 சங்கமம் — பண்ணைப்புரம் செய்திகள்</h3>
+          <p style="color:#666; font-size:13px; margin:0 0 12px 0;">முக்கியமான ஊர் செய்திகளை பகிருங்க. சிறிய registration (பெயர் + phone) போதும்.</p>
+
+          <form id="bulletin-reg-form" novalidate>
+            <div class="form-group">
+              <label for="bulletin-phone">தொலைபேசி எண் <span style="color:#c62828;">*</span></label>
+              <input id="bulletin-phone" type="tel" placeholder="10 இலக்க number" maxlength="10" required inputmode="numeric">
+              <p id="bulletin-phone-err" hidden></p>
+            </div>
+            <div class="form-group">
+              <label for="bulletin-name-ta">பெயர் (தமிழ்) <span style="color:#c62828;">*</span></label>
+              <input id="bulletin-name-ta" type="text" placeholder="உங்க பெயர்" maxlength="100" required>
+            </div>
+            <div class="form-group">
+              <label for="bulletin-name-en">பெயர் (English)</label>
+              <input id="bulletin-name-en" type="text" placeholder="Your name (optional)" maxlength="100">
+            </div>
+            <button type="submit" id="bulletin-reg-btn">பதிவு செய்க</button>
+            <p id="bulletin-reg-result" hidden></p>
+          </form>
+        </div>
+
+        <!-- Post Submission Section (shown after registration) -->
+        <div id="bulletin-post-section">
+          <h3>📰 செய்தி பகிரவும்</h3>
+          <form id="bulletin-post-form" novalidate>
+            <div class="form-group">
+              <label for="bulletin-title-ta">தலைப்பு (தமிழ்) <span style="color:#c62828;">*</span></label>
+              <input id="bulletin-title-ta" type="text" placeholder="செய்தியின் தலைப்பு" maxlength="200" required>
+            </div>
+            <div class="form-group">
+              <label for="bulletin-title-en">தலைப்பு (English)</label>
+              <input id="bulletin-title-en" type="text" placeholder="Headline (optional)" maxlength="200">
+            </div>
+            <div class="form-group">
+              <label for="bulletin-content-ta">விபரம் (தமிழ்) <span style="color:#c62828;">*</span></label>
+              <textarea id="bulletin-content-ta" placeholder="என்ன நடந்தது? விளக்கமாக சொல்லுங்க" maxlength="1000" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="bulletin-content-en">விபரம் (English)</label>
+              <textarea id="bulletin-content-en" placeholder="Details in English (optional)" maxlength="1000"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="bulletin-image">ছবি (அறிமுக)</label>
+              <input id="bulletin-image" type="file" accept="image/*">
+              <div id="bulletin-image-preview"></div>
+            </div>
+            <button type="submit" id="bulletin-post-btn">பகிரவும்</button>
+            <p id="bulletin-post-result" hidden></p>
+          </form>
+        </div>
+
+        <!-- Posts Feed -->
+        <div style="margin-top: 24px;">
+          <h3 style="padding: 0 12px; font-size: 15px; color: #2c3e50;">সংবাদ Feed</h3>
+          <div id="bulletin-posts"></div>
+        </div>
+      </div>
+
+    </section>
+
   </main>
 
   <!-- ── Bottom Navigation ────────────────────────────── -->
@@ -695,6 +763,10 @@
       <span class="nav-icon" aria-hidden="true">➕</span>
       <span class="nav-label">மேலும்</span>
     </button>
+    <button class="nav-tab" role="tab" data-section="bulletin" aria-selected="false" aria-label="Community bulletin">
+      <span class="nav-icon" aria-hidden="true">📰</span>
+      <span class="nav-label">சங்கமம்</span>
+    </button>
   </nav>
 
   <script src="/pwa/js/api.js"></script>
@@ -703,6 +775,7 @@
   <script src="/pwa/js/hospital.js"></script>
   <script src="/pwa/js/emergency.js"></script>
   <script src="/pwa/js/more.js"></script>
+  <script src="/pwa/js/bulletin.js"></script>
   <script src="/pwa/js/app.js"></script>
 </body>
 </html>

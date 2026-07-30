@@ -335,6 +335,19 @@ class ApiService {
   setPwaVisitorLabel(visitorId, label) {
     return this.request('PUT', `/admin/pwa/visitors/${encodeURIComponent(visitorId)}/label`, { label });
   }
+
+  // Community Bulletin
+  getBulletinPosts() {
+    return this.request('GET', '/api/bulletin/admin/pending');
+  }
+
+  updateBulletinStatus(id, status) {
+    return this.request('PATCH', `/api/bulletin/admin/${id}/status`, { status });
+  }
+
+  deleteBulletinPost(id) {
+    return this.request('DELETE', `/api/bulletin/admin/${id}`);
+  }
 }
 
 export default new ApiService();

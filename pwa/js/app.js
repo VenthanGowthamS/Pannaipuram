@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   window.addEventListener('hashchange', function() {
     var h = window.location.hash.replace('#', '');
-    if (h === 'bus' || h === 'auto' || h === 'hospital' || h === 'emergency' || h === 'more') switchSection(h, false);
+    if (h === 'bus' || h === 'auto' || h === 'hospital' || h === 'emergency' || h === 'more' || h === 'bulletin') switchSection(h, false);
   });
 
   // ── Refresh the CURRENT section when the app returns to foreground ──

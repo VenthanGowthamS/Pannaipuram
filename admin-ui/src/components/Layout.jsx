@@ -57,6 +57,7 @@ const Layout = ({ children, currentTab, onTabChange, snackbar, setSnackbar }) =>
     { id: 'services',      label: 'Services',     icon: '🛍', MuiIcon: ServicesIcon },
     { id: 'announcements', label: 'Announce',     icon: '📢', MuiIcon: AnnounceIcon },
     { id: 'feedback',      label: 'Feedback',     icon: '💬', MuiIcon: FeedbackIcon },
+    { id: 'bulletin',      label: 'Bulletin',     icon: '📰', MuiIcon: UsersIcon },
     { id: 'users',         label: 'Users',        icon: '👥', MuiIcon: UsersIcon, role: 'super_admin' },
     { id: 'pwa',           label: 'PWA Stats',    icon: '📊', MuiIcon: UsersIcon },
   ];
