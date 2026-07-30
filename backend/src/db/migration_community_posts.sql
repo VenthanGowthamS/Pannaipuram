@@ -19,6 +19,18 @@ CREATE TABLE IF NOT EXISTS community_posters (
 -- Existing installs: add the new columns without touching data
 ALTER TABLE community_posters ADD COLUMN IF NOT EXISTS is_trusted BOOLEAN DEFAULT FALSE;
 ALTER TABLE community_posters ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN DEFAULT FALSE;
+ALTER TABLE community_posters ADD COLUMN IF NOT EXISTS is_official BOOLEAN DEFAULT FALSE;
+
+-- ── The official village account ──────────────────────────────────
+-- Used by "New official post" in the admin panel. Its phone is a reserved
+-- sentinel, NOT a real number: it starts with 1, so the public registration
+-- endpoint (which requires 6-9) can never create or hijack it, and the
+-- is_official flag is checked there as a second lock. Only someone holding
+-- an admin JWT can post as this account.
+INSERT INTO community_posters (phone, name_tamil, name_english, is_trusted, is_official)
+VALUES ('1234567890', 'பண்ணைப்புரம் நிர்வாகம்', 'Pannaipuram Admin', TRUE, TRUE)
+ON CONFLICT (phone) DO UPDATE
+  SET is_official = TRUE, is_trusted = TRUE, is_blocked = FALSE;
 
 -- ── Bulletin posts ────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS community_posts (

@@ -50,13 +50,22 @@ var Bulletin = (function() {
   function postCard(p) {
     var likeCount = Number(p.like_count || 0);
     var liked = p.liked_by_me === true;
-    return '<article class="bl-card" data-post="' + p.id + '">' +
+    var official = p.is_official === true;
+    // Official posts must be unmistakable — a villager acting on a fake
+    // "water is off tomorrow" is a real cost, so the official account gets
+    // its own badge and card styling, not the generic trusted tick.
+    // The official badge sits on its OWN line: .bl-name is nowrap+ellipsis, so
+    // an inline badge after a long name ("பண்ணைப்புரம் நிர்வாகம்") gets clipped away.
+    var badge = official
+      ? '<span class="bl-official">📢 அதிகாரப்பூர்வம்</span>'
+      : (p.is_trusted ? '<span class="bl-trust" title="நம்பகமான பதிவாளர்">✅ நம்பகமானவர்</span>' : '');
+    return '<article class="bl-card' + (official ? ' is-official' : '') + '" data-post="' + p.id + '">' +
       '<header class="bl-card-head">' +
-        '<div class="bl-avatar" aria-hidden="true">' + esc((p.name_tamil || '?').trim().charAt(0)) + '</div>' +
+        '<div class="bl-avatar' + (official ? ' is-official' : '') + '" aria-hidden="true">' +
+          (official ? '📢' : esc((p.name_tamil || '?').trim().charAt(0))) + '</div>' +
         '<div class="bl-who">' +
-          '<span class="bl-name">' + esc(p.name_tamil) +
-            (p.is_trusted ? ' <span class="bl-trust" title="நம்பகமான பதிவாளர்">✅</span>' : '') +
-          '</span>' +
+          '<span class="bl-name">' + esc(p.name_tamil) + '</span>' +
+          badge +
           '<span class="bl-time">' + timeAgo(p.created_at) + '</span>' +
         '</div>' +
       '</header>' +
@@ -184,8 +193,11 @@ var Bulletin = (function() {
     var regWrap  = document.getElementById('bulletin-reg');
     var postWrap = document.getElementById('bulletin-compose');
     var whoami   = document.getElementById('bulletin-whoami');
+    var avatar   = document.getElementById('bulletin-compose-avatar');
     if (regWrap)  regWrap.hidden  = !!p;
     if (postWrap) postWrap.hidden = !p;
+    // The prompt box carries the poster's initial, like a social composer
+    if (avatar && p) avatar.textContent = (p.name_tamil || '🙂').trim().charAt(0);
     if (whoami && p) {
       whoami.innerHTML = '<span class="bl-whoami-ta">' + esc(p.name_tamil) + ' ஆக பதிவிடுறீங்க</span>' +
         '<button type="button" id="bulletin-signout" class="bl-signout">மாத்து</button>';
@@ -227,7 +239,7 @@ var Bulletin = (function() {
         phone.focus();
         return;
       }
-      if (nameTa.length < 2) { say(result, 'உங்க பேரு கொடுங்க', false); return; }
+      if (nameTa.length < 2) { say(result, 'உங்க பெயரை கொடுங்க', false); return; }
 
       btn.disabled = true;
       var label = btn.textContent;

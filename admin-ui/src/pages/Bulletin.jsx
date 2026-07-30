@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Card, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Typography, Chip, IconButton, Skeleton, Tooltip, Dialog,
-  DialogTitle, DialogContent, DialogActions, Button, Tabs, Tab, Switch,
+  DialogTitle, DialogContent, DialogActions, Button, Tabs, Tab, Switch, TextField,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
@@ -11,6 +11,7 @@ import {
   Refresh as RefreshIcon,
   Newspaper as BulletinIcon,
   Favorite as LikeIcon,
+  Campaign as OfficialIcon,
 } from '@mui/icons-material';
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -37,6 +38,8 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
   const [details, setDetails] = useState({ open: false, post: null });
+  const BLANK_POST = { title_tamil: '', title_english: '', content_tamil: '', content_english: '', image_url: null };
+  const [compose, setCompose] = useState({ open: false, saving: false, ...BLANK_POST });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -94,6 +97,52 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
     }
   };
 
+  // Same budget the PWA uses: resize to 1024px and step quality down until
+  // the data URL fits ~80KB, so official posts don't blow the DB tier either.
+  const pickImage = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width: w, height: h } = img;
+        const MAX = 1024;
+        if (w > h && w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+        else if (h >= w && h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        let q = 0.7;
+        let out = canvas.toDataURL('image/jpeg', q);
+        while (out.length > 80 * 1024 && q > 0.3) { q -= 0.1; out = canvas.toDataURL('image/jpeg', q); }
+        setCompose(c => ({ ...c, image_url: out }));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const publishOfficial = async () => {
+    if (compose.title_tamil.trim().length < 5) { onSnackbar('Tamil title must be at least 5 characters', 'warning'); return; }
+    if (compose.content_tamil.trim().length < 10) { onSnackbar('Tamil content must be at least 10 characters', 'warning'); return; }
+    setCompose(c => ({ ...c, saving: true }));
+    try {
+      await api.createOfficialBulletinPost({
+        title_tamil: compose.title_tamil,
+        title_english: compose.title_english,
+        content_tamil: compose.content_tamil,
+        content_english: compose.content_english,
+        image_url: compose.image_url,
+      });
+      onSnackbar('Published — live in the app now', 'success');
+      setCompose({ open: false, saving: false, ...BLANK_POST });
+      load();
+    } catch {
+      onSnackbar('Failed to publish', 'error');
+      setCompose(c => ({ ...c, saving: false }));
+    }
+  };
+
   const pendingCount = posts.filter(p => p.status === 'pending').length;
 
   return (
@@ -105,7 +154,19 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
             <Chip label={`${pendingCount} awaiting review`} color="warning" size="small" sx={{ fontWeight: 600 }} />
           )}
         </Box>
-        <IconButton onClick={load} size="small" title="Refresh"><RefreshIcon /></IconButton>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {canEdit && (
+            <Button
+              variant="contained"
+              startIcon={<OfficialIcon />}
+              onClick={() => setCompose({ open: true, saving: false, ...BLANK_POST })}
+              sx={{ bgcolor: '#E65100', '&:hover': { bgcolor: '#BF360C' }, whiteSpace: 'nowrap' }}
+            >
+              New official post
+            </Button>
+          )}
+          <IconButton onClick={load} size="small" title="Refresh"><RefreshIcon /></IconButton>
+        </Box>
       </Box>
 
       <Card sx={{ mb: 2 }}>
@@ -308,6 +369,67 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
             </DialogActions>
           </>
         )}
+      </Dialog>
+
+      {/* Publish as the official village account — goes live immediately */}
+      <Dialog open={compose.open} onClose={() => !compose.saving && setCompose(c => ({ ...c, open: false }))} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <OfficialIcon sx={{ color: '#E65100' }} />
+          Post as பண்ணைப்புரம் நிர்வாகம்
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+            Goes live in the app immediately with an official badge — no approval step.
+            For a short urgent alert on every screen, use the Announcements tab instead.
+          </Typography>
+          <TextField
+            fullWidth required label="தலைப்பு (Tamil title)" margin="dense"
+            value={compose.title_tamil} inputProps={{ maxLength: 200 }}
+            onChange={(e) => setCompose(c => ({ ...c, title_tamil: e.target.value }))}
+            InputProps={{ sx: { fontFamily: '"Noto Sans Tamil", sans-serif' } }}
+          />
+          <TextField
+            fullWidth label="English title (optional)" margin="dense"
+            value={compose.title_english} inputProps={{ maxLength: 200 }}
+            onChange={(e) => setCompose(c => ({ ...c, title_english: e.target.value }))}
+          />
+          <TextField
+            fullWidth required multiline rows={4} label="விபரம் (Tamil content)" margin="dense"
+            value={compose.content_tamil} inputProps={{ maxLength: 1000 }}
+            onChange={(e) => setCompose(c => ({ ...c, content_tamil: e.target.value }))}
+            InputProps={{ sx: { fontFamily: '"Noto Sans Tamil", sans-serif' } }}
+          />
+          <TextField
+            fullWidth multiline rows={2} label="English content (optional)" margin="dense"
+            value={compose.content_english} inputProps={{ maxLength: 1000 }}
+            onChange={(e) => setCompose(c => ({ ...c, content_english: e.target.value }))}
+          />
+          <Box sx={{ mt: 2 }}>
+            <Button variant="outlined" component="label" size="small">
+              {compose.image_url ? 'Change image' : 'Add image (optional)'}
+              <input hidden type="file" accept="image/*" onChange={(e) => pickImage(e.target.files[0])} />
+            </Button>
+            {compose.image_url && (
+              <Box sx={{ mt: 1 }}>
+                <img src={compose.image_url} alt="" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 4 }} />
+                <Typography variant="caption" sx={{ display: 'block', color: '#999' }}>
+                  {Math.round(compose.image_url.length / 1024)} KB after compression
+                  {' · '}
+                  <Button size="small" onClick={() => setCompose(c => ({ ...c, image_url: null }))}>remove</Button>
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button disabled={compose.saving} onClick={() => setCompose(c => ({ ...c, open: false }))}>Cancel</Button>
+          <Button
+            variant="contained" disabled={compose.saving} onClick={publishOfficial}
+            sx={{ bgcolor: '#E65100', '&:hover': { bgcolor: '#BF360C' } }}
+          >
+            {compose.saving ? 'Publishing…' : 'Publish now'}
+          </Button>
+        </DialogActions>
       </Dialog>
 
       <ConfirmDialog

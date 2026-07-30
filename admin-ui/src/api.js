@@ -349,6 +349,10 @@ class ApiService {
     return this.request('DELETE', `/admin/bulletin/${id}`);
   }
 
+  createOfficialBulletinPost(data) {
+    return this.request('POST', '/admin/bulletin/post', data);
+  }
+
   getBulletinPosters() {
     return this.request('GET', '/admin/bulletin/posters/list');
   }

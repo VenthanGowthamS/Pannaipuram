@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
          p.status, p.created_at, p.updated_at, p.expires_at,
          poster.id AS poster_id,
          poster.name_tamil, poster.name_english, poster.phone,
-         poster.is_trusted, poster.is_blocked,
+         poster.is_trusted, poster.is_blocked, poster.is_official,
          (SELECT COUNT(*)::int FROM community_post_likes l WHERE l.post_id = p.id) AS like_count
        FROM community_posts p
        JOIN community_posters poster ON p.poster_id = poster.id
@@ -38,6 +38,62 @@ router.get('/', async (req, res) => {
   } catch (err) {
     console.error('admin bulletin GET error:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch posts' });
+  }
+});
+
+// ── POST /admin/bulletin/post — publish as the official village account ──
+// The ONLY way to post as "பண்ணைப்புரம் நிர்வாகம்". Requires an admin JWT,
+// publishes immediately (no queue), and is exempt from the 1-per-day limit
+// that applies to villagers.
+const OFFICIAL_PHONE = '1234567890';
+
+router.post('/post', canWrite, async (req, res) => {
+  const { title_tamil, title_english, content_tamil, content_english, image_url } = req.body || {};
+
+  if (!title_tamil || String(title_tamil).trim().length < 5) {
+    return res.status(400).json({ success: false, error: 'Title too short (min 5 characters)' });
+  }
+  if (!content_tamil || String(content_tamil).trim().length < 10) {
+    return res.status(400).json({ success: false, error: 'Content too short (min 10 characters)' });
+  }
+  if (image_url != null && image_url !== '') {
+    if (!/^data:image\/(jpeg|jpg|png|webp);base64,/i.test(image_url)) {
+      return res.status(400).json({ success: false, error: 'Image must be a JPEG/PNG/WebP data URL' });
+    }
+    if (image_url.length > 150 * 1024) {
+      return res.status(400).json({ success: false, error: 'Image too large (max 150KB)' });
+    }
+  }
+
+  try {
+    // Self-healing: if the migration's seed row is missing, create it here so
+    // the button never dead-ends on a half-migrated database.
+    const poster = await query(
+      `INSERT INTO community_posters (phone, name_tamil, name_english, is_trusted, is_official)
+       VALUES ($1, 'பண்ணைப்புரம் நிர்வாகம்', 'Pannaipuram Admin', TRUE, TRUE)
+       ON CONFLICT (phone) DO UPDATE SET is_official = TRUE, is_trusted = TRUE
+       RETURNING id`,
+      [OFFICIAL_PHONE]
+    );
+
+    const result = await query(
+      `INSERT INTO community_posts
+         (poster_id, title_tamil, title_english, content_tamil, content_english, image_url, status)
+       VALUES ($1, $2, $3, $4, $5, $6, 'approved')
+       RETURNING id, status, created_at, expires_at`,
+      [
+        poster.rows[0].id,
+        String(title_tamil).trim(),
+        title_english ? String(title_english).trim() : null,
+        String(content_tamil).trim(),
+        content_english ? String(content_english).trim() : null,
+        image_url || null,
+      ]
+    );
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('admin bulletin official post error:', err);
+    res.status(500).json({ success: false, error: 'Failed to publish official post' });
   }
 });
 
@@ -89,7 +145,7 @@ router.get('/posters/list', async (req, res) => {
     const result = await query(
       `SELECT
          po.id, po.phone, po.name_tamil, po.name_english,
-         po.is_trusted, po.is_blocked, po.registered_at,
+         po.is_trusted, po.is_blocked, po.is_official, po.registered_at,
          (SELECT COUNT(*)::int FROM community_posts p WHERE p.poster_id = po.id) AS post_count
        FROM community_posters po
        ORDER BY po.registered_at DESC

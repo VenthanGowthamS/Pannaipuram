@@ -691,17 +691,17 @@
             <span class="bl-panel-en">Register once to post</span>
           </div>
         </div>
-        <p class="bl-panel-note">படிக்க யாருக்கும் பதிவு தேவையில்ல. பகிரணும்னா மட்டும் ஒரு தடவை பேரும் நம்பரும் கொடுங்க.</p>
+        <p class="bl-panel-note">படிக்க யாருக்கும் பதிவு தேவையில்ல. பகிரணும்னா மட்டும் ஒரு தடவை பெயரும் நம்பரும் கொடுங்க.</p>
         <form id="bulletin-reg-form" class="bl-form" novalidate>
           <label class="bl-label" for="bulletin-phone">மொபைல் எண் <span class="bl-req">*</span></label>
           <input id="bulletin-phone" class="bl-input" type="tel" placeholder="10 இலக்க மொபைல் எண்"
                  maxlength="10" required inputmode="numeric" autocomplete="tel" pattern="[6-9][0-9]{9}">
           <p id="bulletin-phone-err" class="bl-field-err" hidden></p>
 
-          <label class="bl-label" for="bulletin-name-ta">பேரு (தமிழ்) <span class="bl-req">*</span></label>
-          <input id="bulletin-name-ta" class="bl-input" type="text" placeholder="உங்க பேரு" maxlength="100" required autocomplete="name">
+          <label class="bl-label" for="bulletin-name-ta">பெயர் (தமிழ்) <span class="bl-req">*</span></label>
+          <input id="bulletin-name-ta" class="bl-input" type="text" placeholder="உங்க பெயர்" maxlength="100" required autocomplete="name">
 
-          <label class="bl-label" for="bulletin-name-en">பேரு (English)</label>
+          <label class="bl-label" for="bulletin-name-en">பெயர் (English)</label>
           <input id="bulletin-name-en" class="bl-input" type="text" placeholder="Your name — optional" maxlength="100">
 
           <button type="submit" id="bulletin-reg-btn" class="bl-btn">பதிவு பண்ணுங்க</button>
@@ -713,13 +713,17 @@
       <div id="bulletin-compose" class="bl-panel" hidden>
         <div id="bulletin-whoami" class="bl-whoami"></div>
         <details class="bl-compose">
+          <!-- Collapsed: a one-line prompt box (Facebook / LinkedIn style).
+               Tapping it opens the full form below. -->
           <summary class="bl-compose-cta">
-            <span class="bl-compose-ic">📢</span>
-            <span class="bl-compose-txt">
-              <span class="bl-compose-ta">புது செய்தி பகிருங்க</span>
+            <span class="bl-compose-avatar" id="bulletin-compose-avatar" aria-hidden="true">🙂</span>
+            <span class="bl-compose-pill">என்ன செய்தி பகிரணும்?</span>
+            <span class="bl-compose-cam" aria-hidden="true">📷</span>
+            <span class="bl-compose-open-title">
+              <span class="bl-compose-ta">புது செய்தி</span>
               <span class="bl-compose-en">Share village news</span>
             </span>
-            <span class="bl-compose-caret">▾</span>
+            <span class="bl-compose-close" aria-hidden="true">✕</span>
           </summary>
           <form id="bulletin-post-form" class="bl-form" novalidate>
             <label class="bl-label" for="bulletin-title-ta">தலைப்பு (தமிழ்) <span class="bl-req">*</span></label>

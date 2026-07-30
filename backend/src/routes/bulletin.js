@@ -39,6 +39,7 @@ router.get('/', async (req, res) => {
          poster.name_tamil,
          poster.name_english,
          poster.is_trusted,
+         poster.is_official,
          COUNT(l.id)::int AS like_count,
          COALESCE(BOOL_OR(l.device_id = $1), FALSE) AS liked_by_me
        FROM community_posts p
@@ -76,11 +77,13 @@ router.post('/register', async (req, res) => {
 
   try {
     // Blocked posters must not be silently re-enabled by re-registering.
+    // The official village account must never be claimable from this public
+    // endpoint — otherwise anyone could publish under the admin's name.
     const existing = await query(
-      'SELECT id, is_blocked FROM community_posters WHERE phone = $1',
+      'SELECT id, is_blocked, is_official FROM community_posters WHERE phone = $1',
       [String(phone).trim()]
     );
-    if (existing.rows.length > 0 && existing.rows[0].is_blocked) {
+    if (existing.rows.length > 0 && (existing.rows[0].is_blocked || existing.rows[0].is_official)) {
       return res.status(403).json({
         success: false,
         error: 'இந்த எண்ணுக்கு பதிவு அனுமதி இல்லை',
@@ -148,7 +151,7 @@ router.post('/submit', async (req, res) => {
     await client.query('BEGIN');
 
     const posterRes = await client.query(
-      'SELECT id, is_trusted, is_blocked FROM community_posters WHERE id = $1 FOR UPDATE',
+      'SELECT id, is_trusted, is_blocked, is_official FROM community_posters WHERE id = $1 FOR UPDATE',
       [pid]
     );
     if (posterRes.rows.length === 0) {
@@ -158,6 +161,14 @@ router.post('/submit', async (req, res) => {
     if (posterRes.rows[0].is_blocked) {
       await client.query('ROLLBACK');
       return res.status(403).json({ success: false, error: 'உங்களுக்கு பதிவிட அனுமதி இல்லை' });
+    }
+    // poster_id is a small sequential integer, so it is trivially guessable.
+    // The official account is is_trusted, meaning a guessed id would publish
+    // instantly under the admin's name — posting as it requires an admin JWT
+    // (POST /admin/bulletin/post), never this public route.
+    if (posterRes.rows[0].is_official) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ success: false, error: 'இந்த கணக்கில் பதிவிட அனுமதி இல்லை' });
     }
 
     // One post per poster per day. The row lock above serialises concurrent

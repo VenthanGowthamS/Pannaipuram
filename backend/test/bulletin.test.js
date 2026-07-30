@@ -407,6 +407,74 @@ async function testTrustedAndBlocked() {
   });
 }
 
+async function testOfficialAccount() {
+  console.log('\n📢 Official village account');
+  let officialPostId = null;
+  let officialPosterId = null;
+
+  await test('Admin can publish as the official account, live immediately', async () => {
+    const { status, body } = await post('/admin/bulletin/post', {
+      title_tamil: 'ஊர் கூட்ட அறிவிப்பு',
+      title_english: 'Village meeting notice',
+      content_tamil: 'வரும் ஞாயிறு காலை 10 மணிக்கு ஊர் கூட்டம் நடக்கும். எல்லாரும் வரணும்.',
+    }, auth());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.data.status === 'approved', `Expected approved, got ${body.data.status}`);
+    officialPostId = body.data.id;
+    created.postIds.push(officialPostId);
+  });
+
+  await test('It appears in the public feed flagged is_official', async () => {
+    const { body } = await get('/api/bulletin');
+    const mine = body.data.find(p => p.id === officialPostId);
+    assert(mine, 'Official post missing from feed');
+    assert(mine.is_official === true, 'Expected is_official true');
+    assert(mine.name_tamil === 'பண்ணைப்புரம் நிர்வாகம்', `Unexpected name: ${mine.name_tamil}`);
+  });
+
+  await test('Publishing officially without a token → 401', async () => {
+    const { status } = await post('/admin/bulletin/post', {
+      title_tamil: 'போலி அறிவிப்பு', content_tamil: 'இது ஒரு போலி செய்தி ஆகும்.',
+    });
+    assert(status === 401, `Expected 401, got ${status}`);
+  });
+
+  await test('Official post still validates title/content length', async () => {
+    const { status } = await post('/admin/bulletin/post', { title_tamil: 'ஊர்', content_tamil: 'சின்னது' }, auth());
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  // ── Impersonation guards ──
+  await test('The official phone cannot be registered from the public form', async () => {
+    const { status } = await post('/api/bulletin/register', {
+      phone: '1234567890', name_tamil: 'போலி நிர்வாகம்',
+    });
+    assert(status === 400 || status === 403, `Expected 400/403, got ${status}`);
+  });
+
+  await test('Nobody can post as the official account via the public route', async () => {
+    const { body: posters } = await get('/admin/bulletin/posters/list', auth());
+    const official = posters.data.find(p => p.is_official === true);
+    assert(official, 'Official poster row not found');
+    officialPosterId = official.id;
+
+    // poster_id is a small sequential int — this is the guessing attack
+    const { status } = await post('/api/bulletin/submit', {
+      poster_id: officialPosterId,
+      title_tamil: 'போலி அதிகாரப்பூர்வ செய்தி',
+      content_tamil: 'இது நிர்வாகம் போல் நடிக்கும் ஒரு போலி செய்தி.',
+    });
+    assert(status === 403, `Expected 403, got ${status} — anyone could impersonate the admin`);
+  });
+
+  await test('The official account is never left blocked or untrusted', async () => {
+    const { body } = await get('/admin/bulletin/posters/list', auth());
+    const official = body.data.find(p => p.is_official === true);
+    assert(official.is_trusted === true, 'Official account must be trusted');
+    assert(official.is_blocked === false, 'Official account must not be blocked');
+  });
+}
+
 async function testPublicFeedShape() {
   console.log('\n📰 Public feed');
 
@@ -470,6 +538,7 @@ async function cleanup() {
     const postId = await testModerationFlow();
     if (postId) await testLikes(postId);
     await testTrustedAndBlocked();
+    await testOfficialAccount();
     await testPublicFeedShape();
   } catch (e) {
     console.error('\n💥 Suite crashed:', e.message);
