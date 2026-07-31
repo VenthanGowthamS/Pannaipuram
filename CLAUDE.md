@@ -98,10 +98,12 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 - **TEST RULE (mandatory) — every change ships with a test:**
   1. **New API endpoint → new test** in the matching `backend/test/*.test.js`. Cover the happy path AND every guard (bad input, missing auth, limits). A feature with no failing-case test is not done.
   2. **Changed an endpoint → update its existing test** in the same commit. Never leave a test asserting old behaviour.
-  3. **Run the FULL regression before every push** — not just the file you touched:
+  3. **Run the FULL regression before every push** — all three suites, not just the file you touched:
      ```bash
-     cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/backend && node test/admin_crud.test.js && node test/bulletin.test.js
+     cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/backend && node test/admin_crud.test.js && node test/bulletin.test.js && cd ../admin-ui && npm test
      ```
+  7. **Admin UI (React) changes need a `*.test.jsx` next to the page** (`admin-ui/src/pages/`, vitest + testing-library, run with `npm test`). API tests cannot see React bugs: a `useCallback`/`useEffect` dependency mistake in `Bulletin.jsx` once fired **8,664 requests in 6 seconds** and 142 green API tests never noticed. When a page fetches on mount, **assert the CALL COUNT**, not just the markup — see `Bulletin.test.jsx`.
+  8. **Never key a data-loading `useCallback` on `onSnackbar`** (or any prop from `App.jsx`). `handleShowSnackbar` is recreated on every App render, so `useEffect(..., [load])` re-fires forever once a load fails. Use a plain function with `useEffect(..., [])`, like every other admin page, and render load failures **in-page** rather than through a snackbar.
   4. **Every admin route needs a "rejects without a token" test.** `/api/*` is public; `/admin/*` must 401 unauthenticated and 403 on a bad token. This is how the v71 unauthenticated-moderation hole would have been caught.
   5. **Report real numbers** ("91 passed, 0 failed"). Never say "tests pass" without having run them in that session.
   6. **A test that writes must clean up after itself** (see `cleanup()` in `bulletin.test.js`) and must never reuse a real villager's phone number — check the live poster list first.

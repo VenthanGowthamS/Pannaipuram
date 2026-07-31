@@ -8,13 +8,20 @@ const adminAuth = require('../../middleware/auth');
 const { requireRole, validateIdParam } = require('../../middleware/auth');
 const { isValidEmail } = require('../../middleware/validate');
 
-// Rate limiters for public auth endpoints
+// Rate limiters for public auth endpoints.
+// Disabled outside production: both regression suites log in on every run,
+// so a 10-attempt cap locks the developer out after ~10 runs and the
+// mandatory full regression starts failing for no real reason. Production
+// keeps the brute-force protection untouched.
+const isProd = process.env.NODE_ENV === 'production';
+
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10,                   // 10 attempts per IP
   message: { error: 'Too many login attempts — try again after 15 minutes' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => !isProd,
 });
 
 const registerLimiter = rateLimit({
@@ -23,6 +30,7 @@ const registerLimiter = rateLimit({
   message: { error: 'Too many registration attempts — try again later' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => !isProd,
 });
 
 // POST /admin/auth/login

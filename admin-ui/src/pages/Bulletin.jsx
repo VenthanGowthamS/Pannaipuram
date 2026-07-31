@@ -408,11 +408,12 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
       <Dialog open={compose.open} onClose={() => !compose.saving && setCompose(c => ({ ...c, open: false }))} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <OfficialIcon sx={{ color: '#E65100' }} />
-          Post as பண்ணைப்புரம் நிர்வாகம்
+          Post as admin
         </DialogTitle>
         <DialogContent dividers>
           <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
             Goes live in the app immediately with an official badge — no approval step.
+            Villagers see it credited to <strong>பண்ணைப்புரம் நிர்வாகம்</strong>.
             For a short urgent alert on every screen, use the Announcements tab instead.
           </Typography>
           <TextField
