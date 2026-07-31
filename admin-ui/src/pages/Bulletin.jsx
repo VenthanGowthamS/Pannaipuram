@@ -413,7 +413,7 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
         <DialogContent dividers>
           <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
             Goes live in the app immediately with an official badge — no approval step.
-            Villagers see it credited to <strong>பண்ணைப்புரம் நிர்வாகம்</strong>.
+            Villagers see it credited to <strong>admin</strong>.
             For a short urgent alert on every screen, use the Announcements tab instead.
           </Typography>
           <TextField

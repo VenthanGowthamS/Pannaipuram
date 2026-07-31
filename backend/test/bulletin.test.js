@@ -431,7 +431,7 @@ async function testOfficialAccount() {
     const mine = body.data.find(p => p.id === officialPostId);
     assert(mine, 'Official post missing from feed');
     assert(mine.is_official === true, 'Expected is_official true');
-    assert(mine.name_tamil === 'பண்ணைப்புரம் நிர்வாகம்', `Unexpected name: ${mine.name_tamil}`);
+    assert(mine.name_tamil === 'admin', `Unexpected name: ${mine.name_tamil}`);
   });
 
   await test('Publishing officially without a token → 401', async () => {

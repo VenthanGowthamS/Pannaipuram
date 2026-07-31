@@ -28,7 +28,7 @@ ALTER TABLE community_posters ADD COLUMN IF NOT EXISTS is_official BOOLEAN DEFAU
 -- is_official flag is checked there as a second lock. Only someone holding
 -- an admin JWT can post as this account.
 INSERT INTO community_posters (phone, name_tamil, name_english, is_trusted, is_official)
-VALUES ('1234567890', 'பண்ணைப்புரம் நிர்வாகம்', 'Pannaipuram Admin', TRUE, TRUE)
+VALUES ('1234567890', 'admin', 'admin', TRUE, TRUE)
 ON CONFLICT (phone) DO UPDATE
   SET is_official = TRUE, is_trusted = TRUE, is_blocked = FALSE;
 

@@ -83,7 +83,7 @@ router.post('/post', canWrite, async (req, res) => {
     // the button never dead-ends on a half-migrated database.
     const poster = await query(
       `INSERT INTO community_posters (phone, name_tamil, name_english, is_trusted, is_official)
-       VALUES ($1, 'பண்ணைப்புரம் நிர்வாகம்', 'Pannaipuram Admin', TRUE, TRUE)
+       VALUES ($1, 'admin', 'admin', TRUE, TRUE)
        ON CONFLICT (phone) DO UPDATE SET is_official = TRUE, is_trusted = TRUE
        RETURNING id`,
       [OFFICIAL_PHONE]
