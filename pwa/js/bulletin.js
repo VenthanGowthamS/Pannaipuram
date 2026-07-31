@@ -336,6 +336,23 @@ var Bulletin = (function() {
     });
   }
 
+  // Module-scope (not local to wireCompose) so startEdit() can preload an
+  // existing photo into it. Title/content are only mandatory when this is
+  // empty — a photo is content on its own.
+  var _pendingImage = null;
+
+  function toggleTextRequirement() {
+    var has = !!_pendingImage;
+    var titleReq  = document.getElementById('bulletin-title-req');
+    var titleHint = document.getElementById('bulletin-title-hint');
+    var contentReq  = document.getElementById('bulletin-content-req');
+    var contentHint = document.getElementById('bulletin-content-hint');
+    if (titleReq)    titleReq.hidden    = has;
+    if (titleHint)   titleHint.hidden   = !has;
+    if (contentReq)  contentReq.hidden  = has;
+    if (contentHint) contentHint.hidden = !has;
+  }
+
   function wireCompose() {
     var form = document.getElementById('bulletin-post-form');
     if (!form || form.dataset.wired) return;
@@ -348,17 +365,30 @@ var Bulletin = (function() {
     var result  = document.getElementById('bulletin-post-result');
     var imgIn   = document.getElementById('bulletin-image');
     var preview = document.getElementById('bulletin-image-preview');
-    var pending = null;   // compressed data-URL
+
+    function renderPreview(url, kb, removable) {
+      preview.innerHTML = '<img src="' + url + '" alt="">' +
+        (kb != null ? '<span class="bl-img-kb">' + kb + ' KB</span>' : '') +
+        (removable ? '<button type="button" class="bl-img-remove" id="bulletin-image-remove">✕ படம் நீக்கு</button>' : '');
+      var rm = document.getElementById('bulletin-image-remove');
+      if (rm) rm.addEventListener('click', function() {
+        _pendingImage = null;
+        imgIn.value = '';
+        preview.innerHTML = '';
+        toggleTextRequirement();
+      });
+    }
 
     imgIn.addEventListener('change', async function() {
-      pending = null;
+      _pendingImage = null;
       preview.innerHTML = '';
+      toggleTextRequirement();
       if (!this.files || !this.files.length) return;
       preview.innerHTML = '<span class="bl-img-wait">படத்தை சின்னதாக்குறோம்…</span>';
       try {
-        pending = await compressImage(this.files[0]);
-        var kb = Math.round(pending.length / 1024);
-        preview.innerHTML = '<img src="' + pending + '" alt=""><span class="bl-img-kb">' + kb + ' KB</span>';
+        _pendingImage = await compressImage(this.files[0]);
+        renderPreview(_pendingImage, Math.round(_pendingImage.length / 1024), false);
+        toggleTextRequirement();
       } catch (err) {
         preview.innerHTML = '';
         this.value = '';
@@ -376,8 +406,13 @@ var Bulletin = (function() {
       var bodyTa  = (document.getElementById('bulletin-content-ta').value || '').trim();
       var bodyEn  = (document.getElementById('bulletin-content-en').value || '').trim();
 
-      if (titleTa.length < 5)  { say(result, 'தலைப்பு கொஞ்சம் பெரிசா எழுதுங்க', false); return; }
-      if (bodyTa.length < 10)  { say(result, 'விபரம் கொஞ்சம் விளக்கமா எழுதுங்க', false); return; }
+      // A photo is content on its own — text is only required without one.
+      // Kept in sync with the server (validatePostContent in bulletin.js);
+      // this is just the fast client-side check, the server has the final say.
+      if (!_pendingImage) {
+        if (titleTa.length < 5) { say(result, 'தலைப்பு கொஞ்சம் பெரிசா எழுதுங்க (அல்லது ஒரு படம் சேருங்க)', false); return; }
+        if (bodyTa.length < 10) { say(result, 'விபரம் கொஞ்சம் விளக்கமா எழுதுங்க (அல்லது ஒரு படம் சேருங்க)', false); return; }
+      }
 
       // UX gate — keeps the feed about the village, not forwards/spam.
       // Skipped when editing: they already agreed when they first posted.
@@ -398,7 +433,7 @@ var Bulletin = (function() {
           title_english: titleEn,
           content_tamil: bodyTa,
           content_english: bodyEn,
-          image_url: pending,
+          image_url: _pendingImage,
         };
 
         if (_editing) {
@@ -406,7 +441,7 @@ var Bulletin = (function() {
           var upd = await PannaiAPI.editPost(_editing, payload);
           cancelEdit();
           preview.innerHTML = '';
-          pending = null;
+          _pendingImage = null;
           await loadFeed(true);
           say(result, upd.requeued
             ? '✅ திருத்தியாச்சு — நிர்வாகி பாத்து சரின்னு சொன்னதும் எல்லாருக்கும் தெரியும்'
@@ -418,7 +453,8 @@ var Bulletin = (function() {
 
         form.reset();
         preview.innerHTML = '';
-        pending = null;
+        _pendingImage = null;
+        toggleTextRequirement();
 
         if (data.status === 'approved') {
           say(result, '✅ செய்தி வெளியாகிடுச்சு!', true);
@@ -436,6 +472,10 @@ var Bulletin = (function() {
         btn.textContent = label;
       }
     });
+
+    // Expose so startEdit() (defined below, outside this closure) can show
+    // an existing post's photo without duplicating the preview markup.
+    wireCompose._renderPreview = renderPreview;
   }
 
   // ── Edit / delete own post ──────────────────────────────────────
@@ -453,6 +493,19 @@ var Bulletin = (function() {
     document.getElementById('bulletin-content-ta').value = p.content_tamil || '';
     document.getElementById('bulletin-content-en').value = p.content_english || '';
 
+    // Preload the EXISTING photo so submitting without touching the file
+    // input keeps it. Without this, editing a photo post silently deleted
+    // the photo — the file input has nothing in it until the user re-picks
+    // a file, so the old code sent image_url:null and wiped it on save.
+    _pendingImage = p.image_url || null;
+    if (_pendingImage && wireCompose._renderPreview) {
+      wireCompose._renderPreview(_pendingImage, null, true);   // removable: shows ✕
+    } else {
+      var prev = document.getElementById('bulletin-image-preview');
+      if (prev) prev.innerHTML = '';
+    }
+    toggleTextRequirement();
+
     var wrap = document.querySelector('.bl-compose');
     if (wrap) wrap.open = true;                     // expand the collapsed composer
     var btn = document.getElementById('bulletin-post-btn');
@@ -466,6 +519,7 @@ var Bulletin = (function() {
 
   function cancelEdit() {
     _editing = null;
+    _pendingImage = null;
     var form = document.getElementById('bulletin-post-form');
     if (form) form.reset();
     var prev = document.getElementById('bulletin-image-preview');
@@ -476,6 +530,7 @@ var Bulletin = (function() {
     if (cancel) cancel.hidden = true;
     var wrap = document.querySelector('.bl-compose');
     if (wrap) wrap.open = false;
+    toggleTextRequirement();
   }
 
   async function removePost(id) {

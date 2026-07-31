@@ -76,6 +76,7 @@
   margin: 10px 0 4px;
 }
 .bl-req { color: #C62828; }
+.bl-req-hint { font-size: 0.72rem; font-weight: 400; color: var(--color-muted); }
 .bl-input {
   width: 100%;
   padding: 11px 12px;
@@ -232,10 +233,13 @@
 
 .bl-img-preview { margin-top: 8px; position: relative; }
 .bl-img-preview img {
+  /* contain — same reasoning as .bl-img. A cropped preview would let
+     someone post a photo without ever seeing what actually got cut off. */
   width: 100%;
-  max-height: 220px;
-  object-fit: cover;
+  max-height: 260px;
+  object-fit: contain;
   border-radius: 8px;
+  background: #ECEFF1;
 }
 .bl-img-kb {
   position: absolute;
@@ -246,6 +250,21 @@
   padding: 3px 7px;
   border-radius: 10px;
 }
+/* Shown only when editing an existing post's photo (see startEdit) — the
+   only way to detach it, since re-picking a file is the only other option. */
+.bl-img-remove {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: rgba(0,0,0,0.65);
+  color: #fff;
+  border: none;
+  font-family: inherit;
+  font-size: 0.72rem;
+  padding: 5px 9px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.bl-img-remove:active { background: rgba(0,0,0,0.8); }
 .bl-img-wait {
   font-family: var(--font-tamil);
   font-size: 0.8rem;
@@ -367,9 +386,13 @@
   overflow-wrap: anywhere;
 }
 .bl-img {
+  /* contain, not cover: a villager posting a photo of a burst pipe or a
+     torn road wants the WHOLE photo seen, not a fixed box cropping out
+     whatever "cover" decided didn't fit. max-height only caps runaway
+     panoramas — it never crops, it letterboxes on the grey background. */
   width: 100%;
-  max-height: 320px;
-  object-fit: cover;
+  max-height: 400px;
+  object-fit: contain;
   border-radius: 8px;
   margin-top: 10px;
   background: #ECEFF1;

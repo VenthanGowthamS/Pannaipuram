@@ -5,6 +5,7 @@ const router  = express.Router();
 const { query } = require('../../db/pool');
 const adminAuth = require('../../middleware/auth');
 const { requireRole, validateIdParam } = require('../../middleware/auth');
+const { validatePostContent } = require('../bulletin');
 
 router.use(adminAuth);
 
@@ -63,20 +64,10 @@ const OFFICIAL_PHONE = '1234567890';
 router.post('/post', canWrite, async (req, res) => {
   const { title_tamil, title_english, content_tamil, content_english, image_url } = req.body || {};
 
-  if (!title_tamil || String(title_tamil).trim().length < 5) {
-    return res.status(400).json({ success: false, error: 'Title too short (min 5 characters)' });
-  }
-  if (!content_tamil || String(content_tamil).trim().length < 10) {
-    return res.status(400).json({ success: false, error: 'Content too short (min 10 characters)' });
-  }
-  if (image_url != null && image_url !== '') {
-    if (!/^data:image\/(jpeg|jpg|png|webp);base64,/i.test(image_url)) {
-      return res.status(400).json({ success: false, error: 'Image must be a JPEG/PNG/WebP data URL' });
-    }
-    if (image_url.length > 150 * 1024) {
-      return res.status(400).json({ success: false, error: 'Image too large (max 150KB)' });
-    }
-  }
+  // Same rule as villager posts: an attached image is content on its own,
+  // so title/content are only required when there is no image.
+  const contentErr = validatePostContent({ title_tamil, content_tamil, image_url });
+  if (contentErr) return res.status(400).json({ success: false, error: contentErr });
 
   try {
     // Self-healing: if the migration's seed row is missing, create it here so
@@ -96,9 +87,9 @@ router.post('/post', canWrite, async (req, res) => {
        RETURNING id, status, created_at, expires_at`,
       [
         poster.rows[0].id,
-        String(title_tamil).trim(),
+        String(title_tamil || '').trim(),
         title_english ? String(title_english).trim() : null,
-        String(content_tamil).trim(),
+        String(content_tamil || '').trim(),
         content_english ? String(content_english).trim() : null,
         image_url || null,
       ]

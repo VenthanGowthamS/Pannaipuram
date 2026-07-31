@@ -257,6 +257,32 @@ async function testSubmitValidation() {
     const { status } = await submit(posterId, { image_url: huge });
     assert(status === 400, `Expected 400, got ${status}`);
   });
+
+  // ── image makes title/content optional ──
+  // A villager sharing a photo of a burst pipe shouldn't have to also type
+  // a paragraph — the photo IS the content.
+  await test('No image AND no title/content → 400', async () => {
+    const { status } = await submit(posterId, { title_tamil: '', content_tamil: '' });
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test('An image with NO title and NO content → 200 (image is enough)', async () => {
+    const { status, body } = await submit(posterId, {
+      title_tamil: '', content_tamil: '', image_url: TINY_JPEG,
+    });
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+    assert(body.data && Number.isInteger(body.data.id), 'Expected a created post id');
+  });
+
+  await test('An image with a title but NO content → 200', async () => {
+    // Fresh poster: the previous test already used posterId's one-per-day
+    // allowance, and this checks the validation rule, not the daily limit.
+    const { posterId: freshId } = await registerVillager('சோதனை மூணு');
+    const { status, body } = await submit(freshId, {
+      title_tamil: 'குட்டி தலைப்பு', content_tamil: '', image_url: TINY_JPEG,
+    });
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+  });
 }
 
 async function testModerationFlow() {
@@ -446,6 +472,14 @@ async function testOfficialAccount() {
     assert(status === 400, `Expected 400, got ${status}`);
   });
 
+  await test('Official post with an image and NO title/content → 200', async () => {
+    const { status, body } = await post('/admin/bulletin/post', {
+      title_tamil: '', content_tamil: '', image_url: TINY_JPEG,
+    }, auth());
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+    created.postIds.push(body.data.id);
+  });
+
   // ── Impersonation guards ──
   await test('The official phone cannot be registered from the public form', async () => {
     const { status } = await post('/api/bulletin/register', {
@@ -615,6 +649,22 @@ async function testVillagerEditDelete() {
     const { status } = await patch(`/api/bulletin/${postId}`, {
       poster_id: v.posterId, phone: v.phone, ...EDIT,
       image_url: 'data:image/jpeg;base64,' + 'A'.repeat(200 * 1024),
+    });
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  // ── image makes title/content optional on edit too ──
+  await test('PATCH with an image and NO title/content → 200 (image is enough)', async () => {
+    const { status, body } = await patch(`/api/bulletin/${postId}`, {
+      poster_id: v.posterId, phone: v.phone,
+      title_tamil: '', content_tamil: '', image_url: TINY_JPEG,
+    });
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+  });
+
+  await test('PATCH with NO image and NO title/content → 400', async () => {
+    const { status } = await patch(`/api/bulletin/${postId}`, {
+      poster_id: v.posterId, phone: v.phone, title_tamil: '', content_tamil: '',
     });
     assert(status === 400, `Expected 400, got ${status}`);
   });

@@ -22,6 +22,29 @@ function isValidImage(url) {
 const MIN_TITLE   = 5;
 const MIN_CONTENT = 10;
 
+function hasImage(image_url) {
+  return image_url != null && image_url !== '';
+}
+
+// Shared by submit + edit. A photo is content on its own — a villager
+// sharing "water pipe burst on my street" with a picture shouldn't be
+// blocked for not also typing a paragraph. Text-only posts still need real
+// substance so the feed doesn't fill with one-word "posts".
+function validatePostContent({ title_tamil, content_tamil, image_url }) {
+  if (hasImage(image_url)) {
+    if (!isValidImage(image_url)) return 'படம் சரியில்லை (JPEG/PNG/WebP மட்டும்)';
+    if (image_url.length > MAX_IMAGE_BYTES) return 'படம் ரொம்ப பெரிசு (அதிகபட்சம் 150KB)';
+    return null;
+  }
+  if (!title_tamil || String(title_tamil).trim().length < MIN_TITLE) {
+    return `தலைப்பு குறைந்தது ${MIN_TITLE} எழுத்து வேணும் (அல்லது ஒரு படம் சேருங்க)`;
+  }
+  if (!content_tamil || String(content_tamil).trim().length < MIN_CONTENT) {
+    return `விபரம் குறைந்தது ${MIN_CONTENT} எழுத்து வேணும் (அல்லது ஒரு படம் சேருங்க)`;
+  }
+  return null;
+}
+
 // ── GET /api/bulletin — live feed (approved + unexpired) ──────────
 // ?device_id=<id>  marks which posts this device already liked.
 // ?poster_id=<id>  additionally returns THAT poster's own pending posts, so
@@ -122,20 +145,8 @@ router.patch('/:id', async (req, res) => {
     content_tamil, content_english, image_url,
   } = req.body || {};
 
-  if (!title_tamil || String(title_tamil).trim().length < MIN_TITLE) {
-    return res.status(400).json({ success: false, error: `தலைப்பு குறைந்தது ${MIN_TITLE} எழுத்து வேணும்` });
-  }
-  if (!content_tamil || String(content_tamil).trim().length < MIN_CONTENT) {
-    return res.status(400).json({ success: false, error: `விபரம் குறைந்தது ${MIN_CONTENT} எழுத்து வேணும்` });
-  }
-  if (image_url != null && image_url !== '') {
-    if (!isValidImage(image_url)) {
-      return res.status(400).json({ success: false, error: 'படம் சரியில்லை (JPEG/PNG/WebP மட்டும்)' });
-    }
-    if (image_url.length > MAX_IMAGE_BYTES) {
-      return res.status(400).json({ success: false, error: 'படம் ரொம்ப பெரிசு (அதிகபட்சம் 150KB)' });
-    }
-  }
+  const contentErr = validatePostContent({ title_tamil, content_tamil, image_url });
+  if (contentErr) return res.status(400).json({ success: false, error: contentErr });
 
   try {
     const { err, post } = await loadOwnedPost(postId, poster_id, phone);
@@ -151,9 +162,9 @@ router.patch('/:id', async (req, res) => {
         WHERE id = $7
       RETURNING id, status`,
       [
-        String(title_tamil).trim(),
+        String(title_tamil || '').trim(),
         title_english ? String(title_english).trim() : null,
-        String(content_tamil).trim(),
+        String(content_tamil || '').trim(),
         content_english ? String(content_english).trim() : null,
         image_url || null,
         newStatus,
@@ -271,20 +282,8 @@ router.post('/submit', async (req, res) => {
   if (!Number.isInteger(pid) || pid <= 0) {
     return res.status(400).json({ success: false, error: 'முதலில் பதிவு செய்யுங்க' });
   }
-  if (!title_tamil || String(title_tamil).trim().length < MIN_TITLE) {
-    return res.status(400).json({ success: false, error: `தலைப்பு குறைந்தது ${MIN_TITLE} எழுத்து வேணும்` });
-  }
-  if (!content_tamil || String(content_tamil).trim().length < MIN_CONTENT) {
-    return res.status(400).json({ success: false, error: `விபரம் குறைந்தது ${MIN_CONTENT} எழுத்து வேணும்` });
-  }
-  if (image_url != null && image_url !== '') {
-    if (!isValidImage(image_url)) {
-      return res.status(400).json({ success: false, error: 'படம் சரியில்லை (JPEG/PNG/WebP மட்டும்)' });
-    }
-    if (image_url.length > MAX_IMAGE_BYTES) {
-      return res.status(400).json({ success: false, error: 'படம் ரொம்ப பெரிசு (அதிகபட்சம் 150KB)' });
-    }
-  }
+  const contentErr = validatePostContent({ title_tamil, content_tamil, image_url });
+  if (contentErr) return res.status(400).json({ success: false, error: contentErr });
 
   const client = await getClient();
   try {
@@ -335,9 +334,9 @@ router.post('/submit', async (req, res) => {
        RETURNING id, status, created_at`,
       [
         pid,
-        String(title_tamil).trim(),
+        String(title_tamil || '').trim(),
         title_english ? String(title_english).trim() : null,
-        String(content_tamil).trim(),
+        String(content_tamil || '').trim(),
         content_english ? String(content_english).trim() : null,
         image_url || null,
         status,
@@ -421,3 +420,4 @@ router.post('/:id/like', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.validatePostContent = validatePostContent;

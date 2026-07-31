@@ -746,15 +746,25 @@
             <span class="bl-compose-close" aria-hidden="true">✕</span>
           </summary>
           <form id="bulletin-post-form" class="bl-form" novalidate>
-            <label class="bl-label" for="bulletin-title-ta">தலைப்பு (தமிழ்) <span class="bl-req">*</span></label>
-            <input id="bulletin-title-ta" class="bl-input" type="text" placeholder="எ.கா: நாளைக்கு தண்ணி வராது" maxlength="200" required>
+            <!-- title/content are only mandatory when there is NO image — a
+                 photo is content on its own. bulletin.js toggles the "*" and
+                 this hint via toggleTextRequirement() whenever an image is
+                 added or removed. -->
+            <label class="bl-label" for="bulletin-title-ta">தலைப்பு (தமிழ்)
+              <span class="bl-req" id="bulletin-title-req">*</span>
+              <span class="bl-req-hint" id="bulletin-title-hint" hidden>(படம் இருந்தா வேண்டாம்)</span>
+            </label>
+            <input id="bulletin-title-ta" class="bl-input" type="text" placeholder="எ.கா: நாளைக்கு தண்ணி வராது" maxlength="200">
 
             <label class="bl-label" for="bulletin-title-en">தலைப்பு (English)</label>
             <input id="bulletin-title-en" class="bl-input" type="text" placeholder="Headline — optional" maxlength="200">
 
-            <label class="bl-label" for="bulletin-content-ta">விபரம் (தமிழ்) <span class="bl-req">*</span></label>
+            <label class="bl-label" for="bulletin-content-ta">விபரம் (தமிழ்)
+              <span class="bl-req" id="bulletin-content-req">*</span>
+              <span class="bl-req-hint" id="bulletin-content-hint" hidden>(படம் இருந்தா வேண்டாம்)</span>
+            </label>
             <textarea id="bulletin-content-ta" class="bl-input bl-textarea" rows="4"
-                      placeholder="என்ன நடந்துச்சு? எங்க, எப்போன்னு விளக்கமா சொல்லுங்க" maxlength="1000" required></textarea>
+                      placeholder="என்ன நடந்துச்சு? எங்க, எப்போன்னு விளக்கமா சொல்லுங்க" maxlength="1000"></textarea>
 
             <label class="bl-label" for="bulletin-content-en">விபரம் (English)</label>
             <textarea id="bulletin-content-en" class="bl-input bl-textarea" rows="2"
