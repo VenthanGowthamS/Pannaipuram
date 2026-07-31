@@ -558,11 +558,17 @@ document.addEventListener('DOMContentLoaded', function() {
       if (e.key === 'Escape' && drawer.classList.contains('open')) closeDrawer();
     });
 
-    // Menu items → open corresponding sheet
+    // Menu items → either switch a main tab (data-section, e.g. அவசரம்,
+    // which lives in the drawer so the bottom bar can stay at 5 tabs) or
+    // open a sheet (data-sheet).
     drawer.querySelectorAll('.menu-item').forEach(function(item) {
       item.addEventListener('click', function() {
-        var sheetId = item.dataset.sheet;
-        openSheet(sheetId);
+        if (item.dataset.section) {
+          closeDrawer();
+          switchSection(item.dataset.section, true);
+          return;
+        }
+        openSheet(item.dataset.sheet);
       });
     });
 

@@ -10,11 +10,11 @@
   height: calc(var(--nav-height) + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
   display: flex;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-x: contain;
+  /* Exactly 5 tabs, so nothing overflows and the bar must NOT scroll.
+     overflow must stay visible: it is what lets .nav-tab-news lift above
+     the bar. The old overflow-x:auto forced overflow-y to a clipping value
+     and cut the raised button off. */
+  overflow: visible;
   background: var(--color-bg);
   border-top: 1px solid var(--color-border);
   z-index: 100;
@@ -23,8 +23,12 @@
 #bottom-nav::-webkit-scrollbar { display: none; }
 
 .nav-tab {
-  flex: 1 0 auto;
-  min-width: 66px;
+  /* Five equal columns: பேருந்து · ஆட்டோ · [சங்கமம்] · மருத்துவம் · மேலும்
+     An odd count is what puts சங்கமம் at the true centre — with six tabs the
+     midpoint fell between two of them and it always looked off. min-width:0
+     lets long Tamil labels shrink instead of forcing an overflow. */
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -38,15 +42,17 @@
 
 /* ── சங்கமம் — the centre tab, deliberately loud ───────────── */
 .nav-tab-news {
-  flex: 0 0 auto;
-  min-width: 78px;
+  flex: 1 1 0;
+  min-width: 0;
+  /* Lifted above the bar as the centre action. Only safe because the bar is
+     now overflow:visible with exactly 5 tabs — while it was a scroller,
+     overflow-y computed to a clipping value and cut the raise off, leaving
+     the button untappable. If the bar ever scrolls again, drop this raise. */
+  margin-top: -16px;
+  justify-content: flex-start;
 }
-/* Sits INSIDE the bar, not raised above it: #bottom-nav needs overflow-x:auto
-   for the scroller, which forces overflow-y to compute to a non-visible value,
-   so anything poking out of the top gets clipped. Prominence comes from the
-   filled circle and bold label instead of a raise. */
 .nav-tab-news .nav-icon {
-  width: 40px; height: 40px;
+  width: 50px; height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -246,6 +252,15 @@ body[data-section="bulletin"] .app-toast  { background: #1B5E20; }
   transition: background var(--trans-fast);
 }
 .menu-item:active { background: #F4F6FA; }
+/* அவசரம் lives in the drawer rather than the bottom bar (5 tabs keeps
+   சங்கமம் centred), so it has to carry its own urgency here — a red rail and
+   red label, sitting first in the list. */
+.menu-item-urgent {
+  border-left: 4px solid #C62828;
+  background: #FFF5F5;
+}
+.menu-item-urgent .menu-item-ta { color: #C62828; font-weight: 700; }
+.menu-item-urgent:active { background: #FFEBEE; }
 .menu-item-icon { font-size: 22px; line-height: 1; flex-shrink: 0; }
 .menu-item-text {
   flex: 1;

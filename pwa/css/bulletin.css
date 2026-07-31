@@ -404,3 +404,62 @@
   html body .bl-panel,
   html body .bl-feed { max-width: 640px; margin-left: auto; margin-right: auto; }
 }
+
+/* ── Own-post controls (edit / delete) ────────────────────────────
+   Only rendered on posts belonging to this device's registered poster.
+   Deliberately quiet — secondary to the like button, which is the action
+   everyone else uses. */
+.bl-own {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 0 var(--space-md) var(--space-md);
+  border-top: 1px dashed var(--color-border);
+  margin-top: 2px;
+  padding-top: var(--space-sm);
+}
+.bl-own-btn {
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 12px;
+  min-height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: #37474F;
+  cursor: pointer;
+}
+.bl-own-btn:active { background: #ECEFF1; }
+.bl-own-btn.is-del { color: #C62828; border-color: #FFCDD2; }
+.bl-own-btn.is-del:active { background: #FFEBEE; }
+
+/* "Waiting for the admin" — shown to the AUTHOR only, so their post never
+   looks like it silently vanished after submitting or editing. */
+.bl-pending {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #E65100;
+  background: #FFF3E0;
+  border-radius: 999px;
+  padding: 5px 10px;
+  margin-right: auto;
+}
+.bl-card.is-pending { border-left: 4px solid #FFB74D; }
+
+.bl-btn-cancel {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  min-height: 48px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: #546E7A;
+  cursor: pointer;
+}
+.bl-btn-cancel:active { background: #ECEFF1; }

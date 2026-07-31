@@ -2,7 +2,7 @@
 // Three-tier cache: in-memory → localStorage → network.
 // localStorage survives reloads, making the app usable offline after first load.
 var _mem = {};
-var CACHE_VERSION = 'pannai-v76';
+var CACHE_VERSION = 'pannai-v77';
 
 // API base — auto-detects hosting environment:
 //   app.pannaipuram.com  → api.pannaipuram.com  (custom domain, future)
@@ -102,12 +102,14 @@ window.PannaiBackgroundRefresh = function(path) {
 // silently drop their post). Rejects with the server's Tamil error message.
 var POST_TIMEOUT_MS = 20000;
 
-function apiPost(path, body) {
+// Any write verb. PATCH/DELETE (villager editing or removing their own post)
+// need exactly the same timeout, no-cache and Tamil-error handling as POST.
+function apiSend(method, path, body) {
   var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
   var timer = setTimeout(function() { if (ctrl) ctrl.abort(); }, POST_TIMEOUT_MS);
 
   return fetch(apiUrl(path), {
-    method: 'POST',
+    method: method,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body || {}),
     signal: ctrl ? ctrl.signal : undefined,
@@ -130,6 +132,8 @@ function apiPost(path, body) {
     .finally(function() { clearTimeout(timer); });
 }
 
+function apiPost(path, body) { return apiSend('POST', path, body); }
+
 var PannaiAPI = {
   // Batch: corridors + all timings in ONE request (replaces 18 round trips)
   getBusAll:       function(force) { return apiFetch('/api/bus/all', { force: force }); },
@@ -146,14 +150,22 @@ var PannaiAPI = {
   getAnnouncements:function(force) { return apiFetch('/api/announcements', { force: force }); },
 
   // ── Community Bulletin (சங்கமம்) ──
-  getBulletin:      function(deviceId, force) {
-    return apiFetch('/api/bulletin?device_id=' + encodeURIComponent(deviceId || ''), { force: force });
+  // posterId is optional — sending it also returns THIS poster's own pending
+  // posts, so an edit that re-queues a post doesn't look like it vanished.
+  getBulletin:      function(deviceId, force, posterId) {
+    var q = '/api/bulletin?device_id=' + encodeURIComponent(deviceId || '');
+    if (posterId) q += '&poster_id=' + encodeURIComponent(posterId);
+    return apiFetch(q, { force: force });
   },
   registerPoster:   function(payload) { return apiPost('/api/bulletin/register', payload); },
   submitPost:       function(payload) { return apiPost('/api/bulletin/submit', payload); },
   likePost:         function(id, deviceId) {
     return apiPost('/api/bulletin/' + id + '/like', { device_id: deviceId });
   },
+  // Villager self-service. Ownership is proved with poster_id + the phone
+  // given at registration; there is no login.
+  editPost:         function(id, payload) { return apiSend('PATCH', '/api/bulletin/' + id, payload); },
+  deletePost:       function(id, payload) { return apiSend('DELETE', '/api/bulletin/' + id, payload); },
 };
 
 window.PannaiAPI = PannaiAPI;

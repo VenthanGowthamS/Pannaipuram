@@ -75,6 +75,8 @@ const get   = (p, h)    => request('GET', p, null, h);
 const post  = (p, b, h) => request('POST', p, b, h);
 const patch = (p, b, h) => request('PATCH', p, b, h);
 const del   = (p, h)    => request('DELETE', p, null, h);
+// Villager self-delete proves ownership with a body (poster_id + phone).
+const delBody = (p, b, h) => request('DELETE', p, b, h);
 
 const auth = () => ({ Authorization: `Bearer ${authToken}` });
 
@@ -507,6 +509,173 @@ async function testPublicFeedShape() {
 }
 
 // ── Cleanup ────────────────────────────────────────────────────────
+// ── Villager self-service edit / delete ────────────────────────────
+// The rule under test: an UNTRUSTED villager's edit sends the post back to
+// 'pending'. Without that, someone gets a harmless post approved and then
+// rewrites it into spam that is already live in the village feed.
+async function testVillagerEditDelete() {
+  console.log('\n✏️  Villager edit & delete');
+
+  const EDIT = {
+    title_tamil: 'திருத்தப்பட்ட தலைப்பு',
+    content_tamil: 'இது திருத்தப்பட்ட விபரம் — போதுமான நீளம் இருக்கு.',
+  };
+
+  // ── owner can edit, and an untrusted edit re-queues ──
+  const v = await registerVillager('திருத்தும் நபர்');
+  const { body: sub } = await submit(v.posterId);
+  const postId = sub.data && sub.data.id;
+
+  await test('PATCH /api/bulletin/:id — owner edits their own post', async () => {
+    const { status, body } = await patch(`/api/bulletin/${postId}`, {
+      poster_id: v.posterId, phone: v.phone, ...EDIT,
+    });
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+    assert(body.success === true, 'Expected success');
+  });
+
+  await test('an untrusted villager\'s edit sends the post back to pending', async () => {
+    const { body } = await patch(`/api/bulletin/${postId}`, {
+      poster_id: v.posterId, phone: v.phone, ...EDIT,
+    });
+    assert(body.data.status === 'pending', `Expected pending, got ${body.data.status}`);
+    assert(body.data.requeued === true, 'Expected requeued=true so the PWA can explain the wait');
+  });
+
+  // ── the re-queued post must still be visible to ITS OWN author ──
+  await test('GET /api/bulletin?poster_id= shows the author their own pending post', async () => {
+    const { body } = await get(`/api/bulletin?poster_id=${v.posterId}`);
+    const mine = body.data.find(p => p.id === postId);
+    assert(mine, 'Author could not see their own pending post — it would look deleted');
+    assert(mine.status === 'pending', `Expected pending, got ${mine.status}`);
+  });
+
+  await test('GET /api/bulletin (no poster_id) hides pending posts from everyone else', async () => {
+    const { body } = await get('/api/bulletin');
+    assert(!body.data.some(p => p.id === postId), 'A pending post leaked into the public feed');
+  });
+
+  await test('GET /api/bulletin?poster_id= does NOT expose another villager\'s pending post', async () => {
+    const other = await registerVillager('வேறு நபர்');
+    const { body } = await get(`/api/bulletin?poster_id=${other.posterId}`);
+    assert(!body.data.some(p => p.id === postId), 'Passing a different poster_id revealed someone else\'s pending post');
+  });
+
+  // ── ownership guards ──
+  await test('PATCH rejects a wrong phone with 403', async () => {
+    const { status } = await patch(`/api/bulletin/${postId}`, {
+      poster_id: v.posterId, phone: '9000000001', ...EDIT,
+    });
+    assert(status === 403, `Expected 403, got ${status}`);
+  });
+
+  await test('PATCH rejects a mismatched poster_id with 403', async () => {
+    const { status } = await patch(`/api/bulletin/${postId}`, {
+      poster_id: v.posterId + 99999, phone: v.phone, ...EDIT,
+    });
+    assert(status === 403, `Expected 403, got ${status}`);
+  });
+
+  await test('PATCH without poster_id/phone is rejected', async () => {
+    const { status } = await patch(`/api/bulletin/${postId}`, EDIT);
+    assert(status === 400 || status === 403, `Expected 400/403, got ${status}`);
+  });
+
+  await test('PATCH on a non-existent post returns 404', async () => {
+    const { status } = await patch('/api/bulletin/99999999', {
+      poster_id: v.posterId, phone: v.phone, ...EDIT,
+    });
+    assert(status === 404, `Expected 404, got ${status}`);
+  });
+
+  // ── validation still applies to edits ──
+  await test('PATCH rejects a too-short title', async () => {
+    const { status } = await patch(`/api/bulletin/${postId}`, {
+      poster_id: v.posterId, phone: v.phone, title_tamil: 'கு', content_tamil: EDIT.content_tamil,
+    });
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test('PATCH rejects too-short content', async () => {
+    const { status } = await patch(`/api/bulletin/${postId}`, {
+      poster_id: v.posterId, phone: v.phone, title_tamil: EDIT.title_tamil, content_tamil: 'சின்ன',
+    });
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test('PATCH rejects a non-image data URL', async () => {
+    const { status } = await patch(`/api/bulletin/${postId}`, {
+      poster_id: v.posterId, phone: v.phone, ...EDIT,
+      image_url: 'data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==',
+    });
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test('PATCH rejects an oversized image', async () => {
+    const { status } = await patch(`/api/bulletin/${postId}`, {
+      poster_id: v.posterId, phone: v.phone, ...EDIT,
+      image_url: 'data:image/jpeg;base64,' + 'A'.repeat(200 * 1024),
+    });
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  // ── a trusted villager's edit stays live ──
+  await test('a TRUSTED villager\'s edit stays approved (no re-queue)', async () => {
+    const t = await registerVillager('நம்பகமான நபர்');
+    const { body: s } = await submit(t.posterId);
+    await patch(`/admin/bulletin/posters/${t.posterId}`, { is_trusted: true }, auth());
+    const { body } = await patch(`/api/bulletin/${s.data.id}`, {
+      poster_id: t.posterId, phone: t.phone, ...EDIT,
+    });
+    assert(body.data.status === 'approved', `Expected approved, got ${body.data.status}`);
+    assert(body.data.requeued === false, 'A trusted poster should not be re-queued');
+  });
+
+  // ── the official account is admin-only, even with its phone ──
+  await test('the official account cannot be edited through the public route', async () => {
+    const { body: list } = await get('/admin/bulletin/posters/list', auth());
+    const official = (list.data || []).find(p => p.is_official);
+    if (!official) return;                       // migration not applied — nothing to assert
+    const { body: posts } = await get('/admin/bulletin?status=approved', auth());
+    const offPost = (posts.data || []).find(p => p.poster_id === official.id);
+    if (!offPost) return;                        // no official post exists yet
+    const { status } = await patch(`/api/bulletin/${offPost.id}`, {
+      poster_id: official.id, phone: official.phone, ...EDIT,
+    });
+    assert(status === 403, `Expected 403, got ${status}`);
+  });
+
+  // ── delete ──
+  await test('DELETE rejects a wrong phone with 403', async () => {
+    const { status } = await delBody(`/api/bulletin/${postId}`, {
+      poster_id: v.posterId, phone: '9000000002',
+    });
+    assert(status === 403, `Expected 403, got ${status}`);
+  });
+
+  await test('DELETE on a non-existent post returns 404', async () => {
+    const { status } = await delBody('/api/bulletin/99999999', {
+      poster_id: v.posterId, phone: v.phone,
+    });
+    assert(status === 404, `Expected 404, got ${status}`);
+  });
+
+  await test('DELETE /api/bulletin/:id — owner removes their own post', async () => {
+    const { status, body } = await delBody(`/api/bulletin/${postId}`, {
+      poster_id: v.posterId, phone: v.phone,
+    });
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+    const { body: feed } = await get(`/api/bulletin?poster_id=${v.posterId}`);
+    assert(!feed.data.some(p => p.id === postId), 'Post still in the feed after delete');
+  });
+
+  await test('deleting a post does NOT refund the one-per-day allowance', async () => {
+    // Otherwise post -> delete -> post loops around the daily limit forever.
+    const { status } = await submit(v.posterId);
+    assert(status === 429, `Expected 429 after delete, got ${status} — the daily limit is bypassable`);
+  });
+}
+
 async function cleanup() {
   console.log('\n🧹 Cleanup');
   let removed = 0;
@@ -539,6 +708,7 @@ async function cleanup() {
     if (postId) await testLikes(postId);
     await testTrustedAndBlocked();
     await testOfficialAccount();
+    await testVillagerEditDelete();
     await testPublicFeedShape();
   } catch (e) {
     console.error('\n💥 Suite crashed:', e.message);

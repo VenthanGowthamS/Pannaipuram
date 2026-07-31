@@ -23,13 +23,21 @@ const MIN_TITLE   = 5;
 const MIN_CONTENT = 10;
 
 // ── GET /api/bulletin — live feed (approved + unexpired) ──────────
-// ?device_id=<id> marks which posts this device already liked.
+// ?device_id=<id>  marks which posts this device already liked.
+// ?poster_id=<id>  additionally returns THAT poster's own pending posts, so
+//                  after an edit re-queues a post its author still sees it
+//                  (labelled "awaiting approval") instead of it vanishing.
+//                  Only ever exposes the caller's own pending rows.
 router.get('/', async (req, res) => {
   const deviceId = req.query.device_id ? String(req.query.device_id).slice(0, 64) : null;
+  const ownRaw = Number(req.query.poster_id);
+  const ownPosterId = Number.isInteger(ownRaw) && ownRaw > 0 ? ownRaw : null;
   try {
     const result = await query(
       `SELECT
          p.id,
+         p.poster_id,
+         p.status,
          p.title_tamil,
          p.title_english,
          p.content_tamil,
@@ -45,17 +53,149 @@ router.get('/', async (req, res) => {
        FROM community_posts p
        JOIN community_posters poster ON p.poster_id = poster.id
        LEFT JOIN community_post_likes l ON l.post_id = p.id
-       WHERE p.status = 'approved'
-         AND p.expires_at > NOW()
+       WHERE p.expires_at > NOW()
+         AND (
+           p.status = 'approved'
+           OR ($2::int IS NOT NULL AND p.poster_id = $2::int AND p.status = 'pending')
+         )
        GROUP BY p.id, poster.id
        ORDER BY p.created_at DESC
        LIMIT 100`,
-      [deviceId]
+      [deviceId, ownPosterId]
     );
     res.json({ success: true, data: result.rows });
   } catch (err) {
     console.error('bulletin GET error:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch posts' });
+  }
+});
+
+// ── Ownership check for villager edit/delete ──────────────────────
+// There is no login, so the phone given at registration is the shared
+// secret: poster_id alone is a small sequential integer and trivially
+// guessable, phone+id together is not. This is proportionate to the data
+// (village notices, already public once approved) — it is NOT authentication,
+// and the official account is excluded from these routes entirely.
+async function loadOwnedPost(postId, posterIdRaw, phoneRaw) {
+  const pid = Number(posterIdRaw);
+  const phone = String(phoneRaw == null ? '' : phoneRaw).trim();
+  if (!Number.isInteger(pid) || pid <= 0 || !phone) return { err: 'bad_request' };
+
+  const r = await query(
+    `SELECT p.id, p.poster_id, p.status,
+            po.phone, po.is_trusted, po.is_blocked, po.is_official
+     FROM community_posts p
+     JOIN community_posters po ON po.id = p.poster_id
+     WHERE p.id = $1`,
+    [postId]
+  );
+  if (r.rows.length === 0) return { err: 'not_found' };
+
+  const row = r.rows[0];
+  // Same 403 for "not yours" and "wrong phone" so this can't be used to
+  // enumerate which post ids belong to which villager.
+  if (row.poster_id !== pid || row.phone !== phone) return { err: 'forbidden' };
+  if (row.is_blocked) return { err: 'blocked' };
+  if (row.is_official) return { err: 'forbidden' };   // admin panel only
+  return { post: row };
+}
+
+function ownershipError(res, err) {
+  if (err === 'bad_request') return res.status(400).json({ success: false, error: 'முதலில் பதிவு செய்யுங்க' });
+  if (err === 'not_found')   return res.status(404).json({ success: false, error: 'செய்தி கிடைக்கல' });
+  if (err === 'blocked')     return res.status(403).json({ success: false, error: 'உங்களுக்கு அனுமதி இல்லை' });
+  return res.status(403).json({ success: false, error: 'இது உங்க செய்தி இல்ல' });
+}
+
+// ── PATCH /api/bulletin/:id — villager edits their OWN post ───────
+// An untrusted poster's edit sends the post back to 'pending' for review.
+// Without that, someone could get a harmless post approved and then rewrite
+// it into spam that is already live under the village's feed.
+router.patch('/:id', async (req, res) => {
+  const postId = Number(req.params.id);
+  if (!Number.isInteger(postId) || postId <= 0) {
+    return res.status(400).json({ success: false, error: 'Invalid post id' });
+  }
+
+  const {
+    poster_id, phone, title_tamil, title_english,
+    content_tamil, content_english, image_url,
+  } = req.body || {};
+
+  if (!title_tamil || String(title_tamil).trim().length < MIN_TITLE) {
+    return res.status(400).json({ success: false, error: `தலைப்பு குறைந்தது ${MIN_TITLE} எழுத்து வேணும்` });
+  }
+  if (!content_tamil || String(content_tamil).trim().length < MIN_CONTENT) {
+    return res.status(400).json({ success: false, error: `விபரம் குறைந்தது ${MIN_CONTENT} எழுத்து வேணும்` });
+  }
+  if (image_url != null && image_url !== '') {
+    if (!isValidImage(image_url)) {
+      return res.status(400).json({ success: false, error: 'படம் சரியில்லை (JPEG/PNG/WebP மட்டும்)' });
+    }
+    if (image_url.length > MAX_IMAGE_BYTES) {
+      return res.status(400).json({ success: false, error: 'படம் ரொம்ப பெரிசு (அதிகபட்சம் 150KB)' });
+    }
+  }
+
+  try {
+    const { err, post } = await loadOwnedPost(postId, poster_id, phone);
+    if (err) return ownershipError(res, err);
+
+    const newStatus = post.is_trusted === true ? 'approved' : 'pending';
+
+    const upd = await query(
+      `UPDATE community_posts
+          SET title_tamil = $1, title_english = $2,
+              content_tamil = $3, content_english = $4,
+              image_url = $5, status = $6
+        WHERE id = $7
+      RETURNING id, status`,
+      [
+        String(title_tamil).trim(),
+        title_english ? String(title_english).trim() : null,
+        String(content_tamil).trim(),
+        content_english ? String(content_english).trim() : null,
+        image_url || null,
+        newStatus,
+        postId,
+      ]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        id: upd.rows[0].id,
+        status: upd.rows[0].status,
+        // Lets the PWA say "your edit is waiting for approval" rather than
+        // leaving the villager wondering where their post went.
+        requeued: newStatus === 'pending',
+      },
+    });
+  } catch (e) {
+    console.error('bulletin edit error:', e);
+    res.status(500).json({ success: false, error: 'திருத்த முடியல' });
+  }
+});
+
+// ── DELETE /api/bulletin/:id — villager deletes their OWN post ────
+// Likes cascade. Does NOT refund the daily allowance: otherwise post →
+// delete → post becomes an unlimited loop around the one-per-day limit.
+router.delete('/:id', async (req, res) => {
+  const postId = Number(req.params.id);
+  if (!Number.isInteger(postId) || postId <= 0) {
+    return res.status(400).json({ success: false, error: 'Invalid post id' });
+  }
+
+  const body = req.body || {};
+  try {
+    const { err } = await loadOwnedPost(postId, body.poster_id, body.phone);
+    if (err) return ownershipError(res, err);
+
+    await query('DELETE FROM community_posts WHERE id = $1', [postId]);
+    res.json({ success: true, data: { id: postId, deleted: true } });
+  } catch (e) {
+    console.error('bulletin delete error:', e);
+    res.status(500).json({ success: false, error: 'நீக்க முடியல' });
   }
 });
 

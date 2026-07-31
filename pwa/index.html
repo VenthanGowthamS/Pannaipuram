@@ -93,6 +93,19 @@
       <button id="menu-close" class="menu-close" aria-label="மூடு · Close" type="button">×</button>
     </header>
     <nav class="menu-drawer-nav">
+      <!-- Emergency moved off the bottom bar so சங்கமம் can sit dead centre
+           among 5 tabs. It stays FIRST in the drawer and visually loud —
+           it is the one thing people open in a hurry.
+           data-section (not data-sheet) switches the main tab instead of
+           opening a sheet. -->
+      <button class="menu-item menu-item-urgent" data-section="emergency" type="button">
+        <span class="menu-item-icon">📞</span>
+        <span class="menu-item-text">
+          <span class="menu-item-ta">அவசர தொடர்பு</span>
+          <span class="menu-item-en">Emergency contacts</span>
+        </span>
+        <span class="menu-item-caret">›</span>
+      </button>
       <button class="menu-item" data-sheet="feedback" type="button">
         <span class="menu-item-icon">💬</span>
         <span class="menu-item-text">
@@ -745,6 +758,8 @@
             <div id="bulletin-image-preview" class="bl-img-preview"></div>
 
             <button type="submit" id="bulletin-post-btn" class="bl-btn">பகிருங்க</button>
+            <!-- Only shown while editing an existing post (see startEdit) -->
+            <button type="button" id="bulletin-cancel-edit" class="bl-btn-cancel" hidden>வேணாம், விட்டுடு</button>
             <p id="bulletin-post-result" class="bl-result" hidden></p>
           </form>
         </details>
@@ -776,10 +791,6 @@
     <button class="nav-tab" role="tab" data-section="hospital" aria-selected="false" aria-label="Hospitals and doctors">
       <span class="nav-icon" aria-hidden="true">🏥</span>
       <span class="nav-label">மருத்துவம்</span>
-    </button>
-    <button class="nav-tab" role="tab" data-section="emergency" aria-selected="false" aria-label="Emergency contacts">
-      <span class="nav-icon" aria-hidden="true">📞</span>
-      <span class="nav-label">அவசரம்</span>
     </button>
     <button class="nav-tab" role="tab" data-section="more" aria-selected="false" aria-label="More services">
       <span class="nav-icon" aria-hidden="true">➕</span>

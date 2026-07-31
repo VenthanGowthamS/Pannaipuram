@@ -59,7 +59,21 @@ var Bulletin = (function() {
     var badge = official
       ? '<span class="bl-official">📢 அதிகாரப்பூர்வம்</span>'
       : (p.is_trusted ? '<span class="bl-trust" title="நம்பகமான பதிவாளர்">✅ நம்பகமானவர்</span>' : '');
-    return '<article class="bl-card' + (official ? ' is-official' : '') + '" data-post="' + p.id + '">' +
+    // Own-post controls. Needs a stored phone (the ownership proof) — a
+    // villager registered before v77 has none until they re-register.
+    var me = getPoster();
+    var mine = !!(me && me.phone && String(me.poster_id) === String(p.poster_id));
+    var isPending = p.status === 'pending';
+    var ownBar = mine
+      ? '<div class="bl-own">' +
+          (isPending ? '<span class="bl-pending">⏳ நிர்வாகி பாக்கணும்</span>' : '') +
+          '<button class="bl-own-btn" type="button" data-edit="' + p.id + '">✏️ திருத்து</button>' +
+          '<button class="bl-own-btn is-del" type="button" data-del="' + p.id + '">🗑️ நீக்கு</button>' +
+        '</div>'
+      : '';
+
+    return '<article class="bl-card' + (official ? ' is-official' : '') +
+      (isPending ? ' is-pending' : '') + '" data-post="' + p.id + '">' +
       '<header class="bl-card-head">' +
         '<div class="bl-avatar' + (official ? ' is-official' : '') + '" aria-hidden="true">' +
           (official ? '📢' : esc((p.name_tamil || '?').trim().charAt(0))) + '</div>' +
@@ -81,6 +95,7 @@ var Bulletin = (function() {
           '<span class="bl-like-n">' + likeCount + '</span>' +
         '</button>' +
       '</footer>' +
+      ownBar +
     '</article>';
   }
 
@@ -104,7 +119,11 @@ var Bulletin = (function() {
       host.innerHTML = '<div class="bl-loading">செய்திகளை ஏத்துறோம்…</div>';
     }
     try {
-      _posts = (await PannaiAPI.getBulletin(deviceId(), force)) || [];
+      // Passing our poster_id also returns OUR OWN pending posts, so a post
+      // awaiting approval (or one an edit just re-queued) stays visible to
+      // its author instead of appearing to have been lost.
+      var me = getPoster();
+      _posts = (await PannaiAPI.getBulletin(deviceId(), force, me && me.poster_id)) || [];
       renderFeed();
     } catch (err) {
       if (!_posts.length && host) {
@@ -250,8 +269,21 @@ var Bulletin = (function() {
         var data = await PannaiAPI.registerPoster({
           phone: ph, name_tamil: nameTa, name_english: nameEn,
         });
-        setPoster({ poster_id: data.poster_id, name_tamil: data.name_tamil, is_trusted: data.is_trusted });
+        // Phone is stored because it is the ONLY thing proving ownership when
+        // editing or deleting later — there is no login. Villagers registered
+        // before v77 have no phone saved, so their edit/delete controls stay
+        // hidden until they re-register with "மாத்து".
+        setPoster({
+          poster_id: data.poster_id,
+          phone: data.phone || ph,
+          name_tamil: data.name_tamil,
+          is_trusted: data.is_trusted,
+        });
         applyPosterState();
+        // Re-fetch under the poster-aware URL: the feed loaded anonymously at
+        // init, so without this their own pending posts (and their edit /
+        // delete controls) would not appear until the next refresh.
+        loadFeed(true);
         say(document.getElementById('bulletin-post-result'), '✅ பதிவு ஆயிடுச்சு — இப்ப செய்தி பகிரலாம்', true);
       } catch (err) {
         say(result, '❌ ' + (err.message || 'பதிவு தோல்வி'), false);
@@ -266,6 +298,9 @@ var Bulletin = (function() {
     var form = document.getElementById('bulletin-post-form');
     if (!form || form.dataset.wired) return;
     form.dataset.wired = '1';
+
+    var cancelBtn = document.getElementById('bulletin-cancel-edit');
+    if (cancelBtn) cancelBtn.addEventListener('click', cancelEdit);
 
     var btn     = document.getElementById('bulletin-post-btn');
     var result  = document.getElementById('bulletin-post-result');
@@ -303,24 +338,41 @@ var Bulletin = (function() {
       if (bodyTa.length < 10)  { say(result, 'விபரம் கொஞ்சம் விளக்கமா எழுதுங்க', false); return; }
 
       // UX gate — keeps the feed about the village, not forwards/spam.
-      if (!confirm('இது பண்ணைப்புரம் சம்பந்தமான முக்கியமான தகவலா?\n\nசரி = ஆமா, பகிருங்க\nCancel = இல்ல')) {
+      // Skipped when editing: they already agreed when they first posted.
+      if (!_editing &&
+          !confirm('இது பண்ணைப்புரம் சம்பந்தமான முக்கியமான தகவலா?\n\nசரி = ஆமா, பகிருங்க\nCancel = இல்ல')) {
         return;
       }
 
       btn.disabled = true;
       var label = btn.textContent;
-      btn.textContent = 'அனுப்புறோம்…';
+      btn.textContent = _editing ? 'திருத்துறோம்…' : 'அனுப்புறோம்…';
       if (result) result.hidden = true;
 
       try {
-        var data = await PannaiAPI.submitPost({
+        var payload = {
           poster_id: poster.poster_id,
           title_tamil: titleTa,
           title_english: titleEn,
           content_tamil: bodyTa,
           content_english: bodyEn,
           image_url: pending,
-        });
+        };
+
+        if (_editing) {
+          payload.phone = poster.phone;
+          var upd = await PannaiAPI.editPost(_editing, payload);
+          cancelEdit();
+          preview.innerHTML = '';
+          pending = null;
+          await loadFeed(true);
+          say(result, upd.requeued
+            ? '✅ திருத்தியாச்சு — நிர்வாகி பாத்து சரின்னு சொன்னதும் எல்லாருக்கும் தெரியும்'
+            : '✅ திருத்தியாச்சு!', true);
+          return;
+        }
+
+        var data = await PannaiAPI.submitPost(payload);
 
         form.reset();
         preview.innerHTML = '';
@@ -328,10 +380,13 @@ var Bulletin = (function() {
 
         if (data.status === 'approved') {
           say(result, '✅ செய்தி வெளியாகிடுச்சு!', true);
-          loadFeed(true);
         } else {
           say(result, '✅ அனுப்பியாச்சு — நிர்வாகி பாத்து சரின்னு சொன்னதும் எல்லாருக்கும் தெரியும்', true);
         }
+        // Reload either way: a pending post still comes back for its own
+        // author (?poster_id=), so they can see it waiting instead of
+        // wondering whether it sent.
+        loadFeed(true);
       } catch (err) {
         say(result, '❌ ' + (err.message || 'அனுப்ப முடியல'), false);
       } finally {
@@ -341,13 +396,72 @@ var Bulletin = (function() {
     });
   }
 
+  // ── Edit / delete own post ──────────────────────────────────────
+  // _editing holds the id being edited; null means the composer creates a
+  // new post. Kept in one place so submit() can branch on it.
+  var _editing = null;
+
+  function startEdit(id) {
+    var p = _posts.find(function(x) { return String(x.id) === String(id); });
+    if (!p) return;
+    _editing = p.id;
+
+    document.getElementById('bulletin-title-ta').value   = p.title_tamil || '';
+    document.getElementById('bulletin-title-en').value   = p.title_english || '';
+    document.getElementById('bulletin-content-ta').value = p.content_tamil || '';
+    document.getElementById('bulletin-content-en').value = p.content_english || '';
+
+    var wrap = document.querySelector('.bl-compose');
+    if (wrap) wrap.open = true;                     // expand the collapsed composer
+    var btn = document.getElementById('bulletin-post-btn');
+    if (btn) btn.textContent = 'திருத்தி அனுப்பு';
+    var cancel = document.getElementById('bulletin-cancel-edit');
+    if (cancel) cancel.hidden = false;
+
+    var compose = document.getElementById('bulletin-compose');
+    if (compose && compose.scrollIntoView) compose.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function cancelEdit() {
+    _editing = null;
+    var form = document.getElementById('bulletin-post-form');
+    if (form) form.reset();
+    var prev = document.getElementById('bulletin-image-preview');
+    if (prev) prev.innerHTML = '';
+    var btn = document.getElementById('bulletin-post-btn');
+    if (btn) btn.textContent = 'செய்தியை அனுப்பு';
+    var cancel = document.getElementById('bulletin-cancel-edit');
+    if (cancel) cancel.hidden = true;
+    var wrap = document.querySelector('.bl-compose');
+    if (wrap) wrap.open = false;
+  }
+
+  async function removePost(id) {
+    var poster = getPoster();
+    if (!poster || !poster.phone) return;
+    if (!confirm('இந்த செய்தியை நீக்கிடலாமா?\n\nசரி = ஆமா, நீக்கு\nCancel = வேணாம்')) return;
+    try {
+      await PannaiAPI.deletePost(id, { poster_id: poster.poster_id, phone: poster.phone });
+      _posts = _posts.filter(function(p) { return String(p.id) !== String(id); });
+      renderFeed();
+      if (String(_editing) === String(id)) cancelEdit();
+      say(document.getElementById('bulletin-post-result'), '✅ செய்தி நீக்கிடுச்சு', true);
+    } catch (err) {
+      say(document.getElementById('bulletin-post-result'), '❌ ' + (err.message || 'நீக்க முடியல'), false);
+    }
+  }
+
   function wireFeedDelegation() {
     var host = document.getElementById('bulletin-posts');
     if (!host || host.dataset.wired) return;
     host.dataset.wired = '1';
     host.addEventListener('click', function(ev) {
-      var btn = ev.target.closest('[data-like]');
-      if (btn) toggleLike(btn.getAttribute('data-like'), btn);
+      var like = ev.target.closest('[data-like]');
+      if (like) { toggleLike(like.getAttribute('data-like'), like); return; }
+      var ed = ev.target.closest('[data-edit]');
+      if (ed) { startEdit(ed.getAttribute('data-edit')); return; }
+      var del = ev.target.closest('[data-del]');
+      if (del) { removePost(del.getAttribute('data-del')); }
     });
   }
 
