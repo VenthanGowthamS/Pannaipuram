@@ -104,7 +104,7 @@ var Bulletin = (function() {
     if (!host) return;
     if (!_posts.length) {
       host.innerHTML = '<div class="bl-empty">' +
-        '<span class="bl-empty-ic">📰</span>' +
+        '<span class="bl-empty-ic">💬</span>' +
         '<p class="bl-empty-ta">இன்னும் செய்தி எதுவும் இல்ல</p>' +
         '<p class="bl-empty-en">Be the first to share village news</p>' +
       '</div>';
