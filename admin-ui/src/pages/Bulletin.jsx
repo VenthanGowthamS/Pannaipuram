@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box, Card, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Typography, Chip, IconButton, Skeleton, Tooltip, Dialog,
@@ -36,12 +36,19 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
   const [posts, setPosts] = useState([]);
   const [posters, setPosters] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
   const [details, setDetails] = useState({ open: false, post: null });
   const BLANK_POST = { title_tamil: '', title_english: '', content_tamil: '', content_english: '', image_url: null };
   const [compose, setCompose] = useState({ open: false, saving: false, ...BLANK_POST });
 
-  const load = useCallback(async () => {
+  // NOTE: `load` must NOT be a useCallback keyed on `onSnackbar`, and the
+  // effect below must NOT depend on `load`. onSnackbar is recreated on every
+  // App render, so a failing load would snackbar -> App re-render -> new
+  // onSnackbar -> new load -> effect refires -> load fails again, looping
+  // forever (measured: ~1,400 requests/second). Plain function + [] on mount,
+  // matching every other admin page.
+  const load = async () => {
     setLoading(true);
     try {
       const [p, po] = await Promise.all([
@@ -50,14 +57,17 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
       ]);
       setPosts(p || []);
       setPosters(po || []);
-    } catch {
-      onSnackbar('Failed to load bulletin', 'error');
+      setLoadError(null);
+    } catch (err) {
+      // Render the failure in-page instead of firing a snackbar, which is
+      // what fed the render loop.
+      setLoadError(err?.message || 'Failed to load bulletin');
     } finally {
       setLoading(false);
     }
-  }, [onSnackbar]);
+  };
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setStatus = async (id, status) => {
     try {
@@ -176,7 +186,30 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
         </Tabs>
       </Card>
 
-      {loading ? (
+      {loadError ? (
+        <Card sx={{ borderLeft: '4px solid #C62828' }}>
+          <Box sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>Couldn't load the bulletin</Typography>
+            <Typography variant="body2" sx={{ color: '#C62828', mb: 2, fontFamily: 'monospace' }}>
+              {loadError}
+            </Typography>
+            {/setup|migration|not found|relation/i.test(loadError) && (
+              <Box sx={{ bgcolor: '#FFF8E1', p: 2, borderRadius: 1, mb: 2 }}>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  The bulletin tables don't exist yet. Open the <strong>Supabase SQL Editor</strong> and run:
+                </Typography>
+                <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: 13 }}>
+                  backend/src/db/migration_community_posts.sql
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block', mt: 1, color: '#666' }}>
+                  Then run migration_community_purge.sql after enabling the pg_cron extension.
+                </Typography>
+              </Box>
+            )}
+            <Button variant="outlined" onClick={load} startIcon={<RefreshIcon />}>Try again</Button>
+          </Box>
+        </Card>
+      ) : loading ? (
         <Card><Box sx={{ p: 3 }}>{[1, 2, 3, 4].map(i => <Skeleton key={i} height={70} sx={{ mb: 1 }} />)}</Box></Card>
       ) : tab === 0 ? (
         <Card>

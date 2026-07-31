@@ -10,6 +10,19 @@ router.use(adminAuth);
 
 const canWrite = requireRole('admin', 'super_admin');
 
+// Postgres 42P01 = undefined_table. Before the migration is run every query
+// here fails that way, and a bare "Failed to fetch" sends the admin hunting
+// for a bug that is really just a pending migration.
+const MIGRATION_HINT =
+  'Bulletin tables not found — run migration_community_posts.sql in the Supabase SQL Editor';
+
+function fail(res, err, fallback) {
+  if (err && err.code === '42P01') {
+    return res.status(503).json({ success: false, error: MIGRATION_HINT });
+  }
+  return res.status(500).json({ success: false, error: fallback });
+}
+
 // ── GET /admin/bulletin — every post, newest first ────────────────
 // ?status=pending filters; omit for all. Pending sorts first so the
 // moderation queue is the first thing the admin sees.
@@ -37,7 +50,7 @@ router.get('/', async (req, res) => {
     res.json({ success: true, data: result.rows });
   } catch (err) {
     console.error('admin bulletin GET error:', err);
-    res.status(500).json({ success: false, error: 'Failed to fetch posts' });
+    fail(res, err, 'Failed to fetch posts');
   }
 });
 
@@ -93,7 +106,7 @@ router.post('/post', canWrite, async (req, res) => {
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     console.error('admin bulletin official post error:', err);
-    res.status(500).json({ success: false, error: 'Failed to publish official post' });
+    fail(res, err, 'Failed to publish official post');
   }
 });
 
@@ -117,7 +130,7 @@ router.patch('/:id/status', canWrite, validateIdParam, async (req, res) => {
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     console.error('admin bulletin status error:', err);
-    res.status(500).json({ success: false, error: 'Failed to update status' });
+    fail(res, err, 'Failed to update status');
   }
 });
 
@@ -134,7 +147,7 @@ router.delete('/:id', canWrite, validateIdParam, async (req, res) => {
     res.json({ success: true, data: { id: result.rows[0].id } });
   } catch (err) {
     console.error('admin bulletin DELETE error:', err);
-    res.status(500).json({ success: false, error: 'Failed to delete post' });
+    fail(res, err, 'Failed to delete post');
   }
 });
 
@@ -154,7 +167,7 @@ router.get('/posters/list', async (req, res) => {
     res.json({ success: true, data: result.rows });
   } catch (err) {
     console.error('admin bulletin posters error:', err);
-    res.status(500).json({ success: false, error: 'Failed to fetch posters' });
+    fail(res, err, 'Failed to fetch posters');
   }
 });
 
