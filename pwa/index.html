@@ -696,15 +696,19 @@
       </div>
 
       <!-- One-time registration (hidden once registered) -->
-      <div id="bulletin-reg" class="bl-panel">
+      <!-- Hidden until an unregistered villager actually taps the composer.
+           Leading with this form made the whole tab look like a signup wall;
+           now they meet the compose box first and only hit this once they
+           have already decided to post. -->
+      <div id="bulletin-reg" class="bl-panel" hidden>
         <div class="bl-panel-head">
           <span class="bl-panel-ic">✍️</span>
           <div class="bl-panel-titles">
-            <span class="bl-panel-ta">செய்தி பகிர பதிவு பண்ணுங்க</span>
-            <span class="bl-panel-en">Register once to post</span>
+            <span class="bl-panel-ta">கடைசி ஒரு step மட்டும்</span>
+            <span class="bl-panel-en">One-time — takes 10 seconds</span>
           </div>
         </div>
-        <p class="bl-panel-note">படிக்க யாருக்கும் பதிவு தேவையில்ல. பகிரணும்னா மட்டும் ஒரு தடவை பெயரும் நம்பரும் கொடுங்க.</p>
+        <p class="bl-panel-note">ஒரே ஒரு தடவை பெயரும் நம்பரும் கொடுத்தா போதும். அப்புறம் எப்ப வேணும்னாலும் செய்தி பகிரலாம்.</p>
         <form id="bulletin-reg-form" class="bl-form" novalidate>
           <label class="bl-label" for="bulletin-phone">மொபைல் எண் <span class="bl-req">*</span></label>
           <input id="bulletin-phone" class="bl-input" type="tel" placeholder="10 இலக்க மொபைல் எண்"
@@ -723,7 +727,10 @@
       </div>
 
       <!-- Composer (revealed after registration) -->
-      <div id="bulletin-compose" class="bl-panel" hidden>
+      <!-- Visible to EVERYONE, registered or not. An unregistered tap is
+           intercepted in bulletin.js and reveals #bulletin-reg instead of
+           expanding the form. -->
+      <div id="bulletin-compose" class="bl-panel">
         <div id="bulletin-whoami" class="bl-whoami"></div>
         <details class="bl-compose">
           <!-- Collapsed: a one-line prompt box (Facebook / LinkedIn style).

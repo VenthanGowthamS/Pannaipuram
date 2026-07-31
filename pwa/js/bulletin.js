@@ -206,17 +206,23 @@ var Bulletin = (function() {
     el.hidden = false;
   }
 
-  // Registered → hide the signup card, reveal the composer.
+  // The composer prompt is shown to EVERYONE — leading with the signup form
+  // made சங்கமம் look like a wall, and a villager who has not yet decided to
+  // post will not fill in a form to find out what is behind it. Unregistered
+  // taps are intercepted in wireComposeGate() and reveal the signup then,
+  // once they have already committed to posting.
   function applyPosterState() {
     var p = getPoster();
     var regWrap  = document.getElementById('bulletin-reg');
     var postWrap = document.getElementById('bulletin-compose');
     var whoami   = document.getElementById('bulletin-whoami');
     var avatar   = document.getElementById('bulletin-compose-avatar');
-    if (regWrap)  regWrap.hidden  = !!p;
-    if (postWrap) postWrap.hidden = !p;
+    if (postWrap) postWrap.hidden = false;
+    // Signup stays put until it is actually needed; registering hides it again.
+    if (regWrap && p) regWrap.hidden = true;
+    if (whoami) whoami.hidden = !p;
     // The prompt box carries the poster's initial, like a social composer
-    if (avatar && p) avatar.textContent = (p.name_tamil || '🙂').trim().charAt(0);
+    if (avatar) avatar.textContent = p ? (p.name_tamil || '🙂').trim().charAt(0) : '🙂';
     if (whoami && p) {
       whoami.innerHTML = '<span class="bl-whoami-ta">' + esc(p.name_tamil) + ' ஆக பதிவிடுறீங்க</span>' +
         '<button type="button" id="bulletin-signout" class="bl-signout">மாத்து</button>';
@@ -226,6 +232,32 @@ var Bulletin = (function() {
         applyPosterState();
       });
     }
+  }
+
+  // An unregistered tap on the compose prompt must NOT expand the form —
+  // it reveals the one-time signup instead, at the moment the villager has
+  // shown they want to post. <details> toggles on click, so the default has
+  // to be prevented before it opens.
+  function wireComposeGate() {
+    var summary = document.querySelector('.bl-compose-cta');
+    if (!summary || summary.dataset.gated) return;
+    summary.dataset.gated = '1';
+    summary.addEventListener('click', function(ev) {
+      if (getPoster()) return;                 // registered → normal expand
+      ev.preventDefault();
+      revealRegistration();
+    });
+  }
+
+  function revealRegistration() {
+    var regWrap = document.getElementById('bulletin-reg');
+    if (!regWrap) return;
+    regWrap.hidden = false;
+    if (regWrap.scrollIntoView) regWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    var phone = document.getElementById('bulletin-phone');
+    // Delay the focus until the scroll settles, otherwise the phone keyboard
+    // opens mid-scroll and the field ends up behind it.
+    if (phone) setTimeout(function() { phone.focus(); }, 350);
   }
 
   function wireRegister() {
@@ -284,6 +316,16 @@ var Bulletin = (function() {
         // init, so without this their own pending posts (and their edit /
         // delete controls) would not appear until the next refresh.
         loadFeed(true);
+        // They tapped the composer to get here — finish that action for them
+        // rather than dropping them back on a collapsed box to tap again.
+        var composeWrap = document.querySelector('.bl-compose');
+        if (composeWrap) composeWrap.open = true;
+        var composePanel = document.getElementById('bulletin-compose');
+        if (composePanel && composePanel.scrollIntoView) {
+          setTimeout(function() {
+            composePanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+        }
         say(document.getElementById('bulletin-post-result'), '✅ பதிவு ஆயிடுச்சு — இப்ப செய்தி பகிரலாம்', true);
       } catch (err) {
         say(result, '❌ ' + (err.message || 'பதிவு தோல்வி'), false);
@@ -485,6 +527,7 @@ var Bulletin = (function() {
   return {
     init: function() {
       wireRegister();
+      wireComposeGate();
       wireCompose();
       wireFeedDelegation();
       wireRefresh();
