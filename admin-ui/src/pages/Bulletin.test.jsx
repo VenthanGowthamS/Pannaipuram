@@ -26,6 +26,7 @@ vi.mock('../api', () => ({
     deleteBulletinPost: vi.fn(),
     updateBulletinPoster: vi.fn(),
     createOfficialBulletinPost: vi.fn(),
+    updateBulletinPost: vi.fn(),
   },
 }));
 
@@ -151,5 +152,100 @@ describe('Bulletin — official posting is gated on canEdit', () => {
     render(<Bulletin onSnackbar={() => {}} canEdit={false} />);
     await flush(400);
     expect(screen.queryByRole('button', { name: /new official post/i })).toBeNull();
+  });
+});
+
+/**
+ * Admin content editing. The complaint that produced this: an official post
+ * could not be edited at all — the public edit route proves ownership with
+ * poster_id + phone, and the official account has neither, so fixing a typo
+ * meant delete-and-repost.
+ *
+ * The assertion that matters most here is the PAYLOAD. This dialog sends
+ * every field on save, so any field the edit fails to preload is wiped off
+ * the post — that is exactly how editing a photo post used to delete the
+ * photo (v80). image_url and link_url are checked explicitly for that reason.
+ */
+describe('Bulletin — editing an existing post', () => {
+  const IMG = 'data:image/jpeg;base64,AAAA';
+  const officialPost = {
+    id: 42,
+    title_tamil: 'ஊர் கூட்ட வீடியோ',
+    title_english: 'Village meeting video',
+    content_tamil: 'கடந்த வார ஊர் கூட்டத்தோட வீடியோ இங்க பாக்கலாம்.',
+    content_english: '',
+    image_url: IMG,
+    link_url: 'https://www.youtube.com/watch?v=abc123',
+    status: 'approved',
+    created_at: new Date().toISOString(),
+    expires_at: new Date().toISOString(),
+    name_tamil: 'admin', phone: '1234567890', like_count: 3,
+    is_trusted: true, is_blocked: false, is_official: true, poster_id: 1,
+  };
+
+  beforeEach(() => {
+    api.getBulletinPosts.mockResolvedValue([officialPost]);
+    api.getBulletinPosters.mockResolvedValue([]);
+    api.updateBulletinPost.mockResolvedValue({ ...officialPost, title_tamil: 'திருத்திய தலைப்பு' });
+  });
+
+  const openEditor = async () => {
+    render(<AppHarness />);
+    await waitFor(() => expect(screen.getByText('ஊர் கூட்ட வீடியோ')).toBeInTheDocument());
+    await act(async () => { screen.getByLabelText(/edit — fix a typo/i).click(); });
+  };
+
+  it('opens the dialog prefilled with the post being edited', async () => {
+    await openEditor();
+
+    expect(screen.getByText(/Edit post #42/)).toBeInTheDocument();
+    expect(screen.getByDisplayValue('ஊர் கூட்ட வீடியோ')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('https://www.youtube.com/watch?v=abc123')).toBeInTheDocument();
+  });
+
+  it('sends the edit to updateBulletinPost, preserving the image and link', async () => {
+    await openEditor();
+    await act(async () => { screen.getByRole('button', { name: /save changes/i }).click(); });
+
+    expect(api.updateBulletinPost).toHaveBeenCalledTimes(1);
+    const [id, payload] = api.updateBulletinPost.mock.calls[0];
+    expect(id).toBe(42);
+    // Both must survive an untouched edit — a blank here silently strips
+    // the photo or the link off the live post.
+    expect(payload.image_url).toBe(IMG);
+    expect(payload.link_url).toBe('https://www.youtube.com/watch?v=abc123');
+    expect(payload.title_tamil).toBe('ஊர் கூட்ட வீடியோ');
+    // Editing is not moderating: the payload must not carry a status.
+    expect(payload.status).toBeUndefined();
+    // And it must never go out through the create-a-new-post route.
+    expect(api.createOfficialBulletinPost).not.toHaveBeenCalled();
+  });
+
+  it('does NOT reload the whole list after saving an edit', async () => {
+    await openEditor();
+    const before = api.getBulletinPosts.mock.calls.length;
+
+    await act(async () => { screen.getByRole('button', { name: /save changes/i }).click(); });
+    await flush();
+
+    // Saving fires onSnackbar -> App re-renders. If that ever re-couples to
+    // data loading again, this is where the 8,664-request loop comes back.
+    expect(api.getBulletinPosts.mock.calls.length).toBe(before);
+  });
+
+  it('offers a link field when composing a new official post', async () => {
+    render(<AppHarness />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /new official post/i })).toBeInTheDocument());
+    await act(async () => { screen.getByRole('button', { name: /new official post/i }).click(); });
+
+    expect(screen.getByText('Post as admin')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Link \(optional\)/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /publish now/i })).toBeInTheDocument();
+  });
+
+  it('hides the edit control from a viewer', async () => {
+    render(<Bulletin onSnackbar={() => {}} canEdit={false} />);
+    await waitFor(() => expect(screen.getByText('ஊர் கூட்ட வீடியோ')).toBeInTheDocument());
+    expect(screen.queryByLabelText(/edit — fix a typo/i)).toBeNull();
   });
 });

@@ -5,7 +5,7 @@ const router  = express.Router();
 const { query } = require('../../db/pool');
 const adminAuth = require('../../middleware/auth');
 const { requireRole, validateIdParam } = require('../../middleware/auth');
-const { validatePostContent } = require('../bulletin');
+const { validatePostContent, normalizeLink, hasLinkColumn } = require('../bulletin');
 
 router.use(adminAuth);
 
@@ -32,10 +32,13 @@ router.get('/', async (req, res) => {
   const allowed = ['pending', 'approved', 'rejected', 'archived'];
   try {
     const filtered = allowed.includes(status);
+    // NULL stand-in keeps the row shape stable before the link migration is
+    // run, so the admin panel never has to special-case a missing field.
+    const linkSel = (await hasLinkColumn()) ? 'p.link_url' : 'NULL::text AS link_url';
     const result = await query(
       `SELECT
          p.id, p.title_tamil, p.title_english,
-         p.content_tamil, p.content_english, p.image_url,
+         p.content_tamil, p.content_english, p.image_url, ${linkSel},
          p.status, p.created_at, p.updated_at, p.expires_at,
          poster.id AS poster_id,
          poster.name_tamil, poster.name_english, poster.phone,
@@ -62,12 +65,17 @@ router.get('/', async (req, res) => {
 const OFFICIAL_PHONE = '1234567890';
 
 router.post('/post', canWrite, async (req, res) => {
-  const { title_tamil, title_english, content_tamil, content_english, image_url } = req.body || {};
+  const { title_tamil, title_english, content_tamil, content_english, image_url, link_url } = req.body || {};
 
   // Same rule as villager posts: an attached image is content on its own,
   // so title/content are only required when there is no image.
   const contentErr = validatePostContent({ title_tamil, content_tamil, image_url });
   if (contentErr) return res.status(400).json({ success: false, error: contentErr });
+
+  // Same http/https-only rule as the villager routes — an admin JWT is not a
+  // reason to let a 'javascript:' URL reach an href in the PWA.
+  const link = normalizeLink(link_url);
+  if (link.error) return res.status(400).json({ success: false, error: link.error });
 
   try {
     // Self-healing: if the migration's seed row is missing, create it here so
@@ -80,24 +88,87 @@ router.post('/post', canWrite, async (req, res) => {
       [OFFICIAL_PHONE]
     );
 
+    const cols = ['poster_id', 'title_tamil', 'title_english', 'content_tamil',
+                  'content_english', 'image_url', 'status'];
+    const vals = [
+      poster.rows[0].id,
+      String(title_tamil || '').trim(),
+      title_english ? String(title_english).trim() : null,
+      String(content_tamil || '').trim(),
+      content_english ? String(content_english).trim() : null,
+      image_url || null,
+      'approved',
+    ];
+    if (await hasLinkColumn()) { cols.push('link_url'); vals.push(link.value); }
+
     const result = await query(
-      `INSERT INTO community_posts
-         (poster_id, title_tamil, title_english, content_tamil, content_english, image_url, status)
-       VALUES ($1, $2, $3, $4, $5, $6, 'approved')
+      `INSERT INTO community_posts (${cols.join(', ')})
+       VALUES (${vals.map((_, i) => '$' + (i + 1)).join(', ')})
        RETURNING id, status, created_at, expires_at`,
-      [
-        poster.rows[0].id,
-        String(title_tamil || '').trim(),
-        title_english ? String(title_english).trim() : null,
-        String(content_tamil || '').trim(),
-        content_english ? String(content_english).trim() : null,
-        image_url || null,
-      ]
+      vals
     );
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     console.error('admin bulletin official post error:', err);
     fail(res, err, 'Failed to publish official post');
+  }
+});
+
+// ── PATCH /admin/bulletin/:id — edit a post's CONTENT ─────────────
+// The official account posts through /post and has no villager phone, so the
+// public edit route (which proves ownership with poster_id + phone) refuses
+// it by design — leaving an admin unable to fix a typo in their own village
+// announcement without deleting and re-posting it. This route is that fix.
+//
+// It deliberately does NOT touch `status`. An admin editing a pending post
+// leaves it pending (approving is a separate, explicit decision), and editing
+// an approved post keeps it live — unlike a villager's edit, which re-queues,
+// because the person doing the editing here is the moderator.
+router.patch('/:id', canWrite, validateIdParam, async (req, res) => {
+  const { title_tamil, title_english, content_tamil, content_english, image_url, link_url } = req.body || {};
+
+  const contentErr = validatePostContent({ title_tamil, content_tamil, image_url });
+  if (contentErr) return res.status(400).json({ success: false, error: contentErr });
+
+  const link = normalizeLink(link_url);
+  if (link.error) return res.status(400).json({ success: false, error: link.error });
+
+  try {
+    const params = [
+      String(title_tamil || '').trim(),
+      title_english ? String(title_english).trim() : null,
+      String(content_tamil || '').trim(),
+      content_english ? String(content_english).trim() : null,
+      image_url || null,
+    ];
+    // Pre-migration the link is dropped rather than failing the whole edit —
+    // losing an optional button beats losing the admin's corrected text.
+    const linkCol = await hasLinkColumn();
+    let linkSet = '';
+    if (linkCol) {
+      params.push(link.value);
+      linkSet = `, link_url = $${params.length}`;
+    }
+    params.push(req.params.id);
+
+    const result = await query(
+      `UPDATE community_posts
+          SET title_tamil = $1, title_english = $2,
+              content_tamil = $3, content_english = $4,
+              image_url = $5${linkSet}, updated_at = NOW()
+        WHERE id = $${params.length}
+      RETURNING id, title_tamil, title_english, content_tamil, content_english,
+                image_url, ${linkCol ? 'link_url' : 'NULL::text AS link_url'},
+                status, updated_at`,
+      params
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Post not found' });
+    }
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    console.error('admin bulletin edit error:', err);
+    fail(res, err, 'Failed to update post');
   }
 });
 

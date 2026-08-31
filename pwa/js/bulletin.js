@@ -44,6 +44,49 @@ var Bulletin = (function() {
     return d === 1 ? 'நேத்து' : d + ' நாள் முன்ன';
   }
 
+  // ── Link chip ───────────────────────────────────────────────────
+  // The server only ever stores http/https, but this value goes straight into
+  // an href — re-checking it here means a poisoned localStorage cache or a row
+  // written before the rule existed can never become a javascript: URL.
+  function safeLink(raw) {
+    var s = String(raw == null ? '' : raw).trim();
+    if (!s || !/^https?:\/\//i.test(s)) return null;
+    return s;
+  }
+
+  function linkHost(url) {
+    try { return new URL(url).hostname.replace(/^www\./, ''); }
+    catch (_) { return ''; }
+  }
+
+  // A generic "open link" button tells the villager nothing about what is on
+  // the other side. Naming the KIND of thing is what makes it worth tapping.
+  function linkLabel(host) {
+    if (/(^|\.)(youtube\.com|youtu\.be)$/i.test(host)) return { ic: '▶️', ta: 'வீடியோ பாருங்க' };
+    if (/(^|\.)(wa\.me|whatsapp\.com)$/i.test(host))    return { ic: '💬', ta: 'WhatsApp-ல திறங்க' };
+    if (/(^|\.)(maps\.app\.goo\.gl|google\.com|goo\.gl)$/i.test(host) && /map/i.test(host))
+      return { ic: '📍', ta: 'இடத்தை பாருங்க' };
+    if (/\.(gov|nic)\.in$/i.test(host)) return { ic: '🏛️', ta: 'அரசு தளம் திறங்க' };
+    return { ic: '🔗', ta: 'லிங்க் திறங்க' };
+  }
+
+  function linkChip(raw) {
+    var url = safeLink(raw);
+    if (!url) return '';
+    var host = linkHost(url);
+    var lbl = linkLabel(host);
+    // noopener/noreferrer: the target page must never get a handle on our
+    // window. nofollow because this is villager-submitted content.
+    return '<a class="bl-link" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer nofollow">' +
+      '<span class="bl-link-ic" aria-hidden="true">' + lbl.ic + '</span>' +
+      '<span class="bl-link-txt">' +
+        '<span class="bl-link-ta">' + lbl.ta + '</span>' +
+        (host ? '<span class="bl-link-host">' + esc(host) + '</span>' : '') +
+      '</span>' +
+      '<span class="bl-link-go" aria-hidden="true">↗</span>' +
+    '</a>';
+  }
+
   // ── Feed ────────────────────────────────────────────────────────
   var _posts = [];
 
@@ -88,6 +131,7 @@ var Bulletin = (function() {
       '<p class="bl-body">' + esc(p.content_tamil) + '</p>' +
       (p.content_english ? '<p class="bl-body-en">' + esc(p.content_english) + '</p>' : '') +
       (p.image_url ? '<img class="bl-img" src="' + esc(p.image_url) + '" alt="" loading="lazy">' : '') +
+      linkChip(p.link_url) +
       '<footer class="bl-card-foot">' +
         '<button class="bl-like' + (liked ? ' liked' : '') + '" type="button" data-like="' + p.id + '"' +
           ' aria-pressed="' + (liked ? 'true' : 'false') + '" aria-label="இது நல்லா இருக்கு">' +
@@ -196,6 +240,22 @@ var Bulletin = (function() {
       };
       reader.readAsDataURL(file);
     });
+  }
+
+  // Mirrors normalizeLink() on the server so a typo is caught before a round
+  // trip. The server still has the final say — this is only for speed.
+  // Returns { value } or { error }.
+  function checkLink(raw) {
+    var v = String(raw == null ? '' : raw).trim();
+    if (!v) return { value: '' };
+    if (/^[a-z][a-z0-9+.-]*:/i.test(v) && !/^https?:\/\//i.test(v)) {
+      return { error: 'இணைப்பு சரியில்லை — http அல்லது https link கொடுங்க' };
+    }
+    var host = v.replace(/^https?:\/\//i, '').split(/[\/?#]/)[0];
+    if (host.indexOf('.') === -1) {
+      return { error: 'இணைப்பு சரியில்லை — http அல்லது https link கொடுங்க' };
+    }
+    return { value: v };
   }
 
   // ── Form helpers ────────────────────────────────────────────────
@@ -405,6 +465,16 @@ var Bulletin = (function() {
       var titleEn = (document.getElementById('bulletin-title-en').value || '').trim();
       var bodyTa  = (document.getElementById('bulletin-content-ta').value || '').trim();
       var bodyEn  = (document.getElementById('bulletin-content-en').value || '').trim();
+      var linkIn  = document.getElementById('bulletin-link');
+      var linkErr = document.getElementById('bulletin-link-err');
+
+      var link = checkLink(linkIn ? linkIn.value : '');
+      if (linkErr) { linkErr.hidden = true; linkErr.textContent = ''; }
+      if (link.error) {
+        if (linkErr) { linkErr.textContent = link.error; linkErr.hidden = false; }
+        if (linkIn) linkIn.focus();
+        return;
+      }
 
       // A photo is content on its own — text is only required without one.
       // Kept in sync with the server (validatePostContent in bulletin.js);
@@ -434,6 +504,7 @@ var Bulletin = (function() {
           content_tamil: bodyTa,
           content_english: bodyEn,
           image_url: _pendingImage,
+          link_url: link.value,
         };
 
         if (_editing) {
@@ -492,6 +563,12 @@ var Bulletin = (function() {
     document.getElementById('bulletin-title-en').value   = p.title_english || '';
     document.getElementById('bulletin-content-ta').value = p.content_tamil || '';
     document.getElementById('bulletin-content-en').value = p.content_english || '';
+    var linkIn = document.getElementById('bulletin-link');
+    // Same trap the photo had before v80: an edit that doesn't repopulate the
+    // field submits an empty one and silently strips the link off the post.
+    if (linkIn) linkIn.value = p.link_url || '';
+    var linkErr = document.getElementById('bulletin-link-err');
+    if (linkErr) { linkErr.hidden = true; linkErr.textContent = ''; }
 
     // Preload the EXISTING photo so submitting without touching the file
     // input keeps it. Without this, editing a photo post silently deleted
