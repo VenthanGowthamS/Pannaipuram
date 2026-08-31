@@ -848,6 +848,43 @@ async function testAdminEditAndLinks() {
     assert(row && row.link_url == null, `Expected null, got ${JSON.stringify(row && row.link_url)}`);
   });
 
+  // The signal that tells the panel a link was accepted but not stored. This
+  // is the case that actually bit in production: the migration had not been
+  // run, the post saved, the panel said "Published", and the link vanished
+  // with nothing anywhere saying why. Asserted in BOTH directions so it holds
+  // whether or not the column exists on the target being tested.
+  await test('A post reports link_saved:false when the link column is missing', async () => {
+    const { status, body } = await post('/admin/bulletin/post', {
+      title_tamil: 'இணைப்பு சேமிப்பு சோதனை',
+      content_tamil: 'இணைப்பு சேமிக்கப்பட்டதா இல்லையா என்பதை சோதிக்கிறோம்.',
+      link_url: 'https://example.com/saved-probe',
+    }, auth());
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+    created.postIds.push(body.data.id);
+
+    if (linksLive) {
+      assert(body.data.link_saved === undefined,
+        'link_saved must be absent when the link WAS stored');
+      assert(!body.warning, `Unexpected warning: ${body.warning}`);
+    } else {
+      assert(body.data.link_saved === false,
+        'A dropped link must be reported, not swallowed silently');
+      assert(/migration_bulletin_link\.sql/.test(body.warning || ''),
+        `Warning must name the migration, got: ${body.warning}`);
+    }
+  });
+
+  await test('A post with NO link never reports link_saved either way', async () => {
+    const { status, body } = await post('/admin/bulletin/post', {
+      title_tamil: 'இணைப்பு இல்லாத சோதனை',
+      content_tamil: 'இணைப்பே கொடுக்காதப்போ எந்த எச்சரிக்கையும் வரக்கூடாது.',
+    }, auth());
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+    created.postIds.push(body.data.id);
+    assert(body.data.link_saved === undefined, 'link_saved must not appear when no link was sent');
+    assert(!body.warning, `Unexpected warning: ${body.warning}`);
+  });
+
   // ── the actual complaint: an official post could not be edited ──
   await test('PATCH /admin/bulletin/:id edits an OFFICIAL post', async () => {
     const { status, body } = await patch(`/admin/bulletin/${postId}`, {
@@ -897,6 +934,20 @@ async function testAdminEditAndLinks() {
     }, auth());
     assert(status === 200, `Expected 200, got ${status} (${body.error})`);
     assert(body.data.status === 'pending', `Edit changed status to ${body.data.status}`);
+  });
+
+  await test('An admin edit also reports a link it could not save', async () => {
+    const { status, body } = await patch(`/admin/bulletin/${postId}`, {
+      title_tamil: EDITED_TITLE, content_tamil: EDITED_BODY,
+      link_url: 'https://example.com/edit-probe',
+    }, auth());
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+    if (linksLive) {
+      assert(body.data.link_saved === undefined, 'link_saved must be absent when stored');
+    } else {
+      assert(body.data.link_saved === false, 'A dropped link must be reported on edit too');
+      assert(/migration_bulletin_link\.sql/.test(body.warning || ''), 'Warning must name the migration');
+    }
   });
 
   await test('An admin edit rejects a bad link → 400', async () => {

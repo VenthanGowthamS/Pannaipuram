@@ -17,6 +17,13 @@ const canWrite = requireRole('admin', 'super_admin');
 const MIGRATION_HINT =
   'Bulletin tables not found — run migration_community_posts.sql in the Supabase SQL Editor';
 
+// The link column is added by a SEPARATE migration, so a link can be typed
+// into a panel whose database can't store it yet. Saying nothing made that
+// look like a broken feature — the post saved, reported success, and the
+// link quietly vanished. Every route that accepts a link says so instead.
+const LINK_MIGRATION_HINT =
+  'Post saved, but the link was NOT — run migration_bulletin_link.sql in the Supabase SQL Editor, then re-add the link.';
+
 function fail(res, err, fallback) {
   if (err && err.code === '42P01') {
     return res.status(503).json({ success: false, error: MIGRATION_HINT });
@@ -99,7 +106,8 @@ router.post('/post', canWrite, async (req, res) => {
       image_url || null,
       'approved',
     ];
-    if (await hasLinkColumn()) { cols.push('link_url'); vals.push(link.value); }
+    const linkCol = await hasLinkColumn();
+    if (linkCol) { cols.push('link_url'); vals.push(link.value); }
 
     const result = await query(
       `INSERT INTO community_posts (${cols.join(', ')})
@@ -107,7 +115,12 @@ router.post('/post', canWrite, async (req, res) => {
        RETURNING id, status, created_at, expires_at`,
       vals
     );
-    res.json({ success: true, data: result.rows[0] });
+    const droppedLink = !!link.value && !linkCol;
+    res.json({
+      success: true,
+      data: { ...result.rows[0], ...(droppedLink ? { link_saved: false } : {}) },
+      ...(droppedLink ? { warning: LINK_MIGRATION_HINT } : {}),
+    });
   } catch (err) {
     console.error('admin bulletin official post error:', err);
     fail(res, err, 'Failed to publish official post');
@@ -165,7 +178,12 @@ router.patch('/:id', canWrite, validateIdParam, async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Post not found' });
     }
-    res.json({ success: true, data: result.rows[0] });
+    const droppedLink = !!link.value && !linkCol;
+    res.json({
+      success: true,
+      data: { ...result.rows[0], ...(droppedLink ? { link_saved: false } : {}) },
+      ...(droppedLink ? { warning: LINK_MIGRATION_HINT } : {}),
+    });
   } catch (err) {
     console.error('admin bulletin edit error:', err);
     fail(res, err, 'Failed to update post');

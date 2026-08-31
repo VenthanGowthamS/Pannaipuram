@@ -173,17 +173,31 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
       image_url: compose.image_url,
       link_url: compose.link_url,
     };
+    // link_saved:false means the server took the post but had nowhere to put
+    // the link — migration_bulletin_link.sql hasn't been run. Without this the
+    // panel reported plain success and the link silently disappeared, which
+    // reads as a broken feature rather than a pending migration.
+    const linkDropped = (res) => res && res.link_saved === false;
+    const LINK_WARNING =
+      'Post saved, but the LINK was not — run migration_bulletin_link.sql in the Supabase SQL Editor, then add the link again.';
+
     try {
       if (compose.editingId) {
         const updated = await api.updateBulletinPost(compose.editingId, payload);
         // Patch the row in place rather than refetching — editing does not
         // change status or ordering, so a full reload would buy nothing.
         setPosts(prev => prev.map(p => (p.id === compose.editingId ? { ...p, ...updated } : p)));
-        onSnackbar('Saved — the app shows the new version', 'success');
+        onSnackbar(
+          linkDropped(updated) ? LINK_WARNING : 'Saved — the app shows the new version',
+          linkDropped(updated) ? 'warning' : 'success',
+        );
         closeCompose();
       } else {
-        await api.createOfficialBulletinPost(payload);
-        onSnackbar('Published — live in the app now', 'success');
+        const created = await api.createOfficialBulletinPost(payload);
+        onSnackbar(
+          linkDropped(created) ? LINK_WARNING : 'Published — live in the app now',
+          linkDropped(created) ? 'warning' : 'success',
+        );
         closeCompose();
         load();
       }

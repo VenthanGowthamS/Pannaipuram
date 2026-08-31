@@ -249,3 +249,61 @@ describe('Bulletin — editing an existing post', () => {
     expect(screen.queryByLabelText(/edit — fix a typo/i)).toBeNull();
   });
 });
+
+/**
+ * A link typed into a database that has no link_url column yet. The server
+ * takes the post and reports link_saved:false; the panel must say so. Before
+ * this, it reported plain success and the link silently vanished — which is
+ * indistinguishable from a broken feature.
+ */
+describe('Bulletin — link dropped because the migration has not been run', () => {
+  const post = {
+    id: 9, title_tamil: 'ஊர் கூட்டம்', title_english: '',
+    content_tamil: 'ஞாயிறு காலை 10 மணிக்கு கூட்டம் நடக்கும்.', content_english: '',
+    image_url: null, link_url: null, status: 'approved',
+    created_at: new Date().toISOString(), expires_at: new Date().toISOString(),
+    name_tamil: 'admin', phone: '1234567890', like_count: 0,
+    is_trusted: true, is_blocked: false, is_official: true, poster_id: 1,
+  };
+
+  function Harness() {
+    const [snack, setSnack] = useState(null);
+    return (
+      <>
+        <div data-testid="snack">{snack ? `${snack.severity}:${snack.message}` : ''}</div>
+        <Bulletin onSnackbar={(message, severity) => setSnack({ message, severity })} canEdit />
+      </>
+    );
+  }
+
+  beforeEach(() => {
+    api.getBulletinPosts.mockResolvedValue([post]);
+    api.getBulletinPosters.mockResolvedValue([]);
+  });
+
+  it('warns instead of claiming success when the link could not be saved', async () => {
+    api.updateBulletinPost.mockResolvedValue({ ...post, link_saved: false });
+
+    render(<Harness />);
+    await waitFor(() => expect(screen.getByText('ஊர் கூட்டம்')).toBeInTheDocument());
+    await act(async () => { screen.getByLabelText(/edit — fix a typo/i).click(); });
+    await act(async () => { screen.getByRole('button', { name: /save changes/i }).click(); });
+
+    const snack = screen.getByTestId('snack').textContent;
+    expect(snack).toMatch(/^warning:/);
+    expect(snack).toMatch(/migration_bulletin_link\.sql/);
+  });
+
+  it('reports plain success once the column exists', async () => {
+    api.updateBulletinPost.mockResolvedValue({ ...post, link_url: 'https://example.com/x' });
+
+    render(<Harness />);
+    await waitFor(() => expect(screen.getByText('ஊர் கூட்டம்')).toBeInTheDocument());
+    await act(async () => { screen.getByLabelText(/edit — fix a typo/i).click(); });
+    await act(async () => { screen.getByRole('button', { name: /save changes/i }).click(); });
+
+    const snack = screen.getByTestId('snack').textContent;
+    expect(snack).toMatch(/^success:/);
+    expect(snack).not.toMatch(/migration/);
+  });
+});
