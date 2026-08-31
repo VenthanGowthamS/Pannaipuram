@@ -398,6 +398,52 @@
   background: #ECEFF1;
 }
 
+/* ── Link chip ───────────────────────────────────────────────
+   A full-width tappable row, not an inline underlined link: on a phone
+   the whole point is that it is impossible to miss and impossible to
+   mis-tap. 52px tall clears the 48dp minimum target with room to spare. */
+.bl-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: 1px solid #C8E6C9;
+  border-left: 4px solid #2E7D32;
+  border-radius: 10px;
+  background: #F1F8F2;
+  text-decoration: none;
+  color: inherit;
+}
+.bl-link:active { background: #DCEDDE; }
+.bl-link-ic { font-size: 1.25rem; flex: 0 0 auto; }
+.bl-link-txt { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.bl-link-ta {
+  font-family: var(--font-tamil);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1B5E20;
+}
+.bl-link-host {
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  /* A long URL host must never widen the card and force sideways scroll */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bl-link-go { font-size: 0.95rem; color: #2E7D32; flex: 0 0 auto; }
+
+/* Hint under an optional composer field */
+.bl-field-hint {
+  font-family: var(--font-tamil);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--color-muted);
+  margin: 4px 0 0;
+}
+
 .bl-card-foot {
   display: flex;
   align-items: center;

@@ -12,6 +12,8 @@ import {
   Newspaper as BulletinIcon,
   Favorite as LikeIcon,
   Campaign as OfficialIcon,
+  Edit as EditIcon,
+  Link as LinkIcon,
 } from '@mui/icons-material';
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -39,8 +41,13 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
   const [loadError, setLoadError] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null });
   const [details, setDetails] = useState({ open: false, post: null });
-  const BLANK_POST = { title_tamil: '', title_english: '', content_tamil: '', content_english: '', image_url: null };
-  const [compose, setCompose] = useState({ open: false, saving: false, ...BLANK_POST });
+  const BLANK_POST = {
+    title_tamil: '', title_english: '', content_tamil: '', content_english: '',
+    image_url: null, link_url: '',
+  };
+  // editingId null = composing a new official post; an id = editing that post.
+  const [compose, setCompose] = useState({ open: false, saving: false, editingId: null, ...BLANK_POST });
+  const closeCompose = () => setCompose({ open: false, saving: false, editingId: null, ...BLANK_POST });
 
   // NOTE: `load` must NOT be a useCallback keyed on `onSnackbar`, and the
   // effect below must NOT depend on `load`. onSnackbar is recreated on every
@@ -132,23 +139,58 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
     reader.readAsDataURL(file);
   };
 
-  const publishOfficial = async () => {
-    if (compose.title_tamil.trim().length < 5) { onSnackbar('Tamil title must be at least 5 characters', 'warning'); return; }
-    if (compose.content_tamil.trim().length < 10) { onSnackbar('Tamil content must be at least 10 characters', 'warning'); return; }
+  // Loads an existing post into the same dialog. image_url and link_url MUST
+  // be preloaded: the dialog sends every field on save, so anything left blank
+  // here would be silently wiped off the post (the v80 photo bug, exactly).
+  const startEdit = (post) => {
+    setDetails({ open: false, post: null });
+    setCompose({
+      open: true, saving: false, editingId: post.id,
+      title_tamil: post.title_tamil || '',
+      title_english: post.title_english || '',
+      content_tamil: post.content_tamil || '',
+      content_english: post.content_english || '',
+      image_url: post.image_url || null,
+      link_url: post.link_url || '',
+    });
+  };
+
+  const saveCompose = async () => {
+    // Mirrors validatePostContent() on the server: a photo is content on its
+    // own, so the text minimums only apply when there is no image. The old
+    // check demanded both unconditionally and rejected image-only posts the
+    // server would have accepted.
+    if (!compose.image_url) {
+      if (compose.title_tamil.trim().length < 5) { onSnackbar('Tamil title must be at least 5 characters (or attach an image)', 'warning'); return; }
+      if (compose.content_tamil.trim().length < 10) { onSnackbar('Tamil content must be at least 10 characters (or attach an image)', 'warning'); return; }
+    }
     setCompose(c => ({ ...c, saving: true }));
+    const payload = {
+      title_tamil: compose.title_tamil,
+      title_english: compose.title_english,
+      content_tamil: compose.content_tamil,
+      content_english: compose.content_english,
+      image_url: compose.image_url,
+      link_url: compose.link_url,
+    };
     try {
-      await api.createOfficialBulletinPost({
-        title_tamil: compose.title_tamil,
-        title_english: compose.title_english,
-        content_tamil: compose.content_tamil,
-        content_english: compose.content_english,
-        image_url: compose.image_url,
-      });
-      onSnackbar('Published — live in the app now', 'success');
-      setCompose({ open: false, saving: false, ...BLANK_POST });
-      load();
-    } catch {
-      onSnackbar('Failed to publish', 'error');
+      if (compose.editingId) {
+        const updated = await api.updateBulletinPost(compose.editingId, payload);
+        // Patch the row in place rather than refetching — editing does not
+        // change status or ordering, so a full reload would buy nothing.
+        setPosts(prev => prev.map(p => (p.id === compose.editingId ? { ...p, ...updated } : p)));
+        onSnackbar('Saved — the app shows the new version', 'success');
+        closeCompose();
+      } else {
+        await api.createOfficialBulletinPost(payload);
+        onSnackbar('Published — live in the app now', 'success');
+        closeCompose();
+        load();
+      }
+    } catch (err) {
+      // Surface the server's own message (bad link, image too big) instead of
+      // a generic failure the admin can't act on.
+      onSnackbar(err?.message || (compose.editingId ? 'Failed to save changes' : 'Failed to publish'), 'error');
       setCompose(c => ({ ...c, saving: false }));
     }
   };
@@ -169,7 +211,7 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
             <Button
               variant="contained"
               startIcon={<OfficialIcon />}
-              onClick={() => setCompose({ open: true, saving: false, ...BLANK_POST })}
+              onClick={() => setCompose({ open: true, saving: false, editingId: null, ...BLANK_POST })}
               sx={{ bgcolor: '#E65100', '&:hover': { bgcolor: '#BF360C' }, whiteSpace: 'nowrap' }}
             >
               New official post
@@ -244,6 +286,7 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
                       >
                         {post.title_tamil}
                         {post.image_url && <span title="Has image"> 🖼</span>}
+                        {post.link_url && <span title={post.link_url}> 🔗</span>}
                       </TableCell>
                       <TableCell sx={{ fontSize: 12 }}>
                         <Box sx={{ fontFamily: '"Noto Sans Tamil", sans-serif' }}>{post.name_tamil}</Box>
@@ -257,6 +300,13 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
                         <Chip label={post.status} size="small" sx={STATUS_STYLE[post.status]} />
                       </TableCell>
                       <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
+                        {canEdit && (
+                          <Tooltip title="Edit — fix a typo or add a link">
+                            <IconButton size="small" sx={{ color: '#1A237E' }} onClick={() => startEdit(post)}>
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                         {canEdit && post.status !== 'approved' && (
                           <Tooltip title="Approve — everyone sees it">
                             <IconButton size="small" sx={{ color: '#2E7D32' }} onClick={() => setStatus(post.id, 'approved')}>
@@ -385,12 +435,32 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
                 <img src={details.post.image_url} alt="" style={{ maxWidth: '100%', borderRadius: 4 }} />
               )}
 
+              {details.post.link_url && (
+                <Box sx={{
+                  mt: 2, p: 1.5, display: 'flex', alignItems: 'center', gap: 1,
+                  bgcolor: '#F1F8F2', border: '1px solid #C8E6C9',
+                  borderLeft: '4px solid #2E7D32', borderRadius: 1,
+                }}>
+                  <LinkIcon sx={{ fontSize: 18, color: '#2E7D32' }} />
+                  {/* This is exactly the tappable button villagers see in the app */}
+                  <a
+                    href={details.post.link_url} target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize: 13, wordBreak: 'break-all', color: '#1B5E20' }}
+                  >
+                    {details.post.link_url}
+                  </a>
+                </Box>
+              )}
+
               <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 2, color: '#999' }}>
                 <LikeIcon sx={{ fontSize: 14 }} /> {details.post.like_count} · expires {formatDate(details.post.expires_at)}
               </Typography>
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setDetails({ open: false, post: null })}>Close</Button>
+              {canEdit && (
+                <Button startIcon={<EditIcon />} onClick={() => startEdit(details.post)}>Edit</Button>
+              )}
               {canEdit && details.post.status !== 'rejected' && (
                 <Button color="error" onClick={() => setStatus(details.post.id, 'rejected')}>Reject</Button>
               )}
@@ -404,20 +474,32 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
         )}
       </Dialog>
 
-      {/* Publish as the official village account — goes live immediately */}
-      <Dialog open={compose.open} onClose={() => !compose.saving && setCompose(c => ({ ...c, open: false }))} maxWidth="sm" fullWidth>
+      {/* One dialog, two modes: compose a new official post, or edit any
+          existing post's content (status is never touched by an edit). */}
+      <Dialog open={compose.open} onClose={() => !compose.saving && closeCompose()} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <OfficialIcon sx={{ color: '#E65100' }} />
-          Post as admin
+          {compose.editingId
+            ? <EditIcon sx={{ color: '#1A237E' }} />
+            : <OfficialIcon sx={{ color: '#E65100' }} />}
+          {compose.editingId ? `Edit post #${compose.editingId}` : 'Post as admin'}
         </DialogTitle>
         <DialogContent dividers>
           <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-            Goes live in the app immediately with an official badge — no approval step.
-            Villagers see it credited to <strong>admin</strong>.
-            For a short urgent alert on every screen, use the Announcements tab instead.
+            {compose.editingId ? (
+              <>
+                Changes reach the app on its next refresh. Editing does <strong>not</strong> change
+                the post's status — approve or reject it separately.
+              </>
+            ) : (
+              <>
+                Goes live in the app immediately with an official badge — no approval step.
+                Villagers see it credited to <strong>admin</strong>.
+                For a short urgent alert on every screen, use the Announcements tab instead.
+              </>
+            )}
           </Typography>
           <TextField
-            fullWidth required label="தலைப்பு (Tamil title)" margin="dense"
+            fullWidth required={!compose.image_url} label="தலைப்பு (Tamil title)" margin="dense"
             value={compose.title_tamil} inputProps={{ maxLength: 200 }}
             onChange={(e) => setCompose(c => ({ ...c, title_tamil: e.target.value }))}
             InputProps={{ sx: { fontFamily: '"Noto Sans Tamil", sans-serif' } }}
@@ -428,7 +510,7 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
             onChange={(e) => setCompose(c => ({ ...c, title_english: e.target.value }))}
           />
           <TextField
-            fullWidth required multiline rows={4} label="விபரம் (Tamil content)" margin="dense"
+            fullWidth required={!compose.image_url} multiline rows={4} label="விபரம் (Tamil content)" margin="dense"
             value={compose.content_tamil} inputProps={{ maxLength: 1000 }}
             onChange={(e) => setCompose(c => ({ ...c, content_tamil: e.target.value }))}
             InputProps={{ sx: { fontFamily: '"Noto Sans Tamil", sans-serif' } }}
@@ -454,14 +536,29 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
               </Box>
             )}
           </Box>
+
+          {/* Its own field, not part of the body. A URL inside the content is
+              rendered as escaped plain text in the app — untappable. From here
+              it becomes a real button under the post. */}
+          <TextField
+            fullWidth label="🔗 Link (optional)" margin="dense" type="url"
+            placeholder="youtube.com/watch?v=… or any http/https link"
+            value={compose.link_url} inputProps={{ maxLength: 500 }}
+            onChange={(e) => setCompose(c => ({ ...c, link_url: e.target.value }))}
+            helperText="Shown as a tappable button under the post. http/https only — https:// is added if you leave it off."
+          />
         </DialogContent>
         <DialogActions>
-          <Button disabled={compose.saving} onClick={() => setCompose(c => ({ ...c, open: false }))}>Cancel</Button>
+          <Button disabled={compose.saving} onClick={closeCompose}>Cancel</Button>
           <Button
-            variant="contained" disabled={compose.saving} onClick={publishOfficial}
-            sx={{ bgcolor: '#E65100', '&:hover': { bgcolor: '#BF360C' } }}
+            variant="contained" disabled={compose.saving} onClick={saveCompose}
+            sx={compose.editingId
+              ? { bgcolor: '#1A237E', '&:hover': { bgcolor: '#0D1657' } }
+              : { bgcolor: '#E65100', '&:hover': { bgcolor: '#BF360C' } }}
           >
-            {compose.saving ? 'Publishing…' : 'Publish now'}
+            {compose.saving
+              ? (compose.editingId ? 'Saving…' : 'Publishing…')
+              : (compose.editingId ? 'Save changes' : 'Publish now')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -165,6 +165,11 @@ async function testAdminAuthGuards() {
     assert(status === 401, `Expected 401, got ${status}`);
   });
 
+  await test('PATCH /admin/bulletin/1 (content edit) without a token → 401', async () => {
+    const { status } = await patch('/admin/bulletin/1', { title_tamil: 'திருத்தம் முயற்சி' });
+    assert(status === 401, `Expected 401, got ${status}`);
+  });
+
   await test('DELETE /admin/bulletin/1 without a token → 401', async () => {
     const { status } = await del('/admin/bulletin/1');
     assert(status === 401, `Expected 401, got ${status}`);
@@ -527,6 +532,11 @@ async function testPublicFeedShape() {
     for (const p of body.data) {
       assert('id' in p && 'title_tamil' in p && 'content_tamil' in p, 'Missing core fields');
       assert('name_tamil' in p, 'Missing poster name');
+      // Always present, null when unset — the PWA must never have to guard
+      // for a missing field, pre- or post-migration.
+      assert('link_url' in p, 'Missing link_url');
+      assert(p.link_url == null || /^https?:\/\//i.test(p.link_url),
+        `link_url must be http(s) or null, got ${p.link_url}`);
       assert(typeof p.like_count === 'number', 'like_count must be a number');
       assert(typeof p.liked_by_me === 'boolean', 'liked_by_me must be a boolean');
     }
@@ -726,6 +736,241 @@ async function testVillagerEditDelete() {
   });
 }
 
+// ── Admin content edit + clickable link ────────────────────────────
+// The official account has no villager phone, so the public edit route
+// refuses it by design — an admin could not fix a typo in their own village
+// announcement without deleting and re-posting it. PATCH /admin/bulletin/:id
+// is that fix. Links get their own column so the app can render a real
+// tappable button instead of dead escaped text in the body.
+//
+// Link PERSISTENCE assertions are skipped when migration_bulletin_link.sql
+// has not been run (the API drops the link rather than 500ing). Link
+// VALIDATION is pure server logic and is always asserted.
+async function testAdminEditAndLinks() {
+  console.log('\n✏️  Admin edit + links');
+  let linksLive = false;
+  let postId = null;
+
+  const EDITED_TITLE = 'திருத்தப்பட்ட ஊர் அறிவிப்பு';
+  const EDITED_BODY  = 'நேரம் மாறியிருக்கு — காலை 11 மணிக்கு கூட்டம் நடக்கும்.';
+
+  await test('Admin publishes an official post carrying a link', async () => {
+    const { status, body } = await post('/admin/bulletin/post', {
+      title_tamil: 'ஊர் கூட்ட வீடியோ',
+      content_tamil: 'கடந்த வார ஊர் கூட்டத்தோட வீடியோ இங்க பாக்கலாம்.',
+      link_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    }, auth());
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+    postId = body.data.id;
+    created.postIds.push(postId);
+  });
+
+  await test('The link reaches the public feed so the app can render it', async () => {
+    const { body } = await get('/api/bulletin');
+    const mine = body.data.find(p => p.id === postId);
+    assert(mine, 'Official post missing from feed');
+    assert('link_url' in mine, 'Feed row has no link_url field at all');
+    linksLive = mine.link_url != null;
+    if (!linksLive) {
+      console.log('     ⚠️  link_url column absent — run migration_bulletin_link.sql');
+      return;
+    }
+    assert(
+      mine.link_url === 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      `Unexpected link: ${mine.link_url}`
+    );
+  });
+
+  // ── validation — always asserted, no column needed ──
+  await test('A javascript: link is rejected → 400', async () => {
+    const { status } = await post('/admin/bulletin/post', {
+      title_tamil: 'கெட்ட இணைப்பு சோதனை',
+      content_tamil: 'இது ஒரு பாதுகாப்பு சோதனை மட்டுமே ஆகும்.',
+      link_url: 'javascript:alert(1)',
+    }, auth());
+    assert(status === 400, `Expected 400, got ${status} — a javascript: URL reaches an href in the PWA`);
+  });
+
+  await test('A data: link is rejected → 400', async () => {
+    const { status } = await post('/admin/bulletin/post', {
+      title_tamil: 'கெட்ட இணைப்பு சோதனை',
+      content_tamil: 'இது ஒரு பாதுகாப்பு சோதனை மட்டுமே ஆகும்.',
+      link_url: 'data:text/html,<script>alert(1)</script>',
+    }, auth());
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test('A hostname with no dot is rejected → 400', async () => {
+    const { status } = await post('/admin/bulletin/post', {
+      title_tamil: 'கெட்ட இணைப்பு சோதனை',
+      content_tamil: 'இது ஒரு பாதுகாப்பு சோதனை மட்டுமே ஆகும்.',
+      link_url: 'https://notahost',
+    }, auth());
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test('An over-long link is rejected → 400', async () => {
+    const { status } = await post('/admin/bulletin/post', {
+      title_tamil: 'கெட்ட இணைப்பு சோதனை',
+      content_tamil: 'இது ஒரு பாதுகாப்பு சோதனை மட்டுமே ஆகும்.',
+      link_url: 'https://example.com/' + 'a'.repeat(600),
+    }, auth());
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test('A scheme-less link is accepted and https:// is added', async () => {
+    const { status, body } = await post('/admin/bulletin/post', {
+      title_tamil: 'ஸ்கீம் இல்லாத இணைப்பு',
+      content_tamil: 'நிறைய பேர் https:// போடாம வெறும் முகவரியை மட்டும் எழுதுவாங்க.',
+      link_url: 'tneb.tnebnet.org/notice',
+    }, auth());
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+    created.postIds.push(body.data.id);
+    if (!linksLive) return;
+    const { body: feed } = await get('/api/bulletin');
+    const row = feed.data.find(p => p.id === body.data.id);
+    assert(
+      row && row.link_url === 'https://tneb.tnebnet.org/notice',
+      `Expected an https:// prefix, got ${row && row.link_url}`
+    );
+  });
+
+  await test('An empty link is stored as null, not as an empty string', async () => {
+    const { status, body } = await post('/admin/bulletin/post', {
+      title_tamil: 'இணைப்பு இல்லாத அறிவிப்பு',
+      content_tamil: 'இந்த அறிவிப்புல எந்த இணைப்பும் இல்லை, அது சரிதான்.',
+      link_url: '   ',
+    }, auth());
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+    created.postIds.push(body.data.id);
+    const { body: feed } = await get('/api/bulletin');
+    const row = feed.data.find(p => p.id === body.data.id);
+    assert(row && row.link_url == null, `Expected null, got ${JSON.stringify(row && row.link_url)}`);
+  });
+
+  // ── the actual complaint: an official post could not be edited ──
+  await test('PATCH /admin/bulletin/:id edits an OFFICIAL post', async () => {
+    const { status, body } = await patch(`/admin/bulletin/${postId}`, {
+      title_tamil: EDITED_TITLE,
+      content_tamil: EDITED_BODY,
+      link_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    }, auth());
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+    assert(body.data.title_tamil === EDITED_TITLE, `Title not saved: ${body.data.title_tamil}`);
+  });
+
+  await test('The edit is what the app now serves', async () => {
+    const { body } = await get('/api/bulletin');
+    const mine = body.data.find(p => p.id === postId);
+    assert(mine, 'Edited post fell out of the feed');
+    assert(mine.title_tamil === EDITED_TITLE, `Feed still shows: ${mine.title_tamil}`);
+    assert(mine.content_tamil === EDITED_BODY, 'Feed content not updated');
+  });
+
+  await test('An edit can ADD a link to a post that had none', async () => {
+    const { body: created2 } = await post('/admin/bulletin/post', {
+      title_tamil: 'இணைப்பு பிறகு சேர்க்கப்படும்',
+      content_tamil: 'முதல்ல இணைப்பு இல்லாம போட்டு, அப்புறம் திருத்தி சேர்க்கிறோம்.',
+    }, auth());
+    created.postIds.push(created2.data.id);
+    const { status } = await patch(`/admin/bulletin/${created2.data.id}`, {
+      title_tamil: 'இணைப்பு பிறகு சேர்க்கப்படும்',
+      content_tamil: 'முதல்ல இணைப்பு இல்லாம போட்டு, அப்புறம் திருத்தி சேர்க்கிறோம்.',
+      link_url: 'https://example.com/notice.pdf',
+    }, auth());
+    assert(status === 200, `Expected 200, got ${status}`);
+    if (!linksLive) return;
+    const { body: feed } = await get('/api/bulletin');
+    const row = feed.data.find(p => p.id === created2.data.id);
+    assert(row && row.link_url === 'https://example.com/notice.pdf', `Link not added: ${row && row.link_url}`);
+  });
+
+  await test('An admin edit does NOT silently approve a pending post', async () => {
+    // Editing is not moderating. If an edit flipped status, reviewing a post
+    // by fixing its spelling would publish it without anyone deciding to.
+    const v = await registerVillager('திருத்த சோதனை நபர்');
+    const { body: sub } = await submit(v.posterId);
+    assert(sub.data.status === 'pending', `Fixture should start pending, got ${sub.data.status}`);
+    const { status, body } = await patch(`/admin/bulletin/${sub.data.id}`, {
+      title_tamil: 'நிர்வாகி திருத்திய தலைப்பு',
+      content_tamil: 'நிர்வாகி எழுத்துப்பிழையை மட்டும் திருத்தியிருக்காங்க, அவ்ளோதான்.',
+    }, auth());
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+    assert(body.data.status === 'pending', `Edit changed status to ${body.data.status}`);
+  });
+
+  await test('An admin edit rejects a bad link → 400', async () => {
+    const { status } = await patch(`/admin/bulletin/${postId}`, {
+      title_tamil: EDITED_TITLE, content_tamil: EDITED_BODY,
+      link_url: 'javascript:alert(1)',
+    }, auth());
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test('An admin edit still enforces the content rules', async () => {
+    const { status } = await patch(`/admin/bulletin/${postId}`, {
+      title_tamil: '', content_tamil: '',
+    }, auth());
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test('An admin edit with an image and no text → 200 (image is enough)', async () => {
+    const { status, body } = await patch(`/admin/bulletin/${postId}`, {
+      title_tamil: '', content_tamil: '', image_url: TINY_JPEG,
+    }, auth());
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+  });
+
+  await test('PATCH /admin/bulletin/:id on a missing post → 404', async () => {
+    const { status } = await patch('/admin/bulletin/99999999', {
+      title_tamil: EDITED_TITLE, content_tamil: EDITED_BODY,
+    }, auth());
+    assert(status === 404, `Expected 404, got ${status}`);
+  });
+
+  await test('A non-numeric id is rejected → 400', async () => {
+    const { status } = await patch('/admin/bulletin/abc', {
+      title_tamil: EDITED_TITLE, content_tamil: EDITED_BODY,
+    }, auth());
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  // ── villagers get links too, under the same rules ──
+  await test('A villager can attach a link to their own post', async () => {
+    const v = await registerVillager('இணைப்பு சோதனை நபர்');
+    const { status, body } = await submit(v.posterId, {
+      link_url: 'https://www.youtube.com/watch?v=abc123',
+    });
+    assert(status === 200, `Expected 200, got ${status} (${body.error})`);
+    if (!linksLive) return;
+    const { body: feed } = await get(`/api/bulletin?poster_id=${v.posterId}`);
+    const row = feed.data.find(p => p.id === body.data.id);
+    assert(row && row.link_url === 'https://www.youtube.com/watch?v=abc123', `Link missing: ${row && row.link_url}`);
+  });
+
+  await test("A villager's javascript: link is rejected → 400", async () => {
+    const v = await registerVillager('கெட்ட இணைப்பு நபர்');
+    const { status } = await submit(v.posterId, { link_url: 'javascript:alert(1)' });
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test("A villager's edit can change their link", async () => {
+    const v = await registerVillager('இணைப்பு மாத்தும் நபர்');
+    const { body: sub } = await submit(v.posterId, { link_url: 'https://example.com/old' });
+    const { status } = await patch(`/api/bulletin/${sub.data.id}`, {
+      poster_id: v.posterId, phone: v.phone,
+      title_tamil: 'ஊர் கூட்டம் நாளைக்கு',
+      content_tamil: 'நாளைக்கு காலை 10 மணிக்கு பஞ்சாயத்து அலுவலகத்துல ஊர் கூட்டம்.',
+      link_url: 'https://example.com/new',
+    });
+    assert(status === 200, `Expected 200, got ${status}`);
+    if (!linksLive) return;
+    const { body: feed } = await get(`/api/bulletin?poster_id=${v.posterId}`);
+    const row = feed.data.find(p => p.id === sub.data.id);
+    assert(row && row.link_url === 'https://example.com/new', `Link not updated: ${row && row.link_url}`);
+  });
+}
+
 async function cleanup() {
   console.log('\n🧹 Cleanup');
   let removed = 0;
@@ -759,6 +1004,7 @@ async function cleanup() {
     await testTrustedAndBlocked();
     await testOfficialAccount();
     await testVillagerEditDelete();
+    await testAdminEditAndLinks();
     await testPublicFeedShape();
   } catch (e) {
     console.error('\n💥 Suite crashed:', e.message);

@@ -341,6 +341,12 @@ class ApiService {
     return this.request('GET', `/admin/bulletin${status ? `?status=${encodeURIComponent(status)}` : ''}`);
   }
 
+  // Content edit — separate from the status route on purpose: editing a post
+  // never approves or rejects it.
+  updateBulletinPost(id, data) {
+    return this.request('PATCH', `/admin/bulletin/${id}`, data);
+  }
+
   updateBulletinStatus(id, status) {
     return this.request('PATCH', `/admin/bulletin/${id}/status`, { status });
   }

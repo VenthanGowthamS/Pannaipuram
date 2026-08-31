@@ -45,6 +45,66 @@ function validatePostContent({ title_tamil, content_tamil, image_url }) {
   return null;
 }
 
+// ── Optional link on a post ───────────────────────────────────────
+// A URL typed into the body is dead text: the villager it was meant for has
+// to select it, copy it and paste it into a browser, and most simply don't —
+// so the video or the TNEB notice the post was ABOUT never gets opened. This
+// column is rendered as a real tappable button instead, which is exactly why
+// the scheme has to be locked down HERE: the value ends up inside an href in
+// the PWA, and a 'javascript:' URL there is an XSS hole. http/https only.
+const MAX_LINK_LENGTH = 500;
+const LINK_ERROR = 'இணைப்பு சரியில்லை — http அல்லது https link கொடுங்க';
+
+function normalizeLink(raw) {
+  if (raw == null) return { value: null };
+  const s = String(raw).trim();
+  if (!s) return { value: null };
+  if (s.length > MAX_LINK_LENGTH) return { error: 'இணைப்பு ரொம்ப நீளம்' };
+
+  // People type "youtube.com/watch?v=..." with no scheme — assume https
+  // rather than rejecting them. Anything that already carries a scheme is
+  // taken as-is, so a bad one is caught below instead of being disguised.
+  const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(s) ? s : 'https://' + s;
+
+  let url;
+  try { url = new URL(withScheme); }
+  catch (_) { return { error: LINK_ERROR }; }
+
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return { error: LINK_ERROR };
+  // A hostname with no dot ("https://foo") resolves for nobody. Catching it
+  // here beats a villager tapping a button that goes nowhere.
+  if (!url.hostname || url.hostname.indexOf('.') === -1) return { error: LINK_ERROR };
+  if (url.href.length > MAX_LINK_LENGTH) return { error: 'இணைப்பு ரொம்ப நீளம்' };
+  return { value: url.href };
+}
+
+// ── link_url column presence ──────────────────────────────────────
+// Migrations are applied by hand in the Supabase SQL Editor, so this code can
+// reach production before the column does. Selecting a column that isn't
+// there would 500 the WHOLE feed for the whole village, so every query is
+// built around this check. A negative answer is re-checked after a minute,
+// which is how the feature switches itself on the moment the migration is
+// run — no redeploy needed.
+let _linkColumn = false;
+let _linkColumnCheckedAt = 0;
+const LINK_RECHECK_MS = 60 * 1000;
+
+async function hasLinkColumn() {
+  if (_linkColumn) return true;
+  if (Date.now() - _linkColumnCheckedAt < LINK_RECHECK_MS) return false;
+  _linkColumnCheckedAt = Date.now();
+  try {
+    const r = await query(
+      `SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'community_posts' AND column_name = 'link_url'`
+    );
+    _linkColumn = r.rows.length > 0;
+  } catch (_) {
+    _linkColumn = false;
+  }
+  return _linkColumn;
+}
+
 // ── GET /api/bulletin — live feed (approved + unexpired) ──────────
 // ?device_id=<id>  marks which posts this device already liked.
 // ?poster_id=<id>  additionally returns THAT poster's own pending posts, so
@@ -56,6 +116,9 @@ router.get('/', async (req, res) => {
   const ownRaw = Number(req.query.poster_id);
   const ownPosterId = Number.isInteger(ownRaw) && ownRaw > 0 ? ownRaw : null;
   try {
+    // NULL stand-in keeps the response shape identical pre-migration, so the
+    // PWA never has to special-case a missing field.
+    const linkSel = (await hasLinkColumn()) ? 'p.link_url' : 'NULL::text AS link_url';
     const result = await query(
       `SELECT
          p.id,
@@ -66,6 +129,7 @@ router.get('/', async (req, res) => {
          p.content_tamil,
          p.content_english,
          p.image_url,
+         ${linkSel},
          p.created_at,
          poster.name_tamil,
          poster.name_english,
@@ -142,11 +206,14 @@ router.patch('/:id', async (req, res) => {
 
   const {
     poster_id, phone, title_tamil, title_english,
-    content_tamil, content_english, image_url,
+    content_tamil, content_english, image_url, link_url,
   } = req.body || {};
 
   const contentErr = validatePostContent({ title_tamil, content_tamil, image_url });
   if (contentErr) return res.status(400).json({ success: false, error: contentErr });
+
+  const link = normalizeLink(link_url);
+  if (link.error) return res.status(400).json({ success: false, error: link.error });
 
   try {
     const { err, post } = await loadOwnedPost(postId, poster_id, phone);
@@ -154,22 +221,31 @@ router.patch('/:id', async (req, res) => {
 
     const newStatus = post.is_trusted === true ? 'approved' : 'pending';
 
+    const params = [
+      String(title_tamil || '').trim(),
+      title_english ? String(title_english).trim() : null,
+      String(content_tamil || '').trim(),
+      content_english ? String(content_english).trim() : null,
+      image_url || null,
+      newStatus,
+    ];
+    // Pre-migration the link is silently dropped rather than failing the whole
+    // edit — losing an optional button beats losing the villager's text.
+    let linkSet = '';
+    if (await hasLinkColumn()) {
+      params.push(link.value);
+      linkSet = `, link_url = $${params.length}`;
+    }
+    params.push(postId);
+
     const upd = await query(
       `UPDATE community_posts
           SET title_tamil = $1, title_english = $2,
               content_tamil = $3, content_english = $4,
-              image_url = $5, status = $6
-        WHERE id = $7
+              image_url = $5, status = $6${linkSet}
+        WHERE id = $${params.length}
       RETURNING id, status`,
-      [
-        String(title_tamil || '').trim(),
-        title_english ? String(title_english).trim() : null,
-        String(content_tamil || '').trim(),
-        content_english ? String(content_english).trim() : null,
-        image_url || null,
-        newStatus,
-        postId,
-      ]
+      params
     );
 
     res.json({
@@ -275,7 +351,7 @@ router.post('/register', async (req, res) => {
 router.post('/submit', async (req, res) => {
   const {
     poster_id, title_tamil, title_english,
-    content_tamil, content_english, image_url,
+    content_tamil, content_english, image_url, link_url,
   } = req.body || {};
 
   const pid = Number(poster_id);
@@ -284,6 +360,12 @@ router.post('/submit', async (req, res) => {
   }
   const contentErr = validatePostContent({ title_tamil, content_tamil, image_url });
   if (contentErr) return res.status(400).json({ success: false, error: contentErr });
+
+  const link = normalizeLink(link_url);
+  if (link.error) return res.status(400).json({ success: false, error: link.error });
+  // Resolved BEFORE the transaction opens: an information_schema round trip
+  // inside the poster row lock would hold it longer for no reason.
+  const linkCol = await hasLinkColumn();
 
   const client = await getClient();
   try {
@@ -327,20 +409,24 @@ router.post('/submit', async (req, res) => {
 
     const status = posterRes.rows[0].is_trusted === true ? 'approved' : 'pending';
 
+    const cols = ['poster_id', 'title_tamil', 'title_english', 'content_tamil',
+                  'content_english', 'image_url', 'status'];
+    const vals = [
+      pid,
+      String(title_tamil || '').trim(),
+      title_english ? String(title_english).trim() : null,
+      String(content_tamil || '').trim(),
+      content_english ? String(content_english).trim() : null,
+      image_url || null,
+      status,
+    ];
+    if (linkCol) { cols.push('link_url'); vals.push(link.value); }
+
     const postRes = await client.query(
-      `INSERT INTO community_posts
-         (poster_id, title_tamil, title_english, content_tamil, content_english, image_url, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO community_posts (${cols.join(', ')})
+       VALUES (${vals.map((_, i) => '$' + (i + 1)).join(', ')})
        RETURNING id, status, created_at`,
-      [
-        pid,
-        String(title_tamil || '').trim(),
-        title_english ? String(title_english).trim() : null,
-        String(content_tamil || '').trim(),
-        content_english ? String(content_english).trim() : null,
-        image_url || null,
-        status,
-      ]
+      vals
     );
 
     await client.query(
@@ -420,4 +506,8 @@ router.post('/:id/like', async (req, res) => {
 });
 
 module.exports = router;
+// Shared with routes/admin/bulletin.js so the official-post and admin-edit
+// routes can never drift from the rules the villager routes enforce.
 module.exports.validatePostContent = validatePostContent;
+module.exports.normalizeLink = normalizeLink;
+module.exports.hasLinkColumn = hasLinkColumn;
