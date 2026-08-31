@@ -232,7 +232,8 @@ router.patch('/:id', async (req, res) => {
     // Pre-migration the link is silently dropped rather than failing the whole
     // edit — losing an optional button beats losing the villager's text.
     let linkSet = '';
-    if (await hasLinkColumn()) {
+    const linkCol = await hasLinkColumn();
+    if (linkCol) {
       params.push(link.value);
       linkSet = `, link_url = $${params.length}`;
     }
@@ -256,6 +257,7 @@ router.patch('/:id', async (req, res) => {
         // Lets the PWA say "your edit is waiting for approval" rather than
         // leaving the villager wondering where their post went.
         requeued: newStatus === 'pending',
+        ...(link.value && !linkCol ? { link_saved: false } : {}),
       },
     });
   } catch (e) {
@@ -443,6 +445,10 @@ router.post('/submit', async (req, res) => {
         id: postRes.rows[0].id,
         status: postRes.rows[0].status,
         created_at: postRes.rows[0].created_at,
+        // false = a link was given but the column isn't there yet, so it was
+        // dropped. Silence here is what made a missing migration look like a
+        // broken feature: the post saved, said so, and lost the link.
+        ...(link.value && !linkCol ? { link_saved: false } : {}),
       },
     });
   } catch (err) {
