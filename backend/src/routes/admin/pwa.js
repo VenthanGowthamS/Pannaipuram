@@ -8,11 +8,12 @@ router.use(adminAuth);
 
 // ── GET /admin/pwa/stats ───────────────────────────────────
 // Returns visitor analytics for the admin dashboard:
-//  - totals: overall counts (lifetime, 7d/24h/1h active, LIVE 5-min, installed, installs today)
-//  - daily:  TRUE unique users per day (from pwa_visit_days) + installs per day, last 30 days
-//  - recent: last 30 visitors seen (most recent first), incl. label + visitor_id for labelling
+//  - totals:  overall counts (lifetime, 7d/24h/1h active, LIVE 5-min, installed, installs today)
+//  - daily:   TRUE unique users per day (from pwa_visit_days) + installs per day, last 30 days
+//  - monthly: installs per calendar month (IST), ALL time — not capped at 30 days
+//  - recent:  last 30 visitors seen (most recent first), incl. label + visitor_id for labelling
 // Query param ?exclude_labeled=1 removes labelled devices (e.g. Venthan's own
-// phones) from totals + daily so village-only numbers are visible.
+// phones) from totals + daily + monthly so village-only numbers are visible.
 router.get('/stats', async (req, res) => {
   const excludeLabeled = req.query.exclude_labeled === '1';
   const lblTotals = excludeLabeled ? 'WHERE label IS NULL' : '';
@@ -20,7 +21,7 @@ router.get('/stats', async (req, res) => {
   const lblAnd2   = excludeLabeled ? 'AND label IS NULL' : '';
 
   try {
-    const [totalsResult, labeledResult, dailyResult, installsResult, recentResult] = await Promise.all([
+    const [totalsResult, labeledResult, dailyResult, installsResult, monthlyResult, recentResult] = await Promise.all([
       query(`
         SELECT
           COUNT(*)                                                           AS total_visitors,
@@ -55,6 +56,15 @@ router.get('/stats', async (req, res) => {
         GROUP BY (installed_at AT TIME ZONE 'Asia/Kolkata')::date
         ORDER BY day DESC
       `),
+      // All-time monthly install counts, bucketed the same IST-safe way.
+      // 'YYYY-MM' text sorts correctly DESC without an extra date cast.
+      query(`
+        SELECT TO_CHAR((installed_at AT TIME ZONE 'Asia/Kolkata'), 'YYYY-MM') AS month, COUNT(*) AS installs
+        FROM pwa_visits
+        WHERE installed_at IS NOT NULL ${lblAnd2}
+        GROUP BY TO_CHAR((installed_at AT TIME ZONE 'Asia/Kolkata'), 'YYYY-MM')
+        ORDER BY month DESC
+      `),
       query(`
         SELECT
           visitor_id,
@@ -86,6 +96,7 @@ router.get('/stats', async (req, res) => {
       data: {
         totals: { ...(totalsResult.rows[0] || {}), ...(labeledResult.rows[0] || {}) },
         daily,
+        monthly: monthlyResult.rows.map((r) => ({ month: r.month, installs: Number(r.installs) })),
         recent: recentResult.rows,
       },
     });

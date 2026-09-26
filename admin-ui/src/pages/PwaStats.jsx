@@ -89,8 +89,15 @@ const PwaStats = ({ onSnackbar, canEdit }) => {
   };
 
   const t = stats?.totals || {};
-  const daily  = stats?.daily  || [];
-  const recent = stats?.recent || [];
+  const daily   = stats?.daily   || [];
+  const monthly = stats?.monthly || [];
+  const recent  = stats?.recent  || [];
+
+  const monthLabel = (m) => {
+    const [y, mo] = String(m).split('-');
+    const d = new Date(Number(y), Number(mo) - 1, 1);
+    return d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  };
 
   return (
     <Box>
@@ -193,6 +200,40 @@ const PwaStats = ({ onSnackbar, canEdit }) => {
                         {row.installs > 0
                           ? <Chip label={`+${row.installs}`} size="small" color="secondary" />
                           : <Typography sx={{ fontSize: 12, color: '#bbb' }}>—</Typography>}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Monthly installs — all-time, not capped at 30 days */}
+      {monthly.length > 0 && (
+        <Card sx={{ mb: 3, borderRadius: 3 }}>
+          <CardContent>
+            <Typography sx={{ fontWeight: 700, mb: 0.5, fontSize: 15 }}>
+              🗓️ Installs by Month — All time
+            </Typography>
+            <Typography sx={{ fontSize: 11, color: '#888', mb: 2 }}>
+              New home-screen installs per calendar month (IST). Not limited to the last 30 days.
+            </Typography>
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow sx={{ '& th': { fontWeight: 700, fontSize: 12, background: '#F5F5F5' } }}>
+                    <TableCell>Month</TableCell>
+                    <TableCell align="center">New Installs</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {monthly.map((row) => (
+                    <TableRow key={row.month} hover>
+                      <TableCell sx={{ fontSize: 13 }}>{monthLabel(row.month)}</TableCell>
+                      <TableCell align="center">
+                        <Chip label={`+${row.installs}`} size="small" color="secondary" />
                       </TableCell>
                     </TableRow>
                   ))}
