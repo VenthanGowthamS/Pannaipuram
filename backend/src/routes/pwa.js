@@ -36,10 +36,14 @@ router.post('/ping', async (req, res) => {
          user_agent     = EXCLUDED.user_agent`,
       [vid, ua, standalone]
     );
-    // One row per visitor per day → true daily unique-user counts
+    // One row per visitor per day → true daily unique-user counts.
+    // Day is bucketed in IST (Asia/Kolkata), NOT the DB session's default
+    // timezone (Supabase's Singapore region → Asia/Singapore, 2.5h ahead of
+    // IST). Villagers are in Tamil Nadu; a plain CURRENT_DATE would push
+    // anything after ~9:30 PM IST into "tomorrow" in the admin stats.
     await query(
       `INSERT INTO pwa_visit_days (visitor_id, day, opens)
-       VALUES ($1, CURRENT_DATE, 1)
+       VALUES ($1, (NOW() AT TIME ZONE 'Asia/Kolkata')::date, 1)
        ON CONFLICT (visitor_id, day) DO UPDATE SET opens = pwa_visit_days.opens + 1`,
       [vid]
     );

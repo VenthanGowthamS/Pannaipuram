@@ -29,25 +29,30 @@ router.get('/stats', async (req, res) => {
           COUNT(*) FILTER (WHERE last_seen_at > NOW() - INTERVAL '1 hour')   AS active_1h,
           COUNT(*) FILTER (WHERE last_seen_at > NOW() - INTERVAL '5 minutes') AS live_now,
           COUNT(*) FILTER (WHERE is_standalone = TRUE)                       AS installed,
-          COUNT(*) FILTER (WHERE installed_at >= CURRENT_DATE)               AS installs_today,
+          COUNT(*) FILTER (WHERE installed_at >= (((NOW() AT TIME ZONE 'Asia/Kolkata')::date) AT TIME ZONE 'Asia/Kolkata')) AS installs_today,
           COALESCE(SUM(visit_count), 0)::BIGINT                              AS total_visits
         FROM pwa_visits ${lblTotals}
       `),
       query(`SELECT COUNT(*) AS labeled_devices FROM pwa_visits WHERE label IS NOT NULL`),
+      // Both queries bucket by IST (Asia/Kolkata) explicitly — never rely on
+      // the DB session's default timezone (Supabase Singapore region), which
+      // is 2.5h ahead of IST and would shift anything after ~9:30 PM IST into
+      // "tomorrow", contradicting what the Recent Users list (browser-local
+      // time) shows for the same event.
       query(`
         SELECT d.day, COUNT(*) AS visitors, COALESCE(SUM(d.opens), 0)::BIGINT AS visits
         FROM pwa_visit_days d
         JOIN pwa_visits v ON v.visitor_id = d.visitor_id
-        WHERE d.day > CURRENT_DATE - INTERVAL '30 days' ${lblAnd}
+        WHERE d.day > (((NOW() AT TIME ZONE 'Asia/Kolkata')::date) - INTERVAL '30 days')::date ${lblAnd}
         GROUP BY d.day
         ORDER BY d.day DESC
       `),
       query(`
-        SELECT DATE(installed_at) AS day, COUNT(*) AS installs
+        SELECT (installed_at AT TIME ZONE 'Asia/Kolkata')::date AS day, COUNT(*) AS installs
         FROM pwa_visits
         WHERE installed_at IS NOT NULL
-          AND installed_at > CURRENT_DATE - INTERVAL '30 days' ${lblAnd2}
-        GROUP BY DATE(installed_at)
+          AND installed_at > ((((NOW() AT TIME ZONE 'Asia/Kolkata')::date) - INTERVAL '30 days')::date AT TIME ZONE 'Asia/Kolkata') ${lblAnd2}
+        GROUP BY (installed_at AT TIME ZONE 'Asia/Kolkata')::date
         ORDER BY day DESC
       `),
       query(`
