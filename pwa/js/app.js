@@ -171,6 +171,15 @@ document.addEventListener('DOMContentLoaded', function() {
           // Generate a random visitor ID: "v-<timestamp36>-<random8>" — no personal data
           vid = 'v-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
           localStorage.setItem(VID_KEY, vid);
+          // Guard against a same-device race: "Add to Home Screen" often opens
+          // the installed PWA as a second window while the original tab is
+          // still alive, and both can read localStorage as empty in the same
+          // instant — each generating its own id (double-counts one install).
+          // Re-read right after writing; if another context already settled
+          // on a DIFFERENT id, defer to it so every window on this device
+          // converges on the same visitor_id instead of forking.
+          var settled = localStorage.getItem(VID_KEY);
+          if (settled && settled !== vid) vid = settled;
         }
         var standalone = forceStandalone === true ||
                          window.matchMedia('(display-mode: standalone)').matches ||

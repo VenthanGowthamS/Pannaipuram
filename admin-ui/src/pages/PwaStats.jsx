@@ -226,7 +226,7 @@ const PwaStats = ({ onSnackbar, canEdit }) => {
                     <TableCell>First Seen</TableCell>
                     <TableCell>Last Seen</TableCell>
                     <TableCell align="center">Visits</TableCell>
-                    <TableCell align="center">Installed</TableCell>
+                    <TableCell>Installed On</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -256,9 +256,9 @@ const PwaStats = ({ onSnackbar, canEdit }) => {
                         <Chip label={r.visit_count} size="small"
                           color={r.visit_count >= 5 ? 'success' : 'default'} variant="outlined" />
                       </TableCell>
-                      <TableCell align="center">
-                        {r.is_standalone
-                          ? <Chip label="✅ Installed" size="small" color="secondary" />
+                      <TableCell sx={{ fontSize: 12, color: '#666' }}>
+                        {r.installed_at
+                          ? <Chip label={`✅ ${fmtDate(r.installed_at)}`} size="small" color="secondary" />
                           : <Chip label="Browser" size="small" variant="outlined" sx={{ color: '#999' }} />}
                       </TableCell>
                     </TableRow>
