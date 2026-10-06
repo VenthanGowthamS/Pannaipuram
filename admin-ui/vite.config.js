@@ -1,11 +1,18 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+// Two homes for the same build:
+//  - Cloudflare Pages (admin.pannaipuram.com) — CF_PAGES=1 is set in its build
+//    environment, so serve from the site root into dist/.
+//  - Render fallback (api.pannaipuram.com/admin/v2/) — `npm run build` locally
+//    writes into backend/public/admin-v2, which is committed and served by Express.
+const onPages = !!process.env.CF_PAGES;
+
 export default defineConfig({
   plugins: [react()],
-  base: '/admin/v2/',
+  base: onPages ? '/' : '/admin/v2/',
   build: {
-    outDir: '../backend/public/admin-v2',
+    outDir: onPages ? 'dist' : '../backend/public/admin-v2',
     emptyOutDir: true,
     sourcemap: false,
     minify: 'terser'

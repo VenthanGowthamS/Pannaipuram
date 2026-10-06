@@ -1,4 +1,6 @@
-const API_BASE = '';
+import { apiBaseFor } from './apiBase';
+
+const API_BASE = apiBaseFor(typeof location !== 'undefined' ? location.hostname : '');
 
 class ApiService {
   constructor() {

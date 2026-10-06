@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
+const { isAllowedOrigin } = require('./middleware/corsOrigin');
 const helmet  = require('helmet');
 const path    = require('path');
 
@@ -153,24 +154,10 @@ app.get('/', (req, res) => {
 // Diagnostic: log PWA path on startup (remove after first successful deploy)
 console.log('[PWA] Serving from:', PWA_DIR);
 
-// CORS — restrict origins in production
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-  : [];
+// CORS — restrict origins in production (rules in middleware/corsOrigin.js)
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, server-to-server)
-    if (!origin) return callback(null, true);
-    // In development, allow all origins
-    if (process.env.NODE_ENV !== 'production') return callback(null, true);
-    // In production, check whitelist
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    // Allow same-origin requests (admin panel JS modules)
-    if (origin === `https://${process.env.RENDER_EXTERNAL_HOSTNAME}`) return callback(null, true);
-    // Allow PWA hosted on GitHub Pages (any *.github.io subdomain)
-    if (/^https:\/\/[a-z0-9-]+\.github\.io$/i.test(origin)) return callback(null, true);
-    // Allow pannaipuram.com + all subdomains (app / api / admin / school etc.)
-    if (/^https:\/\/([a-z0-9-]+\.)?pannaipuram\.(com|in)$/i.test(origin)) return callback(null, true);
+    if (isAllowedOrigin(origin)) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
