@@ -99,7 +99,14 @@ window.Announce = (function() {
     var host = document.getElementById('announce-host');
     if (!host) return;
     var hidden = dismissedIds();
-    var show = (list || []).filter(function(a) { return hidden.indexOf(annKey(a)) === -1; }).slice(0, 3);
+    var now = Date.now();
+    var show = (list || []).filter(function(a) {
+      // The server stops sending an item once it expires, but a phone that is
+      // offline (or rendering its cached copy) never hears that — so the
+      // phone checks expires_at itself and drops the item on time.
+      if (a.expires_at && Date.parse(a.expires_at) <= now) return false;
+      return hidden.indexOf(annKey(a)) === -1;
+    }).slice(0, 3);
     if (!show.length) { host.innerHTML = ''; return; }
     host.innerHTML = show.map(function(a) {
       var t = TYPE_ICON[(a.type || '').toLowerCase()] ? (a.type || '').toLowerCase() : 'info';
@@ -115,11 +122,13 @@ window.Announce = (function() {
   }
 
   var _lastFetch = 0;
+  var _lastList = [];
   async function load(force) {
     try {
       var data = await PannaiAPI.getAnnouncements(!!force);
       if (force) _lastFetch = Date.now();
-      render(data);
+      _lastList = data || [];
+      render(_lastList);
     } catch (_) { /* offline — keep whatever is shown */ }
   }
 
@@ -150,6 +159,9 @@ window.Announce = (function() {
     setInterval(function() {
       if (document.visibilityState === 'visible') load(true);
     }, 15 * 60 * 1000);
+    // Re-check expiry every minute against the list already in memory (no
+    // network), so an announcement disappears on time on a screen left open.
+    setInterval(function() { render(_lastList); }, 60 * 1000);
   }
 
   return { init: init, refresh: function() { return load(true); } };

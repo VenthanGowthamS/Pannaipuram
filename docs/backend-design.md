@@ -304,6 +304,13 @@ CREATE TABLE devices (
 |---|---|---|
 | GET | `/api/emergency/contacts` | All emergency contacts by category |
 
+#### Announcements
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/announcements` | Active, not-yet-expired announcements (`id, message_tamil, message_english, type, priority, expires_at`). `expires_at` is included so the PWA hides an item that expires while cached on the phone (v83). |
+
+Admin (`/admin/announcements`, JWT): `GET /`, `POST /`, `PUT /:id`, `DELETE /:id`. `expires_at` must be an ISO string **with offset** — the admin panel sends IST as `YYYY-MM-DDTHH:MM:00+05:30`; a bare time would be read in the DB session's zone (UTC/Singapore), not IST. Unparseable → 400. On `PUT`, sending `expires_at: null` clears the expiry; omitting the key keeps it.
+
 #### Devices
 | Method | Endpoint | Description |
 |---|---|---|

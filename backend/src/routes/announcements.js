@@ -3,10 +3,13 @@ const router  = express.Router();
 const { query } = require('../db/pool');
 
 // GET /api/announcements — active announcements
+// expires_at is returned so the PWA can hide an item that expires while it
+// sits in the phone's cache — the server filter alone never reaches a phone
+// that is offline or showing its cached copy.
 router.get('/', async (req, res) => {
   try {
     const result = await query(`
-      SELECT id, message_tamil, message_english, type, priority
+      SELECT id, message_tamil, message_english, type, priority, expires_at
       FROM announcements
       WHERE is_active = TRUE
         AND (expires_at IS NULL OR expires_at > NOW())

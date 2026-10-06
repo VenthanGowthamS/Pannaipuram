@@ -738,6 +738,69 @@ async function testAnnouncementsCRUD() {
     }
   });
 
+  // ── Expiry (v83) — the admin panel sends IST with an explicit offset ──
+  await test('POST /admin/announcements rejects an unparseable expires_at', async () => {
+    const { status, body } = await post('/admin/announcements', {
+      message_tamil: 'சோதனை', expires_at: 'not-a-date',
+    }, getAuthHeaders());
+    assert(status === 400, `Expected 400, got ${status}`);
+    assert(body.success === false, 'Expected success: false');
+  });
+
+  await test('PUT /admin/announcements/:id rejects an unparseable expires_at', async () => {
+    if (!createdAnnouncementId) { assert(true, 'Skipped'); return; }
+    const { status } = await put(`/admin/announcements/${createdAnnouncementId}`, {
+      expires_at: 'tomorrow-ish',
+    }, getAuthHeaders());
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test('PUT stores expires_at as the exact IST instant, not the DB zone', async () => {
+    if (!createdAnnouncementId) { assert(true, 'Skipped'); return; }
+    const ist = '2030-01-15T23:59:00+05:30';
+    const { status, body } = await put(`/admin/announcements/${createdAnnouncementId}`, {
+      is_active: true, expires_at: ist,
+    }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(new Date(body.data.expires_at).getTime() === Date.parse(ist),
+      `Expected ${new Date(ist).toISOString()}, got ${body.data.expires_at}`);
+  });
+
+  await test('GET /api/announcements shows a future-expiry item WITH expires_at', async () => {
+    if (!createdAnnouncementId) { assert(true, 'Skipped'); return; }
+    const { body } = await get('/api/announcements');
+    const found = body.data.find(a => a.id === createdAnnouncementId);
+    assert(found, 'Active, not-yet-expired announcement should be public');
+    assert('expires_at' in found, 'Public row must carry expires_at so the PWA can hide it offline');
+  });
+
+  await test('PUT without expires_at (e.g. the Active toggle) keeps the expiry', async () => {
+    if (!createdAnnouncementId) { assert(true, 'Skipped'); return; }
+    const { body } = await put(`/admin/announcements/${createdAnnouncementId}`, {
+      priority: 7,
+    }, getAuthHeaders());
+    assert(body.data.expires_at, 'Expiry must survive an update that does not mention it');
+  });
+
+  await test('GET /api/announcements hides an active item once its expiry has passed', async () => {
+    if (!createdAnnouncementId) { assert(true, 'Skipped'); return; }
+    await put(`/admin/announcements/${createdAnnouncementId}`, {
+      expires_at: new Date(Date.now() - 60 * 1000).toISOString(),
+    }, getAuthHeaders());
+    const { body } = await get('/api/announcements');
+    const found = body.data.find(a => a.id === createdAnnouncementId);
+    assert(!found, 'Expired announcement must not be public even while is_active is true');
+  });
+
+  await test('PUT expires_at: null clears the expiry (was impossible with COALESCE)', async () => {
+    if (!createdAnnouncementId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await put(`/admin/announcements/${createdAnnouncementId}`, {
+      expires_at: null, is_active: false,
+    }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.data.expires_at === null, `Expected null, got ${body.data.expires_at}`);
+  });
+
   await test('DELETE /admin/announcements/:id deletes announcement', async () => {
     if (!createdAnnouncementId) { assert(true, 'Skipped'); return; }
     const { status, body } = await del(`/admin/announcements/${createdAnnouncementId}`, getAuthHeaders());

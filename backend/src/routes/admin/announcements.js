@@ -7,6 +7,12 @@ const { trimStr } = require('../../middleware/validate');
 
 router.use(adminAuth);
 
+// expires_at must carry its timezone (the admin panel sends "+05:30").
+// A bare "2026-10-05T23:59" is read in the DB session's zone, not IST.
+function badExpiry(v) {
+  return v != null && v !== '' && isNaN(Date.parse(v));
+}
+
 // GET /admin/announcements — all (incl expired/inactive)
 router.get('/', async (req, res) => {
   try {
@@ -23,6 +29,7 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
   const message_english = trimStr(req.body.message_english);
   const { type, priority, expires_at } = req.body;
   if (!message_tamil) return res.status(400).json({ success: false, error: 'message_tamil required' });
+  if (badExpiry(expires_at)) return res.status(400).json({ success: false, error: 'expires_at must be a valid date-time' });
   const validTypes = ['info', 'warning', 'urgent', 'event'];
   if (type && !validTypes.includes(type)) {
     return res.status(400).json({ success: false, error: `type must be one of: ${validTypes.join(', ')}` });
@@ -41,6 +48,7 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
 // PUT /admin/announcements/:id — update
 router.put('/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   const { message_tamil, message_english, type, priority, is_active, expires_at } = req.body;
+  if (badExpiry(expires_at)) return res.status(400).json({ success: false, error: 'expires_at must be a valid date-time' });
   try {
     const result = await query(`
       UPDATE announcements SET
@@ -49,9 +57,12 @@ router.put('/:id', validateIdParam, requireRole('admin', 'super_admin'), async (
         type           = COALESCE($3, type),
         priority       = COALESCE($4, priority),
         is_active      = COALESCE($5, is_active),
-        expires_at     = COALESCE($6, expires_at)
+        expires_at     = CASE WHEN $8 THEN $6::timestamptz ELSE expires_at END
       WHERE id = $7 RETURNING *
-    `, [message_tamil, message_english, type, priority, is_active, expires_at, req.params.id]);
+    `, [message_tamil, message_english, type, priority, is_active, expires_at || null, req.params.id,
+        // Sending expires_at (even null) sets it — null means "never expires".
+        // COALESCE used to keep the old date, so an expiry could never be removed.
+        Object.prototype.hasOwnProperty.call(req.body, 'expires_at')]);
     if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'Not found' });
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {

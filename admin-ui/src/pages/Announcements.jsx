@@ -29,6 +29,21 @@ const TYPES = [
   { id: 'event', label: 'Event', color: '#6A1B9A' },
 ];
 
+// Expiry is entered and shown in IST — the village's clock — whatever zone
+// the admin's laptop is in. A datetime-local value has no zone of its own;
+// sent bare, the DB read it in ITS zone (UTC/Singapore), so announcements
+// expired hours early or late, and each Edit+Save shifted them again.
+const IST_OFFSET_MS = 330 * 60 * 1000;
+export const istInputFromIso = (iso) => {
+  if (!iso) return '';
+  const t = Date.parse(iso);
+  return Number.isNaN(t) ? '' : new Date(t + IST_OFFSET_MS).toISOString().slice(0, 16);
+};
+export const isoFromIstInput = (v) => (v ? `${v}:00+05:30` : null);
+const formatIst = (iso) =>
+  new Date(iso).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) + ' IST';
+const isExpired = (item) => !!item.expires_at && Date.parse(item.expires_at) <= Date.now();
+
 const Announcements = ({ onSnackbar, canEdit }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -68,7 +83,7 @@ const Announcements = ({ onSnackbar, canEdit }) => {
       message_english: item.message_english || '',
       type: item.type || 'info',
       priority: String(item.priority || 0),
-      expires_at: item.expires_at ? item.expires_at.slice(0, 16) : '',
+      expires_at: istInputFromIso(item.expires_at),
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -85,7 +100,7 @@ const Announcements = ({ onSnackbar, canEdit }) => {
         message_english: form.message_english || null,
         type: form.type,
         priority: parseInt(form.priority) || 0,
-        expires_at: form.expires_at || null,
+        expires_at: isoFromIstInput(form.expires_at),
       };
 
       if (editingId) {
@@ -189,12 +204,12 @@ const Announcements = ({ onSnackbar, canEdit }) => {
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
-                label="Expires At"
+                label="Expires At (IST)"
                 type="datetime-local"
                 value={form.expires_at}
                 onChange={(e) => setForm({ ...form, expires_at: e.target.value })}
                 InputLabelProps={{ shrink: true }}
-                helperText="Leave empty for no expiry"
+                helperText="India time. Leave empty for no expiry"
               />
             </Grid>
             <Grid item xs={12}>
@@ -270,7 +285,10 @@ const Announcements = ({ onSnackbar, canEdit }) => {
                         )}
                       </TableCell>
                       <TableCell sx={{ fontSize: '12px' }}>
-                        {item.expires_at ? new Date(item.expires_at).toLocaleString() : 'Never'}
+                        {item.expires_at ? formatIst(item.expires_at) : 'Never'}
+                        {isExpired(item) && (
+                          <Chip label="Expired · hidden" size="small" sx={{ ml: 1, bgcolor: '#ECEFF1', color: '#546E7A', fontWeight: 600 }} />
+                        )}
                       </TableCell>
                       <TableCell align="center">
                         {canEdit && (
