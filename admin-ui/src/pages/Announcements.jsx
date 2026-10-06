@@ -268,21 +268,18 @@ const Announcements = ({ onSnackbar, canEdit }) => {
                         {item.message_english || '—'}
                       </TableCell>
                       <TableCell>
-                        {canEdit ? (
-                          <Switch
-                            checked={item.is_active}
-                            onChange={() => handleToggle(item)}
-                            size="small"
-                            color="success"
-                          />
-                        ) : (
-                          <Switch
-                            checked={item.is_active}
-                            disabled
-                            size="small"
-                            color="success"
-                          />
-                        )}
+                        {/* Live = switch ON and not expired. An expired item is hidden from
+                            villagers whatever the switch says, so showing it ON was misleading;
+                            to bring it back, Edit and set a new expiry. */}
+                        <Switch
+                          checked={item.is_active && !isExpired(item)}
+                          onChange={() => handleToggle(item)}
+                          disabled={!canEdit || isExpired(item)}
+                          size="small"
+                          color="success"
+                          inputProps={{ 'aria-label': `Active ${item.id}` }}
+                          title={isExpired(item) ? 'Expired — edit the expiry to show it again' : undefined}
+                        />
                       </TableCell>
                       <TableCell sx={{ fontSize: '12px' }}>
                         {item.expires_at ? formatIst(item.expires_at) : 'Never'}

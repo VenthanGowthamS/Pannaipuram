@@ -100,4 +100,20 @@ describe('Announcements page', () => {
     await screen.findByText('பழையது');
     expect(screen.getAllByText('Expired · hidden')).toHaveLength(1);
   });
+
+  it('an expired item shows its Active switch OFF and locked, even though is_active is true', async () => {
+    const past = { ...ITEM, id: 1, message_tamil: 'பழையது', is_active: true, expires_at: '2020-01-01T00:00:00.000Z' };
+    const future = { ...ITEM, id: 2, message_tamil: 'புதியது', is_active: true, expires_at: '2099-01-01T00:00:00.000Z' };
+    api.getAnnouncements.mockResolvedValue([past, future]);
+    render(<Announcements onSnackbar={() => {}} canEdit />);
+    await screen.findByText('பழையது');
+
+    const expiredSwitch = screen.getByLabelText('Active 1');
+    expect(expiredSwitch.checked).toBe(false);
+    expect(expiredSwitch.disabled).toBe(true);
+
+    const liveSwitch = screen.getByLabelText('Active 2');
+    expect(liveSwitch.checked).toBe(true);
+    expect(liveSwitch.disabled).toBe(false);
+  });
 });
