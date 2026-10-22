@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#1E2A78">
+  <meta name="theme-color" content="#1E2A78" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1A2163" media="(prefers-color-scheme: dark)">
   <meta name="description" content="பண்ணைப்புரம் — பேருந்து நேரம், ஆட்டோ தகவல்">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -100,7 +101,7 @@
            data-section (not data-sheet) switches the main tab instead of
            opening a sheet. -->
       <button class="menu-item menu-item-urgent" data-section="emergency" type="button">
-        <span class="menu-item-icon">📞</span>
+        <span class="menu-item-icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
         <span class="menu-item-text">
           <span class="menu-item-ta">அவசர தொடர்பு</span>
           <span class="menu-item-en">Emergency contacts</span>
@@ -108,7 +109,7 @@
         <span class="menu-item-caret">›</span>
       </button>
       <button class="menu-item" data-sheet="feedback" type="button">
-        <span class="menu-item-icon">💬</span>
+        <span class="menu-item-icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
         <span class="menu-item-text">
           <span class="menu-item-ta">கருத்து சொல்லுங்க</span>
           <span class="menu-item-en">Feedback</span>
@@ -116,7 +117,7 @@
         <span class="menu-item-caret">›</span>
       </button>
       <button class="menu-item" data-sheet="about" type="button">
-        <span class="menu-item-icon">ℹ️</span>
+        <span class="menu-item-icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
         <span class="menu-item-text">
           <span class="menu-item-ta">எங்களைப் பத்தி</span>
           <span class="menu-item-en">About</span>
@@ -124,7 +125,7 @@
         <span class="menu-item-caret">›</span>
       </button>
       <button class="menu-item" data-sheet="howto" type="button">
-        <span class="menu-item-icon">📖</span>
+        <span class="menu-item-icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
         <span class="menu-item-text">
           <span class="menu-item-ta">எப்படி பயன்படுத்துவது</span>
           <span class="menu-item-en">How to use</span>
@@ -132,7 +133,7 @@
         <span class="menu-item-caret">›</span>
       </button>
       <button class="menu-item" id="menu-install-btn" data-sheet="install" type="button">
-        <span class="menu-item-icon">📲</span>
+        <span class="menu-item-icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></span>
         <span class="menu-item-text">
           <span class="menu-item-ta">App install பண்ணுங்க</span>
           <span class="menu-item-en">Install App</span>
@@ -436,7 +437,7 @@
 
       <!-- Header (shared brand style — base.css) -->
       <div class="bus-header">
-        <button id="bus-refresh-btn" class="bus-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
+        <button id="bus-refresh-btn" class="bus-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></button>
         <p class="bus-header-ta">எங்க போறீங்க?</p>
         <p class="bus-header-en">Where are you going?</p>
         <div class="bus-header-stop">
@@ -447,7 +448,7 @@
 
       <!-- Search bar -->
       <div class="bus-search-wrap">
-        <span class="bus-search-icon">🔍</span>
+        <span class="bus-search-icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
         <input id="bus-search" class="bus-search-input" type="search" placeholder="தேனி, போடி, கம்பம்... தேடுங்க" aria-label="பேருந்து வழி தேடு" autocomplete="off">
         <button id="bus-search-clear" class="bus-search-clear" aria-label="அழி" hidden>×</button>
       </div>
@@ -485,7 +486,7 @@
       <div class="driver-list-header">
         <span class="driver-list-title">ஓட்டுநர்கள் <span class="driver-list-title-en">· Drivers</span></span>
         <button id="auto-refresh-btn" class="auto-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">
-          <span class="auto-refresh-icon">↻</span>
+          <span class="auto-refresh-icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></span>
         </button>
       </div>
 
@@ -548,7 +549,7 @@
 
       <!-- Header (shared brand style — base.css) -->
       <div class="hd-header">
-        <button id="hd-refresh-btn" class="hd-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
+        <button id="hd-refresh-btn" class="hd-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></button>
         <p class="hd-header-ta">மருத்துவம் & டாக்டர்கள்</p>
         <p class="hd-header-en">Hospitals & Doctors</p>
         <span class="hd-header-note">🩺 எந்த நாள் எந்த டாக்டர்?</span>
@@ -564,7 +565,7 @@
 
       <!-- Header (shared brand style — base.css) -->
       <div class="em-header">
-        <button id="em-refresh-btn" class="em-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
+        <button id="em-refresh-btn" class="em-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></button>
         <p class="em-header-ta">அவசர தொலைபேசி எண்கள்</p>
         <p class="em-header-en">Emergency Contacts</p>
         <span class="em-header-note">📞 ஒரே tap-ல் call பண்ணுங்க</span>
@@ -603,7 +604,7 @@
 
       <!-- Header (shared brand style — base.css) -->
       <div class="more-header">
-        <button id="more-refresh-btn" class="more-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
+        <button id="more-refresh-btn" class="more-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></button>
         <p class="more-header-ta">மேலும் சேவைகள்</p>
         <p class="more-header-en">More Village Services</p>
       </div>
@@ -716,7 +717,7 @@
 
       <!-- Header (shared brand style — base.css) -->
       <div class="bl-header">
-        <button id="bulletin-refresh-btn" class="bl-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
+        <button id="bulletin-refresh-btn" class="bl-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg></button>
         <p class="bl-header-ta">என்ன நடக்குது ஊர்ல?</p>
         <p class="bl-header-en">What's happening · சங்கமம்</p>
       </div>
@@ -831,23 +832,23 @@
        around it on narrow phones. -->
   <nav id="bottom-nav" role="tablist" aria-label="Main navigation">
     <button class="nav-tab active" role="tab" data-section="bus" aria-selected="true" aria-label="Bus timings">
-      <span class="nav-icon" aria-hidden="true">🚌</span>
+      <span class="nav-icon" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></svg></span>
       <span class="nav-label">பேருந்து</span>
     </button>
     <button class="nav-tab" role="tab" data-section="auto" aria-selected="false" aria-label="Auto and van transport">
-      <span class="nav-icon" aria-hidden="true">🛺</span>
+      <span class="nav-icon" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></span>
       <span class="nav-label">ஆட்டோ</span>
     </button>
     <button class="nav-tab nav-tab-news" role="tab" data-section="bulletin" aria-selected="false" aria-label="Village news bulletin">
-      <span class="nav-icon" aria-hidden="true">💬</span>
+      <span class="nav-icon" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg></span>
       <span class="nav-label">சங்கமம்</span>
     </button>
     <button class="nav-tab" role="tab" data-section="hospital" aria-selected="false" aria-label="Hospitals and doctors">
-      <span class="nav-icon" aria-hidden="true">🏥</span>
+      <span class="nav-icon" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2v2"/><path d="M5 2v2"/><path d="M5 3H4a2 2 0 0 0-2 2v4a6 6 0 0 0 12 0V5a2 2 0 0 0-2-2h-1"/><path d="M8 15a6 6 0 0 0 12 0v-3"/><circle cx="20" cy="10" r="2"/></svg></span>
       <span class="nav-label">மருத்துவம்</span>
     </button>
     <button class="nav-tab" role="tab" data-section="more" aria-selected="false" aria-label="More services">
-      <span class="nav-icon" aria-hidden="true">➕</span>
+      <span class="nav-icon" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg></span>
       <span class="nav-label">மேலும்</span>
     </button>
   </nav>

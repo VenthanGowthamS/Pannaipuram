@@ -182,3 +182,30 @@
   }
 }
 
+
+/* ── Dark mode: the last hard-coded light tints ───────────────
+   (colour tokens themselves switch in tokens.css) */
+@media (prefers-color-scheme: dark) {
+  .chip-ordinary, .badge-ordinary, .em-badge-nat { background: #16263D; color: #9CC8FF; }
+  .chip-private,  .badge-private  { background: #3A1A28; color: #F5A3C7; }
+  .badge-SETC                     { background: #2C1F38; color: #D7A8F0; }
+  .tt-row.tt-ordinary .tt-icon    { background: #16263D; }
+  .tt-row.tt-private  .tt-icon    { background: #3A1A28; }
+  .tt-gap   { background: var(--warn-tint); }
+  .tt-alt   { background: var(--ok-tint); }
+  .tt-nodata-contact:active { background: var(--surface-3); }
+  .skeleton { background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%); background-size: 200% 100%; }
+  .about-cardamom   { background: var(--ok-tint); }
+  .about-disclaimer { background: var(--warn-tint); border-color: #5A4520; }
+  .about-disclaimer-title, .about-disclaimer-en, .about-disclaimer-text { color: var(--warn-ink); }
+  .acting-avatar { background: var(--brand-tint); }
+  .acting-reg-cta { background: var(--surface-2); }
+  .bl-link { background: var(--ok-tint); border-color: #2C4A31; }
+  .bl-link:active { background: var(--surface-3); }
+  .bl-card.is-official { background: linear-gradient(180deg, #2E2310 0%, var(--surface) 56px); }
+  .menu-item-urgent { background: var(--danger-tint); }
+  .install-sheet-tip { background: var(--warn-tint); color: var(--warn-ink); }
+  .hd-day-chip.today.on { color: #0B1F1D; }
+  .route-name-ta.dimmed { color: var(--faint); }
+  img.driver-photo { filter: brightness(0.92); }
+}

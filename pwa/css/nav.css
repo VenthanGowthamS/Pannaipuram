@@ -127,7 +127,7 @@
   display: block;
   width: 18px;
   height: 2px;
-  background: var(--brand);
+  background: var(--brand-ink);
   border-radius: 2px;
   transition: transform var(--trans-fast), opacity var(--trans-fast);
 }
