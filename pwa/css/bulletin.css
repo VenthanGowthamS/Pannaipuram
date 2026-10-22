@@ -1,11 +1,11 @@
 /* ── Community Bulletin (சங்கமம்) ─────────────────────────────
-   Section identity colour: village green #2E7D32 → #1B5E20
-   (matches the raised centre nav button in nav.css)          */
+   Section accent: village green var(--c-news) — used for the stripe under
+   the header, avatars and the post button. The header itself is brand. */
 
 /* ── Header ─────────────────────────────────────────────── */
 .bl-header {
   position: relative;
-  background: linear-gradient(135deg, #2E7D32, #1B5E20);
+  background: var(--brand-grad);
   color: #fff;
   padding: 18px 16px 16px;
   text-align: center;
@@ -37,7 +37,7 @@
 
 /* ── Panels (register + compose) ────────────────────────── */
 .bl-panel {
-  background: #fff;
+  background: var(--surface);
   margin: 12px;
   padding: 14px;
   border-radius: 12px;
@@ -55,7 +55,7 @@
   font-family: var(--font-tamil);
   font-size: 1rem;
   font-weight: 700;
-  color: #1B5E20;
+  color: var(--ok-ink);
 }
 .bl-panel-en { font-size: 0.7rem; color: var(--color-muted); }
 .bl-panel-note {
@@ -72,26 +72,26 @@
   font-family: var(--font-tamil);
   font-size: 0.85rem;
   font-weight: 600;
-  color: #37474F;
+  color: var(--text-2);
   margin: 10px 0 4px;
 }
-.bl-req { color: #C62828; }
+.bl-req { color: var(--danger-ink); }
 .bl-req-hint { font-size: 0.72rem; font-weight: 400; color: var(--color-muted); }
 .bl-input {
   width: 100%;
   padding: 11px 12px;
   font-size: 1rem;               /* 16px — stops iOS zoom-on-focus */
   font-family: inherit;
-  color: #263238;
-  background: #F7F9FA;
-  border: 1px solid #CFD8DC;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 8px;
   min-height: 48px;
 }
 .bl-input:focus {
   outline: none;
-  border-color: #2E7D32;
-  background: #fff;
+  border-color: var(--ok);
+  background: var(--surface);
   box-shadow: 0 0 0 3px rgba(46,125,50,0.15);
 }
 .bl-textarea {
@@ -100,11 +100,11 @@
   resize: vertical;
   min-height: 84px;
 }
-.bl-file { padding: 9px 12px; background: #fff; }
+.bl-file { padding: 9px 12px; background: var(--surface); }
 .bl-field-err {
   font-family: var(--font-tamil);
   font-size: 0.78rem;
-  color: #C62828;
+  color: var(--danger-ink);
   margin: 4px 0 0;
 }
 .bl-btn {
@@ -115,7 +115,7 @@
   font-size: 1rem;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #2E7D32, #1B5E20);
+  background: linear-gradient(135deg, #2E7D32, var(--ok));
   border: none;
   border-radius: 10px;
 }
@@ -129,8 +129,8 @@
   padding: 10px 12px;
   border-radius: 8px;
 }
-.bl-result.is-ok  { background: #E8F5E9; color: #1B5E20; border-left: 4px solid #2E7D32; }
-.bl-result.is-err { background: #FFEBEE; color: #B71C1C; border-left: 4px solid #C62828; }
+.bl-result.is-ok  { background: var(--ok-tint); color: var(--ok-ink); border-left: 4px solid var(--ok); }
+.bl-result.is-err { background: var(--danger-tint); color: var(--danger-ink); border-left: 4px solid var(--danger); }
 
 /* ── Who am I / switch account ──────────────────────────── */
 .bl-whoami {
@@ -146,7 +146,7 @@
 .bl-signout {
   background: none;
   border: none;
-  color: #2E7D32;
+  color: var(--ok-ink);
   font-family: var(--font-tamil);
   font-size: 0.82rem;
   font-weight: 700;
@@ -172,7 +172,7 @@
   width: 38px; height: 38px;
   flex: 0 0 38px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2E7D32, #1B5E20);
+  background: linear-gradient(135deg, #2E7D32, var(--ok));
   color: #fff;
   font-family: var(--font-tamil);
   font-size: 1.05rem;
@@ -188,16 +188,16 @@
   min-width: 0;
   padding: 11px 16px;
   border-radius: 22px;
-  background: #F1F3F4;
-  border: 1px solid #E0E3E5;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   font-family: var(--font-tamil);
   font-size: 0.92rem;
-  color: #6B7378;
+  color: var(--muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.bl-compose-cta:active .bl-compose-pill { background: #E7EAEC; }
+.bl-compose-cta:active .bl-compose-pill { background: var(--surface-3); }
 .bl-compose-cam { font-size: 1.25rem; flex: 0 0 auto; }
 
 /* Header shown only once the composer is open */
@@ -206,15 +206,15 @@
   font-family: var(--font-tamil);
   font-size: 1rem;
   font-weight: 700;
-  color: #1B5E20;
+  color: var(--ok-ink);
 }
 .bl-compose-en { font-size: 0.68rem; color: var(--color-muted); }
 .bl-compose-close {
   display: none;
   width: 32px; height: 32px;
   border-radius: 50%;
-  background: #F1F3F4;
-  color: #5F6368;
+  background: var(--surface-2);
+  color: var(--muted);
   font-size: 0.9rem;
   align-items: center;
   justify-content: center;
@@ -239,7 +239,7 @@
   max-height: 260px;
   object-fit: contain;
   border-radius: 8px;
-  background: #ECEFF1;
+  background: var(--surface-3);
 }
 .bl-img-kb {
   position: absolute;
@@ -283,28 +283,28 @@
 .bl-loading, .bl-empty {
   text-align: center;
   padding: 32px 16px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 12px;
   font-family: var(--font-tamil);
   color: var(--color-muted);
 }
 .bl-empty-ic { font-size: 2.2rem; display: block; margin-bottom: 8px; }
-.bl-empty-ta { font-size: 0.95rem; font-weight: 600; margin: 0; color: #455A64; }
+.bl-empty-ta { font-size: 0.95rem; font-weight: 600; margin: 0; color: var(--text-2); }
 .bl-empty-en { font-size: 0.72rem; margin: 4px 0 0; }
 
 .bl-card {
-  background: #fff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 14px;
   box-shadow: 0 1px 6px rgba(0,0,0,0.07);
-  border-left: 4px solid #1B5E20;
+  border-left: 4px solid var(--ok);
 }
 .bl-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .bl-avatar {
   width: 38px; height: 38px;
   flex: 0 0 38px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2E7D32, #1B5E20);
+  background: linear-gradient(135deg, #2E7D32, var(--ok));
   color: #fff;
   font-family: var(--font-tamil);
   font-size: 1.05rem;
@@ -318,7 +318,7 @@
   font-family: var(--font-tamil);
   font-size: 0.92rem;
   font-weight: 700;
-  color: #263238;
+  color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -329,8 +329,8 @@
   font-family: var(--font-tamil);
   font-size: 0.64rem;
   font-weight: 700;
-  color: #1B5E20;
-  background: #E8F5E9;
+  color: var(--ok-ink);
+  background: var(--ok-tint);
   padding: 1px 6px;
   border-radius: 9px;
   margin: 2px 0;
@@ -339,7 +339,7 @@
 /* Official village account — visually distinct from any villager post */
 .bl-card.is-official {
   border-left-color: #E65100;
-  background: linear-gradient(180deg, #FFF8E1 0%, #fff 56px);
+  background: linear-gradient(180deg, var(--warn-tint) 0%, var(--surface) 56px);
 }
 .bl-avatar.is-official {
   background: linear-gradient(135deg, #FB8C00, #E65100);
@@ -364,7 +364,7 @@
   font-size: 1.05rem;
   font-weight: 800;
   line-height: 1.4;
-  color: #1A2327;
+  color: var(--text);
   margin: 0 0 2px;
 }
 .bl-title-en { font-size: 0.75rem; color: var(--color-muted); margin: 0 0 6px; }
@@ -372,7 +372,7 @@
   font-family: var(--font-tamil);
   font-size: 0.94rem;
   line-height: 1.6;
-  color: #37474F;
+  color: var(--text-2);
   margin: 6px 0 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -395,7 +395,7 @@
   object-fit: contain;
   border-radius: 8px;
   margin-top: 10px;
-  background: #ECEFF1;
+  background: var(--surface-3);
 }
 
 /* ── Link chip ───────────────────────────────────────────────
@@ -410,7 +410,7 @@
   margin-top: 10px;
   padding: 8px 12px;
   border: 1px solid #C8E6C9;
-  border-left: 4px solid #2E7D32;
+  border-left: 4px solid var(--ok);
   border-radius: 10px;
   background: #F1F8F2;
   text-decoration: none;
@@ -423,7 +423,7 @@
   font-family: var(--font-tamil);
   font-size: 0.92rem;
   font-weight: 700;
-  color: #1B5E20;
+  color: var(--ok-ink);
 }
 .bl-link-host {
   font-size: 0.72rem;
@@ -433,7 +433,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.bl-link-go { font-size: 0.95rem; color: #2E7D32; flex: 0 0 auto; }
+.bl-link-go { font-size: 0.95rem; color: var(--ok-ink); flex: 0 0 auto; }
 
 /* Hint under an optional composer field */
 .bl-field-hint {
@@ -463,7 +463,7 @@
   color: var(--color-muted);
   transition: background var(--trans-fast);
 }
-.bl-like:active { background: #F1F5F6; }
+.bl-like:active { background: var(--surface-2); }
 .bl-like-ic { font-size: 1.25rem; line-height: 1; }
 .bl-like-n { font-size: 0.85rem; font-weight: 700; }
 .bl-like.liked .bl-like-n { color: #C2185B; }
@@ -496,21 +496,21 @@
   min-height: 40px;
   border-radius: 999px;
   border: 1px solid var(--color-border);
-  background: #fff;
-  color: #37474F;
+  background: var(--surface);
+  color: var(--text-2);
   cursor: pointer;
 }
-.bl-own-btn:active { background: #ECEFF1; }
-.bl-own-btn.is-del { color: #C62828; border-color: #FFCDD2; }
-.bl-own-btn.is-del:active { background: #FFEBEE; }
+.bl-own-btn:active { background: var(--surface-3); }
+.bl-own-btn.is-del { color: var(--danger-ink); border-color: #FFCDD2; }
+.bl-own-btn.is-del:active { background: var(--danger-tint); }
 
 /* "Waiting for the admin" — shown to the AUTHOR only, so their post never
    looks like it silently vanished after submitting or editing. */
 .bl-pending {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #E65100;
-  background: #FFF3E0;
+  color: var(--warn-ink);
+  background: var(--warn-tint);
   border-radius: 999px;
   padding: 5px 10px;
   margin-right: auto;
@@ -527,8 +527,8 @@
   font-weight: 600;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
-  background: #fff;
-  color: #546E7A;
+  background: var(--surface);
+  color: var(--text-2);
   cursor: pointer;
 }
-.bl-btn-cancel:active { background: #ECEFF1; }
+.bl-btn-cancel:active { background: var(--surface-3); }

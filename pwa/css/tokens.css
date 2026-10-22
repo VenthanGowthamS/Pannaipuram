@@ -53,6 +53,7 @@
   --c-emergency: #C62828;
   --c-more:      #3949AB;
   --c-hospital-tint: #E0F2EF;
+  --auto-tint:   #F3EAF8;
 
   /* ── Legacy names (older rules still reference these) ── */
   --color-primary:       var(--brand);

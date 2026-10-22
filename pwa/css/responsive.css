@@ -91,7 +91,7 @@
   .menu-drawer .menu-drawer-title-ta { font-size: 1.3rem; }
 
   /* Sheets (About/Feedback/etc.) → a centered floating modal, not full-screen.
-     Closed sheets keep the base [hidden]{display:none} (so they are NOT rendered
+     Closed sheets keep the base [hidden]{display: none} (so they are NOT rendered
      at page load); visibility belt-and-suspenders for the brief open frame. */
   .menu-sheet {
     left: 50%;
@@ -145,7 +145,7 @@
   }
   #more-acting .acting-row {
     border-bottom: none;
-    background: #F7F8FA;
+    background: var(--surface-2);
     border-radius: 12px;
     padding: 12px;
   }

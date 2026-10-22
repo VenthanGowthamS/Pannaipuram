@@ -1,9 +1,10 @@
 /* ── Emergency Contacts Section ─────────────────────────── */
 
-/* Header — red theme (urgency) */
+/* Header — shared brand look lives in base.css; the red stripe under it
+   (--sec) carries the urgency */
 .em-header {
   position: relative;
-  background: linear-gradient(135deg, #C62828 0%, #8E1B1B 100%);
+  background: var(--brand-grad);
   color: #fff;
   /* side padding clears the fixed ☰ (left) and ↻ (right) buttons */
   padding: 18px 60px 18px;
@@ -57,7 +58,7 @@
    police, orange fire, amber power, purple other). */
 .em-panel {
   margin: 14px 12px 0;
-  background: #fff;
+  background: var(--surface);
   border-radius: 16px;
   box-shadow: 0 2px 10px rgba(20, 30, 70, 0.07);
   overflow: hidden;
@@ -67,13 +68,13 @@
   align-items: center;
   gap: 11px;
   padding: 12px 14px;
-  background: var(--cat-tint, #F5F5F5);
-  border-bottom: 2px solid var(--cat, #5E35B1);
+  background: var(--cat-tint, var(--surface-2));
+  border-bottom: 2px solid var(--cat, var(--brand));
 }
 .em-panel-ic {
   width: 38px; height: 38px;
   border-radius: 11px;
-  background: #fff;
+  background: var(--surface);
   display: flex; align-items: center; justify-content: center;
   font-size: 20px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
@@ -84,15 +85,15 @@
   font-family: 'Noto Sans Tamil', sans-serif;
   font-size: 1.08rem;
   font-weight: 800;
-  color: #1A1A1A;
+  color: var(--text);
   line-height: 1.15;
 }
-.em-panel-en { font-size: 0.7rem; color: #757575; }
+.em-panel-en { font-size: 0.7rem; color: var(--muted); }
 .em-panel-count {
   flex-shrink: 0;
   min-width: 26px; height: 26px;
   border-radius: 999px;
-  background: var(--cat, #5E35B1);
+  background: var(--cat, var(--brand));
   color: #fff;
   font-size: 0.78rem;
   font-weight: 800;
@@ -109,22 +110,22 @@
   gap: 10px;
   padding: 12px 14px;
   text-decoration: none;
-  border-bottom: 1px solid #F2F2F4;
+  border-bottom: 1px solid var(--border);
   -webkit-tap-highlight-color: transparent;
 }
 .em-row:last-child { border-bottom: none; }
-.em-row:active { background: var(--cat-tint, #F7F7F7); }
+.em-row:active { background: var(--cat-tint, var(--surface-2)); }
 .em-row-info { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .em-row-ta {
   font-family: 'Noto Sans Tamil', sans-serif;
   font-size: 1rem;
   font-weight: 700;
-  color: #1A1A1A;
+  color: var(--text);
   line-height: 1.3;
 }
 .em-row-en {
   font-size: 0.72rem;
-  color: #8A8A8E;
+  color: var(--muted);
   margin-top: 1px;
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
 }
@@ -138,11 +139,11 @@
 .em-row-phone {
   font-size: 0.88rem;
   font-weight: 800;
-  color: var(--cat, #C62828);
+  color: var(--cat, var(--danger-ink));
   letter-spacing: 0.3px;
 }
 .em-row-call {
-  background: #16A34A;
+  background: var(--call);
   color: #fff;
   font-family: 'Noto Sans Tamil', sans-serif;
   font-size: 0.8rem;
@@ -164,7 +165,7 @@
 .em-empty {
   text-align: center;
   padding: 48px 24px;
-  color: #888;
+  color: var(--muted);
 }
 .em-empty-icon { font-size: 3rem; margin-bottom: 12px; }
 .em-empty-ta { font-family: 'Noto Sans Tamil', sans-serif; font-size: 1.05rem; font-weight: 600; margin: 0; }
@@ -180,7 +181,7 @@
   margin-top: 8px;
 }
 .about-stat {
-  background: #F7F7F7;
+  background: var(--surface-2);
   border-radius: 12px;
   padding: 12px 10px;
   text-align: center;
@@ -190,18 +191,18 @@
   font-family: 'Noto Sans Tamil', sans-serif;
   font-size: 1.05rem;
   font-weight: 800;
-  color: #1A1A1A;
+  color: var(--text);
   margin-top: 4px;
 }
 .about-stat-label {
   font-family: 'Noto Sans Tamil', sans-serif;
   font-size: 0.78rem;
-  color: #666;
+  color: var(--text-2);
   margin-top: 2px;
 }
 .about-cardamom {
   margin-top: 14px;
-  background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
+  background: linear-gradient(135deg, var(--ok-tint) 0%, #F1F8E9 100%);
   border-radius: 12px;
   padding: 14px;
 }
@@ -209,19 +210,19 @@
   font-family: 'Noto Sans Tamil', sans-serif;
   font-size: 1.05rem;
   font-weight: 800;
-  color: #2E7D32;
+  color: var(--ok-ink);
   margin: 0;
 }
-.about-cardamom-en { font-size: 0.74rem; color: #757575; margin: 2px 0 8px; }
+.about-cardamom-en { font-size: 0.74rem; color: var(--muted); margin: 2px 0 8px; }
 .about-cardamom-text {
   font-family: 'Noto Sans Tamil', sans-serif;
   font-size: 0.9rem;
-  color: #333;
+  color: var(--text);
   line-height: 1.5;
   margin: 0;
 }
 .about-disclaimer {
-  background: linear-gradient(135deg, #FFF8E1 0%, #FFFDE7 100%);
+  background: linear-gradient(135deg, var(--warn-tint) 0%, #FFFDE7 100%);
   border: 1px solid #F0D58A;
   border-radius: 12px;
   padding: 14px;

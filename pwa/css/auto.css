@@ -1,25 +1,20 @@
 /* ── Auto/Van Section ────────────────────────────────────── */
 /*
-  Palette — Tamil Nadu auto identity, refined:
-  • Charcoal  #1C1C1E  — warm dark (not dead black)
-  • Amber     #F59E0B  — warm gold (replaces harsh neon yellow)
-  • Amber-dk  #D97706  — hover / border accent
-  • Amber-bg  #FEF3C7  — light tint for icon circles
-  • Call-grn  #16A34A  — universal phone/call green
-  Purple is removed entirely from this section.
+  The charcoal + amber theme is gone: the hero now shares the brand header
+  (base.css) and this tab's own colour, --c-auto, is only an accent
+  (header stripe, avatar circles, coverage text). Cards + the registration
+  form are light like every other tab.
 */
 
 /* ── Auto section tokens ──────────────────────────────────── */
 #section-auto {
-  --auto-dark:    #1C1C1E;
-  --auto-dark2:   #252528;
-  --auto-amber:   #F59E0B;
-  --auto-amb-dk:  #D97706;
-  --auto-amb-bg:  #FEF3C7;
-  --auto-amber-20: rgba(245,158,11,0.20);
-  --auto-amber-12: rgba(245,158,11,0.12);
-  --auto-call:    #16A34A;
-  --auto-call-dk: #15803D;
+  --auto-amber:   var(--c-auto);
+  --auto-amb-dk:  var(--c-auto);
+  --auto-amb-bg:  var(--auto-tint);
+  --auto-amber-20: var(--surface-3);
+  --auto-amber-12: var(--auto-tint);
+  --auto-call:    var(--call);
+  --auto-call-dk: var(--call-press);
   padding: var(--space-md);
   padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + var(--space-lg));
 }
@@ -226,11 +221,11 @@
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 16px;
   padding: 14px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-  border: 1px solid #F5E6C3;
+  border: 1px solid var(--border);
 }
 
 /* ── Vehicle-type group headers (🛺 ஆட்டோ / 🚐 வேன் / 🚗 கார்) ── */
@@ -257,8 +252,8 @@
 }
 .driver-group-count {
   margin-left: auto;
-  background: var(--auto-amb-bg, #FEF3C7);
-  color: var(--auto-amb-dk, #D97706);
+  background: var(--auto-amb-bg);
+  color: var(--auto-amb-dk);
   font-family: var(--font-latin);
   font-size: 0.75rem;
   font-weight: 800;
@@ -287,7 +282,7 @@
   width: 52px;
   height: 52px;
   border-radius: 26px;
-  background: var(--auto-amb-bg, #FEF3C7);
+  background: var(--auto-amb-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -322,7 +317,7 @@
 .driver-meta {
   font-family: var(--font-tamil);
   font-size: 0.825rem;
-  color: var(--auto-amb-dk, #D97706);
+  color: var(--auto-amb-dk);
   display: block;
   margin-top: 4px;
   /* Route/coverage can be long — wrap fully instead of cropping to one line */
@@ -338,7 +333,7 @@
   align-items: center;
   justify-content: center;
   padding: 10px 16px;
-  background: var(--auto-call, #16A34A);
+  background: var(--auto-call);
   color: #ffffff;
   border-radius: var(--radius-pill);
   font-family: var(--font-tamil);
@@ -349,10 +344,10 @@
   white-space: nowrap;
   flex-shrink: 0;
   transition: background var(--trans-fast), transform var(--trans-fast);
-  box-shadow: 0 2px 8px rgba(22,163,74,0.25);
+  box-shadow: 0 2px 8px rgba(21,128,61,0.22);
 }
 .call-btn:active {
-  background: var(--auto-call-dk, #15803D);
+  background: var(--auto-call-dk);
   transform: scale(0.96);
 }
 .call-btn-pending {
@@ -371,13 +366,14 @@
 }
 
 /* ── Register / contact form card ─────────────────────────── */
-/* Matches the hero — dark charcoal + amber, cohesive section */
+/* Light card, dashed border = "you can add yourself here" */
 .register-card {
-  background: linear-gradient(160deg, var(--auto-dark, #1C1C1E) 0%, var(--auto-dark2, #252528) 100%);
+  background: var(--surface);
+  border: 1.5px dashed var(--border);
   border-radius: 18px;
   padding: var(--space-md) var(--space-md) 20px;
   text-align: center;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.20), 0 0 0 1.5px rgba(245,158,11,0.22);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Collapsible registration (details/summary) — closed = compact CTA card */
@@ -391,8 +387,8 @@
   margin-top: 2px;
   padding: 8px 16px;
   border-radius: 999px;
-  border: 1.5px solid rgba(245,158,11,0.55);
-  color: var(--auto-amber, #F59E0B);
+  border: 1.5px solid var(--brand);
+  color: var(--brand-ink);
   font-family: var(--font-tamil);
   font-size: 0.85rem;
   font-weight: 700;
@@ -409,14 +405,14 @@
   font-family: var(--font-tamil);
   font-size: 1rem;
   font-weight: 700;
-  color: var(--auto-amber, #F59E0B);
+  color: var(--text);
   display: block;
   margin-bottom: 2px;
 }
 .register-label-en {
   font-family: var(--font-latin);
   font-size: var(--size-sub);
-  color: rgba(255,255,255,0.50);
+  color: var(--muted);
   display: block;
   margin-bottom: var(--space-md);
 }
@@ -441,13 +437,13 @@
   font-family: var(--font-tamil);
   font-size: 0.875rem;
   font-weight: 700;
-  color: rgba(255,255,255,0.85);
+  color: var(--text-2);
 }
 .auto-form-label-en {
   font-family: var(--font-latin);
   font-size: 0.68rem;
   font-weight: 400;
-  color: rgba(255,255,255,0.50);
+  color: var(--muted);
   margin-left: 4px;
 }
 
@@ -455,30 +451,30 @@
   width: 100%;
   padding: 13px 14px;
   border-radius: 12px;
-  border: 1.5px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.09);
-  color: #ffffff;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
   font-family: var(--font-tamil);
   font-size: 0.95rem;
   outline: none;
   transition: border-color var(--trans-fast), background var(--trans-fast);
 }
-.auto-form-input::placeholder { color: rgba(255,255,255,0.38); }
+.auto-form-input::placeholder { color: var(--faint); }
 .auto-form-input:focus {
-  border-color: rgba(245,158,11,0.70);
-  background: rgba(255,255,255,0.13);
-  box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+  border-color: var(--brand);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px var(--brand-tint);
 }
-.auto-form-select option { color: #1A1A1A; background: #ffffff; }
+.auto-form-select option { color: var(--text); background: var(--surface); }
 
 .auto-form-textarea { resize: none; min-height: 72px; }
 
-/* Submit button — amber on dark (matches section identity) */
+/* Submit button — brand, like every other form's primary button */
 .auto-form-submit {
   width: 100%;
   padding: 14px;
-  background: var(--auto-amber, #F59E0B);
-  color: var(--auto-dark, #1C1C1E);
+  background: var(--brand);
+  color: var(--on-brand);
   border-radius: 14px;
   font-family: var(--font-tamil);
   font-size: 1rem;
@@ -486,9 +482,9 @@
   min-height: 50px;
   transition: transform var(--trans-fast), background var(--trans-fast), box-shadow var(--trans-fast);
   margin-top: 4px;
-  box-shadow: 0 3px 12px rgba(245,158,11,0.30);
+  box-shadow: 0 3px 12px rgba(30,42,120,0.25);
 }
-.auto-form-submit:hover   { background: #FBBF24; }
+.auto-form-submit:hover   { background: var(--brand-2); }
 .auto-form-submit:active  { transform: scale(0.97); box-shadow: none; }
 .auto-form-submit:disabled { opacity: 0.55; cursor: not-allowed; }
 
@@ -500,8 +496,8 @@
   border-radius: 10px;
   margin-top: 4px;
 }
-.result-ok  { background: rgba(22,163,74,0.18);  color: #86EFAC; }
-.result-err { background: rgba(239,68,68,0.18);  color: #FCA5A5; }
+.result-ok  { background: var(--ok-tint);     color: var(--ok-ink); }
+.result-err { background: var(--danger-tint); color: var(--danger-ink); }
 
 /* ── Empty state ────────────────────────────────────────────── */
 .auto-empty {
@@ -529,7 +525,7 @@
 .skeleton-list { display: flex; flex-direction: column; gap: 10px; }
 .skeleton {
   height: 78px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--surface-3) 25%, var(--border) 50%, var(--surface-3) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
   border-radius: 16px;
@@ -540,10 +536,10 @@
 }
 
 /* ── Phone field validation ────────────────────────────────── */
-.auto-form-required { color: #FCA5A5; margin-left: 2px; }
-.auto-form-optional { color: rgba(255,255,255,0.45); font-size: 0.85em; }
+.auto-form-required { color: var(--danger-ink); margin-left: 2px; }
+.auto-form-optional { color: var(--muted); font-size: 0.85em; }
 .auto-form-field-err {
-  color: #FCA5A5;
+  color: var(--danger-ink);
   font-family: var(--font-tamil, "Noto Sans Tamil", sans-serif);
   font-size: 13px;
   margin: 4px 0 0;
@@ -578,11 +574,17 @@
 }
 .retry-btn {
   padding: 10px 22px;
-  background: var(--auto-amber, #F59E0B);
-  color: #1C1C1E;
+  background: var(--brand);
+  color: var(--on-brand);
   border-radius: var(--radius-pill);
   font-family: var(--font-tamil);
   font-size: 0.9rem;
   font-weight: 700;
   min-height: 44px;
 }
+
+/* Give driver names room: they wrapped after every word because the
+   icon + a wide call pill took ~60% of the card. */
+.driver-card { gap: 12px; padding: 12px; }
+.driver-icon { width: 44px; height: 44px; font-size: 20px; }
+.call-btn { padding: 10px 12px; min-width: 0; }

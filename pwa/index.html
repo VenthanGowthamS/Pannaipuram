@@ -411,16 +411,19 @@
     </div>
   </div>
 
-  <!-- Install-to-home-screen prompt (shown only on browsers, not when installed) -->
+  <!-- Install-to-home-screen prompt (shown only on browsers, not when installed).
+       ONE compact row: it used to be a tall card with numbered steps that
+       filled ~60% of the first screen before any bus time was visible.
+       The full steps + benefits now live in the ☰ → Install sheet, opened
+       by the "எப்படி?" button on iPhone / browsers without a native prompt. -->
   <div id="install-banner" hidden>
-    <button class="install-close" id="install-close" aria-label="மூடு">×</button>
-    <div class="install-icon">📱</div>
+    <div class="install-icon" aria-hidden="true">📲</div>
     <div class="install-body">
-      <div class="install-title-ta">பண்ணைப்புரம் App-ஆ சேர்த்துக்கோங்க!</div>
-      <div class="install-title-en">Install as app · ஒரே ஒரு நிமிடம்</div>
-      <ol class="install-steps" id="install-steps"></ol>
-      <div class="install-why">✅ Home screen-ல icon வரும் · ✅ Offline-ல வேலை செய்யும் · ✅ வேகமா திறக்கும்</div>
+      <div class="install-title-ta">App-ஆ சேர்த்துக்கோங்க</div>
+      <div class="install-title-en">Install · works offline</div>
     </div>
+    <ol class="install-steps" id="install-steps"></ol>
+    <button class="install-close" id="install-close" type="button" aria-label="மூடு · Close">×</button>
   </div>
 
   <!-- ── Main Content ─────────────────────────────────── -->
@@ -432,11 +435,11 @@
     <!-- BUS SECTION (default) -->
     <section id="section-bus" class="section notranslate" translate="no">
 
-      <!-- Navy header -->
+      <!-- Header (shared brand style — base.css) -->
       <div class="bus-header">
         <button id="bus-refresh-btn" class="bus-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
         <p class="bus-header-ta">எங்க போறீங்க?</p>
-        <p class="bus-header-en">எங்க போறீங்க? · Where are you going?</p>
+        <p class="bus-header-en">Where are you going?</p>
         <div class="bus-header-stop">
           <span>📍</span>
           <span>பண்ணைப்புரம் நிறுத்தம்</span>
@@ -544,7 +547,7 @@
     <!-- HOSPITAL SECTION -->
     <section id="section-hospital" class="section notranslate" translate="no" hidden>
 
-      <!-- Teal header -->
+      <!-- Header (shared brand style — base.css) -->
       <div class="hd-header">
         <button id="hd-refresh-btn" class="hd-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
         <p class="hd-header-ta">மருத்துவம் & டாக்டர்கள்</p>
@@ -560,7 +563,7 @@
     <!-- EMERGENCY SECTION -->
     <section id="section-emergency" class="section notranslate" translate="no" hidden>
 
-      <!-- Red header -->
+      <!-- Header (shared brand style — base.css) -->
       <div class="em-header">
         <button id="em-refresh-btn" class="em-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
         <p class="em-header-ta">அவசர தொலைபேசி எண்கள்</p>
@@ -576,7 +579,7 @@
     <!-- MORE SECTION -->
     <section id="section-more" class="section notranslate" translate="no" hidden>
 
-      <!-- Purple header -->
+      <!-- Header (shared brand style — base.css) -->
       <div class="more-header">
         <button id="more-refresh-btn" class="more-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
         <p class="more-header-ta">மேலும் சேவைகள்</p>
@@ -689,10 +692,10 @@
     <!-- COMMUNITY BULLETIN SECTION -->
     <section id="section-bulletin" class="section notranslate" translate="no" hidden>
 
-      <!-- Deep-teal header -->
+      <!-- Header (shared brand style — base.css) -->
       <div class="bl-header">
         <button id="bulletin-refresh-btn" class="bl-refresh-btn" aria-label="புதுப்பி · Refresh" type="button">↻</button>
-        <p class="bl-header-ta">என்ன நடக்குது ஊர்ல்?</p>
+        <p class="bl-header-ta">என்ன நடக்குது ஊர்ல?</p>
         <p class="bl-header-en">What's happening · சங்கமம்</p>
       </div>
 

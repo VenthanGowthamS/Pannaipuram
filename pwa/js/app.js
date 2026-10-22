@@ -136,7 +136,12 @@ window.Announce = (function() {
     var host = document.getElementById('announce-host');
     if (host) host.addEventListener('click', function(ev) {
       var btn = ev.target.closest ? ev.target.closest('[data-ann-close]') : null;
-      if (!btn) return;
+      if (!btn) {
+        // Tap anywhere else on a card → show / hide its full text (clamped to 2 lines)
+        var c = ev.target.closest ? ev.target.closest('.ann-card') : null;
+        if (c) c.classList.toggle('open');
+        return;
+      }
       dismiss(btn.getAttribute('data-ann-close'));
       var card = btn.closest('.ann-card');
       if (card) card.remove();
@@ -401,30 +406,20 @@ document.addEventListener('DOMContentLoaded', function() {
     var ua = navigator.userAgent || '';
     var isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
     var isAndroid = /Android/.test(ua);
-    var instructions;
-
-    if (isIOS) {
-      instructions = [
-        'கீழ உள்ள <b>Share ⬆️</b> button-ஐ அழுத்துங்க',
-        '<b>"Add to Home Screen"</b> தேர்ந்தெடுங்க',
-        'வலதுபக்க <b>"Add"</b> button-ஐ அழுத்துங்க'
-      ];
-    } else if (isAndroid && window._dip) {
-      // One-click native install — prominent button, no manual steps needed
-      instructions = [
-        '<button id="install-native-btn" class="install-native-btn">📲 Install App · Home-க்கு சேர்க்க</button>',
-        '<span class="install-native-hint">ஒரே click-ல install ஆகும் — browser-ல திறக்க வேண்டாம்</span>'
-      ];
+    // The banner is one compact row. With a native prompt (Android Chrome)
+    // its button installs in one tap; otherwise (iPhone, Samsung Browser…)
+    // "எப்படி?" opens the ☰ Install sheet, which has the full steps.
+    if (isAndroid && window._dip) {
+      steps.innerHTML = '<li><button id="install-native-btn" class="install-native-btn" type="button">Install</button></li>';
     } else {
-      // Android without native prompt OR desktop — show manual steps
-      instructions = [
-        'மேல வலதுபக்க <b>⋮ Menu</b>-வ அழுத்துங்க',
-        '<b>"Install app"</b> அல்லது <b>"Add to Home screen"</b> தேர்ந்தெடுங்க',
-        '<b>"Install"</b> button-ஐ அழுத்துங்க'
-      ];
+      steps.innerHTML = '<li><button id="install-how-btn" class="install-native-btn" type="button">எப்படி?</button></li>';
+      var howBtn = document.getElementById('install-how-btn');
+      if (howBtn) howBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var item = document.getElementById('menu-install-btn');
+        if (item) item.click();   // opens #sheet-install via the drawer wiring
+      });
     }
-
-    steps.innerHTML = instructions.map(function(s) { return '<li>' + s + '</li>'; }).join('');
     banner.hidden = false;
 
     // Tap-to-install on Android when native prompt available

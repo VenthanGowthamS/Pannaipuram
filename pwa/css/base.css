@@ -47,7 +47,7 @@ body {
   left: 50%;
   bottom: calc(var(--nav-height, 64px) + 20px);
   transform: translateX(-50%) translateY(14px);
-  background: #1B5E20;
+  background: var(--ok);
   color: #fff;
   font-family: var(--font-tamil);
   font-size: 0.92rem;
@@ -76,7 +76,7 @@ a { text-decoration: none; color: inherit; }
 /* Keyboard focus ring — visible only when using keyboard */
 :focus { outline: none; }
 :focus-visible {
-  outline: 2px solid #1A237E;
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
   border-radius: 6px;
 }
@@ -95,7 +95,7 @@ a { text-decoration: none; color: inherit; }
   font-family: var(--font-tamil);
   font-weight: 600;
   z-index: 999;
-  /* Hidden state stays AT top:0 (inside the viewport) but invisible — so the
+  /* Hidden state stays AT top: 0 (inside the viewport) but invisible — so the
      iOS rubber-band overscroll can't reveal it (translateY above the viewport
      was being exposed on pull-down; iOS ignores overscroll-behavior). */
   opacity: 0;
@@ -132,7 +132,7 @@ a { text-decoration: none; color: inherit; }
 .retry-btn {
   margin-top: 10px;
   padding: 11px 22px;
-  background: #1A237E;
+  background: var(--brand);
   color: #ffffff;
   border-radius: 24px;
   font-family: var(--font-tamil);
@@ -141,25 +141,30 @@ a { text-decoration: none; color: inherit; }
   min-height: 44px;
   transition: transform var(--trans-fast), background var(--trans-fast);
 }
-.retry-btn:active { transform: scale(0.96); background: #283593; }
+.retry-btn:active { transform: scale(0.96); background: var(--brand-2); }
 
 /* Safe area for iPhone notch / Dynamic Island */
 main {
   padding-top: env(safe-area-inset-top);
 }
 
-/* ── Install-to-home-screen banner ─────────────────────────── */
+/* ── Install-to-home-screen banner — one compact row ──────────
+   Left margin clears the fixed ☰ button, which used to sit on top of the
+   banner's title. */
 #install-banner {
   position: relative;
-  margin: calc(12px + env(safe-area-inset-top)) 12px 4px;
-  padding: 14px 40px 14px 14px;
-  background: linear-gradient(135deg, #1A237E 0%, #283593 100%);
-  color: #ffffff;
+  margin: calc(10px + env(safe-area-inset-top)) 12px 4px 64px;
+  min-height: 56px;
+  padding: 8px 6px 8px 12px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
   border-radius: 14px;
-  box-shadow: 0 4px 14px rgba(26, 35, 126, 0.25);
+  box-shadow: var(--shadow-sm);
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
+  gap: 10px;
+  align-items: center;
   animation: slideInDown 320ms ease-out;
 }
 #install-banner[hidden] { display: none !important; }
@@ -167,104 +172,61 @@ main {
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.install-icon { font-size: 28px; line-height: 1; flex-shrink: 0; padding-top: 2px; }
+.install-icon { font-size: 22px; line-height: 1; flex-shrink: 0; }
 .install-body { flex: 1; min-width: 0; }
 .install-title-ta {
   font-family: var(--font-tamil);
-  font-size: 1rem;
+  font-size: 0.88rem;
   font-weight: 700;
-  line-height: 1.35;
-  margin-bottom: 2px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 .install-title-en {
   font-family: var(--font-latin);
-  font-size: 0.72rem;
-  opacity: 0.82;
-  margin-bottom: 10px;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 1px;
 }
-.install-steps {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 8px;
-  font-family: var(--font-tamil);
-  font-size: 0.85rem;
-  line-height: 1.55;
-}
-.install-steps li {
-  display: flex;
-  gap: 6px;
-  align-items: baseline;
-  padding: 2px 0;
-}
-.install-steps li::before {
-  content: counter(step) ".";
-  counter-increment: step;
-  font-weight: 700;
-  opacity: 0.9;
-  min-width: 16px;
-}
-.install-steps { counter-reset: step; }
-.install-why {
-  font-family: var(--font-tamil);
-  font-size: 0.72rem;
-  opacity: 0.88;
-  line-height: 1.5;
-  margin-top: 4px;
-}
+.install-steps { list-style: none; padding: 0; margin: 0; flex-shrink: 0; }
 .install-close {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 44px;
+  flex-shrink: 0;
+  width: 36px;
   height: 44px;
-  font-size: 22px;
-  color: #ffffff;
-  opacity: 0.85;
-  line-height: 44px;
-  text-align: center;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.2);
+  font-size: 20px;
+  line-height: 1;
+  color: var(--muted);
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
-.install-close:active { opacity: 1; background: rgba(255,255,255,0.25); }
+.install-close:active { background: var(--surface-3); }
 
-/* One-click native install button (Android only) */
+/* Install / எப்படி? button inside the banner */
 .install-native-btn {
-  display: block;
-  width: 100%;
-  padding: 14px 18px;
-  margin: 10px 0 6px;
-  background: #ffffff;
-  color: #0D47A1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 16px;
+  background: var(--accent);
+  color: var(--on-accent);
   font-family: var(--font-tamil);
-  font-size: 1.05rem;
+  font-size: 0.88rem;
   font-weight: 800;
   border: none;
-  border-radius: 12px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  border-radius: 999px;
   cursor: pointer;
-  min-height: 52px;
-  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
-.install-native-btn:active { transform: scale(0.97); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
-.install-native-hint {
-  display: block;
-  font-family: var(--font-tamil);
-  font-size: 0.72rem;
-  opacity: 0.9;
-  margin-top: 2px;
-  line-height: 1.4;
-}
-/* Remove list bullet when we render the button as a single item */
-#install-steps:has(.install-native-btn) { list-style: none; padding-left: 0; }
-#install-steps:has(.install-native-btn) li { list-style: none; }
+.install-native-btn:active { transform: scale(0.96); }
 
 /* ── Install wall overlay ─────────────────────────────────── */
 #install-wall {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: linear-gradient(160deg, #1A237E 0%, #283593 40%, #0D47A1 100%);
+  background: linear-gradient(160deg, var(--brand) 0%, var(--brand-2) 40%, #0D47A1 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -363,7 +325,7 @@ main {
   min-height: 76px;
   padding: 18px 24px;
   background: #FFD600;
-  color: #1A237E;
+  color: var(--brand-ink);
   font-family: var(--font-tamil);
   font-size: 1.25rem;
   font-weight: 900;
@@ -429,15 +391,15 @@ main {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 12px;
-  padding: 11px 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 9px 8px 9px 12px;
+  box-shadow: var(--shadow-sm);
   border-left: 4px solid #1565C0;
 }
 .ann-info    { border-left-color: #1565C0; }
 .ann-warning { border-left-color: #E65100; }
-.ann-urgent  { border-left-color: #C62828; }
+.ann-urgent  { border-left-color: var(--danger); }
 .ann-event   { border-left-color: #6A1B9A; }
 .ann-ic { font-size: 18px; line-height: 1.3; }
 .ann-txt { flex: 1; min-width: 0; }
@@ -449,7 +411,21 @@ main {
   margin: 0;
   line-height: 1.45;
   overflow-wrap: break-word;
+  /* Two lines max — tap the card to read the rest (app.js toggles .open) */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
+.ann-card.open .ann-ta { -webkit-line-clamp: unset; display: block; }
+.ann-card { cursor: pointer; }
+/* English line stays visible (every Tamil label keeps its English sub-label)
+   but is held to one line until the card is opened */
+.ann-card .ann-en { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ann-card.open .ann-en { white-space: normal; }
+/* With the install strip on screen it is the strip that sits beside the ☰,
+   so the announcement no longer needs the indent */
+#install-banner:not([hidden]) ~ main #announce-host .ann-card:first-child { padding-left: 12px; }
 .ann-en {
   font-family: var(--font-latin);
   font-size: 0.72rem;
@@ -472,3 +448,117 @@ main {
   border-radius: 50%;
 }
 .ann-close:active { background: rgba(0,0,0,0.06); }
+
+/* ── Section headers — ONE look on every tab ─────────────────
+   Every tab used to wear its own full-colour header (navy, charcoal,
+   green, teal, red, purple), so the app read as six different apps.
+   Now: brand indigo everywhere, and the tab's own colour is only the
+   4px stripe underneath (--sec). `main` in the selector out-ranks the
+   per-section rules, which keep only their layout bits. */
+#section-bus       { --sec: var(--c-bus); }
+#section-auto      { --sec: var(--c-auto); }
+#section-bulletin  { --sec: var(--c-news); }
+#section-hospital  { --sec: var(--c-hospital); }
+#section-emergency { --sec: var(--c-emergency); }
+#section-more      { --sec: var(--c-more); }
+
+main .bus-header,
+main .hd-header,
+main .em-header,
+main .more-header,
+main .bl-header,
+main .auto-hero {
+  position: relative;
+  background: var(--brand-grad);
+  color: var(--on-brand);
+  /* side padding clears the fixed ☰ (left) and ↻ (right) buttons */
+  padding: 16px 64px 18px;
+  text-align: center;
+  border-radius: 0 0 20px 20px;
+  border: none;
+  border-bottom: 4px solid var(--sec);
+  box-shadow: 0 4px 16px rgba(20, 24, 50, 0.12);
+}
+main .bus-header-ta,
+main .hd-header-ta,
+main .em-header-ta,
+main .more-header-ta,
+main .bl-header-ta,
+main .auto-hero-ta {
+  font-family: var(--font-tamil);
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--on-brand);
+  margin: 0;
+  text-shadow: none;
+}
+main .bus-header-en,
+main .hd-header-en,
+main .em-header-en,
+main .more-header-en,
+main .bl-header-en,
+main .auto-hero-en {
+  font-family: var(--font-latin);
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.8);
+  opacity: 1;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  margin: 4px 0 0;
+}
+main .bus-header-stop,
+main .hd-header-note,
+main .em-header-note,
+main .auto-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--on-brand);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: var(--font-tamil);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+main .bus-refresh-btn,
+main .hd-refresh-btn,
+main .em-refresh-btn,
+main .more-refresh-btn,
+main .bl-refresh-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--on-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Auto tab: its hero used to be a separate charcoal + amber card inside
+   the padded section. Bleed it to the edges so it lines up with the
+   other tabs' headers. */
+main .auto-hero {
+  margin: calc(-1 * var(--space-md)) calc(-1 * var(--space-md)) var(--space-md);
+  overflow: visible;
+}
+main .auto-hero::before,
+main .auto-hero::after,
+main .auto-hero-icon-ring { display: none; }
+main .auto-hero-sub {
+  font-size: 0.86rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 8px 0 0;
+}
+/* The ஆட்டோ / வேன் / கார் chips repeated the group headings just below
+   and wrapped to a second row — dropped to keep the header short. */
+main .auto-hero-badges { display: none; }
+main .auto-hero-badge { margin-top: 10px; padding: 5px 12px; font-size: 0.8rem; }

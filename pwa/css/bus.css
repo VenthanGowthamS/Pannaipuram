@@ -6,7 +6,7 @@
 /* Navy header card — padded for fixed hamburger (left) + refresh (right) */
 .bus-header {
   position: relative;
-  background: linear-gradient(135deg, #1A237E 0%, #283593 100%);
+  background: var(--brand-grad);
   padding: calc(18px + env(safe-area-inset-top)) 60px 20px;
   margin-bottom: var(--space-md);
   text-align: center;
@@ -79,12 +79,12 @@
   width: 100%;
   min-height: 48px;
   padding: 13px 48px 13px 42px;
-  border: 1px solid #E0E0E0;
+  border: 1px solid var(--border);
   border-radius: 26px;
-  background: #FFFFFF;
+  background: var(--surface);
   font-family: var(--font-tamil);
   font-size: 16px; /* prevents iOS zoom-on-focus + readable for older users */
-  color: #1A1A1A;
+  color: var(--text);
   box-shadow: 0 4px 14px rgba(0,0,0,0.10);
   outline: none;
   -webkit-appearance: none;
@@ -93,11 +93,11 @@
 .bus-search-input::-webkit-search-decoration,
 .bus-search-input::-webkit-search-cancel-button { -webkit-appearance: none; }
 .bus-search-input::placeholder {
-  color: #9E9E9E;
+  color: var(--muted);
   font-size: 0.88rem;
 }
 .bus-search-input:focus {
-  border-color: #1A237E;
+  border-color: var(--brand);
   box-shadow: 0 4px 18px rgba(26,35,126,0.18);
 }
 .bus-search-icon {
@@ -105,7 +105,7 @@
   left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: #757575;
+  color: var(--muted);
   pointer-events: none;
   font-size: 15px;
 }
@@ -117,7 +117,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  color: #757575;
+  color: var(--muted);
   font-size: 22px;
   line-height: 1;
   display: flex;
@@ -125,13 +125,13 @@
   justify-content: center;
 }
 .bus-search-clear[hidden] { display: none; }
-.bus-search-clear:active { background: #EEEEEE; color: #212121; }
+.bus-search-clear:active { background: var(--surface-3); color: var(--text); }
 
 /* ── Freshness indicator ───────────────────────────────────── */
 .bus-freshness {
   font-family: var(--font-tamil);
   font-size: 0.82rem;
-  color: #616161;
+  color: var(--muted);
   padding: 0 18px 10px;
   display: flex;
   align-items: center;
@@ -140,16 +140,16 @@
 }
 .bus-freshness:empty { display: none; }
 .freshness-icon { font-size: 0.85rem; opacity: 0.75; }
-.bus-freshness.stale { color: #E65100; }
+.bus-freshness.stale { color: var(--warn-ink); }
 
 /* ── "Now departing" smart strip ───────────────────────────── */
 .bus-now-strip {
   margin: 0 12px 16px;
   padding: 12px 12px 10px;
-  background: linear-gradient(135deg, #E8EAF6 0%, #C5CAE9 100%);
+  background: var(--brand-tint);
   border-radius: 16px;
-  border: 1px solid #9FA8DA;
-  box-shadow: 0 2px 10px rgba(26,35,126,0.10);
+  border: 1px solid var(--border);
+  box-shadow: none;
   animation: strip-in 260ms ease-out;
 }
 .bus-now-strip[hidden] { display: none; }
@@ -171,7 +171,7 @@
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #D32F2F;
+  background: var(--soon);
   flex-shrink: 0;
   animation: urgency-pulse 1s ease-in-out infinite;
 }
@@ -184,14 +184,13 @@
   font-family: var(--font-tamil);
   font-size: 0.9rem;
   font-weight: 700;
-  color: #1A237E;
+  color: var(--brand-ink);
 }
 .strip-title-en {
   font-family: var(--font-latin);
   font-size: 0.68rem;
-  color: #3949AB; /* AA contrast on #E8EAF6 */
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: var(--brand-ink);
+  letter-spacing: 0.02em;
   margin-left: auto;
 }
 .strip-list { display: flex; flex-direction: column; gap: 6px; }
@@ -199,7 +198,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #FFFFFF;
+  background: var(--surface);
   border-left: 4px solid;
   padding: 10px 10px 10px 12px;
   border-radius: 10px;
@@ -217,7 +216,7 @@
   font-family: var(--font-tamil);
   font-size: 0.95rem;
   font-weight: 700;
-  color: #1A1A1A;
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -225,7 +224,7 @@
 .strip-card-time {
   font-family: var(--font-tamil);
   font-size: 0.82rem;
-  color: #424242;
+  color: var(--text-2);
   margin-top: 2px;
   font-variant-numeric: tabular-nums;
 }
@@ -256,7 +255,7 @@
   display: block;
   font-family: var(--font-latin);
   font-size: 0.78rem;
-  color: #616161;
+  color: var(--muted);
   margin-top: 4px;
 }
 
@@ -274,7 +273,7 @@
   font-family: var(--font-tamil);
   font-size: 0.875rem;
   font-weight: 700;
-  color: #1A237E;
+  color: var(--brand-ink);
   background: rgba(26, 35, 126, 0.08);
   padding: 5px 12px 5px 8px;
   border-radius: 20px;
@@ -295,9 +294,9 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 16px;
-  border: 1px solid #EEEEEE;
+  border: 1px solid var(--border);
   padding: 14px 16px;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
@@ -310,7 +309,7 @@
   width: 46px;
   height: 46px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #1A237E 0%, #3949AB 100%);
+  background: var(--brand-grad);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -330,19 +329,19 @@
   font-family: var(--font-tamil);
   font-size: 1.05rem;
   font-weight: 700;
-  color: #1A237E;
+  color: var(--brand-ink);
 }
 .group-en {
   font-family: var(--font-latin);
   font-size: 0.7rem;
-  color: #9E9E9E;
+  color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 .group-hint {
   font-family: var(--font-tamil);
   font-size: 0.82rem;
-  color: #424242;
+  color: var(--text-2);
   margin-top: 4px;
   line-height: 1.4;
   word-break: break-word;
@@ -350,18 +349,18 @@
 .group-count {
   font-family: var(--font-tamil);
   font-size: 0.78rem;
-  color: #616161;
+  color: var(--muted);
   margin-top: 4px;
 }
 
 .group-caret {
   font-size: 20px;
-  color: #9E9E9E;
+  color: var(--muted);
   transition: color 150ms ease;
   flex-shrink: 0;
   /* ▸ open → ▾ via character swap in JS; no rotation needed */
 }
-.group-caret.open { color: #1A237E; }
+.group-caret.open { color: var(--brand-ink); }
 
 .group-body {
   padding-top: 10px;
@@ -377,9 +376,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 16px;
-  border: 1px solid #EEEEEE;
+  border: 1px solid var(--border);
   margin: 0 var(--space-md) 10px;
   overflow: hidden;
   cursor: pointer;
@@ -431,7 +430,7 @@
   font-family: var(--font-tamil);
   font-size: 1.35rem;
   font-weight: 800;
-  color: #1A1A1A;
+  color: var(--text);
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
@@ -439,7 +438,7 @@
   letter-spacing: -0.01em;
 }
 
-.route-name-ta.dimmed { color: #BDBDBD; }
+.route-name-ta.dimmed { color: var(--faint); }
 
 .route-name-en {
   display: block;
@@ -548,8 +547,8 @@
 /* Expanded timetable */
 .route-timetable {
   margin: 0 var(--space-md) 10px;
-  background: #FAFAFA;
-  border: 1px solid #EEEEEE;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-top: none;
   border-radius: 0 0 16px 16px;
   overflow: hidden;
@@ -570,13 +569,13 @@
   gap: 14px;
   margin: 12px;
   padding: 14px 16px;
-  background: #F5F5F5;
-  border: 1px solid #E0E0E0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 14px;
 }
 .tt-next-header.tt-next-done {
-  background: #F5F5F5;
-  border-color: #E0E0E0;
+  background: var(--surface-2);
+  border-color: var(--border);
 }
 .tt-next-icon {
   font-size: 28px;
@@ -588,12 +587,12 @@
   font-family: var(--font-tamil);
   font-size: 0.92rem;
   font-weight: 700;
-  color: #212121;
+  color: var(--text);
 }
 .tt-next-sub {
   font-family: var(--font-latin);
   font-size: 0.65rem;
-  color: #9E9E9E;
+  color: var(--muted);
   margin-top: 2px;
 }
 .tt-next-time {
@@ -624,7 +623,7 @@
   font-family: var(--font-tamil);
   font-size: 0.78rem;
   line-height: 1.45;
-  color: #555;
+  color: var(--text-2);
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px dashed rgba(0,0,0,0.10);
@@ -633,14 +632,14 @@
 }
 .tt-next-via-label {
   font-weight: 700;
-  color: #333;
+  color: var(--text);
   margin-right: 4px;
 }
 
 /* Collapsible "alternate routes" section — progressive disclosure */
 .tt-alts {
   margin: 0 12px 12px;
-  border-top: 1px solid #F0F0F0;
+  border-top: 1px solid var(--border);
 }
 .tt-alts-toggle {
   width: 100%;
@@ -649,36 +648,36 @@
   gap: 10px;
   min-height: 48px;
   padding: 12px 14px;
-  background: #FAFAFA;
-  border: 1px solid #EEEEEE;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
   border-radius: 12px;
   font-family: var(--font-tamil);
   font-size: 0.92rem;
   font-weight: 700;
-  color: #333;
+  color: var(--text);
   cursor: pointer;
   text-align: left;
   transition: background var(--trans-fast);
 }
-.tt-alts-toggle:active { background: #F0F0F0; }
+.tt-alts-toggle:active { background: var(--surface-3); }
 .tt-alts-icon { font-size: 1.1rem; line-height: 1; }
 .tt-alts-label { flex: 1; }
 .tt-alts-caret {
-  color: #888;
+  color: var(--muted);
   font-size: 0.95rem;
   transition: transform var(--trans-fast);
 }
 .tt-alts.is-open .tt-alts-toggle {
   border-radius: 12px 12px 0 0;
-  background: #F5F5F5;
+  background: var(--surface-2);
   border-bottom-color: transparent;
 }
 .tt-alts-body {
-  border: 1px solid #EEEEEE;
+  border: 1px solid var(--border);
   border-top: none;
   border-radius: 0 0 12px 12px;
   padding: 4px 2px 2px;
-  background: #FAFAFA;
+  background: var(--surface-2);
   animation: tt-open 180ms ease-out;
 }
 
@@ -686,10 +685,10 @@
 .tt-stats {
   font-family: var(--font-tamil);
   font-size: 0.74rem;
-  color: #616161;
+  color: var(--muted);
   padding: 8px 16px 6px;
-  border-bottom: 1px solid #F0F0F0;
-  background: #FFFFFF;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
 }
 
 /* "View all / show less" toggle */
@@ -697,9 +696,9 @@
   width: 100%;
   min-height: 48px;
   padding: 16px var(--space-md);
-  background: #ffffff;
+  background: var(--surface);
   border: none;
-  border-top: 1px solid #F0F0F0;
+  border-top: 1px solid var(--border);
   font-family: var(--font-tamil);
   font-size: 0.85rem;
   font-weight: 700;
@@ -707,8 +706,8 @@
   letter-spacing: 0.02em;
   transition: background var(--trans-fast);
 }
-.tt-toggle:hover { background: #F5F5F5; }
-.tt-toggle:active { background: #EEEEEE; }
+.tt-toggle:hover { background: var(--surface-2); }
+.tt-toggle:active { background: var(--surface-3); }
 
 /* No-go gap band */
 .tt-gap {
@@ -717,7 +716,7 @@
   gap: 10px;
   margin: 8px 12px;
   padding: 12px 14px;
-  background: linear-gradient(90deg, #FFF8E1 0%, #FFECB3 100%);
+  background: linear-gradient(90deg, var(--warn-tint) 0%, #FFECB3 100%);
   border-left: 4px solid #F9A825;
   border-radius: 10px;
 }
@@ -727,12 +726,12 @@
   font-family: var(--font-tamil);
   font-size: 0.9rem;
   font-weight: 700;
-  color: #E65100;
+  color: var(--warn-ink);
 }
 .tt-gap-en {
   font-family: var(--font-latin);
   font-size: 0.68rem;
-  color: #BF360C;
+  color: var(--warn-ink);
   margin-top: 2px;
 }
 
@@ -747,14 +746,14 @@
   align-items: center;
   gap: 12px;
   padding: 10px var(--space-md);
-  border-bottom: 1px solid #F0F0F0;
+  border-bottom: 1px solid var(--border);
   transition: opacity var(--trans-fast);
-  background: #FFFFFF;
+  background: var(--surface);
 }
 .tt-row:last-child { border-bottom: none; }
-.tt-row.passed { opacity: 0.45; background: #FAFAFA; }
+.tt-row.passed { opacity: 0.45; background: var(--surface-2); }
 .tt-row.is-next {
-  background: #ffffff;
+  background: var(--surface);
   border-left: 4px solid;
   padding-left: calc(var(--space-md) - 4px);
 }
@@ -763,7 +762,7 @@
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  background: #EEEEEE;
+  background: var(--surface-3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -771,9 +770,9 @@
   flex-shrink: 0;
 }
 .tt-row.tt-ordinary .tt-icon { background: #E3F2FD; }
-.tt-row.tt-express  .tt-icon { background: #FFF3E0; }
+.tt-row.tt-express  .tt-icon { background: var(--warn-tint); }
 .tt-row.tt-private  .tt-icon { background: #FCE4EC; }
-.tt-row.passed .tt-icon { background: #F0F0F0; filter: grayscale(0.8); }
+.tt-row.passed .tt-icon { background: var(--surface-3); filter: grayscale(0.8); }
 
 .tt-row-main { flex: 1; min-width: 0; }
 .tt-time-line { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -785,7 +784,7 @@
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
 }
-.tt-row.passed .tt-time { text-decoration: line-through; color: #9E9E9E; }
+.tt-row.passed .tt-time { text-decoration: line-through; color: var(--muted); }
 
 .tt-badge {
   padding: 2px 6px;
@@ -798,11 +797,11 @@
   flex-shrink: 0;
 }
 .badge-ordinary { background: #E3F2FD; color: #1565C0; }
-.badge-express  { background: #FFF3E0; color: #BF360C; }
+.badge-express  { background: var(--warn-tint); color: var(--warn-ink); }
 .badge-SETC     { background: #F3E5F5; color: #6A1B9A; }
 .badge-private  { background: #FCE4EC; color: #880E4F; }
-.badge-last     { background: #FFEBEE; color: #C62828; }
-.badge-passed   { background: #E0E0E0; color: #616161; }
+.badge-last     { background: var(--danger-tint); color: var(--danger-ink); }
+.badge-passed   { background: var(--surface-3); color: var(--muted); }
 .tt-badge-sub   { opacity: 0.72; font-size: 0.62rem; }
 
 /* Allow long private bus names to wrap */
@@ -819,7 +818,7 @@
   gap: 10px;
   margin: 6px 12px;
   padding: 11px 14px;
-  background: linear-gradient(90deg, #E8F5E9 0%, #F1F8E9 100%);
+  background: linear-gradient(90deg, var(--ok-tint) 0%, #F1F8E9 100%);
   border-left: 4px solid #43A047;
   border-radius: 10px;
 }
@@ -829,13 +828,13 @@
   font-family: var(--font-tamil);
   font-size: 0.88rem;
   font-weight: 700;
-  color: #2E7D32;
+  color: var(--ok-ink);
   line-height: 1.35;
 }
 .tt-alt-en {
   font-family: var(--font-latin);
   font-size: 0.67rem;
-  color: #388E3C;
+  color: var(--ok-ink);
   margin-top: 3px;
 }
 
@@ -880,21 +879,21 @@
 .tt-nodata-ta {
   font-family: var(--font-tamil);
   font-size: 0.9rem;
-  color: #424242;
+  color: var(--text-2);
   line-height: 1.5;
 }
 .tt-nodata-en {
   font-family: var(--font-latin);
   font-size: 0.72rem;
-  color: #616161;
+  color: var(--muted);
 }
 .tt-nodata-contact {
   margin-top: 8px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #E8F5E9;
-  color: #2E7D32;
+  background: var(--ok-tint);
+  color: var(--ok-ink);
   font-family: var(--font-tamil);
   font-size: 0.85rem;
   font-weight: 700;
@@ -911,7 +910,7 @@
   bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
-  background: #212121;
+  background: var(--text);
   color: #fff;
   font-family: var(--font-tamil);
   font-size: 0.82rem;
@@ -922,8 +921,8 @@
   animation: share-hint-in 200ms ease-out, share-hint-out 300ms ease-in 1.6s forwards;
   pointer-events: none;
 }
-@keyframes share-hint-in  { from { opacity:0; transform:translateX(-50%) translateY(8px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
-@keyframes share-hint-out { from { opacity:1; } to { opacity:0; } }
+@keyframes share-hint-in  { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes share-hint-out { from { opacity: 1; } to { opacity: 0; } }
 
 /* Empty / skeleton states */
 .bus-empty {
@@ -943,7 +942,7 @@
 
 .skeleton-list { padding-top: var(--space-md); }
 .skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--surface-3) 25%, #e8e8e8 50%, var(--surface-3) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
   border-radius: 16px;
@@ -952,3 +951,23 @@
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ── Colour by meaning, not by route (v84) ────────────────────
+   Destination colours used to tint the rail, badge text, emoji circle
+   and the timetable header — a rainbow with no legend. Now: brand for
+   text, countdown colour (pillColor in bus.js) for rails + pills. */
+.route-emoji-circle { background: var(--brand-tint); }
+.badge-next-time,
+.badge-frequent,
+.tt-toggle { color: var(--brand-ink); }
+.tt-row.is-next { border-left-color: var(--brand); }
+.tt-next-header.tt-next-live { background: var(--brand-tint); border-color: var(--border); }
+.tt-next-live .tt-next-icon,
+.tt-next-live .tt-next-time { color: var(--brand-ink); }
+.group-en { text-transform: none; letter-spacing: 0.02em; color: var(--muted); }
+.route-name-en { text-transform: none; letter-spacing: 0.01em; }
+
+/* Bus-type chips (டவுன் பஸ் / மொஃபசல் / தனியார்) */
+.chip-ordinary { background: #E3F2FD; color: #0D4F9E; }
+.chip-express  { background: var(--warn-tint); color: var(--warn-ink); }
+.chip-private  { background: #FCE4EC; color: #880E4F; }

@@ -121,8 +121,17 @@ var Bus = (function() {
   }
 
   // ── Badge (right side of each card) ───────────────────────────
+  // Countdown colour = how soon, not which route. ≤10 min is amber
+  // ("hurry"), not alarm red — a bus that is merely due is not an emergency.
+  // CSS variables (tokens.css) so the same code works in dark mode.
   function pillColor(mins) {
-    return mins <= 10 ? '#D32F2F' : mins <= 40 ? '#2E7D32' : '#757575';
+    return mins <= 10 ? 'var(--soon)' : mins <= 40 ? 'var(--ok)' : 'var(--off)';
+  }
+
+  // Bus-type chip (டவுன் பஸ் / மொஃபசல் / தனியார்) — colours live in bus.css
+  function busChipHtml(cls, bm, extraCls) {
+    var label = bm.label || (bm.cls === 'private' ? 'தனியார்' : bm.cls === 'express' ? 'மொஃபசல்' : 'டவுன் பஸ்');
+    return '<span class="' + extraCls + ' chip-' + (bm.cls === 'private' || bm.cls === 'express' ? bm.cls : 'ordinary') + '">' + label + '</span>';
   }
 
   function minsLabel(mins) {
@@ -134,7 +143,7 @@ var Bus = (function() {
 
   function renderBadge(meta, timings, corridorId) {
     if (meta.isFrequent) {
-      return '<div class="route-badge badge-frequent" style="color:' + meta.color + '">' +
+      return '<div class="route-badge badge-frequent">' +
         '<span class="badge-freq-icon">↻</span>' +
         '<span class="badge-freq-mins">20–30</span>' +
         '<span class="badge-freq-unit">நிமிடம்</span>' +
@@ -151,7 +160,7 @@ var Bus = (function() {
       return '<div class="route-badge badge-done">🌙<span>இன்று</span><span>முடிந்தது</span></div>';
     }
     var mins = next.totalMins - nowMins();
-    return '<div class="route-badge badge-next" style="color:' + meta.color + '" data-badge-id="' + corridorId + '">' +
+    return '<div class="route-badge badge-next" data-badge-id="' + corridorId + '">' +
       '<span class="badge-next-time">' + fmtPeriod(next.departs_at) + '</span>' +
       '<span class="badge-next-pill" style="background:' + pillColor(mins) + '">' + minsLabel(mins) + '</span>' +
     '</div>';
@@ -164,7 +173,10 @@ var Bus = (function() {
     var meta = getMeta(c.name_english);
     var timings = timingsCache[c.id] !== undefined ? timingsCache[c.id] : null;
     var noMore = !meta.isFrequent && timings && timings.length > 0 && !computeNextBus(timings);
-    var railColor = noMore ? '#E0E0E0' : meta.color;
+    // The left rail used to be a per-destination colour (green, maroon, blue…)
+    // that meant nothing to the reader. It now repeats the countdown colour.
+    var nextForRail = timings && computeNextBus(timings);
+    var railColor = noMore || !nextForRail ? 'var(--border)' : pillColor(nextForRail.totalMins - nowMins());
     var nameClass = noMore ? 'route-name-ta dimmed' : 'route-name-ta';
 
     // Bus type chip from next departure
@@ -172,10 +184,7 @@ var Bus = (function() {
     var busChip = '';
     if (next) {
       var bm = busTypeMeta(next, meta.group);
-      var chipColor = bm.cls === 'private' ? '#880E4F' : bm.cls === 'express' ? '#BF360C' : '#1565C0';
-      var chipBg   = bm.cls === 'private' ? '#FCE4EC' : bm.cls === 'express' ? '#FFF3E0' : '#E3F2FD';
-      var chipLabel = bm.label || (bm.cls === 'private' ? 'தனியார்' : bm.cls === 'express' ? 'மொஃபசல்' : 'டவுன் பஸ்');
-      busChip = '<span class="card-bus-chip" style="color:' + chipColor + ';background:' + chipBg + '">' + chipLabel + '</span>';
+      busChip = busChipHtml(bm.cls, bm, 'card-bus-chip');
     }
 
     var displayNameTamil = meta.nameTamil || c.name_tamil;
@@ -184,7 +193,7 @@ var Bus = (function() {
     return '<div class="route-wrap' + (expandedId === c.id ? ' expanded' : '') + '">' +
       '<div class="route-card" data-id="' + c.id + '" role="button">' +
         '<div class="route-rail" style="background:' + railColor + '"></div>' +
-        '<div class="route-emoji-circle" style="background:' + meta.color + '1A">' + meta.emoji + '</div>' +
+        '<div class="route-emoji-circle">' + meta.emoji + '</div>' +
         '<div class="route-info">' +
           '<span class="' + nameClass + '">' + displayNameTamil + '</span>' +
           '<span class="route-name-en">' + c.name_english + (busChip ? '  ' + busChip : '') + '</span>' +
@@ -200,7 +209,7 @@ var Bus = (function() {
     var count = items.length;
     var frequent = items.filter(function(c){ return getMeta(c.name_english).isFrequent; }).length;
     var isOpen = !!openGroups[group.key];
-    var countLabel = count + ' routes';
+    var countLabel = count + (count === 1 ? ' route' : ' routes');
 
     var html = '<div class="group-card" data-group="' + group.key + '">' +
       '<div class="group-header" data-toggle-group="' + group.key + '" role="button">' +
@@ -256,11 +265,8 @@ var Bus = (function() {
         var meta = getMeta(item.corridor.name_english);
         var displayName = meta.nameTamil || item.corridor.name_tamil;
         var bm = busTypeMeta(item.next, meta.group);
-        var chipColor = bm.cls === 'private' ? '#880E4F' : bm.cls === 'express' ? '#BF360C' : '#1565C0';
-        var chipBg   = bm.cls === 'private' ? '#FCE4EC' : bm.cls === 'express' ? '#FFF3E0' : '#E3F2FD';
-        var chipLabel = bm.label || (bm.cls === 'private' ? 'தனியார்' : bm.cls === 'express' ? 'மொஃபசல்' : 'டவுன் பஸ்');
-        var stripChip = '<span class="strip-bus-chip" style="color:' + chipColor + ';background:' + chipBg + '">' + chipLabel + '</span>';
-        return '<div class="strip-card" data-corridor-id="' + item.corridor.id + '" role="button" style="border-left-color:' + meta.color + '">' +
+        var stripChip = busChipHtml(bm.cls, bm, 'strip-bus-chip');
+        return '<div class="strip-card" data-corridor-id="' + item.corridor.id + '" role="button" style="border-left-color:' + pillColor(item.mins) + '">' +
           '<div class="strip-card-icon">' + meta.emoji + '</div>' +
           '<div class="strip-card-body">' +
             '<div class="strip-card-name">' + displayName + '</div>' +
@@ -598,7 +604,7 @@ var Bus = (function() {
     var isNext = nextId && t.id === nextId;
     var bt = busTypeMeta(t, meta && meta.group);
     var cls = 'tt-row tt-' + bt.cls + (isPassed ? ' passed' : '') + (isNext ? ' is-next' : '');
-    var style = isNext ? ' style="border-left-color:' + meta.color + '"' : '';
+    var style = '';   // .tt-row.is-next border colour comes from bus.css
 
     var tags = '';
     if (bt.label) {
@@ -659,15 +665,15 @@ var Bus = (function() {
     }
     var cur = nowMins();
     var mins = next.totalMins - cur;
-    return '<div class="tt-next-header" style="background:' + meta.color + '14;border-color:' + meta.color + '33">' +
-      '<div class="tt-next-icon" style="color:' + meta.color + '">⏱</div>' +
+    return '<div class="tt-next-header tt-next-live">' +
+      '<div class="tt-next-icon">⏱</div>' +
       '<div class="tt-next-body">' +
         '<div class="tt-next-title">அடுத்த பேருந்து</div>' +
         '<div class="tt-next-sub">' + (meta.boardingNote || 'Next bus · Pannaipuram stop') + '</div>' +
-        '<div class="tt-next-time" style="color:' + meta.color + '">' + fmtPeriod(next.departs_at) + '</div>' +
+        '<div class="tt-next-time">' + fmtPeriod(next.departs_at) + '</div>' +
         viaLine +
       '</div>' +
-      '<div class="tt-next-pill" style="background:' + meta.color + '">' +
+      '<div class="tt-next-pill" style="background:' + pillColor(mins) + '">' +
         '<div class="tt-next-mins">' + minsLabel(mins) + '</div>' +
       '</div>' +
     '</div>';
@@ -810,7 +816,7 @@ var Bus = (function() {
       nextBusHeaderHtml(next, meta) +
       '<div class="tt-stats">' + stats.join('  ·  ') + '</div>' +
       '<div class="tt-list">' + rowsHtml + '</div>' +
-      '<button class="tt-toggle" data-toggle-id="' + id + '" style="color:' + meta.color + '">' + toggleLabel + '</button>' +
+      '<button class="tt-toggle" data-toggle-id="' + id + '">' + toggleLabel + '</button>' +
       renderAltsSectionHtml(corridorKey);
 
     var toggleBtn = el.querySelector('.tt-toggle');
@@ -856,6 +862,9 @@ var Bus = (function() {
       var pillEl = el.querySelector('.badge-next-pill');
       if (timeEl) timeEl.textContent = fmtPeriod(next.departs_at);
       if (pillEl) { pillEl.textContent = minsLabel(mins); pillEl.style.background = pillColor(mins); }
+      var card = el.closest ? el.closest('.route-card') : null;
+      var rail = card && card.querySelector('.route-rail');
+      if (rail) rail.style.background = pillColor(mins);
     });
     // Also refresh next-bus header if a timetable is open
     if (expandedId !== null) renderTimetable(expandedId);
