@@ -2,12 +2,20 @@ const cron   = require('node-cron');
 const { query } = require('../db/pool');
 const { sendToStreet } = require('./pushNotifications');
 
+// All schedule maths is in IST (the village's clock). The server runs in UTC,
+// so toISOString() / bare cron expressions would be 5.5h off.
+const TZ = 'Asia/Kolkata';
+function istDateStr(offsetDays = 0) {
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: TZ }); // YYYY-MM-DD
+  const d = new Date(today + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + offsetDays);
+  return d.toISOString().split('T')[0];
+}
+
 // Run every day at 8 PM — send next-day water reminders
 async function sendWaterReminders() {
   try {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    const tomorrowStr = istDateStr(1);
 
     // Find streets whose next supply date is tomorrow
     const result = await query(`
@@ -34,7 +42,7 @@ async function sendWaterReminders() {
 // Run every day at 5:45 AM — send morning alert on water day
 async function sendMorningWaterAlert() {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = istDateStr();
 
     const result = await query(`
       SELECT ws.street_id, s.name_tamil
@@ -57,7 +65,7 @@ async function sendMorningWaterAlert() {
 // Run every day at 7 AM — check if no water alert confirmed
 async function checkWaterNoShow() {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = istDateStr();
 
     // Streets that should have water today but no alert posted
     const result = await query(`
@@ -84,9 +92,9 @@ async function checkWaterNoShow() {
 }
 
 function startWaterScheduler() {
-  cron.schedule('0 20 * * *',  sendWaterReminders);    // 8:00 PM daily — next day reminder
-  cron.schedule('45 5 * * *',  sendMorningWaterAlert); // 5:45 AM daily — morning alert
-  cron.schedule('0 7 * * *',   checkWaterNoShow);      // 7:00 AM daily — no-show check
+  cron.schedule('0 20 * * *',  sendWaterReminders, { timezone: TZ });    // 8:00 PM daily — next day reminder
+  cron.schedule('45 5 * * *',  sendMorningWaterAlert, { timezone: TZ }); // 5:45 AM daily — morning alert
+  cron.schedule('0 7 * * *',   checkWaterNoShow, { timezone: TZ });      // 7:00 AM daily — no-show check
   console.log('Water scheduler started');
 }
 

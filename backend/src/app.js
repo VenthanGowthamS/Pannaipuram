@@ -57,6 +57,12 @@ for (const envVar of requiredEnvVars) {
 // ── Middleware ──────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false })); // CSP off so admin HTML loads
 
+// The PWA/admin live on other origins, so a 429 from the rate limiters below
+// must carry CORS headers or the browser hides the Tamil error message behind
+// an opaque network failure. Limiters run BEFORE the main cors() mount (which
+// stays after the static admin/PWA routes), so apply it to the API paths first.
+app.use(['/api', '/admin/auth'], (req, res, next) => corsMiddleware(req, res, next));
+
 // Rate-limit public write endpoints (feedback / visit ping / water alerts) —
 // they need no auth, so without this anyone can flood the DB.
 const rateLimit = require('express-rate-limit');
@@ -155,13 +161,14 @@ app.get('/', (req, res) => {
 console.log('[PWA] Serving from:', PWA_DIR);
 
 // CORS — restrict origins in production (rules in middleware/corsOrigin.js)
-app.use(cors({
+const corsMiddleware = cors({
   origin: (origin, callback) => {
     if (isAllowedOrigin(origin)) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-}));
+});
+app.use(corsMiddleware);
 
 // 1mb (default 100kb) — admin driver photos ship as small base64 data-URLs
 app.use(express.json({ limit: '1mb' }));

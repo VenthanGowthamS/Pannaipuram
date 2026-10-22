@@ -7,6 +7,13 @@ const pool = new Pool({
     : false
 });
 
+// An idle pooled client can error (Supabase pooler restart, network blip).
+// Without a listener Node treats that 'error' event as uncaught and kills the
+// whole API process; with one, the pool just discards the dead client.
+pool.on('error', (err) => {
+  console.error('Unexpected idle DB client error:', err.message);
+});
+
 module.exports = {
   query: (text, params) => pool.query(text, params),
   // Checked-out client for multi-statement transactions (BEGIN/COMMIT).
