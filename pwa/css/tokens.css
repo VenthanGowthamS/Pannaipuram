@@ -1,27 +1,76 @@
+/* ── Design tokens ─────────────────────────────────────────────
+   ONE brand colour (deep indigo) + one warm accent (marigold).
+   Section colours are ACCENTS only (icons, chips, the stripe under each
+   header) — never full headers or backgrounds. Every colour in the PWA
+   should come from here so light + dark mode stay in sync: a hard-coded
+   #fff card with a tokenised text colour turns unreadable in dark mode. */
 :root {
   /* Brand */
-  --color-primary:       #1A237E;
-  --color-primary-light: #283593;
-  --color-primary-bg:    #E8EAF6;
+  --brand:       #1E2A78;
+  --brand-2:     #2B3A99;   /* gradient end / pressed */
+  --brand-tint:  #E9ECF8;   /* chips, icon circles */
+  --brand-ink:   #1E2A78;   /* brand-coloured TEXT (lighter in dark mode) */
+  --brand-grad:  linear-gradient(135deg, #1E2A78 0%, #2B3A99 100%);
+  --on-brand:    #FFFFFF;
+  --accent:      #F2A900;   /* marigold — highlights, install CTA */
+  --on-accent:   #1A1400;
 
-  /* Backgrounds */
-  --color-bg:      #FFFFFF;
-  --color-surface: #F5F5F5;
-  --color-border:  #E0E0E0;
+  /* Surfaces */
+  --bg:          #F6F7FB;   /* page */
+  --surface:     #FFFFFF;   /* cards */
+  --surface-2:   #F3F4F8;   /* insets, inputs, sub-cards */
+  --surface-3:   #E9EBF2;   /* pressed */
+  --border:      #E4E6EE;
+  --shadow-sm:   0 1px 3px rgba(20, 24, 50, 0.06);
+  --shadow-md:   0 2px 10px rgba(20, 24, 50, 0.08);
+  --shadow-lg:   0 6px 20px rgba(20, 24, 50, 0.14);
 
   /* Text */
-  --color-text:   #111111;
-  --color-text-2: #555555;
-  --color-muted:  #616161;  /* darkened from #9E9E9E for WCAG AA on body text */
+  --text:        #14161F;
+  --text-2:      #4A4F63;
+  --muted:       #5F6578;   /* AA on white (5.9:1) */
+  --faint:       #8B90A0;   /* disabled / passed only — never body text */
 
-  /* Module accents */
-  --color-bus:        #E65100;
+  /* Status */
+  --call:        #15803D;   /* call buttons — white text 5.0:1 */
+  --call-press:  #116932;
+  --soon:        #B45309;   /* bus leaving ≤10 min — amber, not alarm red */
+  --ok:          #2E7D32;
+  --off:         #6B7280;
+  --danger:      #C62828;
+  --ok-tint:     #E8F5E9;
+  --ok-ink:      #1B5E20;
+  --warn-tint:   #FFF4E0;
+  --warn-ink:    #8A4B00;
+  --danger-tint: #FDECEC;
+  --danger-ink:  #B71C1C;
+
+  /* Section accents (icons, chips, header stripe) */
+  --c-bus:       #E65100;
+  --c-auto:      #7B3FA0;
+  --c-news:      #2E7D32;
+  --c-hospital:  #00796B;
+  --c-emergency: #C62828;
+  --c-more:      #3949AB;
+  --c-hospital-tint: #E0F2EF;
+
+  /* ── Legacy names (older rules still reference these) ── */
+  --color-primary:       var(--brand);
+  --color-primary-light: var(--brand-2);
+  --color-primary-bg:    var(--brand-tint);
+  --color-bg:      var(--surface);
+  --color-surface: var(--surface-2);
+  --color-border:  var(--border);
+  --color-text:   var(--text);
+  --color-text-2: var(--text-2);
+  --color-muted:  var(--muted);
+  --color-bus:        var(--c-bus);
   --color-bus-bg:     #FFF3E0;
   --color-bus-border: #FFCC80;
-  --color-auto:       #6A1B9A;
+  --color-auto:       var(--c-auto);
   --color-auto-light: #8E24AA;
   --color-private:    #880E4F;
-  --color-last:       #C62828;
+  --color-last:       var(--danger);
 
   /* Fonts */
   --font-tamil: 'Noto Sans Tamil', sans-serif;
@@ -45,6 +94,7 @@
   --r-sm: 10px;
   --r-md: 14px;
   --r-lg: 20px;
+  --radius-md: 14px;
 
   /* Spacing */
   --space-xs: 4px;
@@ -55,7 +105,7 @@
 
   /* Shape */
   --radius-pill: 100px;
-  --radius-card: 12px;
+  --radius-card: 16px;
   --radius-sm:   6px;
 
   /* Layout */
@@ -65,4 +115,6 @@
   /* Transitions */
   --trans-fast: 150ms ease;
   --trans-logo: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  color-scheme: light;
 }
