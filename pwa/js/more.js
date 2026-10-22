@@ -139,14 +139,14 @@ var More = (function() {
 
   // ── Local services (grouped by category) ──────────────────
   var SVC_CATS = {
-    milk:        { emoji: '🥛', ta: 'பால்',          tint: '#EAF4FE' },
-    post:        { emoji: '📮', ta: 'தபால்',         tint: '#FDECEC' },
-    flower:      { emoji: '🌺', ta: 'பூ',            tint: '#FCEAF3' },
-    plumber:     { emoji: '🔧', ta: 'பிளம்பர்',      tint: '#EAF1F8' },
-    electrician: { emoji: '⚡', ta: 'எலக்ட்ரீஷியன்', tint: '#FFF8E1' },
-    grocery:     { emoji: '🛒', ta: 'மளிகை',        tint: '#EAF7EC' },
-    carpenter:   { emoji: '🪚', ta: 'தச்சர்',        tint: '#F6EFE7' },
-    other:       { emoji: '🛍', ta: 'மற்றவை',       tint: '#F3E8F9' },
+    milk:        { emoji: '🥛', ta: 'பால்' },
+    post:        { emoji: '📮', ta: 'தபால்' },
+    flower:      { emoji: '🌺', ta: 'பூ' },
+    plumber:     { emoji: '🔧', ta: 'பிளம்பர்' },
+    electrician: { emoji: '⚡', ta: 'எலக்ட்ரீஷியன்' },
+    grocery:     { emoji: '🛒', ta: 'மளிகை' },
+    carpenter:   { emoji: '🪚', ta: 'தச்சர்' },
+    other:       { emoji: '🛍', ta: 'மற்றவை' },
   };
   function svcRow(s) {
     var call = hasPhone(s.phone)
@@ -165,7 +165,7 @@ var More = (function() {
   // One category = one compact white panel with a tinted header + rows
   function svcGroup(cat, list) {
     if (!list || !list.length) return '';
-    var meta = SVC_CATS[cat] || { emoji: '🛍', ta: cat, tint: '#F3E8F9' };
+    var meta = SVC_CATS[cat] || { emoji: '🛍', ta: cat };
     return '<div class="svc-panel">' +
       '<div class="svc-panel-head">' +
         '<span class="svc-panel-ic">' + meta.emoji + '</span>' +

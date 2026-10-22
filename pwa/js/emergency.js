@@ -16,11 +16,11 @@ var Emergency = (function() {
   // Display order + Tamil/English labels + emoji + accent colour per category.
   // Medical first (most time-critical), then police, fire, power, other.
   var CATS = [
-    { key: 'medical', emoji: '🏥', ta: 'மருத்துவம்',  en: 'Medical & Ambulance', color: '#E53935', tint: '#FDECEC' },
-    { key: 'police',  emoji: '🚓', ta: 'போலீஸ்',      en: 'Police',              color: '#1565C0', tint: '#E7F0FB' },
-    { key: 'fire',    emoji: '🚒', ta: 'தீயணைப்பு',   en: 'Fire & Rescue',       color: '#EF6C00', tint: '#FDF1E3' },
-    { key: 'power',   emoji: '⚡', ta: 'மின்சாரம்',    en: 'Electricity (TNEB)',  color: '#F9A825', tint: '#FFF8E1' },
-    { key: 'other',   emoji: '📞', ta: 'பிற உதவி எண்', en: 'Other Helplines',     color: '#6A1B9A', tint: '#F3E8F9' },
+    { key: 'medical', emoji: '🏥', ta: 'மருத்துவம்',  en: 'Medical & Ambulance', color: '#E53935' },
+    { key: 'police',  emoji: '🚓', ta: 'போலீஸ்',      en: 'Police',              color: '#1565C0' },
+    { key: 'fire',    emoji: '🚒', ta: 'தீயணைப்பு',   en: 'Fire & Rescue',       color: '#EF6C00' },
+    { key: 'power',   emoji: '⚡', ta: 'மின்சாரம்',    en: 'Electricity (TNEB)',  color: '#F9A825' },
+    { key: 'other',   emoji: '📞', ta: 'பிற உதவி எண்', en: 'Other Helplines',     color: '#6A1B9A' },
   ];
 
   // Phone number for the tel: link — strip spaces/dashes for dialing
@@ -61,7 +61,10 @@ var Emergency = (function() {
       seen[key] = true;
       return true;
     });
-    var color = cat.color || '#5E35B1', tint = cat.tint || '#F3E8F9';
+    var color = cat.color || '#5E35B1';
+    // 14%-alpha version of the category colour: reads as a tint over the light
+    // AND the dark surface (a fixed light hex would glare in dark mode)
+    var tint = /^#[0-9A-Fa-f]{6}$/.test(color) ? color + '24' : 'transparent';
     return '' +
       '<section class="em-panel" style="--cat:' + color + ';--cat-tint:' + tint + '">' +
         '<div class="em-panel-head">' +

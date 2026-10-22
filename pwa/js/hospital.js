@@ -29,8 +29,11 @@ var Hospital = (function() {
 
   // [1,2,3,4,5] → "திங்கள் – வெள்ளி"; [1,3] → "திங்கள், புதன்"; all 7 → "தினமும்"
   function dayRangeLabel(dows) {
-    if (dows.length === 7) return 'தினமும்';
-    var idx = dows.map(function(d) { return WEEK.indexOf(d); }).sort(function(a, b) { return a - b; });
+    if (dows.length >= 7 && WEEK.every(function(d) { return dows.indexOf(d) !== -1; })) return 'தினமும்';
+    var idx = dows.map(function(d) { return WEEK.indexOf(d); })
+      .filter(function(i) { return i !== -1; })
+      .sort(function(a, b) { return a - b; });
+    if (!idx.length) return '';
     var parts = [], i = 0;
     while (i < idx.length) {
       var j = i;
@@ -48,7 +51,8 @@ var Hospital = (function() {
   // merged — Dr. Premkumar used to show "3:00 PM – 8:30 PM" five times.
   function scheduleRows(scheds, hoistedNotes, todayDow) {
     var groups = {}, order = [];
-    scheds.slice().sort(function(a, b) {
+    // A row with a missing / out-of-range day can't be placed on the week — skip it
+    scheds.filter(function(s) { return WEEK.indexOf(s.day_of_week) !== -1; }).sort(function(a, b) {
       return WEEK.indexOf(a.day_of_week) - WEEK.indexOf(b.day_of_week) ||
              String(a.start_time).localeCompare(String(b.start_time));
     }).forEach(function(s) {

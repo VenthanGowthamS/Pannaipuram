@@ -57,7 +57,12 @@
         if (!b) return;
         b.addEventListener('click', function () {
           var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-          try { localStorage.setItem(KEY, next); } catch (_) {}
+          // Choosing the same look the phone already has hands control back to
+          // the phone (so a later system light/dark switch is followed again).
+          try {
+            if (next === (mq.matches ? 'dark' : 'light')) localStorage.removeItem(KEY);
+            else localStorage.setItem(KEY, next);
+          } catch (_) {}
           apply(next);
         });
       });

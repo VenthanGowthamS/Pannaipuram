@@ -124,6 +124,8 @@
    Only the tokens change here. The few hard-coded light tints that are
    left (bus-type chips, info boxes…) are overridden at the end of
    responsive.css, which loads last. */
+/* Fallback only: the inline script in index.html always sets data-theme before
+   first paint. This block covers the no-JavaScript case. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     --brand:       #3949AB;

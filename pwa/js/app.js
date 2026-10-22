@@ -138,6 +138,10 @@ window.Announce = (function() {
       var btn = ev.target.closest ? ev.target.closest('[data-ann-close]') : null;
       if (!btn) {
         // Tap anywhere else on a card → show / hide its full text (clamped to 2 lines)
+        // …but not when the tap is on a link, or finishes selecting text
+        if (ev.target.closest && ev.target.closest('a')) return;
+        var sel = window.getSelection && window.getSelection();
+        if (sel && String(sel).length) return;
         var c = ev.target.closest ? ev.target.closest('.ann-card') : null;
         if (c) c.classList.toggle('open');
         return;
@@ -401,11 +405,15 @@ document.addEventListener('DOMContentLoaded', function() {
     var steps  = document.getElementById('install-steps');
     if (!banner || !steps) return;
     if (_isInstalled() || _isDismissedRecently()) return;
-    if (!banner.hidden) return; // already visible
-
     var ua = navigator.userAgent || '';
     var isIOS     = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
     var isAndroid = /Android/.test(ua);
+    // Already showing? Only rebuild if the native prompt arrived AFTER the
+    // banner was drawn (beforeinstallprompt can fire late) — upgrade "எப்படி?"
+    // to the one-tap Install button.
+    var mode = isAndroid && window._dip ? 'native' : 'how';
+    if (!banner.hidden && banner.dataset.mode === mode) return;
+    banner.dataset.mode = mode;
     // The banner is one compact row. With a native prompt (Android Chrome)
     // its button installs in one tap; otherwise (iPhone, Samsung Browser…)
     // "எப்படி?" opens the ☰ Install sheet, which has the full steps.

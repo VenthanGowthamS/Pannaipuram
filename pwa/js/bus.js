@@ -129,7 +129,7 @@ var Bus = (function() {
   }
 
   // Bus-type chip (டவுன் பஸ் / மொஃபசல் / தனியார்) — colours live in bus.css
-  function busChipHtml(cls, bm, extraCls) {
+  function busChipHtml(bm, extraCls) {
     var label = bm.label || (bm.cls === 'private' ? 'தனியார்' : bm.cls === 'express' ? 'மொஃபசல்' : 'டவுன் பஸ்');
     return '<span class="' + extraCls + ' chip-' + (bm.cls === 'private' || bm.cls === 'express' ? bm.cls : 'ordinary') + '">' + label + '</span>';
   }
@@ -172,19 +172,19 @@ var Bus = (function() {
   function renderCardHtml(c) {
     var meta = getMeta(c.name_english);
     var timings = timingsCache[c.id] !== undefined ? timingsCache[c.id] : null;
-    var noMore = !meta.isFrequent && timings && timings.length > 0 && !computeNextBus(timings);
+    var next = timings && computeNextBus(timings);
+    var noMore = !meta.isFrequent && timings && timings.length > 0 && !next;
     // The left rail used to be a per-destination colour (green, maroon, blue…)
-    // that meant nothing to the reader. It now repeats the countdown colour.
-    var nextForRail = timings && computeNextBus(timings);
-    var railColor = noMore || !nextForRail ? 'var(--border)' : pillColor(nextForRail.totalMins - nowMins());
+    // that meant nothing to the reader. It now repeats the countdown colour —
+    // except on frequent routes, whose badge shows "20–30 min" and no countdown.
+    var railColor = meta.isFrequent || noMore || !next ? 'var(--border)' : pillColor(next.totalMins - nowMins());
     var nameClass = noMore ? 'route-name-ta dimmed' : 'route-name-ta';
 
     // Bus type chip from next departure
-    var next = timings && computeNextBus(timings);
     var busChip = '';
     if (next) {
       var bm = busTypeMeta(next, meta.group);
-      busChip = busChipHtml(bm.cls, bm, 'card-bus-chip');
+      busChip = busChipHtml(bm, 'card-bus-chip');
     }
 
     var displayNameTamil = meta.nameTamil || c.name_tamil;
@@ -265,7 +265,7 @@ var Bus = (function() {
         var meta = getMeta(item.corridor.name_english);
         var displayName = meta.nameTamil || item.corridor.name_tamil;
         var bm = busTypeMeta(item.next, meta.group);
-        var stripChip = busChipHtml(bm.cls, bm, 'strip-bus-chip');
+        var stripChip = busChipHtml(bm, 'strip-bus-chip');
         return '<div class="strip-card" data-corridor-id="' + item.corridor.id + '" role="button" style="border-left-color:' + pillColor(item.mins) + '">' +
           '<div class="strip-card-icon">' + meta.emoji + '</div>' +
           '<div class="strip-card-body">' +
