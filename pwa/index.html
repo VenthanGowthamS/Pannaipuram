@@ -43,8 +43,7 @@
         if (b) {
           b.querySelector('.theme-ic-moon').hidden = t === 'dark';
           b.querySelector('.theme-ic-sun').hidden = t !== 'dark';
-          b.querySelector('.menu-item-ta').textContent = t === 'dark' ? 'வெளிச்ச பயன்முறை' : 'இருள் பயன்முறை';
-          b.querySelector('.menu-item-en').textContent = t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+          b.setAttribute('aria-label', t === 'dark' ? 'வெளிச்ச பயன்முறை · Light mode' : 'இருள் பயன்முறை · Dark mode');
         }
       }
       function current() { return saved() || (mq.matches ? 'dark' : 'light'); }
@@ -117,6 +116,12 @@
     <span class="menu-btn-bar"></span>
   </button>
 
+  <!-- ── Light/dark toggle (next to ☰, always visible) ── -->
+  <button id="theme-toggle" class="theme-btn" aria-label="இருள் பயன்முறை · Dark mode" type="button">
+    <span class="theme-ic-moon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span>
+    <span class="theme-ic-sun" hidden><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></span>
+  </button>
+
   <!-- Drawer backdrop + drawer itself -->
   <div id="menu-backdrop" class="menu-backdrop" hidden></div>
 
@@ -165,16 +170,6 @@
           <span class="menu-item-en">How to use</span>
         </span>
         <span class="menu-item-caret">›</span>
-      </button>
-      <button class="menu-item" id="theme-toggle" type="button">
-        <span class="menu-item-icon">
-          <span class="theme-ic-moon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span>
-          <span class="theme-ic-sun" hidden><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></span>
-        </span>
-        <span class="menu-item-text">
-          <span class="menu-item-ta">இருள் பயன்முறை</span>
-          <span class="menu-item-en">Switch to dark mode</span>
-        </span>
       </button>
       <button class="menu-item" id="menu-install-btn" data-sheet="install" type="button">
         <span class="menu-item-icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></span>

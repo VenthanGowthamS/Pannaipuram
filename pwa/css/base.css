@@ -149,11 +149,11 @@ main {
 }
 
 /* ── Install-to-home-screen banner — one compact row ──────────
-   Left margin clears the fixed ☰ button, which used to sit on top of the
+   Left margin clears the fixed ☰ + theme buttons, which used to sit on top of the
    banner's title. */
 #install-banner {
   position: relative;
-  margin: calc(10px + env(safe-area-inset-top)) 12px 4px 64px;
+  margin: calc(10px + env(safe-area-inset-top)) 12px 4px 116px;
   min-height: 56px;
   padding: 8px 6px 8px 12px;
   background: var(--surface);
@@ -381,10 +381,10 @@ main {
 
 /* ── Village announcements (📢) ─────────────────────────── */
 #announce-host:not(:empty) { padding: 10px 12px 0; display: flex; flex-direction: column; gap: 8px; }
-/* First card sits beside the floating ☰ button — indent its text clear of it */
-#announce-host .ann-card:first-child { padding-left: 56px; }
-@media (min-width: 700px) {
-  #announce-host .ann-card:first-child { padding-left: 84px; }
+/* First card sits beside the floating ☰ + theme buttons — indent its text clear of them */
+#announce-host .ann-card:first-child { padding-left: 108px; }
+@media (min-width: 560px) {
+  #announce-host .ann-card:first-child { padding-left: 136px; }
 }
 .ann-card {
   display: flex;
