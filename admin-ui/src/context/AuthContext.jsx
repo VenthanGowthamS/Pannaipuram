@@ -1,16 +1,23 @@
 import React, { createContext, useState, useEffect } from 'react';
-import api from '../api';
+import api, { SESSION_EXPIRED_EVENT } from '../api';
 
 export const AuthContext = createContext();
 
-const decodeToken = (token) => {
+// JWT payloads are base64URL ('-' / '_', no padding) and UTF-8; plain atob() throws
+// on those characters and would silently demote a super_admin to 'viewer'.
+export const decodeToken = (token) => {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return { role: payload.role || 'viewer', email: payload.email || '' };
+    let b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    b64 += '='.repeat((4 - (b64.length % 4)) % 4);
+    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    const payload = JSON.parse(new TextDecoder().decode(bytes));
+    return { role: payload.role || 'viewer', email: payload.email || '', exp: payload.exp || null };
   } catch {
-    return { role: 'viewer', email: '' };
+    return { role: 'viewer', email: '', exp: null };
   }
 };
+
+export const isExpired = (exp) => !!exp && exp * 1000 <= Date.now();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -19,12 +26,27 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) {
-      api.setToken(token);
-      const { role, email } = decodeToken(token);
-      setUser({ email: email || 'admin', role });
+      const { role, email, exp } = decodeToken(token);
+      if (isExpired(exp)) {
+        // The 7-day token ran out while the tab sat in localStorage — show the
+        // login screen instead of a panel where every call fails.
+        api.clearToken();
+        setToken(null);
+        setUser(null);
+      } else {
+        api.setToken(token);
+        setUser({ email: email || 'admin', role });
+      }
     }
     setLoading(false);
   }, [token]);
+
+  // api.js fires this when the server answers 401 (expired / deactivated / deleted)
+  useEffect(() => {
+    const onExpired = () => { setToken(null); setUser(null); };
+    window.addEventListener(SESSION_EXPIRED_EVENT, onExpired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired);
+  }, []);
 
   const login = async (email, password) => {
     // NOTE: Do NOT setLoading(true) here — it unmounts Login component

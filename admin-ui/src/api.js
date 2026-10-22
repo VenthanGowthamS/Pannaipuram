@@ -1,5 +1,7 @@
 import { apiBaseFor } from './apiBase';
 
+export const SESSION_EXPIRED_EVENT = 'pannai:session-expired';
+
 const API_BASE = apiBaseFor(typeof location !== 'undefined' ? location.hostname : '');
 
 class ApiService {
@@ -38,18 +40,25 @@ class ApiService {
       options.body = JSON.stringify(body);
     }
 
-    try {
-      const response = await fetch(url, options);
-      const data = await response.json();
+    const response = await fetch(url, options);
+    // A proxy / host error (HTML 502, 413, 429 …) is not JSON — don't let
+    // response.json() turn that into "Unexpected token <".
+    let data = null;
+    try { data = await response.json(); } catch (_) { /* non-JSON body */ }
 
-      if (!response.ok) {
-        throw new Error(data.detail || data.error || 'API Error');
+    if (!response.ok) {
+      // An expired, deactivated or deleted account: the saved token is dead, so
+      // drop it and tell the app to go back to the login screen. (A wrong
+      // password on the login form is also a 401 — that one stays a normal error.)
+      if (response.status === 401 && endpoint !== '/admin/auth/login' && this.token) {
+        this.clearToken();
+        if (typeof window !== 'undefined') window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
       }
-
-      return data.data || data;
-    } catch (error) {
-      throw error;
+      throw new Error((data && (data.detail || data.error)) || `Server error (${response.status})`);
     }
+
+    // Unwrap { success, data } — but keep a legitimate falsy payload (0, false, '')
+    return data && data.data != null ? data.data : data;
   }
 
   // Auth
