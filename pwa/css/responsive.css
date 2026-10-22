@@ -123,6 +123,8 @@
   }
   #driver-list .driver-card,
   .hd-docs .hd-card { margin-bottom: 0; }
+  /* Side-by-side vehicle groups must start on the same line */
+  #driver-list .driver-group + .driver-group { margin-top: 0; }
 
   /* Emergency + Services: CATEGORY PANELS side-by-side on web */
   #em-list,
@@ -170,7 +172,8 @@
   .route-wrap.expanded { grid-column: 1 / -1; }
 
   /* Auto form constrained so single inputs don't stretch wide */
-  .auto-hero, .auto-contact-card { max-width: 920px; margin-left: auto; margin-right: auto; }
+  /* .auto-hero is NOT capped here: it bleeds to the edges like every other tab's header */
+  .auto-contact-card { max-width: 920px; margin-left: auto; margin-right: auto; }
   .auto-contact-form { max-width: 600px; margin-left: auto; margin-right: auto; }
 
   /* Bottom nav: a neat centered tab bar, not a stretched strip */
