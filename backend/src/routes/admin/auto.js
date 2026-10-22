@@ -127,7 +127,12 @@ router.post('/drivers', requireRole('admin', 'super_admin'), async (req, res) =>
 
 // PUT /admin/auto/drivers/:id — update driver
 router.put('/drivers/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
-  const { name_tamil, name_english, phone, vehicle_type, coverage_tamil, coverage_english, schedule_tamil, is_active, phone_verified, display_order } = req.body;
+  const { name_tamil, name_english, vehicle_type, coverage_tamil, coverage_english, schedule_tamil, is_active, phone_verified, display_order } = req.body;
+  // A blank phone means "leave unchanged" (COALESCE), a non-blank one must be a real mobile — same rule as POST
+  const phone = trimStr(req.body.phone);
+  if (phone && !isValidPhone(phone)) {
+    return res.status(400).json({ success: false, error: 'Phone must be a 10-digit Indian mobile number starting with 6-9' });
+  }
   // '' from a cleared number field must not reach COALESCE (int cast error)
   const orderVal = (display_order === '' || display_order === undefined) ? null : parseInt(display_order, 10);
   try {
@@ -154,6 +159,7 @@ router.put('/drivers/:id', validateIdParam, requireRole('admin', 'super_admin'),
           display_order   = COALESCE($10, display_order)${photoClause}
       WHERE id = $${params.length} RETURNING *
     `, params);
+    if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'Not found' });
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });

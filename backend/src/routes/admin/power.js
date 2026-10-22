@@ -46,6 +46,9 @@ router.post('/cuts', requireRole('admin', 'super_admin'), async (req, res) => {
 // PUT /admin/power/cuts/:id
 router.put('/cuts/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
   const { area_description, cut_type, start_time, end_time, reason_tamil, is_resolved } = req.body;
+  if (start_time && end_time && new Date(end_time) <= new Date(start_time)) {
+    return res.status(400).json({ success: false, error: 'end_time must be after start_time' });
+  }
   try {
     const result = await query(`
       UPDATE power_cuts
@@ -57,6 +60,7 @@ router.put('/cuts/:id', validateIdParam, requireRole('admin', 'super_admin'), as
           is_resolved      = COALESCE($6, is_resolved)
       WHERE id = $7 RETURNING *
     `, [area_description, cut_type, start_time, end_time, reason_tamil, is_resolved, req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'Not found' });
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });

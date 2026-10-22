@@ -9,6 +9,8 @@ router.use(adminAuth);
 
 // expires_at must carry its timezone (the admin panel sends "+05:30").
 // A bare "2026-10-05T23:59" is read in the DB session's zone, not IST.
+const VALID_TYPES = ['info', 'warning', 'urgent', 'event'];
+
 function badExpiry(v) {
   return v != null && v !== '' && isNaN(Date.parse(v));
 }
@@ -30,9 +32,8 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
   const { type, priority, expires_at } = req.body;
   if (!message_tamil) return res.status(400).json({ success: false, error: 'message_tamil required' });
   if (badExpiry(expires_at)) return res.status(400).json({ success: false, error: 'expires_at must be a valid date-time' });
-  const validTypes = ['info', 'warning', 'urgent', 'event'];
-  if (type && !validTypes.includes(type)) {
-    return res.status(400).json({ success: false, error: `type must be one of: ${validTypes.join(', ')}` });
+  if (type && !VALID_TYPES.includes(type)) {
+    return res.status(400).json({ success: false, error: `type must be one of: ${VALID_TYPES.join(', ')}` });
   }
   try {
     const result = await query(`
@@ -47,7 +48,16 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
 
 // PUT /admin/announcements/:id — update
 router.put('/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
-  const { message_tamil, message_english, type, priority, is_active, expires_at } = req.body;
+  const { message_english, type, priority, is_active, expires_at } = req.body;
+  // Same rules as POST: an edit must not blank the message or store an unknown type
+  let message_tamil;
+  if (Object.prototype.hasOwnProperty.call(req.body, 'message_tamil')) {
+    message_tamil = trimStr(req.body.message_tamil);
+    if (!message_tamil) return res.status(400).json({ success: false, error: 'message_tamil cannot be empty' });
+  }
+  if (type && !VALID_TYPES.includes(type)) {
+    return res.status(400).json({ success: false, error: `type must be one of: ${VALID_TYPES.join(', ')}` });
+  }
   if (badExpiry(expires_at)) return res.status(400).json({ success: false, error: 'expires_at must be a valid date-time' });
   try {
     const result = await query(`

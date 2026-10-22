@@ -32,7 +32,12 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
 
 // PUT /admin/contacts/:id
 router.put('/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
-  const { name_tamil, name_english, phone, is_verified, display_order } = req.body;
+  const { name_tamil, name_english, is_verified, display_order } = req.body;
+  const phone = trimStr(req.body.phone);
+  // Same rule as POST: short numbers (108) and landlines are fine, 10+ digit mobiles must be valid
+  if (phone && phone.replace(/\D/g, '').length >= 10 && !isValidPhone(phone)) {
+    return res.status(400).json({ success: false, error: 'Phone must be a valid Indian mobile number starting with 6-9' });
+  }
   try {
     const result = await query(`
       UPDATE emergency_contacts
@@ -43,6 +48,7 @@ router.put('/:id', validateIdParam, requireRole('admin', 'super_admin'), async (
           display_order = COALESCE($5, display_order)
       WHERE id = $6 RETURNING *
     `, [name_tamil, name_english, phone, is_verified, display_order, req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'Not found' });
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });

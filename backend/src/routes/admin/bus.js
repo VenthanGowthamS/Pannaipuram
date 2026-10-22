@@ -107,7 +107,11 @@ router.post('/timings', requireRole('admin', 'super_admin'), async (req, res) =>
 
 // PUT /admin/bus/timings/:id
 router.put('/timings/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
-  const { departs_at, days_of_week, bus_type, operator_name, is_last_bus, is_active } = req.body;
+  const { days_of_week, bus_type, operator_name, is_last_bus, is_active } = req.body;
+  const departs_at = trimStr(req.body.departs_at);
+  if (departs_at && !isValidTime(departs_at)) {
+    return res.status(400).json({ success: false, error: 'departs_at must be in HH:MM or HH:MM:SS format' });
+  }
   try {
     const result = await query(`
       UPDATE bus_timings
@@ -119,6 +123,7 @@ router.put('/timings/:id', validateIdParam, requireRole('admin', 'super_admin'),
           is_active     = COALESCE($6, is_active)
       WHERE id = $7 RETURNING *
     `, [departs_at, days_of_week, bus_type, operator_name, is_last_bus, is_active, req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'Not found' });
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     res.status(500).json({ success: false, error: 'Server error' });

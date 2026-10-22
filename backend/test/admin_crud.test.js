@@ -986,6 +986,51 @@ async function testRBACViewerRestrictions() {
   console.log(`      ℹ️  Test viewer ${viewerEmail} left in DB for cleanup`);
 }
 
+async function testAdminPutGuards() {
+  console.log('\n🛡️  Admin PUT guards (unknown id → 404, bad input → 400)');
+  const H = getAuthHeaders();
+  const GONE = 99999999;
+
+  await test('PUT unknown id returns 404 on bus timing, auto driver, acting driver, contact, power cut', async () => {
+    const cases = [
+      ['/admin/bus/timings/', { is_active: true }],
+      ['/admin/auto/drivers/', { name_tamil: 'x' }],
+      ['/admin/acting/drivers/', { name_tamil: 'x' }],
+      ['/admin/contacts/', { name_tamil: 'x' }],
+      ['/admin/power/cuts/', { area_description: 'x' }],
+    ];
+    for (const [path, body] of cases) {
+      const { status } = await put(path + GONE, body, H);
+      assert(status === 404, `PUT ${path}${GONE} expected 404, got ${status}`);
+    }
+  });
+
+  await test('PUT rejects a malformed departs_at and an invalid driver phone (400)', async () => {
+    const bus = await put(`/admin/bus/timings/${GONE}`, { departs_at: '25:99' }, H);
+    assert(bus.status === 400, `Expected 400 for bad departs_at, got ${bus.status}`);
+    const auto = await put(`/admin/auto/drivers/${GONE}`, { phone: '12345' }, H);
+    assert(auto.status === 400, `Expected 400 for invalid auto phone, got ${auto.status}`);
+    const acting = await put(`/admin/acting/drivers/${GONE}`, { phone: '5123456789' }, H);
+    assert(acting.status === 400, `Expected 400 for invalid acting phone, got ${acting.status}`);
+    const contact = await put(`/admin/contacts/${GONE}`, { phone: '5123456789' }, H);
+    assert(contact.status === 400, `Expected 400 for invalid contact mobile, got ${contact.status}`);
+    const cut = await put(`/admin/power/cuts/${GONE}`, { start_time: '2026-01-02 10:00:00', end_time: '2026-01-02 09:00:00' }, H);
+    assert(cut.status === 400, `Expected 400 for end before start, got ${cut.status}`);
+  });
+
+  await test('PUT /admin/announcements/:id cannot blank the message or store an unknown type', async () => {
+    const created = await post('/admin/announcements', { message_tamil: 'சோதனை அறிவிப்பு', type: 'info' }, H);
+    const id = created.body.data.id;
+    const blank = await put(`/admin/announcements/${id}`, { message_tamil: '   ' }, H);
+    assert(blank.status === 400, `Expected 400 for blank message, got ${blank.status}`);
+    const badType = await put(`/admin/announcements/${id}`, { type: 'banana' }, H);
+    assert(badType.status === 400, `Expected 400 for invalid type, got ${badType.status}`);
+    const ok = await put(`/admin/announcements/${id}`, { priority: 1 }, H);
+    assert(ok.status === 200 && ok.body.data.message_tamil === 'சோதனை அறிவிப்பு', 'A partial edit must keep the message');
+    await del(`/admin/announcements/${id}`, H);
+  });
+}
+
 async function testHealthCheck() {
   console.log('\n🏥 Health Check');
 
@@ -1087,6 +1132,7 @@ async function main() {
   await testAnnouncementsCRUD();
   await testAuthSignupAndRBAC();
   await testRBACViewerRestrictions();
+  await testAdminPutGuards();
 
   // Public API tests (no auth needed)
   await testPublicPowerAPI();
@@ -1424,6 +1470,24 @@ async function testAdminDoctorScheduleCRUD() {
     }, getAuthHeaders());
     assert(status === 200, `Expected 200, got ${status}`);
     assert(body.success === true, 'Expected success: true');
+  });
+
+  await test('PUT /admin/hospital/doctors/:id/schedule rejects start>=end and leaves the old schedule intact', async () => {
+    if (!testDoctorId) { assert(true, 'Skipped'); return; }
+    const bad = await put(`/admin/hospital/doctors/${testDoctorId}/schedule`, {
+      schedules: [{ day_of_week: 2, start_time: '18:00', end_time: '09:00' }],
+    }, getAuthHeaders());
+    assert(bad.status === 400, `Expected 400 for start after end, got ${bad.status}`);
+    const list = await get('/api/hospital/doctors');
+    const doc = (list.body.data || []).find(d => d.id === testDoctorId);
+    assert(doc && doc.schedules.length === 2, `Previous 2 schedules must survive a rejected PUT, got ${doc && doc.schedules.length}`);
+  });
+
+  await test('PUT /admin/hospital/doctors/:id/schedule returns 404 for an unknown doctor', async () => {
+    const { status } = await put('/admin/hospital/doctors/99999999/schedule', {
+      schedules: [{ day_of_week: 1, start_time: '09:00', end_time: '10:00' }],
+    }, getAuthHeaders());
+    assert(status === 404, `Expected 404, got ${status}`);
   });
 
   await test('DELETE /admin/hospital/doctors/:id/schedule clears all schedules', async () => {

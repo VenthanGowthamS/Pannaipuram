@@ -2,7 +2,7 @@ const express   = require('express');
 const router    = express.Router();
 const adminAuth = require('../../middleware/auth');
 const { validateIdParam, requireRole } = require('../../middleware/auth');
-const { query } = require('../../db/pool');
+const { query, getClient } = require('../../db/pool');
 const { trimStr, isValidTime, isStartBeforeEnd } = require('../../middleware/validate');
 
 router.use(adminAuth);
@@ -188,23 +188,39 @@ router.put('/doctors/:id/schedule', validateIdParam, requireRole('admin', 'super
     if (!isValidTime(s.start_time) || !isValidTime(s.end_time)) {
       return res.status(400).json({ success: false, error: 'Times must be in HH:MM format' });
     }
+    if (!isStartBeforeEnd(s.start_time, s.end_time)) {
+      return res.status(400).json({ success: false, error: 'start_time must be before end_time' });
+    }
   }
+  // Delete-then-insert must be ONE transaction: if an INSERT fails halfway, the
+  // doctor keeps the previous schedule instead of ending up with none.
+  const client = await getClient();
   try {
+    await client.query('BEGIN');
+    const doc = await client.query('SELECT id FROM doctors WHERE id = $1', [req.params.id]);
+    if (doc.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ success: false, error: 'Doctor not found' });
+    }
     // Delete ALL existing schedules, then insert new ones (clean replace)
-    await query('DELETE FROM doctor_schedules WHERE doctor_id = $1', [req.params.id]);
+    await client.query('DELETE FROM doctor_schedules WHERE doctor_id = $1', [req.params.id]);
     const inserted = [];
     for (const s of schedules) {
       const dayVal = parseDayOfWeek(s.day_of_week).value;
-      const result = await query(`
+      const result = await client.query(`
         INSERT INTO doctor_schedules (doctor_id, day_of_week, start_time, end_time, notes_tamil)
         VALUES ($1,$2,$3,$4,$5) RETURNING *
       `, [req.params.id, dayVal, s.start_time, s.end_time, trimStr(s.notes_tamil)]);
       inserted.push(result.rows[0]);
     }
+    await client.query('COMMIT');
     res.json({ success: true, data: inserted });
   } catch (err) {
+    try { await client.query('ROLLBACK'); } catch (_) { /* connection already gone */ }
     console.error('Schedule PUT error:', err.message);
-    res.status(500).json({ success: false, error: err.message || 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
+  } finally {
+    client.release();
   }
 });
 
