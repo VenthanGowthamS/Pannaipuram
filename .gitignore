@@ -1,1 +1,7 @@
 .DS_Store
+
+# Marketing outputs — big binaries live in Drive, not git (the scripts that make them stay)
+marketing/*.mp4
+marketing/*.m4a
+marketing/frames/
+pamphlet.pdf
