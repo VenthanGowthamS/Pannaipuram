@@ -81,7 +81,7 @@ const UserManagement = ({ onSnackbar }) => {
         password: signupForm.password,
         role: signupForm.role,
       });
-      onSnackbar('User created. Pending admin approval.', 'success');
+      onSnackbar('User created and active.', 'success');
       setSignupForm({ name: '', email: '', password: '', role: 'viewer' });
       loadUsers();
     } catch (error) {

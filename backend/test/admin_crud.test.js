@@ -933,6 +933,38 @@ async function testRBACViewerRestrictions() {
     assert(viewerToken, 'Expected viewer token');
   });
 
+  await test('POST /admin/auth/signup forbidden for viewer', async () => {
+    if (!viewerToken) { assert(true, 'Skipped'); return; }
+    const { status } = await post('/admin/auth/signup', {
+      email: `blocked_${Date.now()}@pannaipuram.local`, password: 'blocked123',
+    }, { 'Authorization': `Bearer ${viewerToken}` });
+    assert(status === 403, `Expected 403 for viewer creating a user, got ${status}`);
+  });
+
+  await test('POST /admin/auth/signup rejects an invalid role and honours a valid one', async () => {
+    const bad = await post('/admin/auth/signup', {
+      email: `badrole_${Date.now()}@pannaipuram.local`, password: 'badrole123', role: 'root',
+    }, getAuthHeaders());
+    assert(bad.status === 400, `Expected 400 for invalid role, got ${bad.status}`);
+    const ok = await post('/admin/auth/signup', {
+      email: `adminrole_${Date.now()}@pannaipuram.local`, password: 'adminrole123', role: 'admin',
+    }, getAuthHeaders());
+    assert(ok.status === 200 && ok.body.user.role === 'admin', `Expected role admin, got ${ok.status} ${ok.body.user && ok.body.user.role}`);
+  });
+
+  await test('A deactivated user\'s still-valid token stops working immediately', async () => {
+    const email = `deact_${Date.now()}@pannaipuram.local`;
+    const created = await post('/admin/auth/signup', { email, password: 'deact12345' }, getAuthHeaders());
+    assert(created.status === 200, `setup signup failed: ${created.status}`);
+    const login = await post('/admin/auth/login', { email, password: 'deact12345' });
+    const tok = (login.body.data && login.body.data.token) || login.body.token;
+    const before = await get('/admin/power/cuts', { 'Authorization': `Bearer ${tok}` });
+    assert(before.status === 200, `Active viewer should read, got ${before.status}`);
+    await put(`/admin/auth/users/${created.body.user.id}/active`, { is_active: false }, getAuthHeaders());
+    const after = await get('/admin/power/cuts', { 'Authorization': `Bearer ${tok}` });
+    assert(after.status === 401, `Deactivated user's token should get 401, got ${after.status}`);
+  });
+
   await test('GET /admin/auth/users forbidden for viewer', async () => {
     if (!viewerToken) { assert(true, 'Skipped'); return; }
     const { status } = await get('/admin/auth/users', {

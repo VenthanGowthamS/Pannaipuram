@@ -150,11 +150,15 @@ router.post('/register', registerLimiter, async (req, res) => {
   }
 });
 
-// POST /admin/auth/signup — creates new user with 'viewer' role
-// Requires authentication (any logged-in admin)
-router.post('/signup', adminAuth, async (req, res) => {
+// POST /admin/auth/signup — creates an ACTIVE user (default role 'viewer')
+// Super admin only: it mints a working login, so a viewer must not be able to call it.
+router.post('/signup', adminAuth, requireRole('super_admin'), async (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase();
   const { password, name } = req.body;
+  const role = req.body.role === undefined ? 'viewer' : req.body.role;
+  if (!['super_admin', 'admin', 'viewer'].includes(role)) {
+    return res.status(400).json({ error: 'Invalid role' });
+  }
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' });
   }
@@ -175,7 +179,7 @@ router.post('/signup', adminAuth, async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
     const result = await query(
       'INSERT INTO admin_users (email, password_hash, role, name, is_active) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, role, name',
-      [email, hash, 'viewer', name || email.split('@')[0], true]
+      [email, hash, role, name || email.split('@')[0], true]
     );
 
     const newUser = result.rows[0];
