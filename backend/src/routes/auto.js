@@ -1,6 +1,7 @@
 const express = require('express');
 const router  = express.Router();
 const { query } = require('../db/pool');
+const { DEFAULT_REG_CONTACT } = require('../utils/defaults');
 
 // GET /api/auto/contact — registration contact (admin-controlled in DB)
 router.get('/contact', async (req, res) => {
@@ -17,10 +18,10 @@ router.get('/contact', async (req, res) => {
       }
     }
     // Default fallback
-    res.json({ success: true, data: { name: 'கௌதம்', name_english: 'Gowtham', phone: '8888888888' } });
+    res.json({ success: true, data: DEFAULT_REG_CONTACT });
   } catch (_) {
     // Table may not exist yet — return default
-    res.json({ success: true, data: { name: 'கௌதம்', name_english: 'Gowtham', phone: '8888888888' } });
+    res.json({ success: true, data: DEFAULT_REG_CONTACT });
   }
 });
 

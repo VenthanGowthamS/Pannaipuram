@@ -4,6 +4,7 @@ const adminAuth = require('../../middleware/auth');
 const { validateIdParam, requireRole } = require('../../middleware/auth');
 const { query } = require('../../db/pool');
 const { trimStr, isValidPhone } = require('../../middleware/validate');
+const { DEFAULT_REG_CONTACT } = require('../../utils/defaults');
 
 router.use(adminAuth);
 
@@ -11,18 +12,17 @@ router.use(adminAuth);
 router.get('/contact', async (req, res) => {
   try {
     const result = await query(`SELECT value FROM app_config WHERE key = 'auto_registration_contact'`);
-    const defaultContact = { name: 'கௌதம்', name_english: 'Gowtham', phone: '8888888888' };
     if (result.rows.length > 0) {
       try {
         return res.json({ success: true, data: JSON.parse(result.rows[0].value) });
       } catch (parseErr) {
         console.error('JSON parse error for auto_registration_contact:', parseErr.message);
-        return res.json({ success: true, data: defaultContact });
+        return res.json({ success: true, data: DEFAULT_REG_CONTACT });
       }
     }
-    res.json({ success: true, data: defaultContact });
+    res.json({ success: true, data: DEFAULT_REG_CONTACT });
   } catch (_) {
-    res.json({ success: true, data: { name: 'கௌதம்', name_english: 'Gowtham', phone: '8888888888' } });
+    res.json({ success: true, data: DEFAULT_REG_CONTACT });
   }
 });
 
@@ -30,10 +30,10 @@ router.get('/contact', async (req, res) => {
 router.get('/whatsapp-config', async (req, res) => {
   const defaults = {
     phone: '9944129218',
-    auto_message: 'வணக்கம் சார் 🙏\n\nஆட்டோ / கார் வேணும்.\n\nபெயர்: \nபோகும் இடம்: \nதேவையான நேரம்: \n\nநன்றி!',
-    water_message: 'வணக்கம் சார் 🙏\n\nபண்ணைப்புரம் App-ல தண்ணி ஷெட்யூல் சேர்க்கணும்.\n\nதெரு பெயர்: \n\nநன்றி!',
-    power_message: 'வணக்கம் சார் 🙏\n\nபண்ணைப்புரம் App-ல கரண்ட் கட் தகவல் சேர்க்கணும்.\n\nதேதி: \nநேரம்: \nகாரணம் (தெரிஞ்சா): \n\nநன்றி!',
-    services_message: 'வணக்கம் சார் 🙏\n\nபண்ணைப்புரம் App-ல என் தகவல் சேர்க்கணும்.\n\nபெயர்: \nதொலைபேசி: \nசேவை வகை: \nபகுதி/தெரு: \n\nநன்றி!',
+    auto_message: 'சார் 🙏\n\nஆட்டோ / கார் வேணும்.\n\nபெயர்: \nபோகும் இடம்: \nதேவையான நேரம்: \n\nநன்றி!',
+    water_message: 'சார் 🙏\n\nபண்ணைப்புரம் App-ல தண்ணி ஷெட்யூல் சேர்க்கணும்.\n\nதெரு பெயர்: \n\nநன்றி!',
+    power_message: 'சார் 🙏\n\nபண்ணைப்புரம் App-ல கரண்ட் கட் தகவல் சேர்க்கணும்.\n\nதேதி: \nநேரம்: \nகாரணம் (தெரிஞ்சா): \n\nநன்றி!',
+    services_message: 'சார் 🙏\n\nபண்ணைப்புரம் App-ல என் தகவல் சேர்க்கணும்.\n\nபெயர்: \nதொலைபேசி: \nசேவை வகை: \nபகுதி/தெரு: \n\nநன்றி!',
   };
   try {
     const result = await query(`SELECT value FROM app_config WHERE key = 'whatsapp_config'`);

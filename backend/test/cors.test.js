@@ -33,6 +33,8 @@ check('ALLOWED_ORIGINS env list', isAllowedOrigin('https://x.example', { ...PROD
 check('development allows anything', isAllowedOrigin('https://evil.example', { NODE_ENV: 'development' }), true);
 
 // Rejected
+check('someone else\'s *.github.io site', isAllowedOrigin('https://evil.github.io', PROD), false);
+check('lookalike github.io account', isAllowedOrigin('https://venthangowthams-evil.github.io', PROD), false);
 check('someone else\'s *.pages.dev site', isAllowedOrigin('https://evil.pages.dev', PROD), false);
 check('lookalike Pages project', isAllowedOrigin('https://pannaipuram-admin-evil.pages.dev', PROD), false);
 check('our name as a prefix of another domain', isAllowedOrigin('https://pannaipuram-admin.pages.dev.evil.com', PROD), false);

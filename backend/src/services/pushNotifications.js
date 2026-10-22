@@ -26,6 +26,26 @@ if (firebaseReady && !admin.apps.length) {
   console.warn('Firebase credentials not set — push notifications disabled (API still works)');
 }
 
+// FCM accepts at most 500 tokens per multicast call — a single call with every
+// device would fail outright once the village has more than 500 installs.
+const FCM_BATCH = 500;
+async function sendInBatches(tokens, notification) {
+  const messaging = admin.messaging();
+  // sendMulticast is deprecated in firebase-admin 11+; sendEachForMulticast replaces it
+  const send = (batch) => (messaging.sendEachForMulticast || messaging.sendMulticast).call(messaging, { tokens: batch, notification });
+  let ok = 0, failed = 0;
+  for (let i = 0; i < tokens.length; i += FCM_BATCH) {
+    try {
+      const res = await send(tokens.slice(i, i + FCM_BATCH));
+      ok += res.successCount; failed += res.failureCount;
+    } catch (err) {
+      failed += Math.min(FCM_BATCH, tokens.length - i);
+      console.error('Push batch error:', err.message);
+    }
+  }
+  return { ok, failed };
+}
+
 // Send to ALL registered devices
 async function sendToAll(notification) {
   if (!firebaseReady || !admin.apps.length) return;
@@ -34,8 +54,8 @@ async function sendToAll(notification) {
     const tokens = result.rows.map(r => r.fcm_token).filter(Boolean);
     if (tokens.length === 0) return;
 
-    await admin.messaging().sendMulticast({ tokens, notification });
-    console.log(`Push sent to ${tokens.length} devices`);
+    const r = await sendInBatches(tokens, notification);
+    console.log(`Push sent: ${r.ok} ok, ${r.failed} failed (of ${tokens.length} devices)`);
   } catch (err) {
     console.error('Push notification error:', err.message);
   }
@@ -53,8 +73,8 @@ async function sendToStreet(streetId, notification) {
     const tokens = result.rows.map(r => r.fcm_token).filter(Boolean);
     if (tokens.length === 0) return;
 
-    await admin.messaging().sendMulticast({ tokens, notification });
-    console.log(`Push sent to ${tokens.length} devices on street ${streetId}`);
+    const r = await sendInBatches(tokens, notification);
+    console.log(`Push to street ${streetId}: ${r.ok} ok, ${r.failed} failed (of ${tokens.length} devices)`);
   } catch (err) {
     console.error('Push notification error:', err.message);
   }

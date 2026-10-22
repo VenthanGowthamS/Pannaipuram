@@ -158,7 +158,6 @@ app.get('/', (req, res) => {
   return res.redirect('/pwa/');
 });
 // Diagnostic: log PWA path on startup (remove after first successful deploy)
-console.log('[PWA] Serving from:', PWA_DIR);
 
 // CORS — restrict origins in production (rules in middleware/corsOrigin.js)
 const corsMiddleware = cors({
@@ -229,6 +228,22 @@ app.get('/health', async (req, res) => {
       env,
     });
   }
+});
+
+// ── Error handler (JSON, matching the API envelope) ────
+// Without this a CORS rejection or an oversized / malformed body falls through to
+// Express's default HTML error page, which the PWA cannot show to the user.
+app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
+  if (res.headersSent) return next(err);
+  if (err && err.message === 'Not allowed by CORS') {
+    return res.status(403).json({ success: false, error: 'Origin not allowed' });
+  }
+  const status = (err && (err.status || err.statusCode)) || 500;
+  if (status >= 400 && status < 500) {
+    return res.status(status).json({ success: false, error: status === 413 ? 'Request too large' : 'Bad request' });
+  }
+  console.error('Unhandled error:', err && err.message);
+  res.status(500).json({ success: false, error: 'Server error' });
 });
 
 // ── Start Background Services ───────────────────────────

@@ -1018,6 +1018,13 @@ async function testAdminPutGuards() {
     assert(cut.status === 400, `Expected 400 for end before start, got ${cut.status}`);
   });
 
+  await test('Oversized body gets a JSON 413, not an HTML error page', async () => {
+    const big = 'x'.repeat(1.5 * 1024 * 1024);
+    const { status, body } = await post('/api/feedback', { message: big });
+    assert(status === 413, `Expected 413, got ${status}`);
+    assert(body && body.success === false, 'Expected the JSON envelope { success: false, … }');
+  });
+
   await test('PUT /admin/announcements/:id cannot blank the message or store an unknown type', async () => {
     const created = await post('/admin/announcements', { message_tamil: 'சோதனை அறிவிப்பு', type: 'info' }, H);
     const id = created.body.data.id;

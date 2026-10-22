@@ -11,8 +11,9 @@ function isAllowedOrigin(origin, env = process.env) {
   if (allowedOrigins.includes(origin)) return true;
   // Same-origin requests (admin panel served by Render at /admin/v2/)
   if (env.RENDER_EXTERNAL_HOSTNAME && origin === `https://${env.RENDER_EXTERNAL_HOSTNAME}`) return true;
-  // PWA hosted on GitHub Pages (any *.github.io subdomain)
-  if (/^https:\/\/[a-z0-9-]+\.github\.io$/i.test(origin)) return true;
+  // PWA hosted on GitHub Pages — OUR account only (VenthanGowthamS). Like *.pages.dev,
+  // a bare *.github.io wildcard would trust every site anyone publishes there.
+  if (/^https:\/\/venthangowthams\.github\.io$/i.test(origin)) return true;
   // pannaipuram.com + all subdomains (app / api / admin / school etc.)
   if (/^https:\/\/([a-z0-9-]+\.)?pannaipuram\.(com|in)$/i.test(origin)) return true;
   // Admin panel on Cloudflare Pages — OUR project only (+ its preview builds).
