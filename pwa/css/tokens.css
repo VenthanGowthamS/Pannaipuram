@@ -125,7 +125,7 @@
    left (bus-type chips, info boxes…) are overridden at the end of
    responsive.css, which loads last. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --brand:       #3949AB;
     --brand-2:     #2B3A99;
     --brand-tint:  #222848;
@@ -162,3 +162,40 @@
     color-scheme: dark;
   }
 }
+/* Manual choice from the ☰ menu (set by the inline script in index.html) */
+:root[data-theme="dark"] {
+    --brand:       #3949AB;
+    --brand-2:     #2B3A99;
+    --brand-tint:  #222848;
+    --brand-ink:   #AAB6FF;
+    --brand-grad:  linear-gradient(135deg, #1A2163 0%, #253187 100%);
+
+    --bg:          #0F1117;
+    --surface:     #181B24;
+    --surface-2:   #1F232E;
+    --surface-3:   #2A2F3C;
+    --border:      #2E3342;
+    --shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-md:   0 2px 10px rgba(0, 0, 0, 0.45);
+    --shadow-lg:   0 6px 20px rgba(0, 0, 0, 0.55);
+
+    --text:        #ECEEF4;
+    --text-2:      #BCC1D0;
+    --muted:       #969CAE;
+    --faint:       #6E7488;
+
+    --ok-tint:     #16301B;
+    --ok-ink:      #8FD99C;
+    --warn-tint:   #392A12;
+    --warn-ink:    #F4C26E;
+    --danger-tint: #3A1B1E;
+    --danger-ink:  #FF9E9E;
+
+    --c-auto:      #C795E6;
+    --c-hospital:  #4DB6AC;
+    --c-hospital-tint: #123430;
+    --auto-tint:   #2C2238;
+    --c-emergency: #E05A5A;
+
+    color-scheme: dark;
+  }

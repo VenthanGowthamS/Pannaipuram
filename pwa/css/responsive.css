@@ -186,26 +186,48 @@
 /* ── Dark mode: the last hard-coded light tints ───────────────
    (colour tokens themselves switch in tokens.css) */
 @media (prefers-color-scheme: dark) {
-  .chip-ordinary, .badge-ordinary, .em-badge-nat { background: #16263D; color: #9CC8FF; }
-  .chip-private,  .badge-private  { background: #3A1A28; color: #F5A3C7; }
-  .badge-SETC                     { background: #2C1F38; color: #D7A8F0; }
-  .tt-row.tt-ordinary .tt-icon    { background: #16263D; }
-  .tt-row.tt-private  .tt-icon    { background: #3A1A28; }
-  .tt-gap   { background: var(--warn-tint); }
-  .tt-alt   { background: var(--ok-tint); }
-  .tt-nodata-contact:active { background: var(--surface-3); }
-  .skeleton { background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%); background-size: 200% 100%; }
-  .about-cardamom   { background: var(--ok-tint); }
-  .about-disclaimer { background: var(--warn-tint); border-color: #5A4520; }
-  .about-disclaimer-title, .about-disclaimer-en, .about-disclaimer-text { color: var(--warn-ink); }
-  .acting-avatar { background: var(--brand-tint); }
-  .acting-reg-cta { background: var(--surface-2); }
-  .bl-link { background: var(--ok-tint); border-color: #2C4A31; }
-  .bl-link:active { background: var(--surface-3); }
-  .bl-card.is-official { background: linear-gradient(180deg, #2E2310 0%, var(--surface) 56px); }
-  .menu-item-urgent { background: var(--danger-tint); }
-  .install-sheet-tip { background: var(--warn-tint); color: var(--warn-ink); }
-  .hd-day-chip.today.on { color: #0B1F1D; }
-  .route-name-ta.dimmed { color: var(--faint); }
-  img.driver-photo { filter: brightness(0.92); }
+  :root:not([data-theme]) .chip-ordinary, :root:not([data-theme]) .badge-ordinary, :root:not([data-theme]) .em-badge-nat { background: #16263D; color: #9CC8FF; }
+  :root:not([data-theme]) .chip-private, :root:not([data-theme]) .badge-private { background: #3A1A28; color: #F5A3C7; }
+  :root:not([data-theme]) .badge-SETC { background: #2C1F38; color: #D7A8F0; }
+  :root:not([data-theme]) .tt-row.tt-ordinary .tt-icon { background: #16263D; }
+  :root:not([data-theme]) .tt-row.tt-private  .tt-icon { background: #3A1A28; }
+  :root:not([data-theme]) .tt-gap { background: var(--warn-tint); }
+  :root:not([data-theme]) .tt-alt { background: var(--ok-tint); }
+  :root:not([data-theme]) .tt-nodata-contact:active { background: var(--surface-3); }
+  :root:not([data-theme]) .skeleton { background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%); background-size: 200% 100%; }
+  :root:not([data-theme]) .about-cardamom { background: var(--ok-tint); }
+  :root:not([data-theme]) .about-disclaimer { background: var(--warn-tint); border-color: #5A4520; }
+  :root:not([data-theme]) .about-disclaimer-title, :root:not([data-theme]) .about-disclaimer-en, :root:not([data-theme]) .about-disclaimer-text { color: var(--warn-ink); }
+  :root:not([data-theme]) .acting-avatar { background: var(--brand-tint); }
+  :root:not([data-theme]) .acting-reg-cta { background: var(--surface-2); }
+  :root:not([data-theme]) .bl-link { background: var(--ok-tint); border-color: #2C4A31; }
+  :root:not([data-theme]) .bl-link:active { background: var(--surface-3); }
+  :root:not([data-theme]) .bl-card.is-official { background: linear-gradient(180deg, #2E2310 0%, var(--surface) 56px); }
+  :root:not([data-theme]) .menu-item-urgent { background: var(--danger-tint); }
+  :root:not([data-theme]) .install-sheet-tip { background: var(--warn-tint); color: var(--warn-ink); }
+  :root:not([data-theme]) .hd-day-chip.today.on { color: #0B1F1D; }
+  :root:not([data-theme]) .route-name-ta.dimmed { color: var(--faint); }
+  :root:not([data-theme]) img.driver-photo { filter: brightness(0.92); }
 }
+  :root[data-theme="dark"] .chip-ordinary, :root[data-theme="dark"] .badge-ordinary, :root[data-theme="dark"] .em-badge-nat { background: #16263D; color: #9CC8FF; }
+  :root[data-theme="dark"] .chip-private, :root[data-theme="dark"] .badge-private { background: #3A1A28; color: #F5A3C7; }
+  :root[data-theme="dark"] .badge-SETC { background: #2C1F38; color: #D7A8F0; }
+  :root[data-theme="dark"] .tt-row.tt-ordinary .tt-icon { background: #16263D; }
+  :root[data-theme="dark"] .tt-row.tt-private  .tt-icon { background: #3A1A28; }
+  :root[data-theme="dark"] .tt-gap { background: var(--warn-tint); }
+  :root[data-theme="dark"] .tt-alt { background: var(--ok-tint); }
+  :root[data-theme="dark"] .tt-nodata-contact:active { background: var(--surface-3); }
+  :root[data-theme="dark"] .skeleton { background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%); background-size: 200% 100%; }
+  :root[data-theme="dark"] .about-cardamom { background: var(--ok-tint); }
+  :root[data-theme="dark"] .about-disclaimer { background: var(--warn-tint); border-color: #5A4520; }
+  :root[data-theme="dark"] .about-disclaimer-title, :root[data-theme="dark"] .about-disclaimer-en, :root[data-theme="dark"] .about-disclaimer-text { color: var(--warn-ink); }
+  :root[data-theme="dark"] .acting-avatar { background: var(--brand-tint); }
+  :root[data-theme="dark"] .acting-reg-cta { background: var(--surface-2); }
+  :root[data-theme="dark"] .bl-link { background: var(--ok-tint); border-color: #2C4A31; }
+  :root[data-theme="dark"] .bl-link:active { background: var(--surface-3); }
+  :root[data-theme="dark"] .bl-card.is-official { background: linear-gradient(180deg, #2E2310 0%, var(--surface) 56px); }
+  :root[data-theme="dark"] .menu-item-urgent { background: var(--danger-tint); }
+  :root[data-theme="dark"] .install-sheet-tip { background: var(--warn-tint); color: var(--warn-ink); }
+  :root[data-theme="dark"] .hd-day-chip.today.on { color: #0B1F1D; }
+  :root[data-theme="dark"] .route-name-ta.dimmed { color: var(--faint); }
+  :root[data-theme="dark"] img.driver-photo { filter: brightness(0.92); }

@@ -29,6 +29,40 @@
   <link rel="dns-prefetch" href="https://pannaipuram-api.onrender.com">
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700;800&family=Roboto:wght@400;500;700&display=swap">
+  <!-- Theme: a saved choice from the ☰ menu wins, else follow the phone.
+       Runs before first paint so there is no light→dark flash. -->
+  <script>
+    (function () {
+      var KEY = 'pannai:theme', mq = window.matchMedia('(prefers-color-scheme: dark)');
+      function saved() { try { var v = localStorage.getItem(KEY); return v === 'dark' || v === 'light' ? v : null; } catch (_) { return null; } }
+      function apply(t) {
+        document.documentElement.setAttribute('data-theme', t);
+        var m = document.querySelectorAll('meta[name="theme-color"]');
+        for (var i = 0; i < m.length; i++) m[i].setAttribute('content', t === 'dark' ? '#1A2163' : '#1E2A78');
+        var b = document.getElementById('theme-toggle');
+        if (b) {
+          b.querySelector('.theme-ic-moon').hidden = t === 'dark';
+          b.querySelector('.theme-ic-sun').hidden = t !== 'dark';
+          b.querySelector('.menu-item-ta').textContent = t === 'dark' ? 'வெளிச்ச பயன்முறை' : 'இருள் பயன்முறை';
+          b.querySelector('.menu-item-en').textContent = t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+        }
+      }
+      function current() { return saved() || (mq.matches ? 'dark' : 'light'); }
+      apply(current());
+      var onChange = function () { if (!saved()) apply(current()); };
+      if (mq.addEventListener) mq.addEventListener('change', onChange);
+      document.addEventListener('DOMContentLoaded', function () {
+        apply(current());
+        var b = document.getElementById('theme-toggle');
+        if (!b) return;
+        b.addEventListener('click', function () {
+          var next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+          try { localStorage.setItem(KEY, next); } catch (_) {}
+          apply(next);
+        });
+      });
+    })();
+  </script>
   <link rel="stylesheet" href="/pwa/css/tokens.css">
   <link rel="stylesheet" href="/pwa/css/base.css">
   <link rel="stylesheet" href="/pwa/css/nav.css">
@@ -131,6 +165,16 @@
           <span class="menu-item-en">How to use</span>
         </span>
         <span class="menu-item-caret">›</span>
+      </button>
+      <button class="menu-item" id="theme-toggle" type="button">
+        <span class="menu-item-icon">
+          <span class="theme-ic-moon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></span>
+          <span class="theme-ic-sun" hidden><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></span>
+        </span>
+        <span class="menu-item-text">
+          <span class="menu-item-ta">இருள் பயன்முறை</span>
+          <span class="menu-item-en">Switch to dark mode</span>
+        </span>
       </button>
       <button class="menu-item" id="menu-install-btn" data-sheet="install" type="button">
         <span class="menu-item-icon"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg></span>
