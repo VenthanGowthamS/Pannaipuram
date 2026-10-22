@@ -232,3 +232,37 @@
 }
 
 #section-hospital { padding-bottom: 90px; }
+
+/* ── v84: badge under the name, merged hours, readable day chips ── */
+.hd-today-badge {
+  align-self: flex-start;
+  max-width: none;
+  margin-top: 6px;
+  font-size: 0.74rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--ok-tint);
+  color: var(--ok-ink);
+}
+.hd-today-badge.hd-today-no { background: var(--surface-3); color: var(--muted); }
+.hd-day-chip {
+  background: transparent;
+  color: var(--faint);
+  border: 1px solid var(--border);
+}
+.hd-day-chip.on { background: var(--c-hospital-tint); color: var(--c-hospital); border-color: transparent; font-weight: 700; }
+.hd-day-chip.today.on { background: var(--c-hospital); color: #fff; }
+.hd-day-chip.today { box-shadow: 0 0 0 2px var(--c-hospital); }
+.hd-sched-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  align-items: baseline;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-radius: 8px;
+}
+.hd-sched-row.is-today { background: var(--c-hospital-tint); }
+.hd-sched-day { min-width: 0; color: var(--c-hospital); }
+.hd-sched-time { white-space: nowrap; color: var(--text); }
+.hd-sched-note { grid-column: 1 / -1; font-size: 0.8rem; color: var(--text-2); }

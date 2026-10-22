@@ -179,7 +179,6 @@ main {
   font-size: 0.88rem;
   font-weight: 700;
   line-height: 1.3;
-  overflow-wrap: anywhere;
 }
 .install-title-en {
   font-family: var(--font-latin);
@@ -208,7 +207,7 @@ main {
   align-items: center;
   justify-content: center;
   min-height: 40px;
-  padding: 8px 16px;
+  padding: 8px 14px;
   background: var(--accent);
   color: var(--on-accent);
   font-family: var(--font-tamil);

@@ -266,3 +266,46 @@
   user-select: all;
   -webkit-user-select: all;
 }
+
+/* ── Quick dial: 108 / 100 / 101 — no scrolling in a hurry ── */
+.em-quick {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 14px 12px 0;
+}
+.em-quick-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 12px 6px 10px;
+  min-height: 96px;
+  background: var(--surface);
+  border: 1.5px solid var(--danger-tint);
+  border-bottom: 4px solid var(--c-emergency);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  color: var(--text);
+}
+.em-quick-btn:active { transform: scale(0.97); background: var(--danger-tint); }
+.em-quick-ic { font-size: 24px; line-height: 1.1; }
+.em-quick-num {
+  font-family: var(--font-latin);
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--danger-ink);
+  line-height: 1.15;
+}
+.em-quick-ta { font-family: var(--font-tamil); font-size: 0.8rem; font-weight: 700; }
+.em-quick-en { font-family: var(--font-latin); font-size: 0.66rem; color: var(--muted); }
+
+/* Category panels: tint derived from the category colour so it also works
+   in dark mode (fallback = the light tint set inline by emergency.js) */
+.em-panel-head { background: color-mix(in srgb, var(--cat) 10%, var(--surface)); }
+.em-row:active  { background: color-mix(in srgb, var(--cat) 8%, var(--surface)); }
+.em-panel-ic { background: var(--surface); }
+/* Numbers were red / blue / orange per category — one colour now */
+.em-row-phone { color: var(--text); }
+.em-badge-nat { background: var(--brand-tint); color: var(--brand-ink); }

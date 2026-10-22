@@ -417,7 +417,6 @@
        The full steps + benefits now live in the ☰ → Install sheet, opened
        by the "எப்படி?" button on iPhone / browsers without a native prompt. -->
   <div id="install-banner" hidden>
-    <div class="install-icon" aria-hidden="true">📲</div>
     <div class="install-body">
       <div class="install-title-ta">App-ஆ சேர்த்துக்கோங்க</div>
       <div class="install-title-en">Install · works offline</div>
@@ -569,6 +568,29 @@
         <p class="em-header-ta">அவசர தொலைபேசி எண்கள்</p>
         <p class="em-header-en">Emergency Contacts</p>
         <span class="em-header-note">📞 ஒரே tap-ல் call பண்ணுங்க</span>
+      </div>
+
+      <!-- One-tap national numbers. Static on purpose: they never change,
+           and they must work offline / before the contact list loads. -->
+      <div class="em-quick" role="group" aria-label="Quick dial">
+        <a class="em-quick-btn" href="tel:108">
+          <span class="em-quick-ic" aria-hidden="true">🚑</span>
+          <span class="em-quick-num">108</span>
+          <span class="em-quick-ta">ஆம்புலன்ஸ்</span>
+          <span class="em-quick-en">Ambulance</span>
+        </a>
+        <a class="em-quick-btn" href="tel:100">
+          <span class="em-quick-ic" aria-hidden="true">🚓</span>
+          <span class="em-quick-num">100</span>
+          <span class="em-quick-ta">போலீஸ்</span>
+          <span class="em-quick-en">Police</span>
+        </a>
+        <a class="em-quick-btn" href="tel:101">
+          <span class="em-quick-ic" aria-hidden="true">🚒</span>
+          <span class="em-quick-num">101</span>
+          <span class="em-quick-ta">தீயணைப்பு</span>
+          <span class="em-quick-en">Fire</span>
+        </a>
       </div>
 
       <!-- Contact groups (rendered by emergency.js) -->

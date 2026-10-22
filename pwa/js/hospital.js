@@ -24,16 +24,52 @@ var Hospital = (function() {
 
   function telHref(phone) { return 'tel:' + String(phone || '').replace(/[^0-9+]/g, ''); }
 
-  function scheduleLine(s, hoistedNotes) {
-    var day = DAY_TA[s.day_of_week] != null ? DAY_TA[s.day_of_week] : '';
-    var time = (s.start_time || s.end_time)
-      ? fmtTime(s.start_time) + ' – ' + fmtTime(s.end_time) : '';
-    // Notes repeated across several days are hoisted to ONE line under the
-    // schedule (see renderDoctor) — don't repeat them on every day row.
-    var noteTxt = s.notes_tamil && !hoistedNotes[s.notes_tamil] ? s.notes_tamil : '';
-    var note = noteTxt ? ' · ' + esc(noteTxt) : '';
-    return '<div class="hd-sched-row"><span class="hd-sched-day">' + esc(day) + '</span>' +
-           '<span class="hd-sched-time">' + esc(time) + '</span>' + note + '</div>';
+  // Week order for the timetable: Monday first, Sunday last.
+  var WEEK = [1, 2, 3, 4, 5, 6, 0];
+
+  // [1,2,3,4,5] → "திங்கள் – வெள்ளி"; [1,3] → "திங்கள், புதன்"; all 7 → "தினமும்"
+  function dayRangeLabel(dows) {
+    if (dows.length === 7) return 'தினமும்';
+    var idx = dows.map(function(d) { return WEEK.indexOf(d); }).sort(function(a, b) { return a - b; });
+    var parts = [], i = 0;
+    while (i < idx.length) {
+      var j = i;
+      while (j + 1 < idx.length && idx[j + 1] === idx[j] + 1) j++;
+      var from = DAY_TA[WEEK[idx[i]]], to = DAY_TA[WEEK[idx[j]]];
+      if (j - i >= 2) parts.push(from + ' – ' + to);
+      else if (j === i) parts.push(from);
+      else parts.push(from + ', ' + to);
+      i = j + 1;
+    }
+    return parts.join(', ');
+  }
+
+  // One row per distinct (time, note). Days that share the same hours are
+  // merged — Dr. Premkumar used to show "3:00 PM – 8:30 PM" five times.
+  function scheduleRows(scheds, hoistedNotes, todayDow) {
+    var groups = {}, order = [];
+    scheds.slice().sort(function(a, b) {
+      return WEEK.indexOf(a.day_of_week) - WEEK.indexOf(b.day_of_week) ||
+             String(a.start_time).localeCompare(String(b.start_time));
+    }).forEach(function(s) {
+      var time = (s.start_time || s.end_time)
+        ? fmtTime(s.start_time) + ' – ' + fmtTime(s.end_time) : '';
+      // Notes repeated across several days are hoisted to ONE line under the
+      // schedule (see renderDoctor) — don't repeat them on every row.
+      var note = s.notes_tamil && !hoistedNotes[s.notes_tamil] ? s.notes_tamil : '';
+      var key = time + '|' + note;
+      if (!groups[key]) { groups[key] = { time: time, note: note, days: [] }; order.push(key); }
+      if (groups[key].days.indexOf(s.day_of_week) === -1) groups[key].days.push(s.day_of_week);
+    });
+    return order.map(function(k) {
+      var g = groups[k];
+      var isToday = g.days.indexOf(todayDow) !== -1;
+      return '<div class="hd-sched-row' + (isToday ? ' is-today' : '') + '">' +
+        '<span class="hd-sched-day">' + esc(dayRangeLabel(g.days)) + '</span>' +
+        '<span class="hd-sched-time">' + esc(g.time) + '</span>' +
+        (g.note ? '<span class="hd-sched-note">' + esc(g.note) + '</span>' : '') +
+      '</div>';
+    }).join('');
   }
 
   function renderDoctor(doc, todayDow) {
@@ -62,20 +98,20 @@ var Hospital = (function() {
     }).join('');
     var availToday = scheds.some(function(s) { return s.day_of_week === todayDow; });
     var todayBadge = availToday
-      ? '<span class="hd-today-badge">✅ டாக்டர் இன்று இருக்காங்க</span>'
-      : '<span class="hd-today-badge hd-today-no">டாக்டர் இன்று இல்லை</span>';
+      ? '<span class="hd-today-badge">✅ இன்று இருக்காங்க</span>'
+      : '<span class="hd-today-badge hd-today-no">இன்று இல்லை</span>';
 
     // Day chips row (which days the doctor sits)
     var daySet = {};
     scheds.forEach(function(s) { daySet[s.day_of_week] = true; });
-    var chips = DAY_SHORT.map(function(lbl, i) {
+    var chips = WEEK.map(function(i) {
       var on = !!daySet[i];
       var cls = 'hd-day-chip' + (on ? ' on' : '') + (i === todayDow ? ' today' : '');
-      return '<span class="' + cls + '">' + lbl + '</span>';
+      return '<span class="' + cls + '">' + DAY_SHORT[i] + '</span>';
     }).join('');
 
     var schedHtml = scheds.length
-      ? scheds.map(function(s) { return scheduleLine(s, hoistedNotes); }).join('')
+      ? scheduleRows(scheds, hoistedNotes, todayDow)
       : '<div class="hd-sched-row hd-sched-empty">நேரம் விரைவில் சேர்க்கப்படும்</div>';
 
     return '' +
@@ -86,8 +122,10 @@ var Hospital = (function() {
             '<span class="hd-name-ta">' + esc(doc.name_tamil) + '</span>' +
             (doc.name_english ? '<span class="hd-name-en">' + esc(doc.name_english) + '</span>' : '') +
             (doc.specialisation ? '<span class="hd-spec">' + esc(doc.specialisation) + '</span>' : '') +
+            // Badge sits under the name now — beside it, it squeezed long
+            // names like "டாக்டர் டி.வி.சேகர் MS, FRCS" onto 3-4 lines.
+            todayBadge +
           '</div>' +
-          todayBadge +
         '</div>' +
         '<div class="hd-days">' + chips + '</div>' +
         '<div class="hd-scheds">' + schedHtml + '</div>' +

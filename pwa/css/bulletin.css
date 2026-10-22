@@ -532,3 +532,16 @@
   cursor: pointer;
 }
 .bl-btn-cancel:active { background: var(--surface-3); }
+
+/* ── v84 ──────────────────────────────────────────────────── */
+/* Nobody signed in → no "whoami" line, so no divider above the composer */
+.bl-whoami:empty { display: none; }
+.bl-whoami:empty + .bl-compose { border-top: none; padding-top: 0; }
+/* Empty feed: a clear next step instead of a grey box */
+.bl-empty { padding: 36px 20px 28px; box-shadow: var(--shadow-sm); }
+.bl-empty-ic { font-size: 2.8rem; }
+.bl-empty-ta { color: var(--text); font-size: 1.02rem; }
+.bl-empty-cta { margin-top: 18px; padding-left: 22px; padding-right: 22px; border-radius: 999px; }
+.bl-btn { background: var(--c-news); }
+.bl-avatar, .bl-compose-avatar { background: var(--c-news); }
+.bl-card { border-left-color: var(--c-news); }

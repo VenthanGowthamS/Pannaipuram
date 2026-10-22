@@ -35,7 +35,7 @@ var More = (function() {
     var vehTa = VEH_TA[(d.vehicle_type || '').toLowerCase()] || '';
     // Admin-verified driving licence → trust badge
     var dl = d.license_verified === true
-      ? '<span class="acting-dl-chip">🪪 ஓட்டுநர் உரிமம் சரிபார்க்கப்பட்டது ✅</span>' : '';
+      ? '<span class="acting-dl-chip">🪪 உரிமம் சரிபார்த்தது ✅</span>' : '';
     return '<div class="acting-row">' +
       '<div class="acting-avatar">' + avatarHtml(d) + '</div>' +
       '<div class="acting-info">' +
@@ -43,8 +43,9 @@ var More = (function() {
           (vehTa ? ' <span class="acting-veh-chip">' + vehTa + '</span>' : '') + '</span>' +
         (d.name_english ? '<span class="acting-en">' + esc(d.name_english) + '</span>' : '') +
         dl +
-        (cover ? '<span class="acting-meta">📍 ' + esc(cover) + '</span>' : '') +
-        (sched ? '<span class="acting-meta">🕐 ' + esc(sched) + '</span>' : '') +
+        // Free text from admins can run to 10+ lines — clamp, tap to expand
+        (cover ? '<span class="acting-meta clamp">📍 ' + esc(cover) + '</span>' : '') +
+        (sched ? '<span class="acting-meta clamp">🕐 ' + esc(sched) + '</span>' : '') +
       '</div>' + call + '</div>';
   }
 
@@ -158,7 +159,7 @@ var More = (function() {
         '<span class="svc-row-ta">' + esc(s.name_tamil || s.name_english) + '</span>' +
         (s.name_english && s.name_tamil ? '<span class="svc-row-en">' + esc(s.name_english) + '</span>' : '') +
         (area ? '<span class="svc-row-meta">📍 ' + esc(area) + '</span>' : '') +
-        (notes ? '<span class="svc-row-meta svc-row-notes">📝 ' + esc(notes) + '</span>' : '') +
+        (notes ? '<span class="svc-row-meta svc-row-notes clamp">📝 ' + esc(notes) + '</span>' : '') +
       '</div>' + call + '</div>';
   }
   // One category = one compact white panel with a tinted header + rows
@@ -166,7 +167,7 @@ var More = (function() {
     if (!list || !list.length) return '';
     var meta = SVC_CATS[cat] || { emoji: '🛍', ta: cat, tint: '#F3E8F9' };
     return '<div class="svc-panel">' +
-      '<div class="svc-panel-head" style="background:' + meta.tint + '">' +
+      '<div class="svc-panel-head">' +
         '<span class="svc-panel-ic">' + meta.emoji + '</span>' +
         '<span class="svc-panel-ta">' + esc(meta.ta) + '</span>' +
         '<span class="svc-panel-count">' + list.length + '</span>' +
@@ -217,10 +218,24 @@ var More = (function() {
     if (refreshBtn) setTimeout(function() { refreshBtn.classList.remove('spinning'); refreshBtn.disabled = false; }, 500);
   }
 
+  // Tap a clamped (2-line) note to read all of it
+  var clampWired = false;
+  function wireClamp() {
+    if (clampWired) return;
+    var sec = document.getElementById('section-more');
+    if (!sec) return;
+    clampWired = true;
+    sec.addEventListener('click', function(ev) {
+      var el = ev.target.closest ? ev.target.closest('.clamp') : null;
+      if (el) el.classList.toggle('open');
+    });
+  }
+
   var inited = false;
   function init() {
     if (inited) { load(true, true); return; }   // re-open → refresh in place
     inited = true;
+    wireClamp();
     load(false);                                  // first open → skeleton + fetch
     // First render can come from cache (SW + localStorage) — pull fresh from
     // the network shortly after so admin edits (order/photos/new drivers)

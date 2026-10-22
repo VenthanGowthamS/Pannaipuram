@@ -224,3 +224,23 @@
 }
 
 #section-more { padding-bottom: 90px; }
+
+/* ── v84 ──────────────────────────────────────────────────── */
+/* Long admin-entered text: 2 lines, tap to read the rest (more.js) */
+.clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  cursor: pointer;
+}
+.clamp.open { display: block; -webkit-line-clamp: unset; }
+.acting-dl-chip { white-space: nowrap; }
+.svc-panel-head { background: var(--surface-2); border-bottom: 1px solid var(--border); }
+.acting-avatar { background: var(--brand-tint); }
+.acting-veh-chip { color: var(--brand-ink); background: var(--brand-tint); }
+.svc-row-notes { color: var(--text-2); }
+.more-call-pending { background: var(--surface-3); color: var(--muted); }
+.acting-reg-cta { background: var(--surface-2); border-color: var(--border); }
+.acting-reg-form .auto-form-input:focus { border-color: var(--brand); }
+.acting-reg-btn { background: var(--brand); }

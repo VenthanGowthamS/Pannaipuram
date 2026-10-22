@@ -148,10 +148,20 @@ var Bulletin = (function() {
     if (!host) return;
     if (!_posts.length) {
       host.innerHTML = '<div class="bl-empty">' +
-        '<span class="bl-empty-ic">💬</span>' +
+        '<span class="bl-empty-ic">📰</span>' +
         '<p class="bl-empty-ta">இன்னும் செய்தி எதுவும் இல்ல</p>' +
         '<p class="bl-empty-en">Be the first to share village news</p>' +
+        '<button type="button" class="bl-btn bl-empty-cta">✍️ முதல் செய்தியை பகிருங்க</button>' +
       '</div>';
+      // Same path as tapping the composer — unregistered villagers get the
+      // one-time sign-up first (handled by the composer's own click handler).
+      var cta = host.querySelector('.bl-empty-cta');
+      if (cta) cta.addEventListener('click', function() {
+        var sum = document.querySelector('#bulletin-compose .bl-compose-cta');
+        if (!sum) return;
+        sum.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        sum.click();
+      });
       return;
     }
     host.innerHTML = _posts.map(postCard).join('');
