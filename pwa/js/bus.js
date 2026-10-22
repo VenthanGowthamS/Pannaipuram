@@ -4,23 +4,23 @@ var Bus = (function() {
   // Per-corridor metadata — colours + emoji match the Flutter APK exactly.
   // group: 'local' | 'long' | 'night'
   var CORRIDOR_META = {
-    'theni':              { emoji: '🏙️', color: '#1565C0', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → தேனி' },
-    'bodi':               { emoji: '🌄', color: '#0288D1', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → போடி' },
-    'cumbum':             { emoji: '🍇', color: '#388E3C', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கம்பம்' },
-    'chinnamanur':        { emoji: '🛕', color: '#FF6F00', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → பல்லவராயன்பட்டி → சின்னமனூர்' },
-    'gudalur (koodalur)': { emoji: '🌲', color: '#33691E', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → கம்பம் → கூடலூர்' },
-    'mettupalayam':       { emoji: '🏘️', color: '#F57C00', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → மேட்டுப்பாளையம்' },
-    'suruli theertham':   { emoji: '💧', color: '#0277BD', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → சுருளி தீர்த்தம்' },
-    'thevaram':           { emoji: '🛤️', color: '#546E7A', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம்' },
-    'periyakulam':        { emoji: '🌾', color: '#558B2F', group: 'local', isFrequent: false, nameTamil: 'பெரியகுளம்', routeDesc: 'பண்ணைப்புரம் → தேனி → பெரியகுளம்' },
-    'uthamapalayam':      { emoji: '🏪', color: '#AD1457', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம்' },
-    'madurai':            { emoji: '🏛️', color: '#6A1B9A', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → மதுரை' },
-    'coimbatore':         { emoji: '🏭', color: '#00695C', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கோயம்புத்தூர்' },
-    'trichy':             { emoji: '🗼', color: '#C62828', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல் → திருச்சி' },
-    'palani':             { emoji: '🙏', color: '#E65100', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → பழனி' },
-    'kumily':             { emoji: '🌿', color: '#2E7D32', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → போடி → குமுளி' },
-    'dindigul':           { emoji: '🏰', color: '#4E342E', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல்' },
-    'chennai':            { emoji: '🌃', color: '#E64A19', group: 'night', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → தேனி → திண்டுக்கல் → திருச்சி → சென்னை', boardingNote: 'தேனி பஸ் stand-ல ஏறுங்க · Board at Theni bus stand' },
+    'theni':              { emoji: '🏙️', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → தேனி' },
+    'bodi':               { emoji: '🌄', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → சங்கராபுரம் → தேவாரம் → போடி' },
+    'cumbum':             { emoji: '🍇', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கம்பம்' },
+    'chinnamanur':        { emoji: '🛕', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → பல்லவராயன்பட்டி → சின்னமனூர்' },
+    'gudalur (koodalur)': { emoji: '🌲', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → கம்பம் → கூடலூர்' },
+    'mettupalayam':       { emoji: '🏘️', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → மேட்டுப்பாளையம்' },
+    'suruli theertham':   { emoji: '💧', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → சுருளி தீர்த்தம்' },
+    'thevaram':           { emoji: '🛤️', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம்' },
+    'periyakulam':        { emoji: '🌾', group: 'local', isFrequent: false, nameTamil: 'பெரியகுளம்', routeDesc: 'பண்ணைப்புரம் → தேனி → பெரியகுளம்' },
+    'uthamapalayam':      { emoji: '🏪', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம்' },
+    'madurai':            { emoji: '🏛️', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → மதுரை' },
+    'coimbatore':         { emoji: '🏭', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → கோயம்புத்தூர்' },
+    'trichy':             { emoji: '🗼', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல் → திருச்சி' },
+    'palani':             { emoji: '🙏', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → உத்தமபாளையம் → பழனி' },
+    'kumily':             { emoji: '🌿', group: 'local', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → போடி → குமுளி' },
+    'dindigul':           { emoji: '🏰', group: 'long',  isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → திண்டுக்கல்' },
+    'chennai':            { emoji: '🌃', group: 'night', isFrequent: false, routeDesc: 'பண்ணைப்புரம் → தேவாரம் → தேனி → திண்டுக்கல் → திருச்சி → சென்னை', boardingNote: 'தேனி பஸ் stand-ல ஏறுங்க · Board at Theni bus stand' },
   };
 
   var GROUPS = [
@@ -46,7 +46,7 @@ var Bus = (function() {
 
   function getMeta(nameEnglish) {
     return CORRIDOR_META[(nameEnglish || '').toLowerCase()] ||
-      { emoji: '🚌', color: '#E65100', group: 'long', isFrequent: false };
+      { emoji: '🚌', group: 'long', isFrequent: false };
   }
 
   // ── Phase 9: Group persistence + time-of-day auto-open ────────
@@ -765,7 +765,7 @@ var Bus = (function() {
       .sort(function(a, b) { return a.totalMins - b.totalMins; });
     var next = sorted.find(function(t){ return t.totalMins > cur; }) || null;
     var c = corridors.find(function(c) { return c.id === id; });
-    var meta = c ? getMeta(c.name_english) : { color: '#E65100' };
+    var meta = getMeta(c ? c.name_english : '');
     var corridorNameTa = c ? c.name_tamil : '';
     var showAll = expandedFull[id];
     var nextId = next ? next.id : null;

@@ -28,7 +28,11 @@
   <link rel="preconnect" href="https://api.pannaipuram.com" crossorigin>
   <link rel="dns-prefetch" href="https://pannaipuram-api.onrender.com">
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700;800&family=Roboto:wght@400;500;700&display=swap">
+  <!-- Fonts load without blocking first paint (media=print → all on load); the
+       page shows in system fonts and swaps. Plain <link> inside <noscript> keeps
+       them working with JavaScript off. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700;800&family=Roboto:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700;800&family=Roboto:wght@400;500;700&display=swap"></noscript>
   <!-- Theme: a saved choice from the ☰ menu wins, else follow the phone.
        Runs before first paint so there is no light→dark flash. -->
   <script>

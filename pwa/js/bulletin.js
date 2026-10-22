@@ -160,7 +160,10 @@ var Bulletin = (function() {
         var sum = document.querySelector('#bulletin-compose .bl-compose-cta');
         if (!sum) return;
         sum.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        sum.click();
+        // The composer is a <details>: clicking its <summary> TOGGLES it, so an
+        // already-open composer would collapse. Only open it when it is closed.
+        var det = sum.closest && sum.closest('details');
+        if (!(det && det.open)) sum.click();
       });
       return;
     }
