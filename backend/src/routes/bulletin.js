@@ -5,11 +5,8 @@
 const express = require('express');
 const router  = express.Router();
 const { query, getClient } = require('../db/pool');
-
-// Indian mobile: exactly 10 digits starting 6/7/8/9
-function isValidPhone(phone) {
-  return /^[6-9]\d{9}$/.test(String(phone == null ? '' : phone).trim());
-}
+const { isValidPhone } = require('../middleware/validate');
+const { istNow } = require('../utils/ist');
 
 // Client compresses to ~80KB; allow headroom but reject anything that would
 // bloat the 500MB Supabase tier. Matches express.json({ limit: '1mb' }).
@@ -396,7 +393,7 @@ router.post('/submit', async (req, res) => {
 
     // One post per poster per day. The row lock above serialises concurrent
     // submits from the same poster, so a double-tap can't slip two through.
-    const today = new Date().toISOString().slice(0, 10);
+    const today = istNow().date; // IST calendar day, so the allowance resets at midnight IST
     const daily = await client.query(
       'SELECT count FROM community_posts_daily WHERE poster_id = $1 AND post_date = $2',
       [pid, today]

@@ -1,6 +1,7 @@
 const express = require('express');
 const router  = express.Router();
 const { query } = require('../db/pool');
+const { istNow } = require('../utils/ist');
 
 // GET /api/bus/corridors
 router.get('/corridors', async (req, res) => {
@@ -65,8 +66,7 @@ router.get('/timings/:corridorId', async (req, res) => {
 // Returns next bus in each corridor direction
 router.get('/next', async (req, res) => {
   try {
-    const now = new Date();
-    const currentTime = now.toTimeString().slice(0, 5); // HH:MM
+    const currentTime = istNow().time; // HH:MM in IST (server clock is UTC)
 
     const result = await query(`
       SELECT DISTINCT ON (bc.id)

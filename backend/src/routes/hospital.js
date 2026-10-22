@@ -1,6 +1,7 @@
 const express = require('express');
 const router  = express.Router();
 const { query } = require('../db/pool');
+const { istNow } = require('../utils/ist');
 
 // GET /api/hospital/list — all hospitals (public, no auth needed)
 router.get('/list', async (req, res) => {
@@ -63,7 +64,7 @@ router.get('/doctors', async (req, res) => {
 // Only doctors available today
 router.get('/doctors/today', async (req, res) => {
   try {
-    const dayOfWeek = new Date().getDay(); // 0=Sun ... 6=Sat
+    const dayOfWeek = istNow().dow; // 0=Sun ... 6=Sat, in IST (server clock is UTC)
 
     const result = await query(`
       SELECT d.id, d.name_tamil, d.name_english, d.specialisation, d.photo_url,

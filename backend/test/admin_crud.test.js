@@ -1143,6 +1143,42 @@ async function testPublicPowerAPI() {
     assert(body.success === true, 'Expected success: true');
     assert(Array.isArray(body.data), 'Expected data array');
   });
+
+  // power_cuts times are IST wall-clock; the public filters must use IST "now"
+  const istWall = (offsetMs) => new Date(Date.now() + offsetMs).toLocaleString('sv-SE', { timeZone: 'Asia/Kolkata' });
+  let liveId = null, pastId = null;
+
+  await test('GET /api/power/cuts uses IST: a cut ending in 1h is listed, one that ended 1h ago is not', async () => {
+    const live = await post('/admin/power/cuts', {
+      area_description: 'IST test live cut', start_time: istWall(0), end_time: istWall(3600e3),
+    }, getAuthHeaders());
+    const past = await post('/admin/power/cuts', {
+      area_description: 'IST test past cut', start_time: istWall(-7200e3), end_time: istWall(-3600e3),
+    }, getAuthHeaders());
+    liveId = live.body.data.id; pastId = past.body.data.id;
+    const { body } = await get('/api/power/cuts');
+    const ids = body.data.map(c => c.id);
+    assert(ids.includes(liveId), 'cut ending in 1h (IST) must be listed');
+    assert(!ids.includes(pastId), 'cut that ended 1h ago (IST) must not be listed');
+  });
+
+  await test('POST /api/power/restored: one device repeating 3 times does NOT resolve the cut', async () => {
+    for (let i = 0; i < 3; i++) await post('/api/power/restored', { powerCutId: liveId, deviceId: 'dev-same' });
+    const { body } = await get('/api/power/cuts');
+    assert(body.data.some(c => c.id === liveId), 'cut must still be active after 3 reports from ONE device');
+  });
+
+  await test('POST /api/power/restored: 3 different devices resolve the cut; bad input is 400', async () => {
+    await post('/api/power/restored', { powerCutId: liveId, deviceId: 'dev-b' });
+    await post('/api/power/restored', { powerCutId: liveId, deviceId: 'dev-c' });
+    const { body } = await get('/api/power/cuts');
+    assert(!body.data.some(c => c.id === liveId), 'cut must be resolved after 3 distinct devices');
+    const bad = await post('/api/power/restored', { powerCutId: 'abc', deviceId: 'x' });
+    assert(bad.status === 400, `Expected 400 for non-numeric powerCutId, got ${bad.status}`);
+    const missing = await post('/api/power/restored', { deviceId: 'x' });
+    assert(missing.status === 400, `Expected 400 for missing powerCutId, got ${missing.status}`);
+    for (const id of [liveId, pastId]) if (id) await del(`/admin/power/cuts/${id}`, getAuthHeaders());
+  });
 }
 
 async function testPublicBusAPI() {

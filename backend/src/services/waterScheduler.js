@@ -4,13 +4,7 @@ const { sendToStreet } = require('./pushNotifications');
 
 // All schedule maths is in IST (the village's clock). The server runs in UTC,
 // so toISOString() / bare cron expressions would be 5.5h off.
-const TZ = 'Asia/Kolkata';
-function istDateStr(offsetDays = 0) {
-  const today = new Date().toLocaleDateString('en-CA', { timeZone: TZ }); // YYYY-MM-DD
-  const d = new Date(today + 'T00:00:00Z');
-  d.setUTCDate(d.getUTCDate() + offsetDays);
-  return d.toISOString().split('T')[0];
-}
+const { TZ, istDateStr } = require('../utils/ist');
 
 // Run every day at 8 PM — send next-day water reminders
 async function sendWaterReminders() {
