@@ -471,13 +471,24 @@ main .auto-hero {
   position: relative;
   background: var(--brand-grad);
   color: var(--on-brand);
-  /* side padding clears the fixed ☰ + theme toggle (left, to 106px) and ↻ (right) */
-  padding: 16px 64px 18px 116px;
+  /* Phones: the fixed ☰ + theme toggle (left, to 106px) and ↻ (right) sit in a
+     reserved strip ABOVE the title, so the title gets the full width and can
+     never be covered at any screen width. Wider screens: see the media query below. */
+  padding: calc(66px + env(safe-area-inset-top)) 16px 18px;
   text-align: center;
   border-radius: 0 0 20px 20px;
   border: none;
   border-bottom: 4px solid var(--sec);
   box-shadow: 0 4px 16px rgba(20, 24, 50, 0.12);
+}
+/* ≥560px the buttons are bigger (☰ 62px, theme to ~128px), so clear them at the sides instead. */
+@media (min-width: 560px) {
+  main .bus-header,
+  main .hd-header,
+  main .em-header,
+  main .more-header,
+  main .bl-header,
+  main .auto-hero { padding: 16px 72px 18px 140px; }
 }
 main .bus-header-ta,
 main .hd-header-ta,
