@@ -149,11 +149,12 @@ main {
 }
 
 /* ── Install-to-home-screen banner — one compact row ──────────
-   Left margin clears the fixed ☰ + theme buttons, which used to sit on top of the
-   banner's title. */
+   Top margin clears the fixed ☰ (left) + theme (right) buttons — 10px + 44px
+   buttons + gap. Clearing only the left side let the theme button sit on top
+   of the Install button / × at the right edge. */
 #install-banner {
   position: relative;
-  margin: calc(10px + env(safe-area-inset-top)) 12px 4px 116px;
+  margin: calc(62px + env(safe-area-inset-top)) 12px 4px;
   min-height: 56px;
   padding: 8px 6px 8px 12px;
   background: var(--surface);
@@ -168,7 +169,7 @@ main {
   animation: slideInDown 320ms ease-out;
 }
 #install-banner[hidden] { display: none !important; }
-@media (min-width: 560px) { #install-banner { margin-left: 140px; } }
+@media (min-width: 560px) { #install-banner { margin-top: calc(72px + env(safe-area-inset-top)); } }
 @keyframes slideInDown {
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
