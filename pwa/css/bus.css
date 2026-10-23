@@ -971,3 +971,29 @@
 .chip-ordinary { background: #E3F2FD; color: #0D4F9E; }
 .chip-express  { background: var(--warn-tint); color: var(--warn-ink); }
 .chip-private  { background: #FCE4EC; color: #880E4F; }
+
+/* Collapsed group header: soonest bus across the group's routes */
+.group-next {
+  font-family: var(--font-tamil);
+  font-size: 0.86rem;
+  color: var(--brand-ink);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+.group-next[hidden] { display: none; }
+.group-next:empty { display: none; }
+
+/* "Next bus" strip when nothing leaves in the next 3 hours */
+.strip-empty {
+  font-family: var(--font-tamil);
+  font-size: 0.95rem;
+  color: var(--text);
+  padding: 4px 4px 2px;
+  line-height: 1.5;
+}
+.strip-empty-sub {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 2px;
+}

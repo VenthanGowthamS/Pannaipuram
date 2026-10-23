@@ -63,12 +63,10 @@ var Bus = (function() {
       openGroups[saved] = true;
       return;
     }
-    // Priority 2: time-of-day — peak travel hours auto-open local routes
-    var h = new Date().getHours();
-    if ((h >= 6 && h < 10) || (h >= 16 && h < 20)) {
-      openGroups.local = true;
-    }
-    // Otherwise all collapsed (existing default)
+    // Priority 2: Local Routes (Theni, Bodi, Cumbum…) are what nearly every
+    // villager checks, so they are open at ANY hour — it used to open only
+    // 6–10 AM / 4–8 PM and showed a wall of closed headings otherwise.
+    openGroups.local = true;
   }
 
   // ── Phase 9: Search matching ──────────────────────────────────
@@ -205,6 +203,38 @@ var Bus = (function() {
   }
 
   // ── Collapsible group header + contents ────────────────────────
+  // Soonest remaining bus among a group's routes → { corridor, next, mins }
+  function soonestInGroup(items) {
+    var cur = nowMins(), best = null;
+    items.forEach(function(c) {
+      var timings = timingsCache[c.id];
+      var next = timings && timings.length ? computeNextBus(timings) : null;
+      if (!next) return;
+      var mins = next.totalMins - cur;
+      if (!best || mins < best.mins) best = { corridor: c, next: next, mins: mins };
+    });
+    return best;
+  }
+  function groupNextHtml(items) {
+    var s = soonestInGroup(items);
+    if (!s) return '';
+    var meta = getMeta(s.corridor.name_english);
+    return 'அடுத்தது: <b>' + (meta.nameTamil || s.corridor.name_tamil) + '</b> · ' + minsLabel(s.mins);
+  }
+  // Keep the collapsed-header line current (called every minute with the badges)
+  function updateGroupNexts() {
+    document.querySelectorAll('.group-next[data-group-next]').forEach(function(el) {
+      var key = el.dataset.groupNext;
+      el.innerHTML = groupNextHtml(corridors.filter(function(c) { return getMeta(c.name_english).group === key; }));
+    });
+  }
+
+  // First few village names only — the full list made each header 4 lines tall
+  function shortHint(hint) {
+    var names = String(hint || '').split(', ');
+    return names.length > 4 ? names.slice(0, 4).join(', ') + '…' : hint;
+  }
+
   function renderGroupHtml(group, items) {
     var count = items.length;
     var frequent = items.filter(function(c){ return getMeta(c.name_english).isFrequent; }).length;
@@ -216,7 +246,8 @@ var Bus = (function() {
         '<div class="group-icon">' + group.emoji + '</div>' +
         '<div class="group-text">' +
           '<div class="group-title"><span class="group-ta">' + group.ta + '</span><span class="group-en">' + group.en + '</span></div>' +
-          '<div class="group-hint">' + group.hint + '</div>' +
+          '<div class="group-hint">' + shortHint(group.hint) + '</div>' +
+          '<div class="group-next" data-group-next="' + group.key + '"' + (isOpen ? ' hidden' : '') + '>' + groupNextHtml(items) + '</div>' +
           '<div class="group-count">📍 ' + countLabel + '</div>' +
         '</div>' +
         '<div class="group-caret ' + (isOpen ? 'open' : '') + '">' + (isOpen ? '▾' : '▸') + '</div>' +
@@ -244,13 +275,43 @@ var Bus = (function() {
       var next = computeNextBus(timings);
       if (!next) return;
       var mins = next.totalMins - cur;
-      if (mins > 180) return; // next 3 hours only — further out is noise
       upcoming.push({ corridor: c, next: next, mins: mins });
     });
     upcoming.sort(function(a, b) { return a.mins - b.mins; });
-    var top = upcoming.slice(0, 3);
+    // Normally only the next 3 hours (further out is noise). If nothing leaves
+    // in that window the strip used to disappear with no explanation — now it
+    // says when the next bus is, or that today's are done and tomorrow's first.
+    var top = upcoming.filter(function(u) { return u.mins <= 180; }).slice(0, 3);
 
-    if (!top.length) { strip.hidden = true; strip.innerHTML = ''; return; }
+    if (!top.length) {
+      if (!corridors.some(function(c) { return (timingsCache[c.id] || []).length; })) {
+        strip.hidden = true; strip.innerHTML = ''; return;
+      }
+      strip.hidden = false;
+      strip.classList.remove('urgent');
+      var msg;
+      if (upcoming.length) {
+        var u = upcoming[0], um = getMeta(u.corridor.name_english);
+        msg = '<b>' + (um.nameTamil || u.corridor.name_tamil) + '</b> · ' + fmtPeriod(u.next.departs_at) +
+              '<span class="strip-empty-sub">' + minsLabel(u.mins) + ' கழித்து · next bus in ' + minsLabel(u.mins) + '</span>';
+      } else {
+        var first = null;
+        corridors.forEach(function(c) {
+          (timingsCache[c.id] || []).forEach(function(t) {
+            var p = t.departs_at.split(':').map(Number), m = p[0] * 60 + p[1];
+            if (!first || m < first.m) first = { m: m, c: c, t: t };
+          });
+        });
+        var fm = getMeta(first.c.name_english);
+        msg = 'இன்று பேருந்துகள் முடிந்தது 🌙<span class="strip-empty-sub">நாளை முதல் பேருந்து: ' +
+              (fm.nameTamil || first.c.name_tamil) + ' · ' + fmtPeriod(first.t.departs_at) + '</span>';
+      }
+      strip.innerHTML =
+        '<div class="strip-title"><span class="strip-title-icon">⏱</span>' +
+        '<span class="strip-title-ta">அடுத்த பேருந்து</span><span class="strip-title-en">Next bus</span></div>' +
+        '<div class="strip-empty">' + msg + '</div>';
+      return;
+    }
     var isUrgent = top[0].mins < 5;
     strip.hidden = false;
     strip.classList.toggle('urgent', isUrgent);
@@ -953,6 +1014,7 @@ var Bus = (function() {
     clearInterval(badgeTimer);
     badgeTimer = setInterval(function() {
       updateBadges();
+      updateGroupNexts();
       renderNowDeparting();  // keep strip current every minute
     }, 60000);
 
