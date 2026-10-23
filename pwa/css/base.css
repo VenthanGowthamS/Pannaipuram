@@ -596,3 +596,14 @@ main .bl-refresh-btn .ic { width: 20px; height: 20px; }
 .auto-refresh-icon .ic { width: 20px; height: 20px; }
 .bus-search-icon { display: inline-flex; color: var(--muted); }
 .bus-search-icon .ic { width: 18px; height: 18px; }
+
+/* About → force update (unsticks a phone that keeps an old build) */
+.about-force-update {
+  display: flex; flex-direction: column; gap: 2px; width: 100%;
+  margin-top: 12px; padding: 12px 16px; min-height: 48px;
+  border-radius: 14px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--brand-ink); text-align: left;
+}
+.about-force-update:active { background: var(--surface-3); }
+.about-force-update-ta { font-family: var(--font-tamil); font-weight: 700; font-size: 1rem; }
+.about-force-update-en { font-size: 0.78rem; color: var(--muted); }

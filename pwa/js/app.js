@@ -818,6 +818,78 @@ document.addEventListener('DOMContentLoaded', function() {
     return Promise.all(jobs).then(done, done);
   };
 
+  // ── Force update: unstick a phone that is running an old build ──
+  // Some phones (aggressive battery managers, a stuck service worker) keep an
+  // old build for days. This clears the service worker, Cache Storage, cached
+  // API data and the browser HTTP cache for the app shell, then reloads.
+  // Identity is KEPT (visitor id, poster registration, dismissals) — only the
+  // 'pannai:/api…' data caches are removed.
+  window.PannaiForceUpdate = async function() {
+    var st = document.getElementById('about-update-status');
+    var say = function(t) { if (st) st.textContent = t; };
+    try {
+      say('புதுப்பிக்கிறோம்… · Updating…');
+      if ('serviceWorker' in navigator) {
+        var regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(function(r) { return r.unregister(); }));
+      }
+      if (window.caches) {
+        var keys = await caches.keys();
+        await Promise.all(keys.map(function(k) { return caches.delete(k); }));
+      }
+      try {
+        Object.keys(localStorage).forEach(function(k) {
+          if (k.indexOf('pannai:/api') === 0) localStorage.removeItem(k);
+        });
+      } catch (_) {}
+      // Re-download the page + its css/js past the browser HTTP cache.
+      var html = await (await fetch(location.pathname + '?r=' + Date.now(), { cache: 'reload' })).text();
+      var files = [];
+      html.replace(/(?:href|src)="([^"#?]+\.(?:css|js))(?:\?[^"]*)?"/g, function(_, u) { files.push(u); });
+      await Promise.all(files.map(function(u) {
+        var abs = new URL(u, location.href);
+        if (abs.origin !== location.origin) return null;
+        return fetch(abs.href, { cache: 'reload' }).catch(function() {});
+      }));
+      location.replace(location.pathname + '?r=' + Date.now());
+    } catch (err) {
+      say('முடியல — நெட் இருக்கானு பாருங்க · Failed, check connection');
+    }
+  };
+  (function() {
+    var btn = document.getElementById('about-force-update');
+    if (btn) btn.addEventListener('click', function() { window.PannaiForceUpdate(); });
+  })();
+
+  // ── Detect a newer build and unstick automatically ──
+  // The normal service-worker flow reloads the page itself within seconds. If
+  // this page is STILL on an older build after `delayMs`, that flow is stuck →
+  // run the force update. Rate-limited to once per 30 min so a CDN that lags
+  // behind a deploy can never cause a reload loop.
+  window.PannaiCheckForNewBuild = function(delayMs) {
+    var mine = (typeof CACHE_VERSION === 'string') ? CACHE_VERSION.replace('pannai-', '') : '';
+    fetch('/pwa/sw.js?x=' + Date.now(), { cache: 'no-store' })
+      .then(function(r) { return r.ok ? r.text() : ''; })
+      .then(function(t) {
+        var m = /var CACHE = 'pannai-pwa-(v\d+)'/.exec(t);
+        if (!m || !mine || m[1] === mine) return;
+        var st = document.getElementById('about-update-status');
+        if (st) st.textContent = 'புதிய version ' + m[1] + ' இருக்கு · New version available';
+        setTimeout(function() {
+          var last = 0;
+          try { last = Number(localStorage.getItem('pannai:force-update-at')) || 0; } catch (_) {}
+          if (Date.now() - last < 30 * 60 * 1000) return;
+          try { localStorage.setItem('pannai:force-update-at', String(Date.now())); } catch (_) {}
+          window.PannaiForceUpdate();
+        }, delayMs == null ? 20000 : delayMs);
+      })
+      .catch(function() {});
+  };
+  setTimeout(function() { window.PannaiCheckForNewBuild(); }, 5000);
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') window.PannaiCheckForNewBuild();
+  });
+
   // ── Init sections ──────────────────────────────────────
   Announce.init();
   Bus.init();
