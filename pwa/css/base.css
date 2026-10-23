@@ -471,8 +471,8 @@ main .auto-hero {
   position: relative;
   background: var(--brand-grad);
   color: var(--on-brand);
-  /* side padding clears the fixed ☰ (left) and ↻ (right) buttons */
-  padding: 16px 64px 18px;
+  /* side padding clears the fixed ☰ + theme toggle (left, to 106px) and ↻ (right) */
+  padding: 16px 64px 18px 116px;
   text-align: center;
   border-radius: 0 0 20px 20px;
   border: none;

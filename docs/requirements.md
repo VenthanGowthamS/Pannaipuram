@@ -23,7 +23,7 @@
 | **Acting driver profiles + registration** — vehicle chip + 📍/🕐 rows; "நீங்களும் ஓட்டுநரா?" form → /api/feedback `[மாற்று ஓட்டுநர் பதிவு]` | ✅ v55 |
 | **Web hamburger** — 62px button, 380px themed dropdown, larger items; install UI force-hidden on desktop, kept on phones | ✅ v55–56 |
 | **SW shell fix** — network-first no longer keyed on '/pwa/' literal (GH Pages sed broke it → stale UI on custom domain) | ✅ v56 |
-| Doctor today badge → "✅ டாக்டர் இன்று இருக்காங்க" / "டாக்டர் இன்று இல்லை"; services head centred | ✅ v56 |
+| Doctor today badge → "✅ டாக்டர் இன்று இருக்கிறார்" / "டாக்டர் இன்று இல்லை"; services head centred | ✅ v56 |
 
 
 #### v53 — Performance + security + data quality (June 2026)

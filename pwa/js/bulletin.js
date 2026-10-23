@@ -668,6 +668,7 @@ var Bulletin = (function() {
   }
 
   var _timer = null;
+  var _inited = false;
 
   return {
     init: function() {
@@ -677,7 +678,11 @@ var Bulletin = (function() {
       wireFeedDelegation();
       wireRefresh();
       applyPosterState();
-      loadFeed(false);
+      // First open: cached feed is fine (instant). Every re-open after that
+      // must hit the network, like the other tabs — otherwise a new post
+      // never shows up without pressing ↻.
+      loadFeed(_inited);
+      _inited = true;
       if (!_timer) _timer = setInterval(function() { loadFeed(true); }, 10 * 60 * 1000);
     },
     refresh: function() { return loadFeed(true); },

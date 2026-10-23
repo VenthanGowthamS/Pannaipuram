@@ -102,7 +102,7 @@ var Hospital = (function() {
     }).join('');
     var availToday = scheds.some(function(s) { return s.day_of_week === todayDow; });
     var todayBadge = availToday
-      ? '<span class="hd-today-badge">✅ இன்று இருக்காங்க</span>'
+      ? '<span class="hd-today-badge">✅ இன்று இருக்கிறார்</span>'
       : '<span class="hd-today-badge hd-today-no">இன்று இல்லை</span>';
 
     // Day chips row (which days the doctor sits)
