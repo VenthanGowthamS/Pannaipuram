@@ -1,7 +1,7 @@
 // ── Community Bulletin (சங்கமம்) ─────────────────────────────────
 // Village news feed. Anyone can read + like; posting needs a one-time
 // phone+name registration. New posters' posts wait for admin approval,
-// trusted posters go live instantly. Posts expire after 7 days.
+// trusted posters go live instantly. Posts expire after 60 days, but the newest 10 are always kept.
 var Bulletin = (function() {
 
   function esc(s) {
@@ -149,7 +149,7 @@ var Bulletin = (function() {
     if (!_posts.length) {
       host.innerHTML = '<div class="bl-empty">' +
         '<span class="bl-empty-ic">📰</span>' +
-        '<p class="bl-empty-ta">இன்னும் செய்தி எதுவும் இல்ல</p>' +
+        '<p class="bl-empty-ta">இன்னும் செய்திகள் எதுவும் இல்லை</p>' +
         '<p class="bl-empty-en">Be the first to share village news</p>' +
         '<button type="button" class="bl-btn bl-empty-cta">✍️ முதல் செய்தியை பகிருங்க</button>' +
       '</div>';
@@ -220,8 +220,8 @@ var Bulletin = (function() {
 
   // ── Image → compressed JPEG data-URL ────────────────────────────
   // Villagers post straight from a phone camera (3-5MB). Resize to 1024px
-  // and step quality down until it fits ~80KB, so 7 days of posts stay well
-  // inside the Supabase free tier.
+  // and step quality down until it fits ~80KB, so two months of posts fit
+  // inside the Supabase free tier at village-scale posting rates.
   var MAX_DIM = 1024;
   var TARGET_BYTES = 80 * 1024;
 

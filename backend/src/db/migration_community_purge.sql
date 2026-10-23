@@ -31,9 +31,14 @@ BEGIN
 END $$;
 
 -- ── 3. Create exactly one ─────────────────────────────────────────
--- 03:00 daily: drop expired posts (cascades to their likes) and stale counters
+-- 03:00 daily: drop expired posts (cascades to their likes) and stale counters.
+-- The newest 10 approved posts are NEVER deleted, however old (v91).
 SELECT cron.schedule('purge-bulletin', '0 3 * * *', $$
-  DELETE FROM community_posts       WHERE expires_at < NOW();
+  DELETE FROM community_posts
+   WHERE expires_at < NOW()
+     AND id NOT IN (SELECT id FROM community_posts
+                     WHERE status = 'approved'
+                     ORDER BY created_at DESC LIMIT 10);
   DELETE FROM community_posts_daily WHERE post_date  < CURRENT_DATE - 30;
 $$);
 
@@ -44,4 +49,6 @@ WHERE jobname = 'purge-bulletin';
 -- Expected: a single row, active = true, schedule = 0 3 * * *
 
 -- Purge manually at any time:
---   DELETE FROM community_posts WHERE expires_at < NOW();
+--   DELETE FROM community_posts WHERE expires_at < NOW()
+--     AND id NOT IN (SELECT id FROM community_posts WHERE status = 'approved'
+--                    ORDER BY created_at DESC LIMIT 10);

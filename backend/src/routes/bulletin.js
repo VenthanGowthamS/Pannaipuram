@@ -1,6 +1,6 @@
 // ── Community Bulletin (சங்கமம்) — PUBLIC routes ──────────────────
 // Model: registration required to post · admin approves · trusted posters
-//        skip the queue · anyone can view + like · 7-day expiry.
+//        skip the queue · anyone can view + like · 60-day expiry, newest 10 always kept.
 // Admin/moderation routes live in routes/admin/bulletin.js (JWT-protected).
 const express = require('express');
 const router  = express.Router();
@@ -137,7 +137,9 @@ router.get('/', async (req, res) => {
        FROM community_posts p
        JOIN community_posters poster ON p.poster_id = poster.id
        LEFT JOIN community_post_likes l ON l.post_id = p.id
-       WHERE p.expires_at > NOW()
+       WHERE (p.expires_at > NOW()
+              -- the newest 10 approved posts stay visible however old they are
+              OR p.id IN (SELECT id FROM community_posts WHERE status = 'approved' ORDER BY created_at DESC LIMIT 10))
          AND (
            p.status = 'approved'
            OR ($2::int IS NOT NULL AND p.poster_id = $2::int AND p.status = 'pending')
@@ -474,7 +476,9 @@ router.post('/:id/like', async (req, res) => {
     // Only likeable while the post is actually live.
     const live = await query(
       `SELECT 1 FROM community_posts
-       WHERE id = $1 AND status = 'approved' AND expires_at > NOW()`,
+       WHERE id = $1 AND status = 'approved'
+         AND (expires_at > NOW()
+              OR id IN (SELECT id FROM community_posts WHERE status = 'approved' ORDER BY created_at DESC LIMIT 10))`,
       [postId]
     );
     if (live.rows.length === 0) {

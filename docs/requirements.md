@@ -939,6 +939,27 @@ custom domains — it blocks Let's Encrypt cert issuance (was the cause of an ea
 
 ---
 
+### Phase 13 — சங்கமம் Community Bulletin + UI Refresh + Hardening ✅ COMPLETE (July–October 2026)
+
+**சங்கமம் (Community Bulletin) — 📰 centre tab (v71–v81, v91)**
+- Villagers register once (10-digit phone starting 6–9 + Tamil name), then post news with optional photo (compressed to ~80KB), optional link (http/https only) — an image alone is enough to post
+- Moderation: new posts are `pending` until an admin approves; trusted posters publish instantly; blocked posters get 403; an official account is posted from the admin panel only
+- Limits: 1 post per phone per day (IST). Deleting a post does NOT refund the allowance
+- Villagers can edit/delete their OWN posts (proved by poster_id + registration phone); editing re-queues the post for review. Admin can edit any post's content without changing its status
+- Anyone can like (device-scoped, no registration)
+- **Retention (v91):** posts stay live for **60 days** (was 7). The **newest 10 approved posts are always kept**, however old — they stay visible in the feed and are never purged. The nightly 03:00 pg_cron job deletes only expired posts outside that newest 10. Migrations: `migration_community_retention.sql` (new 60-day default + stretches still-live posts), then re-run `migration_community_purge.sql`
+- Storage note: ~80KB per photo post × 60 days — keep an eye on the Supabase 500MB tier if posting volume grows
+
+**UI refresh (v84–v90)**
+- New colour tokens, line icons, dark mode with 🌙/☀️ toggle beside ☰ (saved choice, else phone setting), 5-tab bottom nav (சங்கமம் centred; 📞 அவசரம் moved into the ☰ drawer), compact install strip, merged hospital hours + emergency quick-dial, 1.6MB background photo removed, non-blocking fonts
+
+**Tamil wording + header icon (v91)**
+- சங்கமம் empty state reads "இன்னும் செய்திகள் எதுவும் இல்லை"; hospital header reads "எந்த நாளில் எந்த மருத்துவர்?" with the 🩺 icon on a white chip so it is visible on the blue header
+- Local-service names are admin data (Services tab), not code — e.g. the e-Seva entry should read "எழுமலையான் நெட்வொர்க்ஸ் & இ-சேவை மையம்"
+
+**Backend hardening (v90)**
+- All "today/now" logic in IST (server runs UTC); admin role re-checked from the DB on every request; signup super_admin-only; admin PUTs validated (404 on unknown id); doctor schedule replace is transactional; FCM sends batched at 500; JSON error handler; per-device power-restored de-duplication
+
 ### Phase 12 — Future Roadmap (Beyond Phase 11) 🔴 NOT STARTED
 
 These are deferred items still on the wishlist:

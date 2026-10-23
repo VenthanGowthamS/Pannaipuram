@@ -27,6 +27,19 @@
   font-size: 0.9rem;
   font-weight: 600;
 }
+/* The 🩺 emoji is blue and vanished into the blue header — sit it on a white chip. */
+.hd-header-note-ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px; height: 26px;
+  margin-right: 8px;
+  vertical-align: middle;
+  background: #fff;
+  border-radius: 50%;
+  font-size: 0.95rem;
+  line-height: 1;
+}
 .hd-refresh-btn {
   position: absolute;
   top: 16px; right: 14px;
