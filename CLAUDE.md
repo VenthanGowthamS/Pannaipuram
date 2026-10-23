@@ -58,6 +58,7 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 - **Render config:** `render.yaml` at repo root with `rootDir: .` ensures full repo is deployed
 - **NEVER edit files inside `backend/public/pwa/`** — that folder was deleted. Edit only in `pwa/`
 - **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v95.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
+- **PWA tests (`pwa-tests/`, Oct 2026):** `cd pwa-tests && npm install && npm test` — jsdom loads the REAL `pwa/index.html` + `pwa/js/*.js` and checks the install banner (Android prompt / no prompt / late prompt / accept / decline / dismissed / stale installed flag / iPhone / iPad+tablet+desktop / `?install=1` wall), the visit ping (`is_standalone`, install ping on accept + `appinstalled`) and bus time labels (`அதிகாலை` before 6 AM). Lives OUTSIDE `pwa/` on purpose — everything in `pwa/` is published. Run it before changing install or bus-label code.
 - **v95 (October 2026):** bus header is now "பேருந்து நேரங்கள்" / "Bus Timings", matching the other tabs (title + English sub-label).
 - **v94 (October 2026):** bus header "எங்க போறீங்க?" → "எந்த ஊருக்குப் போகணும்?".
 - **v93 (October 2026):** acting-driver chip reworded to "ஓட்டுநர் உரிமம் சரிபார்க்கப்பட்டது" (proper Tamil).

@@ -1,0 +1,11 @@
+{
+  "name": "pannaipuram-pwa-tests",
+  "private": true,
+  "description": "Tests for the vanilla-JS PWA (install banner, visit ping, bus time labels). The PWA itself has no build step.",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1"
+  }
+}
