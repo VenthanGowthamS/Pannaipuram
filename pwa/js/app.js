@@ -747,7 +747,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var arrow   = document.querySelector('.iw-tap-arrow');
       if (btnWrap) btnWrap.hidden = true;
       if (arrow) arrow.hidden = true;
-      if (tapLbl) tapLbl.textContent = 'App-ஆ சேர்க்க இந்த 3 steps போதும்:';
+      if (tapLbl) tapLbl.textContent = 'செயலியை சேர்க்க இந்த 3 படிகள் போதும்:';
       var iosSteps = document.getElementById('iw-ios-steps');
       if (iosSteps) iosSteps.hidden = false;
       if (skipBtn) skipBtn.addEventListener('click', closeWall);
