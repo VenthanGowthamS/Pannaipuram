@@ -471,24 +471,23 @@ main .auto-hero {
   position: relative;
   background: var(--brand-grad);
   color: var(--on-brand);
-  /* Phones: the fixed ☰ + theme toggle (left, to 106px) and ↻ (right) sit in a
-     reserved strip ABOVE the title, so the title gets the full width and can
-     never be covered at any screen width. Wider screens: see the media query below. */
-  padding: calc(66px + env(safe-area-inset-top)) 16px 18px;
+  /* ☰ (fixed, left) and the theme toggle (fixed, right) sit on the title row;
+     equal side padding keeps the title centred and clear of both. */
+  padding: 16px 62px 18px;
   text-align: center;
   border-radius: 0 0 20px 20px;
   border: none;
   border-bottom: 4px solid var(--sec);
   box-shadow: 0 4px 16px rgba(20, 24, 50, 0.12);
 }
-/* ≥560px the buttons are bigger (☰ 62px, theme to ~128px), so clear them at the sides instead. */
+/* ≥560px the buttons are bigger (☰ 62px), so clear them a little more. */
 @media (min-width: 560px) {
   main .bus-header,
   main .hd-header,
   main .em-header,
   main .more-header,
   main .bl-header,
-  main .auto-hero { padding: 16px 72px 18px 140px; }
+  main .auto-hero { padding: 16px 90px 18px; }
 }
 main .bus-header-ta,
 main .hd-header-ta,
@@ -535,20 +534,25 @@ main .auto-hero-badge {
   font-size: 0.86rem;
   font-weight: 600;
 }
+/* ↻ lives in a slim row just BELOW each header (like the Auto tab), so the
+   header's top corners are free for ☰ and the theme toggle, and the spin is
+   visible on the page itself. */
+.tab-refresh-row { display: flex; justify-content: flex-end; padding: 10px 14px 0; }
+/* the bus search bar used to overlap the header edge (margin-top:-16px); the ↻ row now sits there */
+.tab-refresh-row + .bus-search-wrap { margin-top: 8px; }
 main .bus-refresh-btn,
 main .hd-refresh-btn,
 main .em-refresh-btn,
 main .more-refresh-btn,
 main .bl-refresh-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+  position: static;
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.14);
-  color: var(--on-brand);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--brand-ink);
+  box-shadow: 0 1px 4px rgba(20, 24, 50, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;

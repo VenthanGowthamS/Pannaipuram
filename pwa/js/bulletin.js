@@ -678,10 +678,12 @@ var Bulletin = (function() {
       wireFeedDelegation();
       wireRefresh();
       applyPosterState();
-      // First open: cached feed is fine (instant). Every re-open after that
-      // must hit the network, like the other tabs — otherwise a new post
-      // never shows up without pressing ↻.
-      loadFeed(_inited);
+      // Every open (first or re-open) hits the network, like the other tabs —
+      // otherwise a new post never shows up without pressing ↻. First open
+      // paints the cached feed instantly, then the forced fetch re-renders it
+      // (a plain cached fetch never re-renders once its 2.5s race is lost).
+      if (_inited) loadFeed(true);
+      else loadFeed(false).then(function() { return loadFeed(true); });
       _inited = true;
       if (!_timer) _timer = setInterval(function() { loadFeed(true); }, 10 * 60 * 1000);
     },

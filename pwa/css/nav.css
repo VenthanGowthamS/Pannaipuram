@@ -132,11 +132,11 @@
   transition: transform var(--trans-fast), opacity var(--trans-fast);
 }
 
-/* ── Light/dark toggle — sits right beside the ☰ button ──── */
+/* ── Light/dark toggle — top-right, mirroring the ☰ button ──── */
 .theme-btn {
   position: fixed;
   top: calc(10px + env(safe-area-inset-top));
-  left: 62px;
+  right: 10px;
   width: 44px;
   height: 44px;
   background: var(--surface);
@@ -154,8 +154,8 @@
 .theme-btn .ic { width: 22px; height: 22px; }
 .theme-btn span { display: flex; }
 .theme-btn [hidden] { display: none; }
-@media (min-width: 560px) { .theme-btn { left: 84px; top: 23px; } }
-@media (min-width: 700px) { .theme-btn { left: calc(max(14px, 50% - 534px) + 70px); } }
+@media (min-width: 560px) { .theme-btn { right: 16px; top: 23px; } }
+@media (min-width: 700px) { .theme-btn { right: max(14px, calc(50% - 534px)); } }
 
 /* ── Drawer backdrop ─────────────────────────────────────── */
 .menu-backdrop {

@@ -486,13 +486,15 @@
 
       <!-- Header (shared brand style — base.css) -->
       <div class="bus-header">
-        <button id="bus-refresh-btn" class="bus-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
         <p class="bus-header-ta">பேருந்து நேரங்கள்</p>
         <p class="bus-header-en">Bus Timings</p>
         <div class="bus-header-stop">
           <span>📍</span>
           <span>பண்ணைப்புரம் நிறுத்தம்</span>
         </div>
+      </div>
+      <div class="tab-refresh-row">
+        <button id="bus-refresh-btn" class="bus-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
       </div>
 
       <!-- Search bar -->
@@ -598,10 +600,12 @@
 
       <!-- Header (shared brand style — base.css) -->
       <div class="hd-header">
-        <button id="hd-refresh-btn" class="hd-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
         <p class="hd-header-ta">மருத்துவம் & டாக்டர்கள்</p>
         <p class="hd-header-en">Hospitals & Doctors</p>
         <span class="hd-header-note"><span class="hd-header-note-ic" aria-hidden="true">🩺</span>எந்த நாளில் எந்த மருத்துவர்?</span>
+      </div>
+      <div class="tab-refresh-row">
+        <button id="hd-refresh-btn" class="hd-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
       </div>
 
       <!-- Hospitals + doctors (rendered by hospital.js) -->
@@ -614,10 +618,12 @@
 
       <!-- Header (shared brand style — base.css) -->
       <div class="em-header">
-        <button id="em-refresh-btn" class="em-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
         <p class="em-header-ta">அவசர தொலைபேசி எண்கள்</p>
         <p class="em-header-en">Emergency Contacts</p>
         <span class="em-header-note">📞 ஒரே tap-ல் call பண்ணுங்க</span>
+      </div>
+      <div class="tab-refresh-row">
+        <button id="em-refresh-btn" class="em-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
       </div>
 
       <!-- One-tap national numbers. Static on purpose: they never change,
@@ -653,9 +659,11 @@
 
       <!-- Header (shared brand style — base.css) -->
       <div class="more-header">
-        <button id="more-refresh-btn" class="more-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
         <p class="more-header-ta">மேலும் சேவைகள்</p>
         <p class="more-header-en">More Village Services</p>
+      </div>
+      <div class="tab-refresh-row">
+        <button id="more-refresh-btn" class="more-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
       </div>
 
       <!-- Acting / substitute drivers — prominent panel -->
@@ -766,9 +774,11 @@
 
       <!-- Header (shared brand style — base.css) -->
       <div class="bl-header">
-        <button id="bulletin-refresh-btn" class="bl-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
         <p class="bl-header-ta">என்ன நடக்குது ஊர்ல?</p>
         <p class="bl-header-en">What's happening · சங்கமம்</p>
+      </div>
+      <div class="tab-refresh-row">
+        <button id="bulletin-refresh-btn" class="bl-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
       </div>
 
       <!-- One-time registration (hidden once registered) -->
