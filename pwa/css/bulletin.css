@@ -34,6 +34,8 @@
   border: none;
 }
 .bl-refresh-btn:active { background: rgba(255,255,255,0.32); }
+.bl-refresh-btn.spinning { animation: bl-spin 0.8s linear infinite; }
+@keyframes bl-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 
 /* ── Panels (register + compose) ────────────────────────── */
 .bl-panel {

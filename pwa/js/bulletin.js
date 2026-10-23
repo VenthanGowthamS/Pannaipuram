@@ -172,9 +172,12 @@ var Bulletin = (function() {
 
   async function loadFeed(force) {
     var host = document.getElementById('bulletin-posts');
+    var refreshBtn = document.getElementById('bulletin-refresh-btn');
     if (host && !_posts.length) {
       host.innerHTML = '<div class="bl-loading">செய்திகளை ஏத்துறோம்…</div>';
     }
+    // Same visible spin as the other tabs (.spinning), for every load.
+    if (refreshBtn) refreshBtn.classList.add('spinning');
     try {
       // Passing our poster_id also returns OUR OWN pending posts, so a post
       // awaiting approval (or one an edit just re-queued) stays visible to
@@ -182,10 +185,15 @@ var Bulletin = (function() {
       var me = getPoster();
       _posts = (await PannaiAPI.getBulletin(deviceId(), force, me && me.poster_id)) || [];
       renderFeed();
+      return true;
     } catch (err) {
       if (!_posts.length && host) {
         host.innerHTML = '<div class="bl-empty"><p class="bl-empty-ta">செய்தி ஏத்த முடியல — நெட் இருக்கானு பாருங்க</p></div>';
       }
+      return false;
+    } finally {
+      // Keep the spin up for at least 500ms so a fast reply is still visible.
+      if (refreshBtn) setTimeout(function() { refreshBtn.classList.remove('spinning'); }, 500);
     }
   }
 
@@ -658,11 +666,11 @@ var Bulletin = (function() {
     btn.dataset.wired = '1';
     btn.addEventListener('click', async function() {
       btn.disabled = true;
-      btn.style.transform = 'rotate(360deg)';
-      try { await loadFeed(true); }
+      var ok = false;
+      try { ok = await loadFeed(true); }
       finally {
-        btn.disabled = false;
-        setTimeout(function() { btn.style.transform = ''; }, 350);
+        setTimeout(function() { btn.disabled = false; }, 500);
+        if (window.showToast) window.showToast(ok ? '✅ புதுப்பிக்கப்பட்டது · Updated' : '❌ இணைப்பு இல்லை · Try again');
       }
     });
   }
