@@ -157,7 +157,7 @@ class BusTiming {
     final parts = departsAt.split(':');
     int hour = int.parse(parts[0]);
     int minute = int.parse(parts[1]);
-    final period = hour < 12 ? 'காலை' : hour < 17 ? 'பகல்' : hour < 20 ? 'மாலை' : 'இரவு';
+    final period = hour < 6 ? 'அதிகாலை' : hour < 12 ? 'காலை' : hour < 17 ? 'பகல்' : hour < 20 ? 'மாலை' : 'இரவு';
     final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
     final minuteStr = minute.toString().padLeft(2, '0');
     return '$displayHour:$minuteStr $period';

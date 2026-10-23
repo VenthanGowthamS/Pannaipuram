@@ -100,7 +100,7 @@ var Bus = (function() {
   function fmtPeriod(t) {
     var h = parseInt(t.split(':')[0]);
     var period;
-    if (h < 5)       period = 'இரவு';
+    if (h < 6)       period = 'அதிகாலை';
     else if (h < 12) period = 'காலை';
     else if (h < 17) period = 'பகல்';
     else if (h < 20) period = 'மாலை';

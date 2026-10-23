@@ -248,7 +248,7 @@ const PwaStats = ({ onSnackbar, canEdit }) => {
       <Card sx={{ borderRadius: 3 }}>
         <CardContent>
           <Typography sx={{ fontWeight: 700, mb: 2, fontSize: 15 }}>
-            🕐 Recent Unique Users (last 30)
+            🕐 Recent Unique Users (last 30 + latest installs)
           </Typography>
           {loading ? (
             [...Array(5)].map((_, i) => <Skeleton key={i} height={48} sx={{ mb: 0.5 }} />)

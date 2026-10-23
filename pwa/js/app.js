@@ -204,7 +204,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         var standalone = forceStandalone === true ||
                          window.matchMedia('(display-mode: standalone)').matches ||
-                         window.navigator.standalone === true;
+                         window.matchMedia('(display-mode: fullscreen)').matches ||
+                         window.matchMedia('(display-mode: minimal-ui)').matches ||
+                         window.navigator.standalone === true ||
+                         (document.referrer || '').indexOf('android-app://') === 0;
         var _apiBase = (location.hostname === 'app.pannaipuram.com')
           ? 'https://api.pannaipuram.com'
           : (location.hostname.endsWith('.github.io') || location.hostname.endsWith('.pages.dev') || location.hostname.endsWith('.netlify.app'))
@@ -220,6 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     doPing();
+    window._pingVisit = doPing;   // lets the install flow record an install the moment it is accepted
 
     // Re-ping when the user comes back to an app they kept open (installed
     // PWAs stay alive for days) — keeps the "Live now" admin stat honest.
@@ -457,7 +461,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window._dip.prompt();
     window._dip.userChoice.then(function(r) {
       window._dip = null;
-      if (r.outcome === 'accepted') _markInstalled();
+      if (r.outcome === 'accepted') { _markInstalled(); window._pingVisit && window._pingVisit(true); }
     }).catch(function() {});
   }
 
@@ -757,7 +761,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window._dip.prompt();
         window._dip.userChoice.then(function(r) {
           window._dip = null;
-          if (r.outcome === 'accepted') _markInstalled();
+          if (r.outcome === 'accepted') { _markInstalled(); window._pingVisit && window._pingVisit(true); }
           closeWall();
         }).catch(closeWall);
       });

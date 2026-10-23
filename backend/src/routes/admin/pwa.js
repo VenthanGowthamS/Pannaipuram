@@ -66,6 +66,9 @@ router.get('/stats', async (req, res) => {
         ORDER BY month DESC
       `),
       query(`
+        -- 30 most recently seen, PLUS the 15 latest installers: someone who
+        -- installed yesterday but hasn't opened the app since would otherwise
+        -- fall off a last-30-by-last-seen list and their install date vanish.
         SELECT
           visitor_id,
           label,
@@ -76,8 +79,12 @@ router.get('/stats', async (req, res) => {
           is_standalone,
           LEFT(user_agent, 160) AS user_agent
         FROM pwa_visits
+        WHERE visitor_id IN (
+          (SELECT visitor_id FROM pwa_visits ORDER BY last_seen_at DESC LIMIT 30)
+          UNION
+          (SELECT visitor_id FROM pwa_visits WHERE installed_at IS NOT NULL ORDER BY installed_at DESC LIMIT 15)
+        )
         ORDER BY last_seen_at DESC
-        LIMIT 30
       `)
     ]);
 
