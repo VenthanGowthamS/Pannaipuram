@@ -57,7 +57,8 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 - **Fixed-nav clearance rule:** EVERY section must reserve space for the fixed bottom nav or its last control sits underneath and cannot be tapped. Use `padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + var(--space-lg))` (see `#section-bulletin`, `#section-auto`). This bit the bulletin like-button in testing.
 - **Render config:** `render.yaml` at repo root with `rootDir: .` ensures full repo is deployed
 - **NEVER edit files inside `backend/public/pwa/`** — that folder was deleted. Edit only in `pwa/`
-- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v94.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
+- **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v95.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
+- **v95 (October 2026):** bus header is now "பேருந்து நேரங்கள்" / "Bus Timings", matching the other tabs (title + English sub-label).
 - **v94 (October 2026):** bus header "எங்க போறீங்க?" → "எந்த ஊருக்குப் போகணும்?".
 - **v93 (October 2026):** acting-driver chip reworded to "ஓட்டுநர் உரிமம் சரிபார்க்கப்பட்டது" (proper Tamil).
 - **v92 (October 2026):** auto-tab register card icon is now 🛺 🚐 🚗 (was only 🚗) so auto and van drivers see it's for them too.
