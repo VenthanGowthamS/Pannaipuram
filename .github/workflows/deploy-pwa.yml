@@ -37,6 +37,12 @@ jobs:
           # under /Pannaipuram/ on github.io
           find _site -type f \( -name "*.html" -o -name "*.json" -o -name "*.js" -o -name "*.css" \) \
             -exec sed -i 's|"/pwa/|"./|g; s|'\''/pwa/|'\''./|g' {} +
+          # Cache-bust css/js per release. GitHub Pages serves every file with
+          # max-age=14400 (4h) and its CDN edges purge unevenly, so a plain URL
+          # can keep serving the PREVIOUS release for hours (phones stuck on an
+          # old build). A unique ?v=<sha> makes each release a brand-new URL.
+          V="${GITHUB_SHA::8}"
+          sed -i -E "s#(href|src)=\"(\./[^\"?]+\.(css|js))\"#\1=\"\2?v=${V}\"#g" _site/index.html
           # Add a small marker file so we can verify the deploy
           echo "{\"deployed_at\":\"$(date -u +%FT%TZ)\",\"sha\":\"${GITHUB_SHA}\"}" > _site/build-info.json
 

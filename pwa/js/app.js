@@ -845,7 +845,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Re-download the page + its css/js past the browser HTTP cache.
       var html = await (await fetch(location.pathname + '?r=' + Date.now(), { cache: 'reload' })).text();
       var files = [];
-      html.replace(/(?:href|src)="([^"#?]+\.(?:css|js))(?:\?[^"]*)?"/g, function(_, u) { files.push(u); });
+      html.replace(/(?:href|src)="([^"#]+\.(?:css|js)(?:\?[^"#]*)?)"/g, function(_, u) { files.push(u); });
       await Promise.all(files.map(function(u) {
         var abs = new URL(u, location.href);
         if (abs.origin !== location.origin) return null;
