@@ -42,6 +42,8 @@ var Bus = (function() {
   var DATA_REFRESH_MS = 10 * 60 * 1000; // re-fetch all timings every 10 minutes
   var searchQuery = '';     // current search filter (lowercased)
   var LAST_GROUP_KEY = 'pannai:last-group-v1';  // localStorage key
+  var TT_OPENED_KEY  = 'pannai:tt-opened';      // set once the user opens any full timetable
+  function ttEverOpened() { try { return !!localStorage.getItem(TT_OPENED_KEY); } catch (_) { return true; } }
   var initialRender = true; // only auto-open-by-time on the very first render
 
   function getMeta(nameEnglish) {
@@ -195,6 +197,9 @@ var Bus = (function() {
         '<div class="route-info">' +
           '<span class="' + nameClass + '">' + displayNameTamil + '</span>' +
           '<span class="route-name-en">' + c.name_english + (busChip ? '  ' + busChip : '') + '</span>' +
+          // Tells people the card opens into the full day's timetable (CSS swaps the two
+          // labels via .route-wrap.expanded, which handleCardTap already toggles)
+          '<span class="route-more"><span class="more-show">▾ எல்லா நேரமும்</span><span class="more-hide">▴ மூடு</span></span>' +
         '</div>' +
         renderBadge(meta, timings, c.id) +
       '</div>' +
@@ -455,7 +460,11 @@ var Bus = (function() {
       return;
     }
 
-    container.innerHTML = html;
+    // One-line tip until the user has opened a full timetable once
+    var tip = (!filterActive && !ttEverOpened())
+      ? '<p class="bus-tip">👆 எந்த ஊரையும் தொட்டால் முழு நேரப்பட்டியல் தெரியும்<span>Tap any route for the full timetable</span></p>'
+      : '';
+    container.innerHTML = tip + html;
 
     // Re-open expanded card timetable
     if (expandedId !== null && timingsCache[expandedId] !== undefined) {
@@ -530,6 +539,9 @@ var Bus = (function() {
         if (oldCard.closest('.route-wrap')) oldCard.closest('.route-wrap').classList.remove('expanded'); }
     }
     expandedId = id;
+    try { localStorage.setItem(TT_OPENED_KEY, '1'); } catch (_) {}
+    var tipEl = document.querySelector('.bus-tip');
+    if (tipEl) tipEl.remove();
 
     var ttEl = document.getElementById('tt-' + id);
     if (!ttEl) return;

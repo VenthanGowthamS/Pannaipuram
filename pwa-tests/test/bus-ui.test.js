@@ -26,6 +26,7 @@ async function bootBus({ now = [10, 0], timings, saved }) {
     static now() { return new RealDate(2026, 9, 24, now[0], now[1], 0).getTime(); }
   };
   w.setInterval = () => 0;
+  w.scrollBy = () => {};
   w.eval(read('api.js'));
   w.PannaiAPI.getBusAll = async () => ({ corridors: CORRIDORS, timings });
   w.PannaiAPI.getBusCorridors = async () => CORRIDORS;
@@ -95,4 +96,33 @@ test('1 AM with a 1:30 bus → normal strip card labelled அதிகாலை'
 test('no timings loaded at all → strip stays hidden (no misleading message)', async () => {
   const t = await bootBus({ now: [13, 0], timings: { 1: [], 2: [], 3: [] } });
   assert.equal(t.strip().hidden, true);
+});
+
+test('every route card carries the "எல்லா நேரமும்" hint (and a close label for when it is open)', async () => {
+  const t = await bootBus({ now: [13, 0], timings: { 1: [T(15)], 2: [T(16)], 3: [T(18)] } });
+  const cards = t.w.document.querySelectorAll('.route-card');
+  assert.ok(cards.length >= 3);
+  cards.forEach((c) => {
+    assert.match(c.querySelector('.more-show').textContent, /எல்லா நேரமும்/);
+    assert.match(c.querySelector('.more-hide').textContent, /மூடு/);
+  });
+});
+
+test('first-time tip shows until a timetable has been opened, then never again', async () => {
+  const t = await bootBus({ now: [13, 0], timings: { 1: [T(15)], 2: [T(16)], 3: [T(18)] } });
+  assert.ok(t.$('.bus-tip'), 'tip shown to a new user');
+  t.w.document.querySelector('.route-card').click();
+  await new Promise((r) => setImmediate(r));
+  assert.equal(t.$('.bus-tip'), null, 'tip removed once a timetable is opened');
+  assert.equal(t.w.localStorage.getItem('pannai:tt-opened'), '1');
+  // a re-render (e.g. 10-min refresh) must not bring it back
+  await t.w.Bus.refresh();
+  assert.equal(t.$('.bus-tip'), null);
+});
+
+test('tip is not shown to a returning user who already opened a timetable', async () => {
+  const dom = await bootBus({ now: [13, 0], timings: { 1: [T(15)], 2: [T(16)], 3: [T(18)] } });
+  dom.w.localStorage.setItem('pannai:tt-opened', '1');
+  await dom.w.Bus.refresh();
+  assert.equal(dom.$('.bus-tip'), null);
 });
