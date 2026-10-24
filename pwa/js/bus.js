@@ -462,7 +462,7 @@ var Bus = (function() {
 
     // One-line tip until the user has opened a full timetable once
     var tip = (!filterActive && !ttEverOpened())
-      ? '<p class="bus-tip">👆 எந்த ஊரையும் தொட்டால் முழு நேரப்பட்டியல் தெரியும்<span>Tap any route for the full timetable</span></p>'
+      ? '<p class="bus-tip">👆 எந்த ஊரைத் தொட்டாலும் முழு நேர அட்டவணை தெரியும்<span>Tap any route for the full timetable</span></p>'
       : '';
     container.innerHTML = tip + html;
 
