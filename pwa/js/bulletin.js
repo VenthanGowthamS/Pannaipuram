@@ -62,12 +62,15 @@ var Bulletin = (function() {
   // A generic "open link" button tells the villager nothing about what is on
   // the other side. Naming the KIND of thing is what makes it worth tapping.
   function linkLabel(host) {
-    if (/(^|\.)(youtube\.com|youtu\.be)$/i.test(host)) return { ic: '▶️', ta: 'வீடியோ பாருங்க' };
-    if (/(^|\.)(wa\.me|whatsapp\.com)$/i.test(host))    return { ic: '💬', ta: 'WhatsApp-ல திறங்க' };
+    if (/(^|\.)(youtube\.com|youtu\.be)$/i.test(host)) return { ic: '▶️', ta: 'வீடியோவைப் பார்க்க' };
+    if (/(^|\.)(wa\.me|whatsapp\.com)$/i.test(host))    return { ic: '💬', ta: 'WhatsApp-ல் திறக்க' };
     if (/(^|\.)(maps\.app\.goo\.gl|google\.com|goo\.gl)$/i.test(host) && /map/i.test(host))
-      return { ic: '📍', ta: 'இடத்தை பாருங்க' };
-    if (/\.(gov|nic)\.in$/i.test(host)) return { ic: '🏛️', ta: 'அரசு தளம் திறங்க' };
-    return { ic: '🔗', ta: 'லிங்க் திறங்க' };
+      return { ic: '📍', ta: 'இடத்தைப் பார்க்க' };
+    if (/\.(gov|nic)\.in$/i.test(host)) return { ic: '🏛️', ta: 'அரசு இணையதளத்தைத் திறக்க' };
+    // News sites — the usual thing villagers share (Dailyhunt short links, Tamil papers…)
+    if (/(^|\.)(dhunt\.in|dailyhunt\.in|hindutamil\.in|thehindu\.com|dinamalar\.com|dinamani\.com|dailythanthi\.com|maalaimalar\.com|dinakaran\.com|vikatan\.com|bbc\.com|bbc\.co\.uk|timesofindia\.indiatimes\.com|indianexpress\.com|ndtv\.com)$/i.test(host))
+      return { ic: '📰', ta: 'முழு செய்தியைப் படிக்க' };
+    return { ic: '🔗', ta: 'இணைப்பைத் திறக்க' };
   }
 
   function linkChip(raw) {
