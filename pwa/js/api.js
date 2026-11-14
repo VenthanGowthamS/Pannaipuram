@@ -18,6 +18,22 @@ var API_BASE = (function() {
 })();
 function apiUrl(path) { return API_BASE + path; }
 
+// Cached API data is saved under a per-release prefix ('pannai-v109:…'), and
+// only the CURRENT release's keys are ever read. The previous releases' copies
+// were never removed, so they piled up release after release until the ~5MB
+// localStorage quota was full — and then nothing could be saved any more (no
+// offline data, and a new சங்கமம் registration was silently forgotten).
+// Drop them at startup. Identity keys ('pannai:visitor-id', 'pannai:theme',
+// 'pannai:bulletin-poster' …) have no version prefix and are left alone.
+(function purgeOldReleaseCaches() {
+  try {
+    var mine = CACHE_VERSION + ':';
+    Object.keys(localStorage).forEach(function(k) {
+      if (/^pannai-v\d+:/.test(k) && k.indexOf(mine) !== 0) localStorage.removeItem(k);
+    });
+  } catch (_) { /* storage blocked — nothing to clean */ }
+})();
+
 function lsGet(key) {
   try { var v = localStorage.getItem(CACHE_VERSION + ':' + key); return v ? JSON.parse(v) : null; }
   catch (_) { return null; }

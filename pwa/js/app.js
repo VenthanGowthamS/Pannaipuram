@@ -842,8 +842,11 @@ document.addEventListener('DOMContentLoaded', function() {
         await Promise.all(keys.map(function(k) { return caches.delete(k); }));
       }
       try {
+        // Keys look like 'pannai-v109:pannai:/api/bus/all' (api.js lsSet). The
+        // old test (starts with 'pannai:/api') never matched one, so a force
+        // update left every cached API response in place.
         Object.keys(localStorage).forEach(function(k) {
-          if (k.indexOf('pannai:/api') === 0) localStorage.removeItem(k);
+          if (/^pannai-v\d+:pannai:\/api/.test(k)) localStorage.removeItem(k);
         });
       } catch (_) {}
       // Re-download the page + its css/js past the browser HTTP cache.
