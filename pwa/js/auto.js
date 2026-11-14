@@ -253,8 +253,11 @@ var Auto = (function() {
   }
 
   async function init() {
-    await loadDrivers(false);
+    // Wire the form BEFORE waiting on the network: on a cold server the driver
+    // list can take a minute, and a form submitted in that window had no
+    // handler yet — the browser did a plain submit and reloaded the page.
     initContactForm();
+    await loadDrivers(false);
 
     // First render can come from cache (SW + localStorage) — pull fresh from
     // the network shortly after so admin edits (order/photos/new drivers)

@@ -41,13 +41,23 @@ http.createServer((req, res) => {
       res.writeHead(502);
       res.end(JSON.stringify({ success: false, error: 'Backend unreachable: ' + e.message }));
     });
-    if (req.method === 'POST') req.pipe(proxy);
-    else proxy.end();
+    // Forward the body for every write (PATCH/DELETE too — editing or deleting
+    // a சங்கமம் post sends one), not only POST.
+    if (req.method === 'GET' || req.method === 'HEAD') proxy.end();
+    else req.pipe(proxy);
     return;
   }
 
-  // Static files
-  const filePath = path.join(ROOT, req.url === '/pwa/' ? 'pwa/index.html' : req.url);
+  // Static files. Use the PATH only — '/pwa/sw.js?v=pannai-v108' used to be
+  // looked up as a file literally named 'sw.js?v=…' (404, so the service
+  // worker never registered locally) — and never serve anything outside the repo.
+  let pathname;
+  try { pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); }
+  catch (_) { res.writeHead(400); res.end('Bad request'); return; }
+  const filePath = path.join(ROOT, pathname.endsWith('/') ? pathname + 'index.html' : pathname);
+  if (filePath !== ROOT && !filePath.startsWith(ROOT + path.sep)) {
+    res.writeHead(403); res.end('Forbidden'); return;
+  }
   const ext = path.extname(filePath);
 
   fs.readFile(filePath, (err, data) => {
