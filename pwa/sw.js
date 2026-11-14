@@ -79,14 +79,32 @@ self.addEventListener('fetch', function(e) {
 
   // /api/* — stale-while-revalidate (show cached, update in background)
   if (url.pathname.startsWith('/api/')) {
+    // Writes (POST/PATCH/DELETE) go straight to the network — the Cache API
+    // only stores GETs, and a write must never be answered from a cache.
+    if (e.request.method !== 'GET') return;
+
+    // A forced refresh (api.js) adds a unique ?_t=<timestamp>. Caching under
+    // that URL stored a brand-new copy of the response on EVERY refresh — every
+    // app open, every 10-minute tick — and nothing removed them until the next
+    // release. Cache under the URL WITHOUT _t instead: one entry per endpoint,
+    // and a forced refresh now also updates the copy served offline.
+    var forced = url.searchParams.has('_t');
+    var keyUrl = new URL(url.href);
+    keyUrl.searchParams.delete('_t');
+    var cacheKey = keyUrl.href;
+
     e.respondWith(
       caches.open(CACHE).then(function(cache) {
-        return cache.match(e.request).then(function(cached) {
-          var networkFetch = fetch(e.request).then(function(resp) {
-            cache.put(e.request, resp.clone());
-            return resp;
-          }).catch(function() { return null; });
-          return cached || networkFetch;
+        var network = fetch(e.request).then(function(resp) {
+          // Never keep an error page (500 / 429) as the "cached" answer
+          if (resp && resp.ok) cache.put(cacheKey, resp.clone());
+          return resp;
+        });
+        // Forced = the caller wants the network; api.js has its own fallbacks
+        if (forced) return network;
+        return cache.match(cacheKey, { ignoreVary: true }).then(function(cached) {
+          if (cached) { network.catch(function() {}); return cached; }
+          return network;
         });
       })
     );
