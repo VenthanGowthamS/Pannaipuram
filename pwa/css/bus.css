@@ -1066,3 +1066,22 @@
   padding: 0;
   min-width: 0;
 }
+
+/* ── "அடுத்த பேருந்து" header inside an open timetable (v109) ──
+   Icon, text and countdown shared one row, so the text column was ~130px:
+   "9:00 இரவு" broke onto two lines and the route line split town names
+   mid-word ("உத்தமபாளைய / ம்"). The header is now a grid — the route line
+   gets its own full-width row under the time, and the time never wraps. */
+.tt-next-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0 12px;
+  align-items: center;
+}
+.tt-next-body { display: contents; }
+.tt-next-icon  { grid-column: 1; grid-row: 1 / span 3; }
+.tt-next-title { grid-column: 2; grid-row: 1; }
+.tt-next-sub   { grid-column: 2; grid-row: 2; }
+.tt-next-time  { grid-column: 2; grid-row: 3; white-space: nowrap; }
+.tt-next-pill  { grid-column: 3; grid-row: 1 / span 3; }
+.tt-next-via   { grid-column: 1 / -1; grid-row: 4; overflow-wrap: break-word; word-break: normal; }
