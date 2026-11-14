@@ -1,9 +1,9 @@
 # பண்ணைப்புரம் App — Requirements Document
 ### Pannaipuram App — Your Village Information Centre
 
-> **Version:** 5.2 (PWA v56 — per-page colours + colour-matching menu, village-hub icon, acting-driver registration, web menu sizing)
-> **Date:** June 2026
-> **Status:** PWA v56 live (unified: Bus + Auto + Hospital + Emergency + More) on the **custom domain**:
+> **Version:** 6.0 (PWA v109 — see Phase 13 and Phase 14 below for everything after v56; the v14→v56 tables directly under this header are historical)
+> **Date:** November 2026
+> **Status:** PWA v109 live (Bus + Auto + சங்கமம் + Hospital + More, Emergency in the ☰ menu) on the **custom domain**:
 > - 🌟 **https://app.pannaipuram.com** (primary — share `?install=1` on WhatsApp)
 > - 🔗 API: https://api.pannaipuram.com · 🛠 Admin: https://admin.pannaipuram.com
 > - 🌐 `pannaipuram.com` + `www` → 301 redirect to the app (Cloudflare Redirect Rule)
@@ -960,6 +960,26 @@ custom domains — it blocks Let's Encrypt cert issuance (was the cause of an ea
 **Backend hardening (v90)**
 - All "today/now" logic in IST (server runs UTC); admin role re-checked from the DB on every request; signup super_admin-only; admin PUTs validated (404 on unknown id); doctor schedule replace is transactional; FCM sends batched at 500; JSON error handler; per-device power-restored de-duplication
 
+### Phase 14 — Bus tab polish, install/update reliability, repo review ✅ COMPLETE (October–November 2026, v92–v109)
+
+**Bus tab (v92–v109)**
+- v105: Local Routes open by default at any hour; a collapsed group's header shows its soonest bus ("அடுத்தது: …"); the "leaving soon" strip never vanishes — outside the 3-hour window it says when the next bus is, or tomorrow's first
+- v106–v108: every route card says "எல்லா நேரமும்" and a one-time tip explains that a route opens into the full timetable; Tamil wording tidied (also the சங்கமம் link button — "முழு செய்தியைப் படிக்க" for news sites)
+- v102: buses before 6 AM are labelled **அதிகாலை**, not இரவு
+- v94–v95: header "பேருந்து நேரங்கள்" / "Bus Timings"
+
+**Install + update reliability (v99–v104)**
+- ☰ → About → **force update** (clears worker, caches and cached API data; keeps identity); the app also unsticks itself when it detects it is on an old build (rate-limited to once per 30 min)
+- v101: per-release `?v=` on css/js and cache-busted shell fetches, so a CDN or browser 4-hour cache can no longer pin an old build
+- v103–v104: install strip sits below the fixed ☰ / theme buttons; clearer Tamil for banner and wall
+- Install prompts remain phones-only
+
+**v109 — repo review (November 2026)**
+- **Fixed:** service worker stored a new cache entry on every forced refresh (now one entry per endpoint, no error responses cached, writes never intercepted); older releases' cached data piled up in localStorage (now purged at startup) and "force update" never cleared cached API data; `bus.js` was the one renderer that did not escape database text; the empty-timetable WhatsApp message always said "this route"; share text pointed at the sleeping Render URL; the Auto registration form was not wired until the driver list had loaded (a submit during a cold start reloaded the page); the dev server mishandled query strings and `../` paths
+- **Polished:** bus route cards give the town name the full card width (no more "சின்…"); the opened-timetable "அடுத்த பேருந்து" header keeps the time on one line and the route chain on its own row; More-tab rows no longer double the 📍/🕐 icons
+- **Tests:** PWA suite grew 36 → 57 (`pwa-tests/`: service-worker caching, storage cleanup, bus escaping, forms, More rows) and **runs in CI before every Pages deploy**. Regression at release: admin/API 110, bulletin 100, admin UI 35, CORS 17, IST 7, push 4 — all passing
+- **Known, not fixed:** announcements, bus and auto data are each requested about three times on app open; the v90 open items in CLAUDE.md "Next Up" (shared-IP rate limits, bulletin image payload, register-overwrites-name, `water.js` timezone)
+
 ### Phase 12 — Future Roadmap (Beyond Phase 11) 🔴 NOT STARTED
 
 These are deferred items still on the wishlist:
@@ -1004,7 +1024,7 @@ When Venthan returns after time away, the fastest way to resume work:
 1. `cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram`
 2. `git pull origin main` — pick up any changes
 3. `claude` — start session
-4. Tell Claude: **"Read `CLAUDE.md` and `docs/requirements.md` Phase 10/11/12 — what's the current status and what's next?"**
+4. Tell Claude: **"Read `CLAUDE.md` and `docs/requirements.md` Phases 13/14/12 — what's the current status and what's next?"**
 
 Claude reads the canonical state from disk (not chat history), and can pick up exactly where we left off. Conversation history is per-machine — but every important decision is committed to git, so the repo IS the memory.
 

@@ -1,9 +1,9 @@
 # பண்ணைப்புரம் App — UI Design
 ### Phase 3 of 7
 
-> **Version:** 1.2 — Phase 9 PWA UX complete
-> **Date:** April 2026
-> **Status:** Phase 9 COMPLETE — PWA Bus section fully overhauled, design tokens updated
+> **Version:** 2.0 — PWA design system as of v109 (§10)
+> **Date:** November 2026
+> **Status:** §1–8 describe the original Flutter app (green palette, home tile grid) and are kept for the APK. **The PWA — the main product — follows §9–§10; where they disagree with §2, §10 wins.**
 
 ---
 
@@ -406,7 +406,7 @@ Power and water show last cached data with timestamp.
 
 ## 9. PWA Bus Section — Phase 9 Design (April 2026) ✅ LIVE
 
-**URL:** https://pannaipuram-api.onrender.com/pwa/
+**URL:** https://app.pannaipuram.com *(this section is the April 2026 design; later changes are in §10)*
 
 ### Bus Group Names (Tamil + English)
 | Group Key | Tamil Label | English Sublabel |
@@ -429,10 +429,10 @@ Power and water show last cached data with timestamp.
 | `--color-muted` | #616161 | Muted text (WCAG AA) |
 
 ### PWA Bus Features (Phase 9)
-- **"Now departing" strip** — top 3 imminent buses across all corridors; urgency colour rails (red ≤5 min, amber ≤15 min, green >15 min)
+- **"Now departing" strip** — top 3 imminent buses across all corridors; urgency colour rails (now: amber ≤10 min, green ≤40 min, grey beyond — see §10)
 - **Search box** — Tamil/English search below navy header; 16px input (no iOS zoom), 48px touch target
 - **Freshness indicator** — "X நிமிடம் முன்பு புதுப்பிக்கப்பட்டது" with auto-refresh every 10 minutes
-- **Accordion groups** — one open at a time; auto-opens peak-hour group (6–9am, 4–7pm); persists preference in localStorage
+- **Accordion groups** — one open at a time; Local Routes open by default (v105); the last group the user opened is remembered in localStorage
 - **Route cards** — next-bus badge + countdown pill; ▸/▾ caret on open/close
 - **Expandable timetable** — "Next Bus" header card, gap warnings, alternate route suggestions (ROUTE_ALTS)
 - **WhatsApp long-press share** — any timing row; prefilled Tamil message with time + route
@@ -457,16 +457,53 @@ Route: Thevaram → Bodi → Theni (Bodi is between Thevaram and Theni on this r
 
 ---
 
-## 10. Next Step — Phase 6: Testing & Launch
+## 10. PWA Design System — current (v84 → v109)
 
-✅ Phase 9 PWA UX complete. Cache v14 deployed.
+The PWA has ONE brand look. Colours are tokens in `pwa/css/tokens.css`; no rule may hard-code a light colour, or dark mode breaks.
 
-Remaining:
-1. Test on physical Android device (Tamil rendering, install banner, WhatsApp share)
-2. Collect remaining bus timings: Thevaram, Theni, Coimbatore, Trichy, Palani, Dindigul
-3. Fill auto driver phone numbers via Admin Panel
-4. Enter all 57 streets in Streets tab
-5. QR code generation for WhatsApp APK sharing
+### Colour + theme
+| Token | Light | Use |
+|---|---|---|
+| `--brand` | `#1E2A78` (indigo) | Headers, active nav pill, primary text accents |
+| `--accent` | `#F2A900` (marigold) | Install CTA, highlights |
+| `--bg` / `--surface` / `--surface-2` | `#F6F7FB` / `#FFFFFF` / `#F3F4F8` | Page / cards / insets |
+| `--call` | `#15803D` | Every call button (white text, 5:1) |
+| `--soon` / `--ok` / `--off` | amber / green / grey | Bus countdown + card rail by urgency: ≤10 min / ≤40 min / later |
+| `--c-bus … --c-more` | per-tab hues | ONLY the 4px stripe under a tab's header + small accents |
+
+- **Dark mode:** 🌙/☀️ button beside ☰. A saved choice wins, else the phone's setting; choosing the look the phone already has clears the saved choice. Dark tokens are written for `[data-theme="dark"]` AND the no-JS media-query fallback — keep both in sync.
+- **Icons:** app chrome (nav, menu, refresh, search) = inline line SVG (`.ic`); content (destinations, services) keeps emoji.
+
+### Layout
+- **Header:** every tab shares one navy header — Tamil title (1.3rem/800) + English sub-label; ☰ top-left, theme button top-right (both fixed). The ↻ refresh sits in a slim row *under* the header.
+- **Bottom nav:** exactly **5** tabs, odd on purpose so சங்கமம் is dead centre: 🚌 பேருந்து · 🛺 ஆட்டோ · 📰 சங்கமம் (raised 50px circle) · 🏥 மருத்துவம் · ➕ மேலும். 📞 அவசரம் is first in the ☰ drawer (red rail). Every section reserves `nav-height + safe-area` at the bottom.
+- **Install strip:** one compact row (Install / எப்படி?), phones only, below the fixed buttons.
+- **≥700px:** fluid container, card lists become multi-column grids, ☰ grows to 62px and the drawer becomes a dropdown panel; the bus tab stays a centred ~640px column.
+
+### Bus tab (v105–v109)
+- **Route card** (grid): rail · emoji circle · **town name on its own full-width row** · English name + bus-type chip + "▾ எல்லா நேரமும்" below on the left · next time + countdown pill on the right. A name too long for the card wraps; it is never ellipsised.
+- **Group header:** icon, title, first 4 villages (…), count; when collapsed it also shows "அடுத்தது: <route> · N நிமிடம்".
+- **Leaving-soon strip:** up to 3 buses within 3 hours; otherwise one line with the next bus, or tomorrow's first.
+- **Opened timetable:** "அடுத்த பேருந்து" header is a grid — icon · title/sub/time · countdown pill, with the "வழி:" route chain on a full-width row beneath; then bus-type counts, rows (passed ones struck through, அதிகாலை/காலை/பகல்/மாலை/இரவு labels), gap warnings, "எல்லா பஸ் பார்க்க", collapsible alternate routes.
+- **First-time tip** "எந்த ஊரைத் தொட்டாலும் முழு நேர அட்டவணை தெரியும்" until a timetable has been opened once.
+
+### Other tabs
+- **Auto:** drivers grouped by vehicle (🛺/🚐/🚗/🚖) with count badges; photo or vehicle emoji avatar; collapsible "உங்க வண்டியையும் சேர்க்கணுமா?" form.
+- **சங்கமம்:** composer prompt shown to everyone (sign-up appears when an unregistered person taps it); cards with avatar initial, ✅ trusted / 📢 official badge, photo (letterboxed, never cropped), tappable link chip labelled by destination, ❤️ like, ✏️/🗑️ on own posts, ⏳ chip while pending.
+- **மருத்துவம்:** hospital panels → doctor cards with day chips, merged identical hours, "இன்று இருக்கிறார்" / "இன்று இல்லை" badge under the name, one 📝 notes box.
+- **மேலும்:** acting drivers (avatar, vehicle chip, 🪪 licence-verified chip, 📍/🕐 lines) and service panels by category. Admin free text is clamped to 2 lines (tap to expand); a leading icon the admin typed is stripped so it is never doubled, and our icon is joined to the text with a non-breaking space.
+- **அவசரம்:** 108 / 100 / 101 quick-dial row, then category panels (tinted header, count chip, tappable rows).
+
+### Rules that keep it working
+- Tamil first, English sub-label, colloquial wording (never "வணக்கம்"); minimum 48px tap targets.
+- Text from the database is always escaped before it goes into HTML.
+- A section's last control must never sit under the fixed nav.
+
+---
+
+## 11. Next Step
+
+PWA v109 is live. Remaining work is data entry and roadmap items — see `docs/requirements.md` Phase 12 and the "Next Up" list in `CLAUDE.md`.
 
 ---
 

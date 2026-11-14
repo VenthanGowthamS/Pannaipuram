@@ -58,7 +58,7 @@ Goal: Give every household in Pannaipuram a Tamil-first app for power cuts, wate
 - **Render config:** `render.yaml` at repo root with `rootDir: .` ensures full repo is deployed
 - **NEVER edit files inside `backend/public/pwa/`** — that folder was deleted. Edit only in `pwa/`
 - **Cache versioning:** Bump `CACHE` in `pwa/sw.js` AND `CACHE_VERSION` in `pwa/js/api.js` together on every release. **Currently v109.** Also add any NEW js/css to the `SHELL` array in `sw.js`.
-- **PWA tests (`pwa-tests/`, Oct 2026):** `cd pwa-tests && npm install && npm test` — jsdom loads the REAL `pwa/index.html` + `pwa/js/*.js` and checks the install banner (Android prompt / no prompt / late prompt / accept / decline / dismissed / stale installed flag / iPhone / iPad+tablet+desktop / `?install=1` wall), the visit ping (`is_standalone`, install ping on accept + `appinstalled`) and bus time labels (`அதிகாலை` before 6 AM). Lives OUTSIDE `pwa/` on purpose — everything in `pwa/` is published. Run it before changing install or bus-label code.
+- **PWA tests (`pwa-tests/`, Oct 2026; 57 tests as of v109):** `cd pwa-tests && npm install && npm test` — jsdom loads the REAL `pwa/index.html` + `pwa/js/*.js` (and runs the real `sw.js` in a fake worker global). Files: `install` (banner/wall), `ping` (visit + install pings), `bus-label` + `bus-ui` (time labels, groups, strip, escaping, share link), `link-label`, `sw-cache` (API cache keys, no `_t` pile-up), `storage` (old-release purge, force update), `auto-form`, `more-rows`. Lives OUTSIDE `pwa/` on purpose — everything in `pwa/` is published. **CI runs them before every Pages deploy** (`deploy-pwa.yml`); run them before changing install, bus, cache or storage code. New PWA behaviour → add a test here (confirm it fails on the old code).
 - **v109 (November 2026) — repo review: storage leaks, bus escaping, route-card layout.**
   - **SW API cache key drops `_t`:** a forced refresh adds `?_t=<timestamp>`; the worker used to cache every one under its own URL, so Cache Storage grew on each app open / 10-min tick until the next release. It now caches under the URL WITHOUT `_t` (one entry per endpoint, and a forced refresh updates the offline copy), never stores a non-OK response, and does not intercept non-GET requests. Tests: `pwa-tests/test/sw-cache.test.js` (runs the real `sw.js` in a fake worker global).
   - **Old releases' localStorage is purged at startup** (`purgeOldReleaseCaches` in `api.js`): keys are `pannai-vNN:pannai:/api/…` and only the current version is ever read, but nothing removed the older ones — they piled up toward the ~5MB quota. Un-prefixed identity keys (`pannai:visitor-id`, `pannai:theme`, `pannai:bulletin-poster`, …) are never touched. `PannaiForceUpdate` now matches that real key shape (it matched nothing before). Tests: `storage.test.js`.
@@ -295,7 +295,7 @@ git log --oneline -3
 2. Run syntax check: `node -c src/app.js && echo "✅ app.js OK"`
 3. Run all tests: `node test/admin_crud.test.js`
    - Tests cover: auth, power, bus, doctors, emergency, auto, streets, water, services, announcements, RBAC
-   - Must pass all 52 tests before deploy
+   - Must pass all 110 tests before deploy (run against the local test DB, see Rules)
 4. If tests pass: push to GitHub → Render auto-deploys from `main` branch
 5. Verify live at: https://pannaipuram-api.onrender.com
 6. Note: Render free tier sleeps after inactivity — first request may take 60s to wake
@@ -529,7 +529,7 @@ Future<void> _fetchDoctors() async {
 cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/backend && node -c src/app.js && echo "✅ OK"
 ```
 
-### 2. Full regression (91 admin/API + 44 bulletin = 135 tests)
+### 2. Full regression (110 admin/API + 100 bulletin; plus the unit, admin-UI and PWA suites — see TEST RULE)
 ```bash
 cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/backend && node test/admin_crud.test.js && node test/bulletin.test.js
 ```
@@ -556,7 +556,7 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 
 ---
 
-## Current Status (April 2026)
+## Current Status (November 2026 — PWA v109; the Flutter table below is as of April 2026)
 
 ### ✅ Live & Complete — Flutter App (9 Modules)
 
@@ -577,7 +577,7 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 - Line 344: `தொலைதூர பயணம்` — Long Distance ✅ (updated April 2026)
 - No night/Chennai section in Flutter APK (PWA-only feature)
 
-### ✅ Live & Complete — PWA (unified: Bus + Auto + Hospital + Emergency + More) — v53 (June 2026)
+### ✅ Live & Complete — PWA (Bus + Auto + சங்கமம் + Hospital + More, Emergency in ☰) — table last extended v53; later releases are in the per-version notes above
 
 | Feature | File | Status |
 |---|---|---|
@@ -593,7 +593,7 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 | **Hosting:** GitHub Pages CDN — instant load, never sleeps | .github/workflows/deploy-pwa.yml | ✅ v37 |
 | **Hosting:** Render fallback URL still works | backend/src/app.js | ✅ |
 | **API routing:** `API_BASE` auto-detects app.pannaipuram.com / github.io / Render | pwa/js/api.js | ✅ v37–39 |
-| **Backend CORS:** auto-allows `*.github.io` + `*.pannaipuram.{com,in}` origins | backend/src/app.js | ✅ v37–39 |
+| **Backend CORS:** allows `venthangowthams.github.io` (our account only) + `*.pannaipuram.{com,in}` — see `corsOrigin.js` | backend/src/middleware/corsOrigin.js | ✅ v37–39, tightened v90 |
 | **Install wall** (`?install=1`) — full-screen Android one-tap install | pwa/index.html + app.js | ✅ v35–36 |
 | **Bouncing 👇 + pulsing yellow button** on install wall | pwa/css/base.css | ✅ v36 |
 | **Cold-start fix:** 2.5s timeout → cached fallback | pwa/js/api.js | ✅ v34 |
@@ -623,7 +623,7 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram/app && flutter bu
 | Design token scale (--ta-xs through --ta-xxl) | pwa/css/tokens.css | ✅ |
 | Focus ring a11y (gold 3px :focus-visible) | pwa/css/base.css | ✅ |
 | New bus icon (navy + bus silhouette + route dots) | pwa/icons/ | ✅ |
-| **SW cache v53 / localStorage key pannai-v53** | pwa/sw.js + api.js | ✅ v53 |
+| **SW cache + localStorage key = current release (v109)**; older releases' data purged at startup | pwa/sw.js + api.js | ✅ v109 |
 | **Community Bulletin (v71)** — 📰 சங்கமம் tab, user registration (phone+name), post news/images (optional), 60-day auto-purge (newest 10 always kept, v91), admin moderation tab | pwa/js/bulletin.js, pwa/css/bulletin.css, pwa/index.html, backend/src/routes/bulletin.js, admin Bulletin.jsx | ✅ v71 |
 
 ### ✅ Infrastructure
@@ -735,6 +735,7 @@ cd ~/Documents/VenthanDocuments/Workspace/Projects/Pannaipuram && git add app/li
 
 ---
 
+*Last updated: November 15, 2026 — PWA v109: service-worker cache + localStorage leaks fixed, bus tab escaping, route-card layout, 57 PWA tests run in CI. No pending Supabase migrations are recorded here since v91 — check `backend/src/db/migration_*.sql` against Supabase before assuming. Earlier notes kept below.*
 *Last updated: August 31, 2026 — PWA v81: admin edit for any bulletin post + clickable link column. ⚠️ Pending Supabase migration: `migration_bulletin_link.sql`. Earlier note kept below.*
 *Previously: July 9, 2026 — PWA v69: acting-driver DL-verified badge, doctor-level More Details (one 📝 box instead of per-day duplicate notes). Pending Supabase migrations: driver_photos, acting_license, doctor_notes.*
 *Built with ❤️ for பண்ணைப்புரம் — உங்கள் ஊரின் தகவல் மையம்*
