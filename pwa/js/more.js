@@ -23,6 +23,20 @@ var More = (function() {
     return vehIcon(d.vehicle_type);
   }
 
+  // One "icon + admin text" line. Two things went wrong with a plain
+  // '📍 ' + text:
+  //  • admins often type their own 📍 / 🕐 in front, so the row showed "🕐 🕐 …";
+  //  • text with no spaces ("தமிழ்நாடு,கேரளா,கர்நாடகா") could not fit beside
+  //    the icon, so it dropped to the next line and left the icon alone.
+  // The leading icon the admin typed is removed, and a non-breaking space
+  // keeps our icon on the same line as the first word.
+  var LEAD_ICONS = /^[\s\uFE0F\u231A\u23F0-\u23F3\u{1F4CC}\u{1F4CD}\u{1F4DD}\u{1F550}-\u{1F567}]+/u;
+  function metaLine(icon, text, cls) {
+    var t = String(text == null ? '' : text).replace(LEAD_ICONS, '').trim();
+    if (!t) return '';
+    return '<span class="' + cls + '">' + icon + '&nbsp;' + esc(t) + '</span>';
+  }
+
   // ── Acting (substitute) drivers — profile rows w/ avatar ──
   var VEH_TA = { auto: 'ஆட்டோ', van: 'வேன்', car: 'கார்', taxi: 'டாக்ஸி', any: 'எல்லா வண்டியும்' };
   function actingRow(d) {
@@ -44,8 +58,8 @@ var More = (function() {
         (d.name_english ? '<span class="acting-en">' + esc(d.name_english) + '</span>' : '') +
         dl +
         // Free text from admins can run to 10+ lines — clamp, tap to expand
-        (cover ? '<span class="acting-meta clamp">📍 ' + esc(cover) + '</span>' : '') +
-        (sched ? '<span class="acting-meta clamp">🕐 ' + esc(sched) + '</span>' : '') +
+        metaLine('📍', cover, 'acting-meta clamp') +
+        metaLine('🕐', sched, 'acting-meta clamp') +
       '</div>' + call + '</div>';
   }
 
@@ -158,8 +172,8 @@ var More = (function() {
       '<div class="svc-row-info">' +
         '<span class="svc-row-ta">' + esc(s.name_tamil || s.name_english) + '</span>' +
         (s.name_english && s.name_tamil ? '<span class="svc-row-en">' + esc(s.name_english) + '</span>' : '') +
-        (area ? '<span class="svc-row-meta">📍 ' + esc(area) + '</span>' : '') +
-        (notes ? '<span class="svc-row-meta svc-row-notes clamp">📝 ' + esc(notes) + '</span>' : '') +
+        metaLine('📍', area, 'svc-row-meta') +
+        metaLine('📝', notes, 'svc-row-meta svc-row-notes clamp') +
       '</div>' + call + '</div>';
   }
   // One category = one compact white panel with a tinted header + rows
