@@ -46,6 +46,14 @@ var Bus = (function() {
   function ttEverOpened() { try { return !!localStorage.getItem(TT_OPENED_KEY); } catch (_) { return true; } }
   var initialRender = true; // only auto-open-by-time on the very first render
 
+  // Escape DB-sourced strings (route names, operator names, destinations)
+  // before they go into innerHTML — same helper as the other sections.
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   function getMeta(nameEnglish) {
     return CORRIDOR_META[(nameEnglish || '').toLowerCase()] ||
       { emoji: '🚌', group: 'long', isFrequent: false };
@@ -131,14 +139,14 @@ var Bus = (function() {
   // Bus-type chip (டவுன் பஸ் / மொஃபசல் / தனியார்) — colours live in bus.css
   function busChipHtml(bm, extraCls) {
     var label = bm.label || (bm.cls === 'private' ? 'தனியார்' : bm.cls === 'express' ? 'மொஃபசல்' : 'டவுன் பஸ்');
-    return '<span class="' + extraCls + ' chip-' + (bm.cls === 'private' || bm.cls === 'express' ? bm.cls : 'ordinary') + '">' + label + '</span>';
+    return '<span class="' + extraCls + ' chip-' + (bm.cls === 'private' || bm.cls === 'express' ? bm.cls : 'ordinary') + '">' + esc(label) + '</span>';
   }
 
   function minsLabel(mins) {
     if (mins < 60) return mins + ' நிமிடம்';
     var h = Math.floor(mins / 60);
     var m = mins % 60;
-    return m === 0 ? h + ' மணி' : h + 'மணி ' + m + 'நிமி';
+    return m === 0 ? h + ' மணி' : h + ' மணி ' + m + ' நிமி';
   }
 
   function renderBadge(meta, timings, corridorId) {
@@ -195,8 +203,8 @@ var Bus = (function() {
         '<div class="route-rail" style="background:' + railColor + '"></div>' +
         '<div class="route-emoji-circle">' + meta.emoji + '</div>' +
         '<div class="route-info">' +
-          '<span class="' + nameClass + '">' + displayNameTamil + '</span>' +
-          '<span class="route-name-en">' + c.name_english + (busChip ? '  ' + busChip : '') + '</span>' +
+          '<span class="' + nameClass + '">' + esc(displayNameTamil) + '</span>' +
+          '<span class="route-name-en">' + esc(c.name_english) + (busChip ? '  ' + busChip : '') + '</span>' +
           // Tells people the card opens into the full day's timetable (CSS swaps the two
           // labels via .route-wrap.expanded, which handleCardTap already toggles)
           '<span class="route-more"><span class="more-show">▾ எல்லா நேரமும்</span><span class="more-hide">▴ மூடு</span></span>' +
@@ -224,7 +232,7 @@ var Bus = (function() {
     var s = soonestInGroup(items);
     if (!s) return '';
     var meta = getMeta(s.corridor.name_english);
-    return 'அடுத்தது: <b>' + (meta.nameTamil || s.corridor.name_tamil) + '</b> · ' + minsLabel(s.mins);
+    return 'அடுத்தது: <b>' + esc(meta.nameTamil || s.corridor.name_tamil) + '</b> · ' + minsLabel(s.mins);
   }
   // Keep the collapsed-header line current (called every minute with the badges)
   function updateGroupNexts() {
@@ -297,7 +305,7 @@ var Bus = (function() {
       var msg;
       if (upcoming.length) {
         var u = upcoming[0], um = getMeta(u.corridor.name_english);
-        msg = '<b>' + (um.nameTamil || u.corridor.name_tamil) + '</b> · ' + fmtPeriod(u.next.departs_at) +
+        msg = '<b>' + esc(um.nameTamil || u.corridor.name_tamil) + '</b> · ' + fmtPeriod(u.next.departs_at) +
               '<span class="strip-empty-sub">' + minsLabel(u.mins) + ' கழித்து · next bus in ' + minsLabel(u.mins) + '</span>';
       } else {
         var first = null;
@@ -309,7 +317,7 @@ var Bus = (function() {
         });
         var fm = getMeta(first.c.name_english);
         msg = 'இன்று பேருந்துகள் முடிந்தது 🌙<span class="strip-empty-sub">நாளை முதல் பேருந்து: ' +
-              (fm.nameTamil || first.c.name_tamil) + ' · ' + fmtPeriod(first.t.departs_at) + '</span>';
+              esc(fm.nameTamil || first.c.name_tamil) + ' · ' + fmtPeriod(first.t.departs_at) + '</span>';
       }
       strip.innerHTML =
         '<div class="strip-title"><span class="strip-title-icon">⏱</span>' +
@@ -335,7 +343,7 @@ var Bus = (function() {
         return '<div class="strip-card" data-corridor-id="' + item.corridor.id + '" role="button" style="border-left-color:' + pillColor(item.mins) + '">' +
           '<div class="strip-card-icon">' + meta.emoji + '</div>' +
           '<div class="strip-card-body">' +
-            '<div class="strip-card-name">' + displayName + '</div>' +
+            '<div class="strip-card-name">' + esc(displayName) + '</div>' +
             '<div class="strip-card-time">' + fmtPeriod(item.next.departs_at) + '  ' + stripChip + '</div>' +
           '</div>' +
           '<div class="strip-card-mins" style="background:' + pillColor(item.mins) + '">' + minsLabel(item.mins) + '</div>' +
@@ -681,7 +689,7 @@ var Bus = (function() {
 
     var tags = '';
     if (bt.label) {
-      var badgeTxt = bt.icon + ' ' + bt.label;
+      var badgeTxt = bt.icon + ' ' + esc(bt.label);
       // Only add English sub if there's one AND the label isn't already bilingual
       if (bt.sub) badgeTxt += ' <span class="tt-badge-sub">· ' + bt.sub + '</span>';
       tags += '<span class="tt-badge badge-' + bt.cls + '">' + badgeTxt + '</span>';
@@ -690,10 +698,10 @@ var Bus = (function() {
     if (t.is_last_bus) tags += '<span class="tt-badge badge-last">🌙 கடைசி</span>';
 
     var dest = shouldShowDest(t.dest_tamil, corridorNameTa)
-      ? '<span class="tt-dest">→ ' + t.dest_tamil + '</span>'
+      ? '<span class="tt-dest">→ ' + esc(t.dest_tamil) + '</span>'
       : '';
 
-    return '<div class="' + cls + '"' + style + ' data-departs="' + t.departs_at + '">' +
+    return '<div class="' + cls + '"' + style + ' data-departs="' + esc(t.departs_at) + '">' +
       '<div class="tt-icon"><span>' + bt.icon + '</span></div>' +
       '<div class="tt-row-main">' +
         '<div class="tt-time-line">' +
@@ -777,7 +785,7 @@ var Bus = (function() {
     var meta = getMeta(c.name_english);
     var dest = meta.nameTamil || c.name_tamil;
     var time = fmtPeriod(departs);
-    var text = '🚌 பண்ணைப்புரம் நிறுத்தம் → ' + dest + '\n🕐 ' + time + ' கிளம்பும்\n📱 App: https://pannaipuram-api.onrender.com/pwa/';
+    var text = '🚌 பண்ணைப்புரம் நிறுத்தம் → ' + dest + '\n🕐 ' + time + ' கிளம்பும்\n📱 App: https://app.pannaipuram.com/';
     if (navigator.share) {
       navigator.share({ text: text }).catch(function() {});
     } else {
@@ -819,6 +827,9 @@ var Bus = (function() {
     if (!el) return;
     el.hidden = false;
     var timings = timingsCache[id] || [];
+    // Looked up BEFORE the empty-timetable branch: that branch names the route
+    // in its WhatsApp message, and used to read `c` while it was still undefined.
+    var c = corridors.find(function(c) { return c.id === id; });
     if (!timings.length) {
       var waLink = 'https://wa.me/?text=' + encodeURIComponent(
         'பண்ணைப்புரம் App: ' + (c ? c.name_english : 'this route') + ' பஸ் நேரம் சேர்க்க வேண்டும்'
@@ -837,7 +848,6 @@ var Bus = (function() {
       .map(function(t){ var p=t.departs_at.split(':').map(Number); return Object.assign({},t,{totalMins:p[0]*60+p[1]});})
       .sort(function(a, b) { return a.totalMins - b.totalMins; });
     var next = sorted.find(function(t){ return t.totalMins > cur; }) || null;
-    var c = corridors.find(function(c) { return c.id === id; });
     var meta = getMeta(c ? c.name_english : '');
     var corridorNameTa = c ? c.name_tamil : '';
     var showAll = expandedFull[id];

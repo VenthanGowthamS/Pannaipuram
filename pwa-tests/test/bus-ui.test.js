@@ -16,7 +16,7 @@ const CORRIDORS = [
 const T = (h, m = 0) => ({ departs_at: String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':00', bus_type: 'ordinary' });
 
 // Boots bus.js with fixed corridors/timings and a frozen "now" (IST wall-clock h:m).
-async function bootBus({ now = [10, 0], timings, saved }) {
+async function bootBus({ now = [10, 0], timings, saved, corridors = CORRIDORS }) {
   const dom = new JSDOM(HTML, { url: 'https://app.pannaipuram.com/', runScripts: 'outside-only', pretendToBeVisual: true });
   const w = dom.window;
   if (saved) w.localStorage.setItem('pannai:last-group-v1', saved);
@@ -28,8 +28,8 @@ async function bootBus({ now = [10, 0], timings, saved }) {
   w.setInterval = () => 0;
   w.scrollBy = () => {};
   w.eval(read('api.js'));
-  w.PannaiAPI.getBusAll = async () => ({ corridors: CORRIDORS, timings });
-  w.PannaiAPI.getBusCorridors = async () => CORRIDORS;
+  w.PannaiAPI.getBusAll = async () => ({ corridors, timings });
+  w.PannaiAPI.getBusCorridors = async () => corridors;
   w.PannaiAPI.getBusTimings = async (id) => timings[id] || [];
   w.eval(read('bus.js'));
   await w.Bus.init();
@@ -125,4 +125,49 @@ test('tip is not shown to a returning user who already opened a timetable', asyn
   dom.w.localStorage.setItem('pannai:tt-opened', '1');
   await dom.w.Bus.refresh();
   assert.equal(dom.$('.bus-tip'), null);
+});
+
+// ── Database text is shown as text, never run as HTML ──────────────
+const EVIL = '<img src=x onerror="window.__pwned=1">';
+
+test('a route name containing HTML is rendered as text, not markup', async () => {
+  const corridors = [{ id: 1, name_english: 'Theni' + EVIL, name_tamil: 'தேனி' + EVIL }];
+  const t = await bootBus({ now: [13, 0], timings: { 1: [T(13, 20)] }, corridors });
+  assert.equal(t.w.document.querySelectorAll('#section-bus img').length, 0);
+  assert.match(t.$('.route-name-ta').textContent, /<img src=x/);
+  assert.match(t.$('.strip-card-name').textContent, /<img src=x/);
+});
+
+test('operator name and destination in the timetable are rendered as text', async () => {
+  const timings = { 1: [{ id: 9, departs_at: '15:00:00', bus_type: 'private', operator_name: 'S&T ' + EVIL, dest_tamil: 'மதுரை ' + EVIL }] };
+  const t = await bootBus({ now: [13, 0], timings });
+  t.w.document.querySelector('.route-card').click();
+  await new Promise((r) => setImmediate(r));
+  const tt = t.$('.route-timetable:not([hidden])');
+  assert.ok(tt, 'timetable opened');
+  assert.equal(tt.querySelectorAll('img').length, 0);
+  assert.match(tt.querySelector('.tt-badge').textContent, /S&T <img/);
+  assert.match(tt.querySelector('.tt-dest').textContent, /மதுரை <img/);
+});
+
+test('a route with no timings names ITSELF in the WhatsApp request link', async () => {
+  const t = await bootBus({ now: [13, 0], timings: { 1: [], 2: [T(16)], 3: [T(18)] } });
+  t.w.document.querySelector('.route-card[data-id="1"]').click();
+  await new Promise((r) => setImmediate(r));
+  const link = decodeURIComponent(t.$('.tt-nodata-contact').getAttribute('href'));
+  assert.match(link, /Theni/);
+  assert.doesNotMatch(link, /this route/);
+});
+
+test('countdown over an hour reads "1 மணி 19 நிமி" (spaced like the minutes label)', async () => {
+  const t = await bootBus({ now: [13, 0], timings: { 1: [T(14, 19)], 2: [T(13, 5)], 3: [T(15)] } });
+  assert.equal(t.$('.route-card[data-id="1"] .badge-next-pill').textContent, '1 மணி 19 நிமி');
+  assert.equal(t.$('.route-card[data-id="2"] .badge-next-pill').textContent, '5 நிமிடம்');
+  assert.equal(t.$('.route-card[data-id="3"] .badge-next-pill').textContent, '2 மணி');
+});
+
+test('the share text points at app.pannaipuram.com, not the sleeping Render URL', () => {
+  const src = read('bus.js');
+  assert.doesNotMatch(src, /onrender\.com/);
+  assert.match(src, /App: https:\/\/app\.pannaipuram\.com\//);
 });
