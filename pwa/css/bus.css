@@ -1028,3 +1028,41 @@
   color: var(--muted);
   margin-top: 1px;
 }
+
+/* ── Route card layout (v109) ─────────────────────────────────
+   The town name is the one thing a villager is looking for, but it shared
+   its row with the next-bus time: only ~90–150px was left for it, so
+   சின்னமனூர் showed as "சின்…" and சுருளி தீர்த்தம் as "சுருளி தீர்…".
+   The name now gets the FULL card width on its own row; the English name,
+   bus-type chip and "எல்லா நேரமும்" sit under it on the left, with the time
+   and countdown on the right. Same markup — .route-info just stops being a
+   box (display: contents) so its children can be placed on the card grid. */
+.route-card {
+  display: grid;
+  grid-template-columns: 5px 46px minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto;
+  gap: 0 12px;                /* columns only — the base rule's 12px gap would also space the rows */
+  align-items: center;
+  padding: 13px 14px 13px 0;
+}
+.route-rail { grid-column: 1; grid-row: 1 / span 3; margin: -13px 0; }
+.route-emoji-circle { grid-column: 2; grid-row: 1 / span 3; }
+.route-info { display: contents; }
+.route-name-ta {
+  grid-column: 3 / span 2;
+  grid-row: 1;
+  font-size: 1.25rem;
+  white-space: normal;        /* a very long name wraps instead of being cut */
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+.route-name-en { grid-column: 3; grid-row: 2; align-self: start; margin-top: 4px; }
+.route-more    { grid-column: 3; grid-row: 3; align-self: end; margin-top: 6px; white-space: nowrap; }
+.route-badge {
+  grid-column: 4;
+  grid-row: 2 / span 2;
+  align-self: center;
+  padding: 0;
+  min-width: 0;
+}
