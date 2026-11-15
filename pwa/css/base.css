@@ -382,17 +382,21 @@ main {
 .section[hidden] { display: none; }
 
 /* ── Village announcements (📢) ─────────────────────────── */
-/* The fixed ☰ (left) and theme (right) buttons occupy the top 54px, so
-   whatever comes first must start BELOW them — same clearance as the install
-   strip. This used to slide the first card UNDER the buttons and indent its
-   text 108px to dodge them, which squeezed the message into a ~165px column
-   (cut off with "…") and left the card half-hidden behind the buttons. */
+/* The fixed ☰ (left) and theme (right) buttons end 54px below the notch, so
+   the first card must start BELOW them. This used to slide the card UNDER the
+   buttons and indent its text 108px to dodge them, which squeezed the message
+   into a ~165px column (cut off with "…").
+   NO env(safe-area-inset-top) here: this element lives inside <main>, which
+   already starts with `padding-top: env(safe-area-inset-top)`. Adding it again
+   (v111) doubled the gap on iPhones with a notch / Dynamic Island (~59px of
+   empty space). Android has no inset, so it looked fine there.
+   The install strip is OUTSIDE <main>, which is why it does need the inset. */
 #announce-host:not(:empty) {
-  padding: calc(62px + env(safe-area-inset-top)) 12px 0;
+  padding: 62px 12px 0;
   display: flex; flex-direction: column; gap: 8px;
 }
 @media (min-width: 560px) {
-  #announce-host:not(:empty) { padding-top: calc(72px + env(safe-area-inset-top)); }
+  #announce-host:not(:empty) { padding-top: 72px; }
 }
 .ann-card {
   display: flex;

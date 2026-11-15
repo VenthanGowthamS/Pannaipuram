@@ -12,7 +12,18 @@ const css = fs.readFileSync(path.join(__dirname, '..', '..', 'pwa', 'css', 'base
 test('the announcement host starts below the fixed ☰ / theme buttons', () => {
   const rule = /#announce-host:not\(:empty\)\s*\{([^}]*)\}/.exec(css);
   assert.ok(rule, 'rule found');
-  assert.match(rule[1], /padding:\s*calc\(62px \+ env\(safe-area-inset-top\)\)/);
+  assert.match(rule[1], /padding:\s*62px 12px 0/);
+});
+
+// <main> already starts with `padding-top: env(safe-area-inset-top)`, so the
+// host (inside <main>) must NOT add the inset again. v111 did, and every
+// iPhone with a notch / Dynamic Island got ~59px of empty space on top.
+test('the host does not count the iPhone notch inset a second time', () => {
+  assert.match(css, /\nmain\s*\{\s*padding-top:\s*env\(safe-area-inset-top\)/, 'main owns the inset');
+  const host = /#announce-host:not\(:empty\)\s*\{([^}]*)\}/.exec(css)[1];
+  assert.doesNotMatch(host, /safe-area-inset/);
+  const wide = /@media \(min-width: 560px\)\s*\{\s*#announce-host:not\(:empty\)\s*\{([^}]*)\}/.exec(css)[1];
+  assert.doesNotMatch(wide, /safe-area-inset/);
 });
 
 test('no first-card text indent that squeezes the message', () => {
