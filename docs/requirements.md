@@ -960,6 +960,14 @@ custom domains — it blocks Let's Encrypt cert issuance (was the cause of an ea
 **Backend hardening (v90)**
 - All "today/now" logic in IST (server runs UTC); admin role re-checked from the DB on every request; signup super_admin-only; admin PUTs validated (404 on unknown id); doctor schedule replace is transactional; FCM sends batched at 500; JSON error handler; per-device power-restored de-duplication
 
+### Phase 15 — Open சங்கமம், admin phones, service categories ✅ BUILT (November 2026, v110) — needs the two Supabase migrations
+
+- **சங்கமம் — anyone can post.** No phone registration. Each post is tied to the app's own id (☰ → About), the name is optional ("ஊர்க்காரர்" when blank), posts go live at once, 3 per app per day. The admin sees which app posted and can block it.
+- **Forwards welcome, any language.** The post box invites WhatsApp / Facebook messages for villagers who are not in those groups; title optional; one message box; 📋 Paste; a link inside the text becomes the tappable link button.
+- **Admin's own phones can delete any post** from the app (admin → PWA Stats → "My phones").
+- **Services restructured.** New categories — 🚗 vehicle service (car / bike wash, mechanic, tyre, battery), 🖥️ e-Sevai & net centre, 📦 parcel & logistics, 🛒 grocery & vegetables, 🪚 carpenter. More tab: services first, category jump chips, a "what's inside" line per category; admin can hide a service without deleting it.
+- **Fixed:** "Installs Today" card showed 0 for morning installs (DB-timezone cutoff); clearing an announcement's English text did not stick; clearing a service's notes/area did not stick.
+
 ### Phase 14 — Bus tab polish, install/update reliability, repo review ✅ COMPLETE (October–November 2026, v92–v109)
 
 **Bus tab (v92–v109)**

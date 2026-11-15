@@ -502,3 +502,22 @@ NODE_ENV=production
 ---
 
 *Built with ❤️ for பண்ணைப்புரம் by Venthan — Technology for Real People*
+
+## v110 (November 2026) — open சங்கமம் posting, admin phones, service categories
+
+**Migrations (run in the Supabase SQL Editor before deploying v110; both are safe to re-run):**
+- `migration_bulletin_open_posting.sql` — `community_posters.device_id` (unique when set), `phone` and `name_tamil` become nullable, `community_posts.author_name`, `pwa_visits.can_moderate`.
+- `migration_services_categories.sql` — `local_services.category` CHECK widened to `milk, grocery, flower, vehicle, esevai, logistics, post, plumber, electrician, carpenter, other` (list lives in `backend/src/utils/serviceCategories.js`); moves the 6 existing "other" rows.
+
+**Public**
+- `POST /api/bulletin/post` — `{ device_id, name?, title_tamil?, content_tamil, title_english?, content_english?, image_url?, link_url? }`. No registration; poster found-or-created by `device_id`; status `approved` at once; 3 per app per IST day (429); blocked app 403; before the migration → 503 `code: migration_pending`.
+- Post validation (all routes): title optional (≤200), text ≥10 and ≤4000 unless an image is attached; any language.
+- `GET /api/bulletin?device_id=` rows add `is_mine` and `can_delete` (booleans; device ids are never returned). `name_tamil` = name typed with the post, else the registered name, else `null`.
+- `PATCH` / `DELETE /api/bulletin/:id` also accept `{ device_id }` as ownership proof. An app edit keeps the post's status (a rejected post stays down). A device with `pwa_visits.can_moderate` may DELETE any post (`by_admin_device: true`); unknown post → 404.
+- The older `POST /api/bulletin/register` + `/submit` (phone) routes are unchanged.
+
+**Admin**
+- `PUT /admin/pwa/visitors/:visitorId/moderator` `{ can_moderate: boolean }` (admin/super_admin). `GET /admin/pwa/stats` adds `recent[].can_moderate`, `moderators[]`, `moderation_ready`. "Installs Today" now uses the same IST-day test as the daily table.
+- `GET /admin/bulletin` adds `author_name`, `device_id`; posters list adds `device_id`.
+- `POST` / `PUT /admin/services` validate the category (400, or a 400 naming the migration on a CHECK failure); `PUT` validates phone + name and can clear `name_english`, `area_*`, `notes_tamil`.
+- `PUT /admin/announcements/:id` can clear `message_english` (sending it sets it).

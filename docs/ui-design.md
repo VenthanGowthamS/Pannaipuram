@@ -501,6 +501,11 @@ The PWA has ONE brand look. Colours are tokens in `pwa/css/tokens.css`; no rule 
 
 ---
 
+### v110 changes
+- **More tab:** services first; a wrap-around row of category chips (emoji + Tamil + count, plus 🚖 acting drivers) jumps to each panel; each panel header has a muted "what's inside" line; acting drivers below.
+- **சங்கமம் composer:** prompt "முக்கிய செய்தி இருக்கா? இங்க பகிருங்க"; a green tip inviting WhatsApp / Facebook forwards in any language; "செய்தி *" box with 📋 Paste; optional title; optional name with a note that the post carries the app's id. No sign-up panel.
+- **Feed:** posts without a name show a muted "ஊர்க்காரர்" with a 🙂 avatar; an empty title is not rendered; the admin's phone sees "🛡️ நீக்கு" on every post.
+
 ## 11. Next Step
 
 PWA v109 is live. Remaining work is data entry and roadmap items — see `docs/requirements.md` Phase 12 and the "Next Up" list in `CLAUDE.md`.
