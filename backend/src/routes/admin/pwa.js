@@ -21,7 +21,15 @@ router.get('/stats', async (req, res) => {
   const lblAnd2   = excludeLabeled ? 'AND label IS NULL' : '';
 
   try {
-    const [totalsResult, labeledResult, dailyResult, installsResult, monthlyResult, recentResult] = await Promise.all([
+    // can_moderate arrives with migration_bulletin_open_posting.sql
+    const modCol = (await query(
+      `SELECT 1 FROM information_schema.columns WHERE table_name = 'pwa_visits' AND column_name = 'can_moderate'`
+    )).rows.length > 0;
+    const modSel = modCol ? 'can_moderate' : 'FALSE AS can_moderate';
+    const moderatorsQuery = modCol
+      ? query(`SELECT visitor_id, label, last_seen_at FROM pwa_visits WHERE can_moderate = TRUE ORDER BY last_seen_at DESC`)
+      : Promise.resolve({ rows: [] });
+    const [totalsResult, labeledResult, dailyResult, installsResult, monthlyResult, recentResult, moderatorsResult] = await Promise.all([
       query(`
         SELECT
           COUNT(*)                                                           AS total_visitors,
@@ -80,6 +88,7 @@ router.get('/stats', async (req, res) => {
           first_seen_at,
           last_seen_at,
           installed_at,
+          ${modSel},
           visit_count,
           is_standalone,
           LEFT(user_agent, 160) AS user_agent
@@ -90,7 +99,8 @@ router.get('/stats', async (req, res) => {
           (SELECT visitor_id FROM pwa_visits WHERE installed_at IS NOT NULL ORDER BY installed_at DESC LIMIT 15)
         )
         ORDER BY last_seen_at DESC
-      `)
+      `),
+      moderatorsQuery,
     ]);
 
     // Merge daily installs into the daily rows (keyed by ISO day)
@@ -110,6 +120,9 @@ router.get('/stats', async (req, res) => {
         daily,
         monthly: monthlyResult.rows.map((r) => ({ month: r.month, installs: Number(r.installs) })),
         recent: recentResult.rows,
+        // The admin's own phones that may delete any சங்கமம் post from the app
+        moderators: moderatorsResult.rows,
+        moderation_ready: modCol,
       },
     });
   } catch (err) {
@@ -139,6 +152,34 @@ router.put('/visitors/:visitorId/label', requireRole('admin', 'super_admin'), as
   } catch (err) {
     console.error('admin pwa label error:', err.message);
     res.status(500).json({ success: false, error: 'Failed to set label' });
+  }
+});
+
+// ── PUT /admin/pwa/visitors/:visitorId/moderator ───────────────
+// Marks one of the admin's own phones as able to delete ANY சங்கமம் post
+// from the app itself (no admin panel needed). { can_moderate: boolean }
+router.put('/visitors/:visitorId/moderator', requireRole('admin', 'super_admin'), async (req, res) => {
+  const vid = String(req.params.visitorId || '').trim();
+  if (!/^[A-Za-z0-9_-]{8,64}$/.test(vid)) {
+    return res.status(400).json({ success: false, error: 'invalid visitor id' });
+  }
+  const flag = req.body ? req.body.can_moderate : undefined;
+  if (typeof flag !== 'boolean') {
+    return res.status(400).json({ success: false, error: 'can_moderate (boolean) required' });
+  }
+  try {
+    const result = await query(
+      'UPDATE pwa_visits SET can_moderate = $1 WHERE visitor_id = $2 RETURNING visitor_id, label, can_moderate',
+      [flag, vid]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'visitor not found' });
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    if (err && err.code === '42703') {   // column missing → migration not run yet
+      return res.status(400).json({ success: false, error: 'Run migration_bulletin_open_posting.sql in Supabase first' });
+    }
+    console.error('admin pwa moderator error:', err);
+    res.status(500).json({ success: false, error: 'Failed to update device' });
   }
 });
 

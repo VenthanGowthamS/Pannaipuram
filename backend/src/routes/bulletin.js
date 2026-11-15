@@ -1,6 +1,10 @@
 // ── Community Bulletin (சங்கமம்) — PUBLIC routes ──────────────────
-// Model: registration required to post · admin approves · trusted posters
-//        skip the queue · anyone can view + like · 60-day expiry, newest 10 always kept.
+// Model (v110): ANYONE can post from the app — no registration. A post is tied
+//        to the app's device id (shown in ☰ → About and in admin PWA Stats) so
+//        the admin can see which app posted it and block that app; the name is
+//        optional. Open posts go live at once; the admin removes what doesn't
+//        belong. The older phone-registration routes stay for existing posters.
+//        Anyone can view + like · 60-day expiry, newest 10 always kept.
 // Admin/moderation routes live in routes/admin/bulletin.js (JWT-protected).
 const express = require('express');
 const router  = express.Router();
@@ -16,28 +20,31 @@ function isValidImage(url) {
   return typeof url === 'string' && /^data:image\/(jpeg|jpg|png|webp);base64,/i.test(url);
 }
 
-const MIN_TITLE   = 5;
 const MIN_CONTENT = 10;
+const MAX_TITLE   = 200;    // community_posts.title_tamil is VARCHAR(200)
+const MAX_CONTENT = 4000;   // a long WhatsApp forward fits; a wall of spam does not
 
 function hasImage(image_url) {
   return image_url != null && image_url !== '';
 }
 
-// Shared by submit + edit. A photo is content on its own — a villager
-// sharing "water pipe burst on my street" with a picture shouldn't be
-// blocked for not also typing a paragraph. Text-only posts still need real
+// Shared by submit + edit + the admin routes. A photo is content on its own.
+// v110: the TITLE is optional — a message forwarded from WhatsApp or Facebook
+// has no headline, and asking for one stopped people sharing it. The text
+// (any language — the *_tamil column names are historical) still needs real
 // substance so the feed doesn't fill with one-word "posts".
 function validatePostContent({ title_tamil, content_tamil, image_url }) {
+  const title = String(title_tamil == null ? '' : title_tamil).trim();
+  const content = String(content_tamil == null ? '' : content_tamil).trim();
+  if (title.length > MAX_TITLE) return `தலைப்பு ரொம்ப நீளம் (அதிகபட்சம் ${MAX_TITLE} எழுத்து)`;
+  if (content.length > MAX_CONTENT) return `செய்தி ரொம்ப நீளம் (அதிகபட்சம் ${MAX_CONTENT} எழுத்து)`;
   if (hasImage(image_url)) {
     if (!isValidImage(image_url)) return 'படம் சரியில்லை (JPEG/PNG/WebP மட்டும்)';
     if (image_url.length > MAX_IMAGE_BYTES) return 'படம் ரொம்ப பெரிசு (அதிகபட்சம் 150KB)';
     return null;
   }
-  if (!title_tamil || String(title_tamil).trim().length < MIN_TITLE) {
-    return `தலைப்பு குறைந்தது ${MIN_TITLE} எழுத்து வேணும் (அல்லது ஒரு படம் சேருங்க)`;
-  }
-  if (!content_tamil || String(content_tamil).trim().length < MIN_CONTENT) {
-    return `விபரம் குறைந்தது ${MIN_CONTENT} எழுத்து வேணும் (அல்லது ஒரு படம் சேருங்க)`;
+  if (content.length < MIN_CONTENT) {
+    return `செய்தி குறைந்தது ${MIN_CONTENT} எழுத்து வேணும் (அல்லது ஒரு படம் சேருங்க)`;
   }
   return null;
 }
@@ -102,6 +109,54 @@ async function hasLinkColumn() {
   return _linkColumn;
 }
 
+// ── Open-posting columns presence (migration_bulletin_open_posting.sql) ──
+// Same pattern as the link column: the code can reach Render before the
+// migration is run in Supabase, so nothing may SELECT these columns blindly.
+let _openCols = false;
+let _openCheckedAt = 0;
+async function hasOpenPosting() {
+  if (_openCols) return true;
+  if (Date.now() - _openCheckedAt < LINK_RECHECK_MS) return false;
+  _openCheckedAt = Date.now();
+  try {
+    const r = await query(
+      `SELECT COUNT(*)::int AS n FROM information_schema.columns
+        WHERE (table_name = 'community_posters' AND column_name = 'device_id')
+           OR (table_name = 'community_posts'   AND column_name = 'author_name')
+           OR (table_name = 'pwa_visits'        AND column_name = 'can_moderate')`
+    );
+    _openCols = r.rows[0].n === 3;
+  } catch (_) {
+    _openCols = false;
+  }
+  return _openCols;
+}
+
+// The app's own id: 'v-<time36>-<random8>' from app.js — same rule as /api/pwa/ping
+function cleanDeviceId(raw) {
+  const v = raw == null ? '' : String(raw).trim();
+  return /^[A-Za-z0-9_-]{8,64}$/.test(v) ? v : null;
+}
+// Optional display name typed with a post: trimmed, single-spaced, ≤ 60 chars
+function cleanName(raw) {
+  const v = raw == null ? '' : String(raw).replace(/\s+/g, ' ').trim().slice(0, 60);
+  return v || null;
+}
+
+// Is this app one of the admin's own phones (PWA Stats → "Can delete posts")?
+// Such an app may delete ANY post from the app itself. Its device id is the
+// credential — it is random, shown only on that phone (☰ → About) and in the
+// admin panel, and never appears in the public feed.
+async function isModeratorDevice(deviceId) {
+  if (!deviceId || !(await hasOpenPosting())) return false;
+  const r = await query('SELECT can_moderate FROM pwa_visits WHERE visitor_id = $1', [deviceId]);
+  return r.rows.length > 0 && r.rows[0].can_moderate === true;
+}
+
+// Posts per app per IST day. Higher than the old 1-per-phone because posting
+// is now open — but still a cap, so one phone can't flood the village feed.
+const OPEN_DAILY_LIMIT = 3;
+
 // ── GET /api/bulletin — live feed (approved + unexpired) ──────────
 // ?device_id=<id>  marks which posts this device already liked.
 // ?poster_id=<id>  additionally returns THAT poster's own pending posts, so
@@ -110,12 +165,28 @@ async function hasLinkColumn() {
 //                  Only ever exposes the caller's own pending rows.
 router.get('/', async (req, res) => {
   const deviceId = req.query.device_id ? String(req.query.device_id).slice(0, 64) : null;
+  let canModerate = false;
+  try { canModerate = await isModeratorDevice(cleanDeviceId(deviceId)); } catch (_) { /* feed still works */ }
   const ownRaw = Number(req.query.poster_id);
   const ownPosterId = Number.isInteger(ownRaw) && ownRaw > 0 ? ownRaw : null;
   try {
     // NULL stand-in keeps the response shape identical pre-migration, so the
     // PWA never has to special-case a missing field.
     const linkSel = (await hasLinkColumn()) ? 'p.link_url' : 'NULL::text AS link_url';
+    const open = await hasOpenPosting();
+    // The name shown is the one typed WITH the post; older posts fall back to
+    // the registered name. is_mine marks the caller's own app posts (device_id
+    // is the secret here, so it is compared server-side and never returned).
+    const nameSel = open
+      ? `COALESCE(p.author_name, poster.name_tamil) AS name_tamil`
+      : 'poster.name_tamil';
+    const mineSel = open
+      ? `COALESCE(poster.device_id = $1, FALSE) AS is_mine`
+      : 'FALSE AS is_mine';
+    // can_delete: own app post, or the admin's own phone (any post)
+    const delSel = open
+      ? `(COALESCE(poster.device_id = $1, FALSE) OR $3::boolean) AS can_delete`
+      : 'FALSE AS can_delete';
     const result = await query(
       `SELECT
          p.id,
@@ -128,7 +199,9 @@ router.get('/', async (req, res) => {
          p.image_url,
          ${linkSel},
          p.created_at,
-         poster.name_tamil,
+         ${nameSel},
+         ${mineSel},
+         ${delSel},
          poster.name_english,
          poster.is_trusted,
          poster.is_official,
@@ -147,7 +220,7 @@ router.get('/', async (req, res) => {
        GROUP BY p.id, poster.id
        ORDER BY p.created_at DESC
        LIMIT 100`,
-      [deviceId, ownPosterId]
+      open ? [deviceId, ownPosterId, canModerate] : [deviceId, ownPosterId]
     );
     res.json({ success: true, data: result.rows });
   } catch (err) {
@@ -162,7 +235,27 @@ router.get('/', async (req, res) => {
 // guessable, phone+id together is not. This is proportionate to the data
 // (village notices, already public once approved) — it is NOT authentication,
 // and the official account is excluded from these routes entirely.
-async function loadOwnedPost(postId, posterIdRaw, phoneRaw) {
+async function loadOwnedPost(postId, posterIdRaw, phoneRaw, deviceIdRaw) {
+  // v110: a post made from the app is proved by the app's device id (a random
+  // id that is never shown in the feed), the same way the phone proved it before.
+  const deviceId = cleanDeviceId(deviceIdRaw);
+  if (deviceId && await hasOpenPosting()) {
+    const r = await query(
+      `SELECT p.id, p.poster_id, p.status,
+              po.device_id, po.is_trusted, po.is_blocked, po.is_official
+       FROM community_posts p
+       JOIN community_posters po ON po.id = p.poster_id
+       WHERE p.id = $1`,
+      [postId]
+    );
+    if (r.rows.length === 0) return { err: 'not_found' };
+    const row = r.rows[0];
+    if (!row.device_id || row.device_id !== deviceId) return { err: 'forbidden' };
+    if (row.is_blocked) return { err: 'blocked' };
+    if (row.is_official) return { err: 'forbidden' };
+    return { post: row, viaDevice: true };
+  }
+
   const pid = Number(posterIdRaw);
   const phone = String(phoneRaw == null ? '' : phoneRaw).trim();
   if (!Number.isInteger(pid) || pid <= 0 || !phone) return { err: 'bad_request' };
@@ -203,10 +296,11 @@ router.patch('/:id', async (req, res) => {
     return res.status(400).json({ success: false, error: 'Invalid post id' });
   }
 
+  const body = req.body || {};
   const {
-    poster_id, phone, title_tamil, title_english,
+    poster_id, phone, device_id, title_tamil, title_english,
     content_tamil, content_english, image_url, link_url,
-  } = req.body || {};
+  } = body;
 
   const contentErr = validatePostContent({ title_tamil, content_tamil, image_url });
   if (contentErr) return res.status(400).json({ success: false, error: contentErr });
@@ -215,10 +309,15 @@ router.patch('/:id', async (req, res) => {
   if (link.error) return res.status(400).json({ success: false, error: link.error });
 
   try {
-    const { err, post } = await loadOwnedPost(postId, poster_id, phone);
+    const { err, post, viaDevice } = await loadOwnedPost(postId, poster_id, phone, device_id);
     if (err) return ownershipError(res, err);
 
-    const newStatus = post.is_trusted === true ? 'approved' : 'pending';
+    // App posts (open posting) keep their status: they were published at once,
+    // and a post the admin took down ('rejected') must not come back by being
+    // edited. A phone-registered, untrusted poster's edit still re-queues.
+    const newStatus = viaDevice
+      ? post.status
+      : (post.is_trusted === true ? 'approved' : 'pending');
 
     const params = [
       String(title_tamil || '').trim(),
@@ -235,6 +334,11 @@ router.patch('/:id', async (req, res) => {
     if (linkCol) {
       params.push(link.value);
       linkSet = `, link_url = $${params.length}`;
+    }
+    // Sending `name` (even empty) changes the name on the post; leaving it out keeps it
+    if (viaDevice && Object.prototype.hasOwnProperty.call(body, 'name')) {
+      params.push(cleanName(body.name));
+      linkSet += `, author_name = $${params.length}`;
     }
     params.push(postId);
 
@@ -255,7 +359,7 @@ router.patch('/:id', async (req, res) => {
         status: upd.rows[0].status,
         // Lets the PWA say "your edit is waiting for approval" rather than
         // leaving the villager wondering where their post went.
-        requeued: newStatus === 'pending',
+        requeued: !viaDevice && newStatus === 'pending',
         ...(link.value && !linkCol ? { link_saved: false } : {}),
       },
     });
@@ -276,14 +380,126 @@ router.delete('/:id', async (req, res) => {
 
   const body = req.body || {};
   try {
-    const { err } = await loadOwnedPost(postId, body.poster_id, body.phone);
-    if (err) return ownershipError(res, err);
+    // The admin's own phone may remove any post, straight from the app
+    const modDevice = await isModeratorDevice(cleanDeviceId(body.device_id));
+    if (!modDevice) {
+      const { err } = await loadOwnedPost(postId, body.poster_id, body.phone, body.device_id);
+      if (err) return ownershipError(res, err);
+    }
 
-    await query('DELETE FROM community_posts WHERE id = $1', [postId]);
-    res.json({ success: true, data: { id: postId, deleted: true } });
+    const gone = await query('DELETE FROM community_posts WHERE id = $1 RETURNING id', [postId]);
+    if (gone.rows.length === 0) return res.status(404).json({ success: false, error: 'செய்தி கிடைக்கல' });
+    res.json({ success: true, data: { id: postId, deleted: true, ...(modDevice ? { by_admin_device: true } : {}) } });
   } catch (e) {
     console.error('bulletin delete error:', e);
     res.status(500).json({ success: false, error: 'நீக்க முடியல' });
+  }
+});
+
+// ── POST /api/bulletin/post — open posting from the app (v110) ────
+// No registration. Body: { device_id, name?, title_tamil, content_tamil,
+// title_english?, content_english?, image_url?, link_url? }
+// The poster row is found-or-created by device_id; a blocked app gets 403.
+// Published immediately; up to OPEN_DAILY_LIMIT posts per app per IST day.
+router.post('/post', async (req, res) => {
+  const body = req.body || {};
+  const deviceId = cleanDeviceId(body.device_id);
+  if (!deviceId) {
+    return res.status(400).json({ success: false, error: 'செயலி அடையாளம் (app id) இல்லை — app-ஐ மூடி திறங்க' });
+  }
+  const { title_tamil, title_english, content_tamil, content_english, image_url, link_url } = body;
+  const contentErr = validatePostContent({ title_tamil, content_tamil, image_url });
+  if (contentErr) return res.status(400).json({ success: false, error: contentErr });
+  const link = normalizeLink(link_url);
+  if (link.error) return res.status(400).json({ success: false, error: link.error });
+
+  if (!(await hasOpenPosting())) {
+    // migration_bulletin_open_posting.sql not run yet — say so instead of a 500
+    return res.status(503).json({
+      success: false,
+      code: 'migration_pending',
+      error: 'சங்கமம் update ஆகிட்டு இருக்கு — கொஞ்ச நேரம் கழிச்சு try பண்ணுங்க',
+    });
+  }
+  const linkCol = await hasLinkColumn();
+  const name = cleanName(body.name);
+
+  const client = await getClient();
+  try {
+    await client.query('BEGIN');
+    // Find-or-create this app's poster row, and lock it so a double tap
+    // can't slip past the daily limit.
+    await client.query(
+      `INSERT INTO community_posters (device_id) VALUES ($1)
+       ON CONFLICT (device_id) WHERE device_id IS NOT NULL DO NOTHING`,
+      [deviceId]
+    );
+    const posterRes = await client.query(
+      'SELECT id, is_blocked, is_official FROM community_posters WHERE device_id = $1 FOR UPDATE',
+      [deviceId]
+    );
+    const poster = posterRes.rows[0];
+    if (poster.is_blocked || poster.is_official) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ success: false, error: 'இந்த app-ல இருந்து பதிவிட அனுமதி இல்லை' });
+    }
+
+    const today = istNow().date;
+    const daily = await client.query(
+      'SELECT count FROM community_posts_daily WHERE poster_id = $1 AND post_date = $2',
+      [poster.id, today]
+    );
+    if (daily.rows.length > 0 && daily.rows[0].count >= OPEN_DAILY_LIMIT) {
+      await client.query('ROLLBACK');
+      return res.status(429).json({
+        success: false,
+        error: `ஒரு நாளைக்கு ${OPEN_DAILY_LIMIT} செய்தி மட்டுமே — நாளைக்கு முயற்சி பண்ணுங்க`,
+      });
+    }
+
+    const cols = ['poster_id', 'author_name', 'title_tamil', 'title_english', 'content_tamil',
+                  'content_english', 'image_url', 'status'];
+    const vals = [
+      poster.id,
+      name,
+      String(title_tamil || '').trim(),
+      title_english ? String(title_english).trim() : null,
+      String(content_tamil || '').trim(),
+      content_english ? String(content_english).trim() : null,
+      image_url || null,
+      'approved',
+    ];
+    if (linkCol) { cols.push('link_url'); vals.push(link.value); }
+
+    const postRes = await client.query(
+      `INSERT INTO community_posts (${cols.join(', ')})
+       VALUES (${vals.map((_, i) => '$' + (i + 1)).join(', ')})
+       RETURNING id, status, created_at`,
+      vals
+    );
+    await client.query(
+      `INSERT INTO community_posts_daily (poster_id, post_date, count)
+       VALUES ($1, $2, 1)
+       ON CONFLICT (poster_id, post_date) DO UPDATE SET count = community_posts_daily.count + 1`,
+      [poster.id, today]
+    );
+    await client.query('COMMIT');
+
+    res.json({
+      success: true,
+      data: {
+        id: postRes.rows[0].id,
+        status: postRes.rows[0].status,
+        created_at: postRes.rows[0].created_at,
+        ...(link.value && !linkCol ? { link_saved: false } : {}),
+      },
+    });
+  } catch (err) {
+    try { await client.query('ROLLBACK'); } catch (_) { /* connection already gone */ }
+    console.error('bulletin open post error:', err);
+    res.status(500).json({ success: false, error: 'செய்தி அனுப்ப முடியல' });
+  } finally {
+    client.release();
   }
 });
 
@@ -518,3 +734,4 @@ module.exports = router;
 module.exports.validatePostContent = validatePostContent;
 module.exports.normalizeLink = normalizeLink;
 module.exports.hasLinkColumn = hasLinkColumn;
+module.exports.hasOpenPosting = hasOpenPosting;

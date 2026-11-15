@@ -1,7 +1,9 @@
 // ── Community Bulletin (சங்கமம்) ─────────────────────────────────
-// Village news feed. Anyone can read + like; posting needs a one-time
-// phone+name registration. New posters' posts wait for admin approval,
-// trusted posters go live instantly. Posts expire after 60 days, but the newest 10 are always kept.
+// Village news feed. Anyone can read, like AND post (v110) — no registration.
+// A post is tied to this app's id (pannai:visitor-id, shown in ☰ → About) so
+// the admin can see which app posted it; the name is optional. Villagers who
+// registered a phone before v110 keep editing their old posts that way.
+// Posts expire after 60 days, but the newest 10 are always kept.
 var Bulletin = (function() {
 
   function esc(s) {
@@ -24,6 +26,16 @@ var Bulletin = (function() {
     } catch (_) { return ''; }
   }
 
+  // Optional name, remembered on this phone so it doesn't have to be retyped
+  var NAME_KEY = 'pannai:bulletin-name';
+  function savedName() { try { return localStorage.getItem(NAME_KEY) || ''; } catch (_) { return ''; } }
+  function saveName(n) {
+    try { if (n) localStorage.setItem(NAME_KEY, n); else localStorage.removeItem(NAME_KEY); } catch (_) {}
+  }
+  var ANON = 'ஊர்க்காரர்';   // shown when a post was shared without a name
+
+  // Legacy (before v110): a phone registration — still proves ownership of
+  // the posts made with it.
   var POSTER_KEY = 'pannai:bulletin-poster';
   function getPoster() {
     try { return JSON.parse(localStorage.getItem(POSTER_KEY) || 'null'); }
@@ -105,10 +117,13 @@ var Bulletin = (function() {
     var badge = official
       ? '<span class="bl-official">📢 அதிகாரப்பூர்வம்</span>'
       : (p.is_trusted ? '<span class="bl-trust" title="நம்பகமான பதிவாளர்">✅ நம்பகமானவர்</span>' : '');
-    // Own-post controls. Needs a stored phone (the ownership proof) — a
-    // villager registered before v77 has none until they re-register.
+    // Own-post controls: the server marks this app's own posts (is_mine,
+    // matched on the app id). Posts made with an older phone registration
+    // are still matched on poster_id + the stored phone.
     var me = getPoster();
-    var mine = !!(me && me.phone && String(me.poster_id) === String(p.poster_id));
+    var mine = p.is_mine === true ||
+      !!(me && me.phone && String(me.poster_id) === String(p.poster_id));
+    var who = (p.name_tamil && String(p.name_tamil).trim()) || '';
     var isPending = p.status === 'pending';
     var ownBar = mine
       ? '<div class="bl-own">' +
@@ -116,20 +131,23 @@ var Bulletin = (function() {
           '<button class="bl-own-btn" type="button" data-edit="' + p.id + '">✏️ திருத்து</button>' +
           '<button class="bl-own-btn is-del" type="button" data-del="' + p.id + '">🗑️ நீக்கு</button>' +
         '</div>'
-      : '';
+      // The admin's own phone (PWA Stats → "Can delete posts") can remove any post
+      : (p.can_delete === true
+        ? '<div class="bl-own"><button class="bl-own-btn is-del" type="button" data-del="' + p.id + '">🛡️ நீக்கு</button></div>'
+        : '');
 
     return '<article class="bl-card' + (official ? ' is-official' : '') +
       (isPending ? ' is-pending' : '') + '" data-post="' + p.id + '">' +
       '<header class="bl-card-head">' +
         '<div class="bl-avatar' + (official ? ' is-official' : '') + '" aria-hidden="true">' +
-          (official ? '📢' : esc((p.name_tamil || '?').trim().charAt(0))) + '</div>' +
+          (official ? '📢' : (who ? esc(who.charAt(0)) : '🙂')) + '</div>' +
         '<div class="bl-who">' +
-          '<span class="bl-name">' + esc(p.name_tamil) + '</span>' +
+          '<span class="bl-name' + (who ? '' : ' is-anon') + '">' + esc(who || ANON) + '</span>' +
           badge +
           '<span class="bl-time">' + timeAgo(p.created_at) + '</span>' +
         '</div>' +
       '</header>' +
-      '<h3 class="bl-title">' + esc(p.title_tamil) + '</h3>' +
+      (String(p.title_tamil || '').trim() ? '<h3 class="bl-title">' + esc(p.title_tamil) + '</h3>' : '') +
       (p.title_english ? '<p class="bl-title-en">' + esc(p.title_english) + '</p>' : '') +
       '<p class="bl-body">' + esc(p.content_tamil) + '</p>' +
       (p.content_english ? '<p class="bl-body-en">' + esc(p.content_english) + '</p>' : '') +
@@ -290,134 +308,18 @@ var Bulletin = (function() {
     el.hidden = false;
   }
 
-  // The composer prompt is shown to EVERYONE — leading with the signup form
-  // made சங்கமம் look like a wall, and a villager who has not yet decided to
-  // post will not fill in a form to find out what is behind it. Unregistered
-  // taps are intercepted in wireComposeGate() and reveal the signup then,
-  // once they have already committed to posting.
+  // v110: no sign-up. The composer is open to everyone; the prompt's avatar
+  // shows the initial of the name this phone last posted with.
   function applyPosterState() {
-    var p = getPoster();
-    var regWrap  = document.getElementById('bulletin-reg');
     var postWrap = document.getElementById('bulletin-compose');
     var whoami   = document.getElementById('bulletin-whoami');
     var avatar   = document.getElementById('bulletin-compose-avatar');
+    var nameIn   = document.getElementById('bulletin-name');
     if (postWrap) postWrap.hidden = false;
-    // Signup stays put until it is actually needed; registering hides it again.
-    if (regWrap && p) regWrap.hidden = true;
-    if (whoami) whoami.hidden = !p;
-    // The prompt box carries the poster's initial, like a social composer
-    if (avatar) avatar.textContent = p ? (p.name_tamil || '🙂').trim().charAt(0) : '🙂';
-    if (whoami && p) {
-      whoami.innerHTML = '<span class="bl-whoami-ta">' + esc(p.name_tamil) + ' ஆக பதிவிடுறீங்க</span>' +
-        '<button type="button" id="bulletin-signout" class="bl-signout">மாத்து</button>';
-      var out = document.getElementById('bulletin-signout');
-      if (out) out.addEventListener('click', function() {
-        try { localStorage.removeItem(POSTER_KEY); } catch (_) {}
-        applyPosterState();
-      });
-    }
-  }
-
-  // An unregistered tap on the compose prompt must NOT expand the form —
-  // it reveals the one-time signup instead, at the moment the villager has
-  // shown they want to post. <details> toggles on click, so the default has
-  // to be prevented before it opens.
-  function wireComposeGate() {
-    var summary = document.querySelector('.bl-compose-cta');
-    if (!summary || summary.dataset.gated) return;
-    summary.dataset.gated = '1';
-    summary.addEventListener('click', function(ev) {
-      if (getPoster()) return;                 // registered → normal expand
-      ev.preventDefault();
-      revealRegistration();
-    });
-  }
-
-  function revealRegistration() {
-    var regWrap = document.getElementById('bulletin-reg');
-    if (!regWrap) return;
-    regWrap.hidden = false;
-    if (regWrap.scrollIntoView) regWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    var phone = document.getElementById('bulletin-phone');
-    // Delay the focus until the scroll settles, otherwise the phone keyboard
-    // opens mid-scroll and the field ends up behind it.
-    if (phone) setTimeout(function() { phone.focus(); }, 350);
-  }
-
-  function wireRegister() {
-    var form = document.getElementById('bulletin-reg-form');
-    if (!form || form.dataset.wired) return;
-    form.dataset.wired = '1';
-
-    var phone  = document.getElementById('bulletin-phone');
-    var errEl  = document.getElementById('bulletin-phone-err');
-    var result = document.getElementById('bulletin-reg-result');
-    var btn    = document.getElementById('bulletin-reg-btn');
-
-    phone.addEventListener('input', function() {
-      var d = this.value.replace(/\D/g, '').slice(0, 10);
-      if (this.value !== d) this.value = d;
-      if (errEl) { errEl.hidden = true; errEl.textContent = ''; }
-    });
-
-    form.addEventListener('submit', async function(ev) {
-      ev.preventDefault();
-      var ph = (phone.value || '').trim();
-      var nameTa = (document.getElementById('bulletin-name-ta').value || '').trim();
-      var nameEn = (document.getElementById('bulletin-name-en').value || '').trim();
-
-      if (!/^[6-9]\d{9}$/.test(ph)) {
-        if (errEl) {
-          errEl.textContent = '10 இலக்க மொபைல் எண் கொடுங்க (6/7/8/9-ல் தொடங்கணும்)';
-          errEl.hidden = false;
-        }
-        phone.focus();
-        return;
-      }
-      if (nameTa.length < 2) { say(result, 'உங்க பெயரை கொடுங்க', false); return; }
-
-      btn.disabled = true;
-      var label = btn.textContent;
-      btn.textContent = 'பதிவு பண்றோம்…';
-      if (result) result.hidden = true;
-
-      try {
-        var data = await PannaiAPI.registerPoster({
-          phone: ph, name_tamil: nameTa, name_english: nameEn,
-        });
-        // Phone is stored because it is the ONLY thing proving ownership when
-        // editing or deleting later — there is no login. Villagers registered
-        // before v77 have no phone saved, so their edit/delete controls stay
-        // hidden until they re-register with "மாத்து".
-        setPoster({
-          poster_id: data.poster_id,
-          phone: data.phone || ph,
-          name_tamil: data.name_tamil,
-          is_trusted: data.is_trusted,
-        });
-        applyPosterState();
-        // Re-fetch under the poster-aware URL: the feed loaded anonymously at
-        // init, so without this their own pending posts (and their edit /
-        // delete controls) would not appear until the next refresh.
-        loadFeed(true);
-        // They tapped the composer to get here — finish that action for them
-        // rather than dropping them back on a collapsed box to tap again.
-        var composeWrap = document.querySelector('.bl-compose');
-        if (composeWrap) composeWrap.open = true;
-        var composePanel = document.getElementById('bulletin-compose');
-        if (composePanel && composePanel.scrollIntoView) {
-          setTimeout(function() {
-            composePanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }, 100);
-        }
-        say(document.getElementById('bulletin-post-result'), '✅ பதிவு ஆயிடுச்சு — இப்ப செய்தி பகிரலாம்', true);
-      } catch (err) {
-        say(result, '❌ ' + (err.message || 'பதிவு தோல்வி'), false);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = label;
-      }
-    });
+    if (whoami) { whoami.hidden = true; whoami.innerHTML = ''; }
+    var n = savedName();
+    if (avatar) avatar.textContent = n ? n.charAt(0) : '🙂';
+    if (nameIn && !nameIn.value && !_editing) nameIn.value = n;
   }
 
   // Module-scope (not local to wireCompose) so startEdit() can preload an
@@ -427,14 +329,43 @@ var Bulletin = (function() {
 
   function toggleTextRequirement() {
     var has = !!_pendingImage;
-    var titleReq  = document.getElementById('bulletin-title-req');
-    var titleHint = document.getElementById('bulletin-title-hint');
     var contentReq  = document.getElementById('bulletin-content-req');
     var contentHint = document.getElementById('bulletin-content-hint');
-    if (titleReq)    titleReq.hidden    = has;
-    if (titleHint)   titleHint.hidden   = !has;
     if (contentReq)  contentReq.hidden  = has;
     if (contentHint) contentHint.hidden = !has;
+  }
+
+  // First http(s) link inside pasted text — WhatsApp forwards carry their
+  // link in the message, where it would render as untappable plain text.
+  function firstUrl(text) {
+    var m = /https?:\/\/[^\s<>"']+/i.exec(String(text || ''));
+    return m ? m[0].replace(/[).,!?]+$/, '') : '';
+  }
+
+  // 📋 Paste — one tap for a forwarded WhatsApp / Facebook message. Only shown
+  // where the browser can read the clipboard; elsewhere a hint says how.
+  function wirePaste() {
+    var btn = document.getElementById('bulletin-paste');
+    var box = document.getElementById('bulletin-content-ta');
+    var hint = document.getElementById('bulletin-paste-hint');
+    if (!btn || !box || btn.dataset.wired) return;
+    btn.dataset.wired = '1';
+    var can = !!(navigator.clipboard && navigator.clipboard.readText);
+    btn.hidden = false;
+    btn.addEventListener('click', async function() {
+      if (!can) { if (hint) hint.hidden = false; box.focus(); return; }
+      try {
+        var t = await navigator.clipboard.readText();
+        if (t && t.trim()) {
+          box.value = box.value.trim() ? box.value.replace(/\s+$/, '') + '\n\n' + t.trim() : t.trim();
+          box.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        box.focus();
+      } catch (_) {
+        if (hint) hint.hidden = false;   // permission refused — paste by hand
+        box.focus();
+      }
+    });
   }
 
   function wireCompose() {
@@ -482,8 +413,8 @@ var Bulletin = (function() {
 
     form.addEventListener('submit', async function(ev) {
       ev.preventDefault();
-      var poster = getPoster();
-      if (!poster) { say(result, 'முதலில் பதிவு பண்ணுங்க', false); return; }
+      var nameIn = document.getElementById('bulletin-name');
+      var name = nameIn ? nameIn.value.replace(/\s+/g, ' ').trim().slice(0, 60) : '';
 
       var titleTa = (document.getElementById('bulletin-title-ta').value || '').trim();
       var titleEn = (document.getElementById('bulletin-title-en').value || '').trim();
@@ -503,9 +434,18 @@ var Bulletin = (function() {
       // A photo is content on its own — text is only required without one.
       // Kept in sync with the server (validatePostContent in bulletin.js);
       // this is just the fast client-side check, the server has the final say.
-      if (!_pendingImage) {
-        if (titleTa.length < 5) { say(result, 'தலைப்பு கொஞ்சம் பெரிசா எழுதுங்க (அல்லது ஒரு படம் சேருங்க)', false); return; }
-        if (bodyTa.length < 10) { say(result, 'விபரம் கொஞ்சம் விளக்கமா எழுதுங்க (அல்லது ஒரு படம் சேருங்க)', false); return; }
+      // v110: the title is optional, and the text can be in any language.
+      if (!_pendingImage && bodyTa.length < 10) {
+        say(result, 'செய்தியை கொஞ்சம் விளக்கமா எழுதுங்க (அல்லது ஒரு படம் சேருங்க)', false);
+        return;
+      }
+      // A link inside the pasted text becomes the tappable link button
+      if (!link.value) {
+        var found = firstUrl(bodyTa);
+        if (found && !checkLink(found).error) {
+          link = { value: found };
+          if (linkIn) linkIn.value = found;
+        }
       }
 
       // UX gate — keeps the feed about the village, not forwards/spam.
@@ -522,7 +462,6 @@ var Bulletin = (function() {
 
       try {
         var payload = {
-          poster_id: poster.poster_id,
           title_tamil: titleTa,
           title_english: titleEn,
           content_tamil: bodyTa,
@@ -532,7 +471,17 @@ var Bulletin = (function() {
         };
 
         if (_editing) {
-          payload.phone = poster.phone;
+          // An app post is proved by the app id; an older phone-registered
+          // post by poster_id + phone (see startEdit, which records which).
+          if (_editingLegacy) {
+            var poster = getPoster() || {};
+            payload.poster_id = poster.poster_id;
+            payload.phone = poster.phone;
+          } else {
+            payload.device_id = deviceId();
+            payload.name = name;
+            saveName(name);
+          }
           var upd = await PannaiAPI.editPost(_editing, payload);
           cancelEdit();
           preview.innerHTML = '';
@@ -544,12 +493,18 @@ var Bulletin = (function() {
           return;
         }
 
-        var data = await PannaiAPI.submitPost(payload);
+        payload.device_id = deviceId();
+        payload.name = name;
+        var data = await PannaiAPI.openPost(payload);
+        saveName(name);
 
         form.reset();
         preview.innerHTML = '';
         _pendingImage = null;
         toggleTextRequirement();
+        applyPosterState();                       // refill the remembered name
+        var wrap = document.querySelector('.bl-compose');
+        if (wrap) wrap.open = false;              // back to the feed, where the post now is
 
         if (data.status === 'approved') {
           say(result, '✅ செய்தி வெளியாகிடுச்சு!', true);
@@ -577,11 +532,15 @@ var Bulletin = (function() {
   // _editing holds the id being edited; null means the composer creates a
   // new post. Kept in one place so submit() can branch on it.
   var _editing = null;
+  var _editingLegacy = false;   // true = post made with an old phone registration
 
   function startEdit(id) {
     var p = _posts.find(function(x) { return String(x.id) === String(id); });
     if (!p) return;
     _editing = p.id;
+    _editingLegacy = p.is_mine !== true;
+    var nameIn = document.getElementById('bulletin-name');
+    if (nameIn) nameIn.value = _editingLegacy ? '' : (p.name_tamil || '');
 
     document.getElementById('bulletin-title-ta').value   = p.title_tamil || '';
     document.getElementById('bulletin-title-en').value   = p.title_english || '';
@@ -620,6 +579,7 @@ var Bulletin = (function() {
 
   function cancelEdit() {
     _editing = null;
+    _editingLegacy = false;
     _pendingImage = null;
     var form = document.getElementById('bulletin-post-form');
     if (form) form.reset();
@@ -632,14 +592,20 @@ var Bulletin = (function() {
     var wrap = document.querySelector('.bl-compose');
     if (wrap) wrap.open = false;
     toggleTextRequirement();
+    applyPosterState();
   }
 
   async function removePost(id) {
+    var p = _posts.find(function(x) { return String(x.id) === String(id); });
     var poster = getPoster();
-    if (!poster || !poster.phone) return;
+    // Own app post, or the admin's own phone removing any post → the app id
+    var proof = (p && (p.is_mine === true || p.can_delete === true))
+      ? { device_id: deviceId() }
+      : (poster && poster.phone ? { poster_id: poster.poster_id, phone: poster.phone } : null);
+    if (!proof) return;
     if (!confirm('இந்த செய்தியை நீக்கிடலாமா?\n\nசரி = ஆமா, நீக்கு\nCancel = வேணாம்')) return;
     try {
-      await PannaiAPI.deletePost(id, { poster_id: poster.poster_id, phone: poster.phone });
+      await PannaiAPI.deletePost(id, proof);
       _posts = _posts.filter(function(p) { return String(p.id) !== String(id); });
       renderFeed();
       if (String(_editing) === String(id)) cancelEdit();
@@ -683,9 +649,8 @@ var Bulletin = (function() {
 
   return {
     init: function() {
-      wireRegister();
-      wireComposeGate();
       wireCompose();
+      wirePaste();
       wireFeedDelegation();
       wireRefresh();
       applyPosterState();

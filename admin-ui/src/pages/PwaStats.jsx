@@ -49,6 +49,7 @@ const PwaStats = ({ onSnackbar, canEdit }) => {
   const [excludeLabeled, setExcludeLabeled] = useState(false);
   const [labelDialog, setLabelDialog] = useState({ open: false, visitorId: null, label: '' });
   const [labelSaving, setLabelSaving] = useState(false);
+  const [modId, setModId] = useState('');
 
   const load = async (exclude = excludeLabeled) => {
     setLoading(true);
@@ -88,10 +89,28 @@ const PwaStats = ({ onSnackbar, canEdit }) => {
     }
   };
 
+  // Mark / un-mark one of my phones as able to delete any சங்கமம் post in the app
+  const setModerator = async (visitorId, flag) => {
+    const id = String(visitorId || '').trim();
+    if (!/^[A-Za-z0-9_-]{8,64}$/.test(id)) {
+      onSnackbar('Paste the Device ID from the app: ☰ → About (bottom)', 'warning');
+      return;
+    }
+    try {
+      await api.setPwaModerator(id, flag);
+      onSnackbar(flag ? '🛡 This phone can now delete posts in the app' : 'Delete right removed', 'success');
+      setModId('');
+      load();
+    } catch (e) {
+      onSnackbar(e.message || 'Failed to update device', 'error');
+    }
+  };
+
   const t = stats?.totals || {};
   const daily   = stats?.daily   || [];
   const monthly = stats?.monthly || [];
   const recent  = stats?.recent  || [];
+  const moderators = stats?.moderators || [];
 
   const monthLabel = (m) => {
     const [y, mo] = String(m).split('-');
@@ -244,6 +263,46 @@ const PwaStats = ({ onSnackbar, canEdit }) => {
         </Card>
       )}
 
+      {/* My phones that may delete any சங்கமம் post from the app */}
+      <Card sx={{ mb: 3, borderRadius: 3, border: '1px solid #FFE0B2' }}>
+        <CardContent>
+          <Typography sx={{ fontWeight: 700, fontSize: 15 }}>🛡 My phones — can delete any சங்கமம் post</Typography>
+          <Typography sx={{ fontSize: 12, color: '#777', mb: 1.5 }}>
+            A phone listed here sees a 🗑️ on every post in the app and can remove it on the spot.
+            Find a phone's Device ID in the app: ☰ → About (bottom). Only add your own phones.
+          </Typography>
+          {stats && stats.moderation_ready === false && (
+            <Typography sx={{ fontSize: 12, color: '#B71C1C', mb: 1 }}>
+              Run migration_bulletin_open_posting.sql in Supabase to turn this on.
+            </Typography>
+          )}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
+            {moderators.length === 0
+              ? <Typography sx={{ fontSize: 12, color: '#bbb' }}>No phones yet</Typography>
+              : moderators.map((m) => (
+                <Chip
+                  key={m.visitor_id}
+                  label={`🛡 ${m.label || m.visitor_id}`}
+                  color="warning"
+                  onDelete={canEdit ? () => setModerator(m.visitor_id, false) : undefined}
+                />
+              ))}
+          </Box>
+          {canEdit && (
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <TextField
+                size="small" label="Device ID" placeholder="v-…"
+                value={modId} onChange={(e) => setModId(e.target.value)}
+                sx={{ flex: 1, maxWidth: 360 }} inputProps={{ maxLength: 64 }}
+              />
+              <Button variant="contained" color="warning" onClick={() => setModerator(modId, true)}>
+                Allow deleting
+              </Button>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Recent visitors */}
       <Card sx={{ borderRadius: 3 }}>
         <CardContent>
@@ -268,6 +327,7 @@ const PwaStats = ({ onSnackbar, canEdit }) => {
                     <TableCell>Last Seen</TableCell>
                     <TableCell align="center">Visits</TableCell>
                     <TableCell>Installed On</TableCell>
+                    <TableCell align="center">🛡 Can delete posts</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -301,6 +361,15 @@ const PwaStats = ({ onSnackbar, canEdit }) => {
                         {r.installed_at
                           ? <Chip label={`✅ ${fmtDate(r.installed_at)}`} size="small" color="secondary" />
                           : <Chip label="Browser" size="small" variant="outlined" sx={{ color: '#999' }} />}
+                      </TableCell>
+                      <TableCell align="center">
+                        <Switch
+                          size="small" color="warning"
+                          checked={r.can_moderate === true}
+                          disabled={!canEdit || stats?.moderation_ready === false}
+                          onChange={(e) => setModerator(r.visitor_id, e.target.checked)}
+                          inputProps={{ 'aria-label': `Can delete posts: ${r.label || r.visitor_id}` }}
+                        />
                       </TableCell>
                     </TableRow>
                   ))}

@@ -347,6 +347,11 @@ class ApiService {
     return this.request('PUT', `/admin/pwa/visitors/${encodeURIComponent(visitorId)}/label`, { label });
   }
 
+  // One of the admin's own phones may delete any சங்கமம் post from the app
+  setPwaModerator(visitorId, canModerate) {
+    return this.request('PUT', `/admin/pwa/visitors/${encodeURIComponent(visitorId)}/moderator`, { can_moderate: canModerate });
+  }
+
   // Community Bulletin (சங்கமம்)
   getBulletinPosts(status) {
     return this.request('GET', `/admin/bulletin${status ? `?status=${encodeURIComponent(status)}` : ''}`);

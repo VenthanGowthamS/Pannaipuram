@@ -242,8 +242,13 @@ async function testSubmitValidation() {
     assert(status === 400, `Expected 400, got ${status}`);
   });
 
-  await test('Title under 5 characters → 400', async () => {
-    const { status } = await submit(posterId, { title_tamil: 'ஊர்' });
+  await test('A title over 200 characters → 400 (the title itself is optional now)', async () => {
+    const { status } = await submit(posterId, { title_tamil: 'அ'.repeat(201) });
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test('Text over 4000 characters → 400', async () => {
+    const { status } = await submit(posterId, { content_tamil: 'செய்தி '.repeat(700) });
     assert(status === 400, `Expected 400, got ${status}`);
   });
 
@@ -472,7 +477,7 @@ async function testOfficialAccount() {
     assert(status === 401, `Expected 401, got ${status}`);
   });
 
-  await test('Official post still validates title/content length', async () => {
+  await test('Official post still validates content length', async () => {
     const { status } = await post('/admin/bulletin/post', { title_tamil: 'ஊர்', content_tamil: 'சின்னது' }, auth());
     assert(status === 400, `Expected 400, got ${status}`);
   });
@@ -539,6 +544,11 @@ async function testPublicFeedShape() {
         `link_url must be http(s) or null, got ${p.link_url}`);
       assert(typeof p.like_count === 'number', 'like_count must be a number');
       assert(typeof p.liked_by_me === 'boolean', 'liked_by_me must be a boolean');
+      assert(typeof p.is_mine === 'boolean', 'is_mine must be a boolean');
+      assert(typeof p.can_delete === 'boolean', 'can_delete must be a boolean');
+      // The app id proves ownership of app posts — it must never be public
+      assert(!('device_id' in p), 'the public feed must not expose device_id');
+      assert(!('phone' in p), 'the public feed must not expose a phone');
     }
   });
 
@@ -549,6 +559,230 @@ async function testPublicFeedShape() {
     for (const p of pub.data) {
       assert(approved.has(p.id), `Post ${p.id} is public but not approved`);
     }
+  });
+}
+
+// ── Open posting from the app (v110) ───────────────────────────────
+// No registration: the app's device id ties a post to the app that made it,
+// the name is optional, posts go live at once, up to 3 per app per day, and
+// the admin can see the app id and block it.
+async function testOpenPosting() {
+  console.log('\n📲 Open posting (no registration)');
+  const RUN = Date.now().toString(36);
+  const DEV_A = `t-open-${RUN}-a`, DEV_B = `t-open-${RUN}-b`, DEV_C = `t-open-${RUN}-c`;
+  const body = (over = {}) => ({
+    title_tamil: 'தெரு விளக்கு எரியல',
+    content_tamil: 'வடக்கு தெருவுல ரெண்டு நாளா தெரு விளக்கு எரியல, யாராவது சொல்லுங்க.',
+    ...over,
+  });
+  const openPost = async (over) => {
+    const r = await post('/api/bulletin/post', body(over));
+    if (r.body.success && r.body.data && r.body.data.id) created.postIds.push(r.body.data.id);
+    return r;
+  };
+  const feedFor = async (dev) => (await get('/api/bulletin' + (dev ? `?device_id=${dev}` : ''))).body.data;
+  let postA1 = null, postA2 = null;
+
+  await test('POST /api/bulletin/post without a device id → 400', async () => {
+    const { status } = await post('/api/bulletin/post', body());
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test('a malformed device id → 400', async () => {
+    const { status } = await post('/api/bulletin/post', body({ device_id: '<script>' }));
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test('still validates content: too-short text with no image → 400', async () => {
+    const { status } = await openPost({ device_id: DEV_A, content_tamil: 'சின்னது' });
+    assert(status === 400, `Expected 400, got ${status}`);
+  });
+
+  await test('posting with NO name and NO registration → 200, live at once', async () => {
+    const { status, body: b } = await openPost({ device_id: DEV_A });
+    assert(status === 200, `Expected 200, got ${status} ${JSON.stringify(b)}`);
+    assert(b.data.status === 'approved', `expected approved, got ${b.data.status}`);
+    postA1 = b.data.id;
+    const row = (await feedFor()).find(p => p.id === postA1);
+    assert(row, 'post should be in the public feed straight away');
+    assert(row.name_tamil === null, `no name given → null, got ${JSON.stringify(row.name_tamil)}`);
+  });
+
+  await test('a forwarded message with NO title, in English → 200 (any language)', async () => {
+    const { status, body: b } = await openPost({
+      device_id: DEV_C, title_tamil: '',
+      content_tamil: 'Free eye camp at Uthamapalayam GH this Sunday 9am-1pm. Bring Aadhaar. Pls share.',
+    });
+    assert(status === 200, `Expected 200, got ${status} ${JSON.stringify(b)}`);
+    const row = (await feedFor()).find(p => p.id === b.data.id);
+    assert(row && row.title_tamil === '' && /eye camp/.test(row.content_tamil), JSON.stringify(row));
+    await delBody(`/api/bulletin/${b.data.id}`, { device_id: DEV_C });
+  });
+
+  await test('posting WITH an optional name shows that name (trimmed)', async () => {
+    const { status, body: b } = await openPost({ device_id: DEV_A, name: '  முருகன்    அண்ணன் ' });
+    assert(status === 200, `Expected 200, got ${status}`);
+    postA2 = b.data.id;
+    const row = (await feedFor()).find(p => p.id === postA2);
+    assert(row && row.name_tamil === 'முருகன் அண்ணன்', `got ${row && row.name_tamil}`);
+  });
+
+  await test('is_mine is true only for the app that posted it', async () => {
+    const mine = (await feedFor(DEV_A)).find(p => p.id === postA1);
+    const other = (await feedFor(DEV_B)).find(p => p.id === postA1);
+    const anon = (await feedFor()).find(p => p.id === postA1);
+    assert(mine.is_mine === true, 'own app should see is_mine');
+    assert(other.is_mine === false && anon.is_mine === false, 'others must not');
+  });
+
+  await test('admin sees which app posted it (device_id) and the typed name', async () => {
+    const { body: b } = await get('/admin/bulletin', auth());
+    const row = b.data.find(p => p.id === postA2);
+    assert(row, 'post missing from admin list');
+    assert(row.device_id === DEV_A, `expected device_id ${DEV_A}, got ${row.device_id}`);
+    assert(row.author_name === 'முருகன் அண்ணன்', `got ${row.author_name}`);
+    created.posterIds.push(row.poster_id);
+  });
+
+  await test('admin poster list includes the app poster with its device id', async () => {
+    const { body: b } = await get('/admin/bulletin/posters/list', auth());
+    assert(b.data.some(p => p.device_id === DEV_A && p.phone === null), 'app poster not listed');
+  });
+
+  await test('3 posts per app per day — the 4th → 429', async () => {
+    const third = await openPost({ device_id: DEV_A });
+    assert(third.status === 200, `3rd post: expected 200, got ${third.status}`);
+    const fourth = await openPost({ device_id: DEV_A });
+    assert(fourth.status === 429, `4th post: expected 429, got ${fourth.status}`);
+  });
+
+  await test('the owning app can edit its post (stays live, name can change)', async () => {
+    const { status, body: b } = await patch(`/api/bulletin/${postA1}`, body({
+      device_id: DEV_A, title_tamil: 'தெரு விளக்கு சரி ஆச்சு', name: 'செல்வி',
+    }));
+    assert(status === 200, `Expected 200, got ${status} ${JSON.stringify(b)}`);
+    assert(b.data.status === 'approved' && b.data.requeued === false, JSON.stringify(b.data));
+    const row = (await feedFor()).find(p => p.id === postA1);
+    assert(row.title_tamil === 'தெரு விளக்கு சரி ஆச்சு' && row.name_tamil === 'செல்வி', JSON.stringify(row));
+  });
+
+  await test('another app cannot edit or delete it → 403', async () => {
+    const e = await patch(`/api/bulletin/${postA1}`, body({ device_id: DEV_B }));
+    assert(e.status === 403, `edit: expected 403, got ${e.status}`);
+    const d = await delBody(`/api/bulletin/${postA1}`, { device_id: DEV_B });
+    assert(d.status === 403, `delete: expected 403, got ${d.status}`);
+  });
+
+  await test('a post the admin took down stays down when its app edits it', async () => {
+    await patch(`/admin/bulletin/${postA2}/status`, { status: 'rejected' }, auth());
+    const { status, body: b } = await patch(`/api/bulletin/${postA2}`, body({ device_id: DEV_A }));
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(b.data.status === 'rejected', `expected rejected, got ${b.data.status}`);
+    assert(!(await feedFor()).some(p => p.id === postA2), 'rejected post must not be public');
+  });
+
+  await test('the owning app can delete its post', async () => {
+    const c = await openPost({ device_id: DEV_C });
+    assert(c.status === 200, `post: ${c.status}`);
+    const { body: adm } = await get('/admin/bulletin', auth());
+    const row = adm.data.find(p => p.id === c.body.data.id);
+    if (row) created.posterIds.push(row.poster_id);
+    const d = await delBody(`/api/bulletin/${c.body.data.id}`, { device_id: DEV_C });
+    assert(d.status === 200, `delete: expected 200, got ${d.status}`);
+    assert(!(await feedFor()).some(p => p.id === c.body.data.id), 'deleted post still in feed');
+  });
+
+  await test('admin blocks the app → it can no longer post or edit (403)', async () => {
+    const { body: adm } = await get('/admin/bulletin/posters/list', auth());
+    const poster = adm.data.find(p => p.device_id === DEV_A);
+    const blk = await patch(`/admin/bulletin/posters/${poster.id}`, { is_blocked: true }, auth());
+    assert(blk.status === 200, `block: ${blk.status}`);
+    const p2 = await post('/api/bulletin/post', body({ device_id: DEV_A }));
+    assert(p2.status === 403, `post: expected 403, got ${p2.status}`);
+    const e = await patch(`/api/bulletin/${postA1}`, body({ device_id: DEV_A }));
+    assert(e.status === 403, `edit: expected 403, got ${e.status}`);
+  });
+
+  await test('the old phone registration still works for existing villagers', async () => {
+    const v = await registerVillager('பழைய பதிவு');
+    assert(v.posterId > 0, 'registration should still succeed');
+  });
+}
+
+// ── The admin's own phone can delete any post from the app (v110) ──
+async function testModeratorDevice() {
+  console.log('\n🛡  Admin phone can delete any post');
+  const RUN = Date.now().toString(36);
+  const MOD = `t-mod-${RUN}`, OTHER = `t-oth-${RUN}`, PLAIN = `t-pln-${RUN}`;
+  let otherPost = null;
+
+  // Each test device must exist as a visitor (that is what the admin marks)
+  await post('/api/pwa/ping', { visitor_id: MOD });
+  await post('/api/pwa/ping', { visitor_id: PLAIN });
+  // Label them so they drop out of village-only stats
+  await request('PUT', `/admin/pwa/visitors/${MOD}/label`, { label: 'test-run' }, auth());
+  await request('PUT', `/admin/pwa/visitors/${PLAIN}/label`, { label: 'test-run' }, auth());
+
+  const r = await post('/api/bulletin/post', {
+    device_id: OTHER, title_tamil: 'வேற ஒருத்தர் செய்தி', content_tamil: 'இது வேற app-ல இருந்து வந்த செய்தி, நீக்கலாம்.',
+  });
+  if (r.body.success) {
+    otherPost = r.body.data.id;
+    created.postIds.push(otherPost);
+    const { body: adm } = await get('/admin/bulletin', auth());
+    const row = adm.data.find(p => p.id === otherPost);
+    if (row) created.posterIds.push(row.poster_id);
+  }
+
+  await test('PUT /admin/pwa/visitors/:id/moderator without a token → 401', async () => {
+    const { status } = await request('PUT', `/admin/pwa/visitors/${MOD}/moderator`, { can_moderate: true });
+    assert(status === 401, `Expected 401, got ${status}`);
+  });
+
+  await test('…with a non-boolean flag → 400, unknown device → 404', async () => {
+    const a = await request('PUT', `/admin/pwa/visitors/${MOD}/moderator`, { can_moderate: 'yes' }, auth());
+    assert(a.status === 400, `bad flag: expected 400, got ${a.status}`);
+    const b = await request('PUT', `/admin/pwa/visitors/t-nobody-${RUN}/moderator`, { can_moderate: true }, auth());
+    assert(b.status === 404, `unknown: expected 404, got ${b.status}`);
+  });
+
+  await test('a phone that is NOT marked cannot delete someone else\'s post → 403', async () => {
+    const { status } = await delBody(`/api/bulletin/${otherPost}`, { device_id: PLAIN });
+    assert(status === 403, `Expected 403, got ${status}`);
+    const row = (await get(`/api/bulletin?device_id=${PLAIN}`)).body.data.find(p => p.id === otherPost);
+    assert(row && row.can_delete === false, 'unmarked phone must not get can_delete');
+  });
+
+  await test('admin marks their phone → PWA Stats shows it', async () => {
+    const { status, body } = await request('PUT', `/admin/pwa/visitors/${MOD}/moderator`, { can_moderate: true }, auth());
+    assert(status === 200 && body.data.can_moderate === true, `got ${status} ${JSON.stringify(body)}`);
+    const stats = await get('/admin/pwa/stats', auth());
+    const v = stats.body.data.recent.find(x => x.visitor_id === MOD);
+    assert(v && v.can_moderate === true, 'recent list should carry can_moderate');
+  });
+
+  await test('the marked phone sees can_delete on every post', async () => {
+    const feed = (await get(`/api/bulletin?device_id=${MOD}`)).body.data;
+    assert(feed.length > 0 && feed.every(p => p.can_delete === true), 'every post should be deletable');
+    const anon = (await get('/api/bulletin')).body.data.find(p => p.id === otherPost);
+    assert(anon.can_delete === false, 'a request without the phone id must not see can_delete');
+  });
+
+  await test('the marked phone deletes someone else\'s post → 200, gone from the feed', async () => {
+    const { status, body } = await delBody(`/api/bulletin/${otherPost}`, { device_id: MOD });
+    assert(status === 200 && body.data.by_admin_device === true, `got ${status} ${JSON.stringify(body)}`);
+    assert(!(await get('/api/bulletin')).body.data.some(p => p.id === otherPost), 'post still public');
+  });
+
+  await test('deleting a post that no longer exists → 404', async () => {
+    const { status } = await delBody(`/api/bulletin/${otherPost}`, { device_id: MOD });
+    assert(status === 404, `Expected 404, got ${status}`);
+  });
+
+  await test('un-marking the phone takes the right away again', async () => {
+    await request('PUT', `/admin/pwa/visitors/${MOD}/moderator`, { can_moderate: false }, auth());
+    const any = (await get(`/api/bulletin?device_id=${MOD}`)).body.data.find(p => p.can_delete === true && !p.is_mine);
+    assert(!any, 'no post should be deletable by an un-marked phone');
   });
 }
 
@@ -633,11 +867,17 @@ async function testVillagerEditDelete() {
   });
 
   // ── validation still applies to edits ──
-  await test('PATCH rejects a too-short title', async () => {
-    const { status } = await patch(`/api/bulletin/${postId}`, {
+  // v110: the title is optional (a forwarded message has none), so a short
+  // or empty title is fine; an over-long one is still refused.
+  await test('PATCH accepts a short title but rejects one over 200 characters', async () => {
+    const ok = await patch(`/api/bulletin/${postId}`, {
       poster_id: v.posterId, phone: v.phone, title_tamil: 'கு', content_tamil: EDIT.content_tamil,
     });
-    assert(status === 400, `Expected 400, got ${status}`);
+    assert(ok.status === 200, `short title: expected 200, got ${ok.status}`);
+    const long = await patch(`/api/bulletin/${postId}`, {
+      poster_id: v.posterId, phone: v.phone, title_tamil: 'அ'.repeat(201), content_tamil: EDIT.content_tamil,
+    });
+    assert(long.status === 400, `long title: expected 400, got ${long.status}`);
   });
 
   await test('PATCH rejects too-short content', async () => {
@@ -1056,6 +1296,8 @@ async function cleanup() {
     await testOfficialAccount();
     await testVillagerEditDelete();
     await testAdminEditAndLinks();
+    await testOpenPosting();
+    await testModeratorDevice();
     await testPublicFeedShape();
   } catch (e) {
     console.error('\n💥 Suite crashed:', e.message);

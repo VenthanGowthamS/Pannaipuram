@@ -2,7 +2,7 @@
 // Three-tier cache: in-memory → localStorage → network.
 // localStorage survives reloads, making the app usable offline after first load.
 var _mem = {};
-var CACHE_VERSION = 'pannai-v109';
+var CACHE_VERSION = 'pannai-v110';
 
 // API base — auto-detects hosting environment:
 //   app.pannaipuram.com  → api.pannaipuram.com  (custom domain, future)
@@ -173,6 +173,8 @@ var PannaiAPI = {
     if (posterId) q += '&poster_id=' + encodeURIComponent(posterId);
     return apiFetch(q, { force: force });
   },
+  // v110: anyone can post — no registration. payload carries device_id + optional name.
+  openPost:         function(payload) { return apiPost('/api/bulletin/post', payload); },
   registerPoster:   function(payload) { return apiPost('/api/bulletin/register', payload); },
   submitPost:       function(payload) { return apiPost('/api/bulletin/submit', payload); },
   likePost:         function(id, deviceId) {

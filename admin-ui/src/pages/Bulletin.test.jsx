@@ -307,3 +307,18 @@ describe('Bulletin — link dropped because the migration has not been run', () 
     expect(snack).not.toMatch(/migration/);
   });
 });
+
+// v110 — posts from the app with no registration show which app posted them
+import { posterName, posterId } from './Bulletin';
+describe('Bulletin — app posts (no registration)', () => {
+  it('shows the typed name, else the registered name, else "no name"', () => {
+    expect(posterName({ author_name: 'செல்வி', name_tamil: null })).toBe('செல்வி');
+    expect(posterName({ author_name: null, name_tamil: 'முருகன்' })).toBe('முருகன்');
+    expect(posterName({})).toMatch(/no name/);
+  });
+  it('identifies a post by phone, else by the app id', () => {
+    expect(posterId({ phone: '9000000001', device_id: null })).toBe('9000000001');
+    expect(posterId({ phone: null, device_id: 'v-abc-12345678' })).toBe('📱 v-abc-12345678');
+    expect(posterId({})).toBe('—');
+  });
+});

@@ -5,7 +5,7 @@ const router  = express.Router();
 const { query } = require('../../db/pool');
 const adminAuth = require('../../middleware/auth');
 const { requireRole, validateIdParam } = require('../../middleware/auth');
-const { validatePostContent, normalizeLink, hasLinkColumn } = require('../bulletin');
+const { validatePostContent, normalizeLink, hasLinkColumn, hasOpenPosting } = require('../bulletin');
 
 router.use(adminAuth);
 
@@ -42,9 +42,13 @@ router.get('/', async (req, res) => {
     // NULL stand-in keeps the row shape stable before the link migration is
     // run, so the admin panel never has to special-case a missing field.
     const linkSel = (await hasLinkColumn()) ? 'p.link_url' : 'NULL::text AS link_url';
+    // App posts (v110): which app posted it + the name typed with the post
+    const openSel = (await hasOpenPosting())
+      ? 'p.author_name, poster.device_id'
+      : 'NULL::text AS author_name, NULL::text AS device_id';
     const result = await query(
       `SELECT
-         p.id, p.title_tamil, p.title_english,
+         p.id, p.title_tamil, p.title_english, ${openSel},
          p.content_tamil, p.content_english, p.image_url, ${linkSel},
          p.status, p.created_at, p.updated_at, p.expires_at,
          poster.id AS poster_id,
@@ -235,9 +239,10 @@ router.delete('/:id', canWrite, validateIdParam, async (req, res) => {
 // Path is /posters/list (not /posters) so it can't be shadowed by /:id.
 router.get('/posters/list', async (req, res) => {
   try {
+    const devSel = (await hasOpenPosting()) ? 'po.device_id' : 'NULL::text AS device_id';
     const result = await query(
       `SELECT
-         po.id, po.phone, po.name_tamil, po.name_english,
+         po.id, po.phone, ${devSel}, po.name_tamil, po.name_english,
          po.is_trusted, po.is_blocked, po.is_official, po.registered_at,
          (SELECT COUNT(*)::int FROM community_posts p WHERE p.poster_id = po.id) AS post_count
        FROM community_posters po

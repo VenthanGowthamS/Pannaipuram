@@ -547,3 +547,36 @@
 .bl-btn { background: var(--c-news); }
 .bl-avatar, .bl-compose-avatar { background: var(--c-news); }
 .bl-card { border-left-color: var(--c-news); }
+
+/* ── v110: invite forwarded messages; 📋 Paste ─────────────────── */
+.bl-forward-tip {
+  display: flex; gap: 10px; align-items: flex-start;
+  margin: 2px 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--ok-tint);
+  color: var(--ok-ink);
+  font-family: var(--font-tamil);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+.bl-forward-ic { font-size: 1.3rem; line-height: 1.2; }
+.bl-forward-txt b { display: block; font-size: 0.9rem; }
+.bl-label-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+.bl-label-row .bl-label { margin-bottom: 6px; }
+.bl-paste-btn {
+  flex-shrink: 0;
+  min-height: 40px;
+  margin-bottom: 4px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--brand-ink);
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+.bl-paste-btn[hidden] { display: none; }
+.bl-paste-btn:active { background: var(--surface-3); }
+/* No name given → a softer "ஊர்க்காரர்" */
+.bl-name.is-anon { color: var(--muted); font-weight: 600; }

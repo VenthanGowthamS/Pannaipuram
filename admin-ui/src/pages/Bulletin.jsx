@@ -25,6 +25,11 @@ const STATUS_STYLE = {
   archived: { bgcolor: '#F3E5F5', color: '#6A1B9A' },
 };
 
+// v110: a post is from a phone registration (phone) OR from an app with no
+// registration (device_id — the same id the app shows in ☰ → About and PWA Stats).
+export const posterName = (row) => row.author_name || row.name_tamil || 'பெயர் இல்லை (no name)';
+export const posterId = (row) => row.phone || (row.device_id ? `📱 ${row.device_id}` : '—');
+
 const formatDate = (iso) => {
   if (!iso) return '—';
   return new Date(iso).toLocaleString('en-IN', {
@@ -160,9 +165,10 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
     // own, so the text minimums only apply when there is no image. The old
     // check demanded both unconditionally and rejected image-only posts the
     // server would have accepted.
+    // v110: the title is optional (forwarded messages have none) and the text
+    // can be in any language.
     if (!compose.image_url) {
-      if (compose.title_tamil.trim().length < 5) { onSnackbar('Tamil title must be at least 5 characters (or attach an image)', 'warning'); return; }
-      if (compose.content_tamil.trim().length < 10) { onSnackbar('Tamil content must be at least 10 characters (or attach an image)', 'warning'); return; }
+      if (compose.content_tamil.trim().length < 10) { onSnackbar('The message must be at least 10 characters (or attach an image)', 'warning'); return; }
     }
     setCompose(c => ({ ...c, saving: true }));
     const payload = {
@@ -303,8 +309,8 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
                         {post.link_url && <span title={post.link_url}> 🔗</span>}
                       </TableCell>
                       <TableCell sx={{ fontSize: 12 }}>
-                        <Box sx={{ fontFamily: '"Noto Sans Tamil", sans-serif' }}>{post.name_tamil}</Box>
-                        <Box sx={{ color: '#999' }}>{post.phone}</Box>
+                        <Box sx={{ fontFamily: '"Noto Sans Tamil", sans-serif' }}>{posterName(post)}</Box>
+                        <Box sx={{ color: '#999', fontFamily: post.phone ? 'inherit' : 'monospace', fontSize: 11 }}>{posterId(post)}</Box>
                       </TableCell>
                       <TableCell sx={{ fontSize: 12, color: '#757575', whiteSpace: 'nowrap' }}>
                         {formatDate(post.created_at)}
@@ -379,10 +385,10 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
                   {posters.map(p => (
                     <TableRow key={p.id} sx={{ bgcolor: p.is_blocked ? '#FFEBEE' : 'inherit' }}>
                       <TableCell sx={{ fontFamily: '"Noto Sans Tamil", sans-serif', fontWeight: 600 }}>
-                        {p.name_tamil}
+                        {p.name_tamil || (p.device_id ? 'App (no registration)' : '—')}
                         {p.name_english && <Box sx={{ fontSize: 11, color: '#999' }}>{p.name_english}</Box>}
                       </TableCell>
-                      <TableCell sx={{ fontSize: 13 }}>{p.phone}</TableCell>
+                      <TableCell sx={{ fontSize: p.phone ? 13 : 11, fontFamily: p.phone ? 'inherit' : 'monospace' }}>{posterId(p)}</TableCell>
                       <TableCell align="center" sx={{ fontSize: 13 }}>{p.post_count}</TableCell>
                       <TableCell sx={{ fontSize: 12, color: '#757575', whiteSpace: 'nowrap' }}>
                         {formatDate(p.registered_at)}
@@ -421,7 +427,7 @@ const Bulletin = ({ onSnackbar, canEdit }) => {
             </DialogTitle>
             <DialogContent dividers>
               <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                <strong>{details.post.name_tamil}</strong> · {details.post.phone} · {formatDate(details.post.created_at)}
+                <strong>{posterName(details.post)}</strong> · {posterId(details.post)} · {formatDate(details.post.created_at)}
                 {'  '}
                 <Chip label={details.post.status} size="small" sx={{ ...STATUS_STYLE[details.post.status], ml: 1 }} />
                 {details.post.is_trusted && <Chip label="trusted" size="small" color="success" sx={{ ml: 0.5 }} />}
