@@ -671,8 +671,65 @@
         <button id="more-refresh-btn" class="more-refresh-btn" aria-label="புதுப்பி · Refresh" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
       </div>
 
+      <!-- Quick jump: one chip per service category + acting drivers (more.js) -->
+      <nav id="more-jump" class="more-jump" aria-label="சேவை வகைகள் · Service categories" hidden></nav>
+
+      <!-- Local services — first: this tab is "More Village Services" -->
+      <div class="more-svc-section-head" id="more-services-head">
+        <span class="more-feature-emoji">🛍</span>
+        <div class="more-feature-titles">
+          <span class="more-feature-ta">ஊர் சேவைகள்</span>
+          <span class="more-feature-en">Local Services</span>
+        </div>
+      </div>
+      <div id="more-services"></div>
+
+      <!-- Service provider registration (collapsible) -->
+      <details class="acting-reg svc-reg" id="svc-reg">
+        <summary class="acting-reg-cta">
+          <span class="acting-reg-ic">🛍</span>
+          <span class="acting-reg-txt">
+            <span class="acting-reg-ta">உங்க சேவையை இங்க பதிவு பண்ணுங்க</span>
+            <span class="acting-reg-en">Register your service (milk, car wash, e-Sevai…)</span>
+          </span>
+          <span class="acting-reg-caret">▾</span>
+        </summary>
+        <form id="svc-reg-form" class="acting-reg-form" novalidate>
+          <label class="auto-form-label" for="srf-name">பெயர் <span class="auto-form-required">*</span></label>
+          <input id="srf-name" class="auto-form-input" type="text" placeholder="பெயர்" required maxlength="80" autocomplete="name">
+
+          <label class="auto-form-label" for="srf-phone">தொலைபேசி எண் <span class="auto-form-required">*</span></label>
+          <input id="srf-phone" class="auto-form-input" type="tel" placeholder="10 இலக்க மொபைல் எண்" required maxlength="10" autocomplete="tel" inputmode="numeric" pattern="[6-9][0-9]{9}">
+          <p id="srf-phone-err" class="auto-form-field-err" hidden></p>
+
+          <label class="auto-form-label" for="srf-type">என்ன சேவை?</label>
+          <select id="srf-type" class="auto-form-input">
+            <option value="பால்">🥛 பால்</option>
+            <option value="மளிகை & காய்கறி">🛒 மளிகை & காய்கறி</option>
+            <option value="பூக்கடை">🌺 பூக்கடை</option>
+            <option value="வண்டி சர்வீஸ் (கார் வாஷ், மெக்கானிக்)">🚗 வண்டி சர்வீஸ் — கார் வாஷ், மெக்கானிக்</option>
+            <option value="இ-சேவை & நெட் சென்டர்">🖥️ இ-சேவை & நெட் சென்டர்</option>
+            <option value="பார்சல் & லாஜிஸ்டிக்ஸ்">📦 பார்சல் & லாஜிஸ்டிக்ஸ்</option>
+            <option value="தபால்">📮 தபால்</option>
+            <option value="பிளம்பர்">🔧 பிளம்பர்</option>
+            <option value="எலக்ட்ரீஷியன்">⚡ எலக்ட்ரீஷியன்</option>
+            <option value="தச்சர்">🪚 தச்சர்</option>
+            <option value="மற்றவை">🛍 மற்றவை</option>
+          </select>
+
+          <label class="auto-form-label" for="srf-area">எந்த பகுதி?</label>
+          <input id="srf-area" class="auto-form-input" type="text" placeholder="எ.கா: வள்ளுவர் தெரு, பண்ணைப்புரம்" maxlength="120">
+
+          <label class="auto-form-label" for="srf-msg">வேற ஏதாவது சொல்லணுமா?</label>
+          <textarea id="srf-msg" class="auto-form-input auto-form-textarea" placeholder="நேரம், விவரம்..." rows="2" maxlength="300"></textarea>
+
+          <button type="submit" id="srf-btn" class="acting-reg-btn"><span id="srf-btn-text">📩 பதிவு அனுப்புங்க</span></button>
+          <p id="srf-result" class="auto-form-result" hidden></p>
+        </form>
+      </details>
+
       <!-- Acting / substitute drivers — prominent panel -->
-      <section class="more-feature acting-panel">
+      <section class="more-feature acting-panel" id="more-acting-panel">
         <div class="more-feature-head">
           <span class="more-feature-emoji">🚖</span>
           <div class="more-feature-titles">
@@ -720,57 +777,6 @@
           </form>
         </details>
       </section>
-
-      <!-- Local services -->
-      <div class="more-svc-section-head">
-        <span class="more-feature-emoji">🛍</span>
-        <div class="more-feature-titles">
-          <span class="more-feature-ta">ஊர் சேவைகள்</span>
-          <span class="more-feature-en">Local Services</span>
-        </div>
-      </div>
-      <div id="more-services"></div>
-
-      <!-- Service provider registration (collapsible) -->
-      <details class="acting-reg svc-reg" id="svc-reg">
-        <summary class="acting-reg-cta">
-          <span class="acting-reg-ic">🛍</span>
-          <span class="acting-reg-txt">
-            <span class="acting-reg-ta">உங்க சேவையை இங்க பதிவு பண்ணுங்க</span>
-            <span class="acting-reg-en">Register your service (milk, electrician…)</span>
-          </span>
-          <span class="acting-reg-caret">▾</span>
-        </summary>
-        <form id="svc-reg-form" class="acting-reg-form" novalidate>
-          <label class="auto-form-label" for="srf-name">பெயர் <span class="auto-form-required">*</span></label>
-          <input id="srf-name" class="auto-form-input" type="text" placeholder="பெயர்" required maxlength="80" autocomplete="name">
-
-          <label class="auto-form-label" for="srf-phone">தொலைபேசி எண் <span class="auto-form-required">*</span></label>
-          <input id="srf-phone" class="auto-form-input" type="tel" placeholder="10 இலக்க மொபைல் எண்" required maxlength="10" autocomplete="tel" inputmode="numeric" pattern="[6-9][0-9]{9}">
-          <p id="srf-phone-err" class="auto-form-field-err" hidden></p>
-
-          <label class="auto-form-label" for="srf-type">என்ன சேவை?</label>
-          <select id="srf-type" class="auto-form-input">
-            <option value="பால்">🥛 பால்</option>
-            <option value="தபால்">📮 தபால்</option>
-            <option value="பூ">🌺 பூ</option>
-            <option value="பிளம்பர்">🔧 பிளம்பர்</option>
-            <option value="எலக்ட்ரீஷியன்">⚡ எலக்ட்ரீஷியன்</option>
-            <option value="மளிகை">🛒 மளிகை</option>
-            <option value="தச்சர்">🪚 தச்சர்</option>
-            <option value="மற்றவை">🛍 மற்றவை</option>
-          </select>
-
-          <label class="auto-form-label" for="srf-area">எந்த பகுதி?</label>
-          <input id="srf-area" class="auto-form-input" type="text" placeholder="எ.கா: வள்ளுவர் தெரு, பண்ணைப்புரம்" maxlength="120">
-
-          <label class="auto-form-label" for="srf-msg">வேற ஏதாவது சொல்லணுமா?</label>
-          <textarea id="srf-msg" class="auto-form-input auto-form-textarea" placeholder="நேரம், விவரம்..." rows="2" maxlength="300"></textarea>
-
-          <button type="submit" id="srf-btn" class="acting-reg-btn"><span id="srf-btn-text">📩 பதிவு அனுப்புங்க</span></button>
-          <p id="srf-result" class="auto-form-result" hidden></p>
-        </form>
-      </details>
 
     </section>
 

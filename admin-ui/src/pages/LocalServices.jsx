@@ -16,19 +16,30 @@ import {
   Skeleton,
   IconButton,
   Chip,
+  Switch,
+  Tooltip,
 } from '@mui/material';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import api from '../api';
 import ConfirmDialog from '../components/ConfirmDialog';
 
-const CATEGORIES = [
-  { id: 'milk',        emoji: '🥛', tamil: 'பால் விற்பனையாளர்', english: 'Milk Man' },
-  { id: 'post',        emoji: '📮', tamil: 'தபால்காரர்',          english: 'Postman' },
-  { id: 'flower',      emoji: '🌺', tamil: 'பூ விற்பனையாளர்',    english: 'Flower Seller' },
-  { id: 'plumber',     emoji: '🔧', tamil: 'குழாய் சரி செய்பவர்', english: 'Plumber' },
-  { id: 'electrician', emoji: '⚡', tamil: 'மின் தொழிலாளி',      english: 'Electrician' },
-  { id: 'other',       emoji: '🛠', tamil: 'மற்றவை',              english: 'Others' },
+// Same keys, same order as the API (backend/src/utils/serviceCategories.js)
+// and the PWA (pwa/js/more.js) — a pwa-tests check fails if they drift.
+// `hint` says what belongs in the category, so "car wash" isn't filed as "Others".
+export const CATEGORIES = [
+  { id: 'milk',        emoji: '🥛', tamil: 'பால்',                 english: 'Milk',               hint: 'Milk delivery' },
+  { id: 'grocery',     emoji: '🛒', tamil: 'மளிகை & காய்கறி',      english: 'Grocery & Vegetables', hint: 'Grocery shops, vegetables, fruits' },
+  { id: 'flower',      emoji: '🌺', tamil: 'பூக்கடை',              english: 'Flowers',            hint: 'Flower shops, garlands' },
+  { id: 'vehicle',     emoji: '🚗', tamil: 'வண்டி சர்வீஸ்',        english: 'Vehicle Service',    hint: 'Car / bike wash, mechanic, tyre, battery, puncture' },
+  { id: 'esevai',      emoji: '🖥️', tamil: 'இ-சேவை & நெட் சென்டர்', english: 'e-Sevai & Net Centre', hint: 'Aadhaar, PAN, online forms, print / xerox' },
+  { id: 'logistics',   emoji: '📦', tamil: 'பார்சல் & லாஜிஸ்டிக்ஸ்', english: 'Parcel & Logistics', hint: 'Courier, parcel, goods transport' },
+  { id: 'post',        emoji: '📮', tamil: 'தபால்',                english: 'Post',               hint: 'Postman, post office' },
+  { id: 'plumber',     emoji: '🔧', tamil: 'பிளம்பர்',             english: 'Plumber',            hint: 'Pipes, motor, tank' },
+  { id: 'electrician', emoji: '⚡', tamil: 'எலக்ட்ரீஷியன்',        english: 'Electrician',        hint: 'Wiring, fan, light, inverter' },
+  { id: 'carpenter',   emoji: '🪚', tamil: 'தச்சர்',               english: 'Carpenter',          hint: 'Doors, furniture, wood work' },
+  { id: 'other',       emoji: '🛍', tamil: 'மற்றவை',               english: 'Others',             hint: 'Anything that fits nowhere above' },
 ];
+const CATEGORY_ORDER = CATEGORIES.map((c) => c.id);
 
 const getCategoryInfo = (id) =>
   CATEGORIES.find((c) => c.id === id) || { emoji: '?', tamil: id, english: id };
@@ -53,7 +64,10 @@ const LocalServices = ({ onSnackbar, canEdit }) => {
     setLoading(true);
     try {
       const data = await api.getLocalServices();
-      setServices(data || []);
+      // Same order villagers see in the app: by category, then display order
+      const rank = (c) => { const i = CATEGORY_ORDER.indexOf(c); return i === -1 ? 99 : i; };
+      setServices((data || []).slice().sort((a, b) =>
+        rank(a.category) - rank(b.category) || (a.display_order || 0) - (b.display_order || 0) || a.id - b.id));
     } catch {
       onSnackbar('Failed to load services', 'error');
     } finally {
@@ -113,6 +127,17 @@ const LocalServices = ({ onSnackbar, canEdit }) => {
       loadServices();
     } catch (error) {
       onSnackbar(error.message || (editingId ? 'Failed to update service' : 'Failed to add service contact'), 'error');
+    }
+  };
+
+  // Hide a service from the app without deleting it (e.g. shop closed for a while)
+  const handleToggleActive = async (svc) => {
+    try {
+      await api.updateLocalService(svc.id, { is_active: !svc.is_active });
+      onSnackbar(svc.is_active ? 'Hidden from the app' : 'Shown in the app', 'success');
+      loadServices();
+    } catch (error) {
+      onSnackbar(error.message || 'Failed to update', 'error');
     }
   };
 
@@ -209,6 +234,9 @@ const LocalServices = ({ onSnackbar, canEdit }) => {
                 );
               })}
             </Box>
+            <Typography sx={{ fontSize: 12, color: '#666', mt: -1, mb: 2 }}>
+              {getCategoryInfo(form.category).emoji} {getCategoryInfo(form.category).english}: {getCategoryInfo(form.category).hint}
+            </Typography>
 
             {/* ── Rest of Form ── */}
             <Grid container spacing={2}>
@@ -313,6 +341,7 @@ const LocalServices = ({ onSnackbar, canEdit }) => {
                   <TableCell sx={{ fontWeight: 600 }}>Name (English)</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>Area</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }} align="center">In app</TableCell>
                   <TableCell sx={{ fontWeight: 600 }} align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -320,7 +349,7 @@ const LocalServices = ({ onSnackbar, canEdit }) => {
                 {services.map((svc) => {
                   const cat = getCategoryInfo(svc.category);
                   return (
-                    <TableRow key={svc.id} sx={editingId === svc.id ? { bgcolor: '#E8F5E9' } : {}}>
+                    <TableRow key={svc.id} sx={{ ...(editingId === svc.id ? { bgcolor: '#E8F5E9' } : {}), ...(svc.is_active === false ? { opacity: 0.55 } : {}) }}>
                       <TableCell>
                         <Chip
                           label={`${cat.emoji} ${cat.english}`}
@@ -337,6 +366,19 @@ const LocalServices = ({ onSnackbar, canEdit }) => {
                       </TableCell>
                       <TableCell sx={{ fontFamily: '"Noto Sans Tamil", sans-serif', fontSize: '12px' }}>
                         {svc.area_tamil || '—'}
+                      </TableCell>
+                      <TableCell align="center">
+                        <Tooltip title={svc.is_active === false ? 'Hidden — tap to show in the app' : 'Shown — tap to hide from the app'}>
+                          <span>
+                            <Switch
+                              size="small"
+                              checked={svc.is_active !== false}
+                              disabled={!canEdit}
+                              onChange={() => handleToggleActive(svc)}
+                              inputProps={{ 'aria-label': `Show ${svc.name_tamil} in the app` }}
+                            />
+                          </span>
+                        </Tooltip>
                       </TableCell>
                       <TableCell align="center">
                         {canEdit && (

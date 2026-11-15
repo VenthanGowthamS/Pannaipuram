@@ -152,15 +152,22 @@ var More = (function() {
   }
 
   // ── Local services (grouped by category) ──────────────────
+  // Keys + order match the API (backend/src/utils/serviceCategories.js) and
+  // the admin panel; pwa-tests/test/service-categories.test.js checks it.
+  // `hint` is the one line under each panel title that says what is inside —
+  // a villager looking for a car wash won't open "மற்றவை" to find it.
   var SVC_CATS = {
-    milk:        { emoji: '🥛', ta: 'பால்' },
-    post:        { emoji: '📮', ta: 'தபால்' },
-    flower:      { emoji: '🌺', ta: 'பூ' },
-    plumber:     { emoji: '🔧', ta: 'பிளம்பர்' },
-    electrician: { emoji: '⚡', ta: 'எலக்ட்ரீஷியன்' },
-    grocery:     { emoji: '🛒', ta: 'மளிகை' },
-    carpenter:   { emoji: '🪚', ta: 'தச்சர்' },
-    other:       { emoji: '🛍', ta: 'மற்றவை' },
+    milk:        { emoji: '🥛', ta: 'பால்',                 en: 'Milk',               hint: 'வீட்டுக்கு பால்' },
+    grocery:     { emoji: '🛒', ta: 'மளிகை & காய்கறி',      en: 'Grocery & Vegetables', hint: 'மளிகை · காய்கறி · பழம்' },
+    flower:      { emoji: '🌺', ta: 'பூக்கடை',              en: 'Flowers',            hint: 'பூ · மாலை' },
+    vehicle:     { emoji: '🚗', ta: 'வண்டி சர்வீஸ்',        en: 'Vehicle Service',    hint: 'கார் / பைக் வாஷ் · மெக்கானிக் · டயர் · பேட்டரி' },
+    esevai:      { emoji: '🖥️', ta: 'இ-சேவை & நெட் சென்டர்', en: 'e-Sevai & Net Centre', hint: 'ஆதார் · பான் கார்டு · ஆன்லைன் விண்ணப்பம் · பிரிண்ட் / ஜெராக்ஸ்' },
+    logistics:   { emoji: '📦', ta: 'பார்சல் & லாஜிஸ்டிக்ஸ்', en: 'Parcel & Logistics', hint: 'கூரியர் · பார்சல் · சரக்கு அனுப்ப' },
+    post:        { emoji: '📮', ta: 'தபால்',                en: 'Post',               hint: '' },
+    plumber:     { emoji: '🔧', ta: 'பிளம்பர்',             en: 'Plumber',            hint: 'குழாய் · மோட்டார் · டேங்க்' },
+    electrician: { emoji: '⚡', ta: 'எலக்ட்ரீஷியன்',        en: 'Electrician',        hint: 'வயரிங் · ஃபேன் · லைட் · இன்வெர்ட்டர்' },
+    carpenter:   { emoji: '🪚', ta: 'தச்சர்',               en: 'Carpenter',          hint: 'கதவு · ஃபர்னிச்சர் · மர வேலை' },
+    other:       { emoji: '🛍', ta: 'மற்றவை',               en: 'Others',             hint: '' },
   };
   function svcRow(s) {
     var call = hasPhone(s.phone)
@@ -177,13 +184,17 @@ var More = (function() {
       '</div>' + call + '</div>';
   }
   // One category = one compact white panel with a tinted header + rows
+  function catMeta(cat) { return SVC_CATS[cat] || { emoji: '🛍', ta: cat, en: '', hint: '' }; }
   function svcGroup(cat, list) {
     if (!list || !list.length) return '';
-    var meta = SVC_CATS[cat] || { emoji: '🛍', ta: cat };
-    return '<div class="svc-panel">' +
+    var meta = catMeta(cat);
+    return '<div class="svc-panel" id="svc-' + esc(cat) + '">' +
       '<div class="svc-panel-head">' +
         '<span class="svc-panel-ic">' + meta.emoji + '</span>' +
-        '<span class="svc-panel-ta">' + esc(meta.ta) + '</span>' +
+        '<span class="svc-panel-titles">' +
+          '<span class="svc-panel-ta">' + esc(meta.ta) + '</span>' +
+          (meta.hint ? '<span class="svc-panel-hint">' + esc(meta.hint) + '</span>' : '') +
+        '</span>' +
         '<span class="svc-panel-count">' + list.length + '</span>' +
       '</div>' +
       '<div class="svc-rows">' + list.map(svcRow).join('') + '</div>' +
@@ -194,20 +205,48 @@ var More = (function() {
     var host = document.getElementById('more-acting');
     if (!host) return;
     var active = (drivers || []).filter(function(d) { return d.is_active !== false; });
+    _actingCount = active.length;
+    if (_svcData) renderJump(_svcData, _actingCount);
     host.innerHTML = active.length
       ? active.map(actingRow).join('')
       : '<div class="more-empty">மாற்று ஓட்டுநர் விரைவில் சேர்க்கப்படும் · Substitute drivers coming soon</div>';
   }
+  // Categories that actually have services, in display order (extras last)
+  function presentCats(data) {
+    if (!data) return [];
+    var keys = Object.keys(SVC_CATS).filter(function(k) { return data[k] && data[k].length; });
+    Object.keys(data).forEach(function(k) { if (!SVC_CATS[k] && data[k] && data[k].length) keys.push(k); });
+    return keys;
+  }
+
+  // One chip per category + acting drivers. The services list is long, so
+  // without this a villager looking for the e-Sevai centre scrolls past
+  // everything else to find it.
+  function renderJump(data, actingCount) {
+    var nav = document.getElementById('more-jump');
+    if (!nav) return;
+    var cats = presentCats(data);
+    var chips = cats.map(function(k) {
+      var m = catMeta(k);
+      return '<button type="button" class="more-jump-chip" data-jump="svc-' + esc(k) + '">' +
+        '<span class="more-jump-ic">' + m.emoji + '</span>' + esc(m.ta) +
+        '<span class="more-jump-n">' + data[k].length + '</span></button>';
+    });
+    if (actingCount) {
+      chips.push('<button type="button" class="more-jump-chip" data-jump="more-acting-panel">' +
+        '<span class="more-jump-ic">🚖</span>மாற்று ஓட்டுநர்<span class="more-jump-n">' + actingCount + '</span></button>');
+    }
+    nav.innerHTML = chips.join('');
+    nav.hidden = chips.length < 2;
+  }
+
+  var _svcData = null, _actingCount = 0;
   function renderServices(data) {
     var host = document.getElementById('more-services');
     if (!host) return;
-    if (!data || !Object.keys(data).length) {
-      host.innerHTML = '<div class="more-empty">சேவை தகவல் விரைவில் · Services coming soon</div>';
-      return;
-    }
-    // known categories first, then any extras
-    var html = Object.keys(SVC_CATS).map(function(k) { return svcGroup(k, data[k]); }).join('');
-    Object.keys(data).forEach(function(k) { if (!SVC_CATS[k]) html += svcGroup(k, data[k]); });
+    _svcData = data || {};
+    renderJump(_svcData, _actingCount);
+    var html = presentCats(_svcData).map(function(k) { return svcGroup(k, _svcData[k]); }).join('');
     host.innerHTML = html || '<div class="more-empty">சேவை தகவல் விரைவில் · Services coming soon</div>';
   }
 
@@ -240,6 +279,12 @@ var More = (function() {
     if (!sec) return;
     clampWired = true;
     sec.addEventListener('click', function(ev) {
+      var jump = ev.target.closest ? ev.target.closest('[data-jump]') : null;
+      if (jump) {
+        var target = document.getElementById(jump.getAttribute('data-jump'));
+        if (target && target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
       var el = ev.target.closest ? ev.target.closest('.clamp') : null;
       if (el) el.classList.toggle('open');
     });

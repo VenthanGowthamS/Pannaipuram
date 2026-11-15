@@ -244,3 +244,58 @@
 .acting-reg-cta { background: var(--surface-2); border-color: var(--border); }
 .acting-reg-form .auto-form-input:focus { border-color: var(--brand); }
 .acting-reg-btn { background: var(--brand); }
+
+/* ── v110: services first, quick-jump chips, panel hints ───────── */
+/* Services now come first, so their heading needs the space the acting
+   panel used to have above it. */
+.more-svc-section-head { margin-top: 14px; }
+.more-feature.acting-panel { margin-top: 20px; }
+
+/* One chip per category (+ acting drivers). Wraps onto 2–3 rows rather than
+   scrolling sideways: a sideways strip hides most chips on a phone and
+   villagers don't discover that it scrolls. */
+.more-jump {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin: 12px 12px 0;
+}
+.more-jump[hidden] { display: none; }
+.more-jump-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 40px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-tamil);
+  font-size: 0.86rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+.more-jump-chip:active { background: var(--surface-3); }
+.more-jump-ic { font-size: 1rem; line-height: 1; }
+.more-jump-n {
+  min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 999px;
+  background: var(--brand-tint);
+  color: var(--brand-ink);
+  font-family: var(--font-latin);
+  font-size: 0.72rem; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+/* Jump targets stop clear of the fixed ☰ / theme buttons */
+.svc-panel, #more-acting-panel { scroll-margin-top: 72px; }
+
+.svc-panel-head { background: var(--surface-2); }
+.svc-panel-titles { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.svc-panel-titles .svc-panel-ta { flex: none; }
+.svc-panel-hint {
+  font-family: var(--font-tamil);
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--muted);
+  line-height: 1.35;
+  margin-top: 1px;
+}

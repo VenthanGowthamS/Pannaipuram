@@ -609,6 +609,65 @@ async function testLocalServicesCRUD() {
     assert(body.data.phone === '9999999999', 'Phone should be updated');
   });
 
+  await test('PUT /admin/services/:id with an empty notes_tamil clears the note', async () => {
+    if (!createdServiceId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await put(`/admin/services/${createdServiceId}`, { notes_tamil: '', area_english: '  ' }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.data.notes_tamil === null, `notes should be cleared, got ${JSON.stringify(body.data.notes_tamil)}`);
+    assert(body.data.area_english === null, `area_english should be cleared, got ${JSON.stringify(body.data.area_english)}`);
+    assert(body.data.area_tamil === 'முழு ஊர்', 'a field that was not sent must be kept');
+  });
+
+  await test('PUT /admin/services/:id moves a service into a new category (vehicle)', async () => {
+    if (!createdServiceId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await put(`/admin/services/${createdServiceId}`, { category: 'vehicle' }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status} ${JSON.stringify(body)}`);
+    assert(body.data.category === 'vehicle', `got ${body.data.category}`);
+  });
+
+  await test('PUT /admin/services/:id rejects an unknown category with 400 (not a 500)', async () => {
+    if (!createdServiceId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await put(`/admin/services/${createdServiceId}`, { category: 'spaceship' }, getAuthHeaders());
+    assert(status === 400, `Expected 400, got ${status}`);
+    assert(/category must be one of/.test(body.error), `got ${body.error}`);
+  });
+
+  await test('PUT /admin/services/:id rejects a bad phone and a blank Tamil name', async () => {
+    if (!createdServiceId) { assert(true, 'Skipped'); return; }
+    const a = await put(`/admin/services/${createdServiceId}`, { phone: '12345' }, getAuthHeaders());
+    assert(a.status === 400, `bad phone: expected 400, got ${a.status}`);
+    const b = await put(`/admin/services/${createdServiceId}`, { name_tamil: '   ' }, getAuthHeaders());
+    assert(b.status === 400, `blank name: expected 400, got ${b.status}`);
+  });
+
+  await test('GET /api/services groups the service under its new category', async () => {
+    if (!createdServiceId) { assert(true, 'Skipped'); return; }
+    await put(`/admin/services/${createdServiceId}`, { is_active: true }, getAuthHeaders());
+    const { status, body } = await get('/api/services');
+    assert(status === 200, `Expected 200, got ${status}`);
+    const inVehicle = (body.data.vehicle || []).some(s => s.id === createdServiceId);
+    assert(inVehicle, 'expected the service under data.vehicle');
+  });
+
+  await test('POST /admin/services accepts each new category and rejects an unknown one', async () => {
+    for (const category of ['grocery', 'esevai', 'logistics', 'carpenter']) {
+      const { status, body } = await post('/admin/services', {
+        category, name_tamil: 'டெஸ்ட் ' + category, phone: '9876543210', display_order: 99,
+      }, getAuthHeaders());
+      assert(status === 200, `${category}: expected 200, got ${status} ${JSON.stringify(body)}`);
+      await del(`/admin/services/${body.data.id}`, getAuthHeaders());
+    }
+    const bad = await post('/admin/services', { category: 'spaceship', name_tamil: 'x', phone: '9876543210' }, getAuthHeaders());
+    assert(bad.status === 400, `unknown category: expected 400, got ${bad.status}`);
+  });
+
+  await test('services routes reject requests without a token', async () => {
+    const a = await post('/admin/services', { category: 'milk', name_tamil: 'x', phone: '9876543210' });
+    assert(a.status === 401, `POST: expected 401, got ${a.status}`);
+    const b = await put('/admin/services/1', { category: 'milk' });
+    assert(b.status === 401, `PUT: expected 401, got ${b.status}`);
+  });
+
   await test('DELETE /admin/services/:id deletes service', async () => {
     if (!createdServiceId) { assert(true, 'Skipped'); return; }
     const { status, body } = await del(`/admin/services/${createdServiceId}`, getAuthHeaders());
