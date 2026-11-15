@@ -382,11 +382,17 @@ main {
 .section[hidden] { display: none; }
 
 /* ── Village announcements (📢) ─────────────────────────── */
-#announce-host:not(:empty) { padding: 10px 12px 0; display: flex; flex-direction: column; gap: 8px; }
-/* First card sits beside the floating ☰ + theme buttons — indent its text clear of them */
-#announce-host .ann-card:first-child { padding-left: 108px; }
+/* The fixed ☰ (left) and theme (right) buttons occupy the top 54px, so
+   whatever comes first must start BELOW them — same clearance as the install
+   strip. This used to slide the first card UNDER the buttons and indent its
+   text 108px to dodge them, which squeezed the message into a ~165px column
+   (cut off with "…") and left the card half-hidden behind the buttons. */
+#announce-host:not(:empty) {
+  padding: calc(62px + env(safe-area-inset-top)) 12px 0;
+  display: flex; flex-direction: column; gap: 8px;
+}
 @media (min-width: 560px) {
-  #announce-host .ann-card:first-child { padding-left: 136px; }
+  #announce-host:not(:empty) { padding-top: calc(72px + env(safe-area-inset-top)); }
 }
 .ann-card {
   display: flex;
@@ -424,9 +430,9 @@ main {
    but is held to one line until the card is opened */
 .ann-card .ann-en { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ann-card.open .ann-en { white-space: normal; }
-/* With the install strip on screen it is the strip that sits beside the ☰,
-   so the announcement no longer needs the indent */
-#install-banner:not([hidden]) ~ main #announce-host .ann-card:first-child { padding-left: 12px; }
+/* With the install strip on screen it is the strip that clears the buttons,
+   so the announcement just follows it with a normal gap */
+#install-banner:not([hidden]) ~ main #announce-host:not(:empty) { padding-top: 8px; }
 .ann-en {
   font-family: var(--font-latin);
   font-size: 0.72rem;
