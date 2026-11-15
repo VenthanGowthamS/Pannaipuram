@@ -30,7 +30,12 @@ router.get('/stats', async (req, res) => {
           COUNT(*) FILTER (WHERE last_seen_at > NOW() - INTERVAL '1 hour')   AS active_1h,
           COUNT(*) FILTER (WHERE last_seen_at > NOW() - INTERVAL '5 minutes') AS live_now,
           COUNT(*) FILTER (WHERE is_standalone = TRUE)                       AS installed,
-          COUNT(*) FILTER (WHERE installed_at >= (((NOW() AT TIME ZONE 'Asia/Kolkata')::date) AT TIME ZONE 'Asia/Kolkata')) AS installs_today,
+          -- Same IST-day test as the daily table below, so the card and today's
+          -- row can never disagree. The old cutoff, '(…)::date AT TIME ZONE
+          -- 'Asia/Kolkata'', cast the date to timestamptz in the DB SESSION zone
+          -- first: on Supabase (UTC) "today" started at 11:00 AM IST, so every
+          -- morning install showed in the table but the card said 0.
+          COUNT(*) FILTER (WHERE (installed_at AT TIME ZONE 'Asia/Kolkata')::date = (NOW() AT TIME ZONE 'Asia/Kolkata')::date) AS installs_today,
           COALESCE(SUM(visit_count), 0)::BIGINT                              AS total_visits
         FROM pwa_visits ${lblTotals}
       `),
@@ -52,7 +57,7 @@ router.get('/stats', async (req, res) => {
         SELECT (installed_at AT TIME ZONE 'Asia/Kolkata')::date AS day, COUNT(*) AS installs
         FROM pwa_visits
         WHERE installed_at IS NOT NULL
-          AND installed_at > ((((NOW() AT TIME ZONE 'Asia/Kolkata')::date) - INTERVAL '30 days')::date AT TIME ZONE 'Asia/Kolkata') ${lblAnd2}
+          AND (installed_at AT TIME ZONE 'Asia/Kolkata')::date > ((NOW() AT TIME ZONE 'Asia/Kolkata')::date - 30) ${lblAnd2}
         GROUP BY (installed_at AT TIME ZONE 'Asia/Kolkata')::date
         ORDER BY day DESC
       `),
