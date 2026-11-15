@@ -48,7 +48,12 @@ router.post('/', requireRole('admin', 'super_admin'), async (req, res) => {
 
 // PUT /admin/announcements/:id — update
 router.put('/:id', validateIdParam, requireRole('admin', 'super_admin'), async (req, res) => {
-  const { message_english, type, priority, is_active, expires_at } = req.body;
+  const { type, priority, is_active, expires_at } = req.body;
+  const has = (k) => Object.prototype.hasOwnProperty.call(req.body, k);
+  // Sending message_english (even '' or null) SETS it — empty clears it.
+  // COALESCE kept the old text, so clearing the English box in the admin
+  // panel and saving brought the old English line straight back.
+  const message_english = trimStr(req.body.message_english);
   // Same rules as POST: an edit must not blank the message or store an unknown type
   let message_tamil;
   if (Object.prototype.hasOwnProperty.call(req.body, 'message_tamil')) {
@@ -63,7 +68,7 @@ router.put('/:id', validateIdParam, requireRole('admin', 'super_admin'), async (
     const result = await query(`
       UPDATE announcements SET
         message_tamil  = COALESCE($1, message_tamil),
-        message_english= COALESCE($2, message_english),
+        message_english= CASE WHEN $9 THEN $2 ELSE message_english END,
         type           = COALESCE($3, type),
         priority       = COALESCE($4, priority),
         is_active      = COALESCE($5, is_active),
@@ -72,7 +77,7 @@ router.put('/:id', validateIdParam, requireRole('admin', 'super_admin'), async (
     `, [message_tamil, message_english, type, priority, is_active, expires_at || null, req.params.id,
         // Sending expires_at (even null) sets it — null means "never expires".
         // COALESCE used to keep the old date, so an expiry could never be removed.
-        Object.prototype.hasOwnProperty.call(req.body, 'expires_at')]);
+        has('expires_at'), has('message_english')]);
     if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'Not found' });
     res.json({ success: true, data: result.rows[0] });
   } catch (err) {

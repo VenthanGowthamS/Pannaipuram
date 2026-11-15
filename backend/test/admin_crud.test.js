@@ -792,6 +792,33 @@ async function testAnnouncementsCRUD() {
     assert(!found, 'Expired announcement must not be public even while is_active is true');
   });
 
+  await test('PUT message_english: null clears the English line (it used to come back)', async () => {
+    if (!createdAnnouncementId) { assert(true, 'Skipped'); return; }
+    const { status, body } = await put(`/admin/announcements/${createdAnnouncementId}`, {
+      message_tamil: 'சோதனை அறிவிப்பு — ஆங்கிலம் இல்லாமல்',
+      message_english: null,
+    }, getAuthHeaders());
+    assert(status === 200, `Expected 200, got ${status}`);
+    assert(body.data.message_english === null, `English should be cleared, got ${JSON.stringify(body.data.message_english)}`);
+    const pub = await get('/api/announcements');
+    const row = (pub.body.data || []).find(a => a.id === createdAnnouncementId);
+    if (row) assert(!row.message_english, 'public feed must not keep the old English line');
+  });
+
+  await test('PUT message_english: "   " (blank) also clears it', async () => {
+    if (!createdAnnouncementId) { assert(true, 'Skipped'); return; }
+    await put(`/admin/announcements/${createdAnnouncementId}`, { message_english: 'Back again' }, getAuthHeaders());
+    const { body } = await put(`/admin/announcements/${createdAnnouncementId}`, { message_english: '   ' }, getAuthHeaders());
+    assert(body.data.message_english === null, `blank should clear, got ${JSON.stringify(body.data.message_english)}`);
+  });
+
+  await test('PUT without message_english (e.g. the Active toggle) keeps the English line', async () => {
+    if (!createdAnnouncementId) { assert(true, 'Skipped'); return; }
+    await put(`/admin/announcements/${createdAnnouncementId}`, { message_english: 'Keep me' }, getAuthHeaders());
+    const { body } = await put(`/admin/announcements/${createdAnnouncementId}`, { is_active: true }, getAuthHeaders());
+    assert(body.data.message_english === 'Keep me', `expected 'Keep me', got ${JSON.stringify(body.data.message_english)}`);
+  });
+
   await test('PUT expires_at: null clears the expiry (was impossible with COALESCE)', async () => {
     if (!createdAnnouncementId) { assert(true, 'Skipped'); return; }
     const { status, body } = await put(`/admin/announcements/${createdAnnouncementId}`, {
