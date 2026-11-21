@@ -5,3 +5,10 @@ marketing/*.mp4
 marketing/*.m4a
 marketing/frames/
 pamphlet.pdf
+
+# graphify: commit graph.json / GRAPH_REPORT.md / graph.html only (rest is machine-specific)
+graphify-out/cache/
+graphify-out/.graphify_*
+graphify-out/manifest.json
+graphify-out/memory/
+.claude/settings.json

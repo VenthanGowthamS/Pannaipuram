@@ -1,0 +1,8 @@
+# Keep the graph to real source code
+.claude/
+**/node_modules/
+backend/public/admin-v2/
+app/android/
+app/build/
+marketing/
+graphify-out/
