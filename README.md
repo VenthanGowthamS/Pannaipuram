@@ -34,6 +34,8 @@ Hosting: the PWA on GitHub Pages (`app.pannaipuram.com`), the API and admin on R
 
 ![Code graph of Pannaipuram: 1,630 functions and tables in 107 communities](graphify-out/graph.png)
 
+**Open it interactive:** [anyone, via htmlpreview](https://htmlpreview.github.io/?https://github.com/VenthanGowthamS/Pannaipuram/blob/main/graphify-out/graph.html) · [Venthan's hosted copy](https://claude.ai/artifact/WLjNoauJX4QDEP3jCz3c9n)
+
 Made with [graphify](https://github.com/Graphify-Labs/graphify): every function, component and SQL table in the app, backend, admin panel and PWA, joined by the calls and imports between them. Open [`graphify-out/graph.html`](graphify-out/graph.html) locally to click through it; [`GRAPH_REPORT.md`](graphify-out/GRAPH_REPORT.md) lists the most connected parts. Refresh after code changes with `graphify update .`
 
 ## Run the tests
